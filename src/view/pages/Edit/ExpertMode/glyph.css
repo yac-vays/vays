@@ -1,0 +1,16 @@
+.error-glyph{
+    background-image: url('../../../../../rsc/error.svg');
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center center;
+    cursor: pointer;
+}
+
+.error-line{
+    background-color: rgb(darkviolet/ 0.2) ;
+}
+
+.sticky-widget{
+    background-color: theme('colors.boxdark');
+}
+

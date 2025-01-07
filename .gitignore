@@ -1,0 +1,22 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+node_modules
+dist
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.env
+
+# other
+src/utils/_token.tsx
+old/*
+cert/*
+public/editor
+testserver.py
+RESOURCES.md

@@ -1,0 +1,29 @@
+
+  .entity-list>thead>tr:first-child>th {
+    border-color:transparent;
+    padding:1.75rem .625rem .625rem; 
+    font-weight:500
+  }
+  .entity-list>tbody>tr>td:first-child,
+  .entity-list>thead>tr>th:first-child {
+    padding-left:2rem
+  }
+  .entity-list>tbody>tr>td:last-child,
+  .entity-list>thead>tr>th:last-child {
+    padding-right:2rem
+  }
+  .entity-list>thead>tr:last-child>th {
+    border-bottom-width:1px!important;
+    padding-bottom:1.5rem
+  }
+
+
+  /**
+  * Giving the individual cell content some formatting and padding.
+  */
+  .entity-list>tbody>tr>td {
+    border-bottom-width:1px;
+    padding-top:1.25rem;
+    padding-bottom:1.25rem;
+    font-weight:500
+  }

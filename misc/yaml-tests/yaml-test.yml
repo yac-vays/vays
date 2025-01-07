@@ -1,0 +1,12 @@
+---
+#
+# Manual installation/upgrade steps: ansible/push.git/matrix/README.md
+#
+
+app:
+  name: Hello World
+  server:
+    names: [2, 3, 566, {why:28}]
+    port: 80 # well, this is some comment
+    https: false
+

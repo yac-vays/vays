@@ -1,0 +1,86 @@
+import React, { useState, useEffect } from 'react';
+import { YACBackend } from '../../../model/ConfigFetcher';
+import SidebarGroupHeader from './SidebarGroupHeader';
+import SidebarGroupEntry from './SidebarGroupEntry';
+import { EntityTypeDecl, getEntityTypes } from '../../../model/EntityListFetcher';
+import { buildOverviewURL } from '../../../controller/global/URLValidation';
+import iLocalStorage from '../../../session/persistent/LocalStorage';
+import iSessionStorage from '../../../session/storage/SessionStorage';
+
+interface SidebarLinkGroupProps {
+  yacBackendObject: YACBackend;
+  isOpen: boolean;
+}
+
+const SidebarGroup = ({ yacBackendObject, isOpen }: SidebarLinkGroupProps) => {
+  const [open, setOpen] = useState<boolean>(
+    window.location.pathname.startsWith(`/${yacBackendObject.name}/`) ||
+      (iLocalStorage.isSidebarGroupExpanded(yacBackendObject.name) ?? isOpen),
+  );
+  const [entityList, setEntityList] = useState<EntityTypeDecl[]>([]);
+
+  // https://codedamn.com/news/reactjs/handle-async-functions-with-ease
+  // Really annoying, but this is what JavaScript has done to us...
+  useEffect(() => {
+    async function loadingEntityTypes() {
+      if (window.location.pathname.startsWith('/oauth2-redirect')) {
+        while (!iSessionStorage.isLoggedIn()) {
+          await new Promise((res) => setTimeout(res, 500));
+        }
+      }
+      const data = await getEntityTypes(yacBackendObject.name, yacBackendObject.title);
+      setEntityList(data);
+    }
+    loadingEntityTypes();
+  }, [yacBackendObject]);
+
+  const handleClick = () => {
+    iLocalStorage.setIsSidebarGroupExpanded(yacBackendObject.name, !open);
+    setOpen(!open);
+  };
+
+  return (
+    <li>
+      <React.Fragment>
+        <div
+          className="group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-greydark dark:hover:bg-meta-4 
+          bg-graydark dark:bg-meta-4"
+          style={{ cursor: 'pointer' }}
+          onClick={(e) => {
+            e.preventDefault();
+            handleClick();
+          }}
+        >
+          <SidebarGroupHeader
+            open={open}
+            showHandle={entityList.length > 0}
+            yacBackendObject={yacBackendObject}
+          />
+        </div>
+        {/* <!-- Dropdown Menu Start --> */}
+        <div className={`translate transform overflow-hidden ${!open && 'hidden'}`}>
+          {(function () {
+            let jsx: React.ReactNode[] = [];
+            let etList: EntityTypeDecl[] = entityList;
+            let i: number = 0;
+            for (let et of etList) {
+              jsx.push(
+                <SidebarGroupEntry
+                  entityDecl={et}
+                  key={i++}
+                  href={buildOverviewURL(yacBackendObject, et.name)}
+                  yacBackendObject={yacBackendObject}
+                />,
+              );
+            }
+
+            return jsx;
+          })()}
+        </div>
+        {/* <!-- Dropdown Menu End --> */}
+      </React.Fragment>
+    </li>
+  );
+};
+
+export default SidebarGroup;

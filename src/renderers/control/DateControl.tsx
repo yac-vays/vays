@@ -3,11 +3,12 @@ import { ControlProps, isDateControl, RankedTester, rankWith } from '@jsonforms/
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import DatePicker from '../../view/thirdparty-based-components/ifc/Datepicker/DatePicker';
 import ErrorBox from '../../view/thirdparty-based-components/ifc/Label/ErrorBox';
+import { hashCode } from '../../utils/hashUtils';
+import OverheadLabel from '../../view/thirdparty-based-components/ifc/Label/OverheadLabel';
 
 export const DateControl = (props: ControlProps) => {
   const {
     description,
-    id,
     errors,
     label,
     schema,
@@ -30,20 +31,21 @@ export const DateControl = (props: ControlProps) => {
   }
 
   return (
-    // <LocalizationProvider dateAdapter={AdapterDayjs}>
     <div className="p-1">
+      <OverheadLabel title={label} required={required || false} description={description} />
+
       <DatePicker
-        onChange={(v: string) => handleChange(path, v)}
-        title={label}
+        id={hashCode(path).toString()}
+        onChange={(v: string) => {
+          handleChange(path, v);
+        }}
         format={format}
+        data={data}
         type={schema.format ?? 'date'}
         enabled={enabled}
-        required={required}
-        description={description}
       />
       <ErrorBox displayError={errors} />
     </div>
-    // </LocalizationProvider>
   );
 };
 

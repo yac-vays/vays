@@ -13,6 +13,7 @@ import { withJsonFormsControlProps } from '@jsonforms/react';
 import { isCustomRenderer } from '../../utils/customTesterUtils';
 import SSHKeyInput from '../../../view/thirdparty-based-components/ifc/SSHKey/SSHKeyInput';
 import OverheadLabel from '../../../view/thirdparty-based-components/ifc/Label/OverheadLabel';
+import ErrorBox from '../../../view/thirdparty-based-components/ifc/Label/ErrorBox';
 
 export const SSHKeyRenderer = (props: ControlProps) => {
   const sshlist: string[] = (props.data ?? '').split('\n');
@@ -33,6 +34,7 @@ export const SSHKeyRenderer = (props: ControlProps) => {
               onChange={(v: string) => props.handleChange(props.path, v)}
             />
           ))}
+          <ErrorBox displayError={props.errors} />
         </div>
       </div>
     </div>

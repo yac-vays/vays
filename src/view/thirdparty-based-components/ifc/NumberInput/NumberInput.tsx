@@ -1,11 +1,13 @@
-import { ControlProps } from '@jsonforms/core';
-import OverheadLabel from '../Label/OverheadLabel';
-import ErrorBox from '../Label/ErrorBox';
 import React from 'react';
 
-interface MutableInput {
+interface NumberProps {
+  id: string;
+  data?: number | string;
+  defaultv?: number | string;
+  placeholder?: number | string;
+  placeholderEditable?: boolean;
+  enabled: boolean;
   onChange: React.ChangeEventHandler<Element>;
-  onClear: () => void;
 }
 
 /**
@@ -13,46 +15,37 @@ interface MutableInput {
  * @param props
  * @returns
  */
-const NumberInput = (props: ControlProps & MutableInput) => {
-  // Do not use handleChange, this is the version that is not debounced.
-  const { id, description, enabled, data, schema, uischema, errors, visible, required, onChange } =
-    props;
-
-  let displayError = '';
-  let inp = schema.default;
-  if (uischema.options?.initial_editable) {
-    inp = uischema.options?.initial ?? '';
+const NumberInput = ({
+  id,
+  data,
+  defaultv,
+  placeholder,
+  placeholderEditable,
+  enabled,
+  onChange,
+}: NumberProps) => {
+  let inp = defaultv;
+  if (placeholderEditable) {
+    inp = placeholder ?? '';
   }
   if (data != undefined) inp = data;
 
-  if (errors.length != 0) displayError = 'Error: ' + errors;
-  let placeholder = 'Type...';
-  if (!uischema.options?.initial_editable) {
-    placeholder = uischema.options?.initial ?? placeholder;
+  let ph: string | number = 'Type...';
+  if (!placeholderEditable) {
+    ph = placeholder ?? ph;
   }
 
-  if (!visible) return <></>;
-
   return (
-    <>
-      <div id={id}>
-        <OverheadLabel
-          title={schema.title}
-          required={required || false}
-          description={description}
-        />
-
-        <input
-          type="number"
-          disabled={!enabled}
-          defaultValue={inp}
-          className="w-full rounded-md border border-stroke bg-transparent px-5 py-2.5 mb-2 outline-none focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:focus:border-primary"
-          placeholder={placeholder}
-          onChange={onChange}
-        />
-        <ErrorBox displayError={displayError} />
-      </div>
-    </>
+    <div id={id}>
+      <input
+        type="number"
+        disabled={!enabled}
+        defaultValue={inp}
+        className="w-full rounded-md border border-stroke bg-transparent px-5 py-2.5 mb-2 outline-none focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:focus:border-primary"
+        placeholder={ph.toString()}
+        onChange={onChange}
+      />
+    </div>
   );
 };
 

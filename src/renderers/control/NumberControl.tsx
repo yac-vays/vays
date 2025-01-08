@@ -1,40 +1,57 @@
 import {
-  and,
   ControlProps,
   isIntegerControl,
   isNumberControl,
-  JsonSchema,
   or,
   RankedTester,
   rankWith,
-  schemaTypeIs,
-  TesterContext,
-  UISchemaElement,
-  uiTypeIs,
 } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import { useDebouncedChange } from '@jsonforms/material-renderers';
-import TextInput from '../../view/thirdparty-based-components/ifc/TextInput/TextInput';
 import NumberInput from '../../view/thirdparty-based-components/ifc/NumberInput/NumberInput';
-// import { MuiInputText } from '../mui-controls/MuiInputText';
-// import { MaterialInputControl } from './MaterialInputControl';
+import OverheadLabel from '../../view/thirdparty-based-components/ifc/Label/OverheadLabel';
+import ErrorBox from '../../view/thirdparty-based-components/ifc/Label/ErrorBox';
+import { useCallback } from 'react';
+import { debounce } from 'lodash';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const eventToValue = (ev: any) =>
   Number.isNaN(ev.target.valueAsNumber) ? undefined : ev.target.valueAsNumber;
 
 export const NumberControl = (props: ControlProps) => {
-  const [_, onChange, onClear] = useDebouncedChange(
-    props.handleChange,
-    0,
-    props.data,
-    props.path,
-    eventToValue,
-    800,
+  if (!props.visible) return <></>;
+  const onChange = useCallback(
+    debounce(
+      (e: React.ChangeEvent<HTMLInputElement>) => props.handleChange(props.path, eventToValue(e)),
+      800,
+    ),
+    [props.path],
   );
+  // const [_, onChange, _] = useDebouncedChange(
+  //   props.handleChange,
+  //   0,
+  //   props.data,
+  //   props.path,
+  //   eventToValue,
+  //   800,
+  // );
 
   return (
     <div className="p-1">
-      <NumberInput {...props} onChange={onChange} onClear={onClear} />
+      <OverheadLabel
+        title={props.schema.title}
+        required={props.required || false}
+        description={props.description}
+      />
+      <NumberInput
+        id={props.id}
+        data={props.data}
+        defaultv={props.schema.default}
+        placeholder={props.uischema.options?.initial}
+        placeholderEditable={props.uischema.options?.initial_editable}
+        enabled={props.enabled}
+        onChange={onChange}
+      />
+      <ErrorBox displayError={props.errors} />
     </div>
   );
 };

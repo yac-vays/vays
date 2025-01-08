@@ -12,8 +12,6 @@ import {
 import { useParams, useSearchParams } from 'react-router-dom';
 import { YACBackend } from '../../../model/ConfigFetcher';
 import { NameGeneratedCond } from '../../../model/EntityListFetcher';
-import StandardEditMode from './StandardEditMode/StandardEditMode';
-import ExpertMode from './ExpertMode/ExpertMode';
 import EditFrame from './EditFrame';
 import iSessionStorage from '../../../session/storage/SessionStorage';
 import { showModalMessage } from '../../../controller/global/ModalController';
@@ -23,18 +21,33 @@ interface EditViewProps {
   mode: EditViewMode;
 }
 
-const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps) => {
+const setIsExpertMode = (
+  v: boolean,
+  _setIsExpertMode: React.Dispatch<React.SetStateAction<boolean>>,
+) => {
+  _setIsExpertMode(v);
+  iSessionStorage.setIsExpertMode(v);
+  navigateToURL(window.location.pathname + '?mode=' + (v ? 'expert' : 'standard'));
+};
+
+/**
+ * EditView component is responsible for rendering the edit view of an entity.
+ * It handles the validation of the query parameters, constructs the request context,
+ * and setting the appropriate title and mode setting and passes all settings to the frame.
+ *
+ * @param {Backend[]} props.backends - The list of backends available.
+ * @param {EditViewMode} props.mode - The mode of the edit view, either 'create' or 'modify'.
+ *
+ * @returns {JSX.Element} The rendered EditView component.
+ *
+ * @component
+ **/
+const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): JSX.Element => {
   const { backendName, entityTypeName, entityName } = useParams();
   const [isExpertMode, _setIsExpertMode] = useState<boolean>(iSessionStorage.getIsExpertMode());
   const searchParams = useSearchParams()[0];
   const [requestContext, setRequestContext] = useState<RequestEditContext>(getDefaultEditContext());
   const [title, setTitle] = useState<string>('Loading...');
-
-  const setIsExpertMode = (v: boolean) => {
-    _setIsExpertMode(v);
-    iSessionStorage.setIsExpertMode(v);
-    navigateToURL(window.location.pathname + '?mode=' + (v ? 'expert' : 'standard'));
-  };
 
   useEffect(() => {
     (async function () {
@@ -65,7 +78,7 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps) =>
           (requestEditContext.viewMode === 'standard' && isExpertMode)
         ) {
           // Resolve conflict URL vs personal settings.
-          setIsExpertMode(requestEditContext.viewMode === 'expert');
+          setIsExpertMode(requestEditContext.viewMode === 'expert', _setIsExpertMode);
         } else {
           // make sure that the URL has the viewMode in the URL, May not be the case
           // just yet since some validation just took place and may have overwritten the mode there.
@@ -125,7 +138,7 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps) =>
             showModalMessage(
               'Are You Sure To Switch Editing Mode?',
               'Any data you have entered but not yet saved (button in the bottom right corner) will be lost.',
-              async () => setIsExpertMode(!isExpertMode),
+              async () => setIsExpertMode(!isExpertMode, _setIsExpertMode),
               async () => {},
               'Switch to ' + (isExpertMode ? 'Standard Mode' : 'Expert Mode'),
             );

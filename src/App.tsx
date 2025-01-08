@@ -1,18 +1,17 @@
-import { useEffect, useState } from 'react';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, LazyExoticComponent, useEffect, useState } from 'react';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
-import Loader from './view/thirdparty-based-components/Loader';
 import DefaultLayout from './view/thirdparty-based-components/Layout';
+import Loader from './view/thirdparty-based-components/Loader';
 import PageTitle from './view/thirdparty-based-components/PageTitle/PageTitle';
 import LoginView from './view/pages/Login/LoginView';
 
-import { getConfig, YACBackend } from './model/ConfigFetcher';
+import { AppConfig, getConfig, YACBackend } from './model/ConfigFetcher';
 import { getBackends } from './controller/global/YACBackends';
 import { registerNavigationHook } from './controller/global/URLValidation';
+import { showError } from './controller/local/ErrorNotifyController';
 import { ToastContextProvider } from './view/components/ToastNotification/ToastContext';
 import { ModalContextProvider } from './view/components/Modal/ModalContext';
-import { showError } from './controller/local/ErrorNotifyController';
 
 // LAZY PAGES
 // let Overview = lazy(() => import('./view/pages/Overview/Overview'));
@@ -24,8 +23,10 @@ import { showError } from './controller/local/ErrorNotifyController';
 //   () => import('./view/pages/Edit/EditView'),
 // ]);
 
-let EditView: any;
-let Overview: any = lazy(() =>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let EditView: React.FC<any>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let Overview: LazyExoticComponent<React.FC<any>> | React.FC<any> = lazy(() =>
   import('./view/pages/Bundles/LogRouteBundle').then((module) => {
     EditView = module.EditView;
     return { default: module.Overview };
@@ -47,9 +48,24 @@ const ErrorPage = lazy(() => import('./view/pages/Error/ErrorPage'));
 // const RedirectView = lazy(() => import('./view/pages/Login/RedirectView'));
 const DevInfo = lazy(() => import('./view/pages/DevInfo'));
 
-function App() {
+/**
+ * The main application component that sets up the routing and context providers.
+ *
+ * @component
+ *
+ * @returns {JSX.Element} The rendered component.
+ *
+ * @remarks
+ * This component initializes the application by fetching the backend configurations and setting up the routes.
+ *
+ * @context
+ * - `ToastContextProvider`: Provides toast notifications throughout the application.
+ * - `ModalContextProvider`: Manages modal dialogs within the application.
+ *
+ */
+function App(): JSX.Element {
   const [loading, setLoading] = useState<boolean>(true);
-  const [config, setConfig] = useState<any>(null);
+  const [config, setConfig] = useState<AppConfig>({} as AppConfig);
   const [backendsList, setBackendsList] = useState<YACBackend[]>([
     {
       name: 'Loading...',

@@ -1,17 +1,26 @@
 import { useState } from 'react';
 import { RequestEditContext } from '../../../controller/global/URLValidation';
 import ExpertMode from './ExpertMode/ExpertMode';
-import StandardEditMode from './StandardEditMode/StandardEditMode';
+import StandardEditMode from './StandardEditMode';
 import { sendFormData } from '../../../controller/local/EditController/StandardMode/StandardEditController';
 import { sendYAMLData } from '../../../controller/local/EditController/ExpertMode/ExpertEditController';
 
+/**
+ * Component that renders an editing frame with expert or standard mode and feedback.
+ *
+ * @component
+ * @param {RequestEditContext} props.requestEditContext - The context object containing request data
+ * @param {boolean} props.isExpertMode - Flag to determine if expert mode is enabled
+ *
+ * @returns {JSX.Element} A section containing either expert or standard edit mode with error handling and save functionality
+ */
 const EditFrame = ({
   requestEditContext,
   isExpertMode,
 }: {
   requestEditContext: RequestEditContext;
   isExpertMode: boolean;
-}) => {
+}): JSX.Element => {
   const [isValidating, setIsValidating] = useState<boolean>(false);
   const [yacErrorMsg, setYACErrorMsg] = useState<string>('');
   const [isDisplayingYACError, setIsDisplayingYACError] = useState<boolean>(false);
@@ -42,7 +51,7 @@ const EditFrame = ({
             />
           ) : (
             <StandardEditMode
-              requestContext={requestEditContext}
+              requestEditContext={requestEditContext}
               setEditErrorMsg={setEditErrorMsg}
               setIsValidating={setIsValidating}
             />

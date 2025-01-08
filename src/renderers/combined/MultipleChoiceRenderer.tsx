@@ -26,7 +26,7 @@ export const MultipleChoiceRenderer = ({
   errors,
   description,
   label,
-  // required,
+  required,
   path,
   options,
   data,
@@ -43,6 +43,7 @@ export const MultipleChoiceRenderer = ({
         label={label}
         description={description}
         onClick={() => {}}
+        required={required}
         hideAddButton
       />
       <ErrorBox displayError={errors} />

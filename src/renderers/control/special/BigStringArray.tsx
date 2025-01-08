@@ -1,16 +1,9 @@
-import React, { useCallback, useState } from 'react';
 import {
-  ArrayLayoutProps,
-  ArrayTranslations,
   ControlProps,
   RankedTester,
-  Resolve,
   and,
-  encode,
-  isObjectArrayControl,
   isObjectArrayWithNesting,
   isPrimitiveArrayControl,
-  isStringControl,
   not,
   or,
   rankWith,
@@ -38,12 +31,8 @@ export const BigStringArray = (props: ControlProps) => {
           label={props.label}
           onClick={() => {}}
           description={props.description ?? ''}
+          required={props.required}
         />
-        {/* <OverheadLabel
-          title={props.label}
-          required={props.required || false}
-          description={props.description}
-        /> */}
         {hasItems ? (
           <p>
             <em className="opacity-60">Click any item to start editing it.</em>

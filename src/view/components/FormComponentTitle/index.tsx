@@ -4,19 +4,22 @@ const FormComponentTitle = ({
   onClick,
   description,
   hideAddButton,
+  required,
 }: {
   label?: string;
   large?: boolean;
   onClick: () => void;
   description?: string;
   hideAddButton?: boolean;
+  required?: boolean;
 }) => {
   return (
     <>
       <div className="relative flex flex-row w-full">
         <h4 className={`mb-0 ${large ? 'text-2xl' : 'text-xl'} text-black dark:text-white`}>
-          {label}
+          {label} {required ? <span className="text-meta-1 pr-2"> *</span> : <></>}
         </h4>
+
         {/* TODO: Do error reporting... */}
         {/* <ErrorBox displayError={this.props.errors} /> */}
         {hideAddButton ? (

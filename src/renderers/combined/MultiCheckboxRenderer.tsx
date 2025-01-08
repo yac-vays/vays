@@ -34,7 +34,7 @@ export const MultiCheckboxRenderer = ({
   errors,
   description,
   label,
-  // required,
+  required,
   path,
   options,
   data,
@@ -53,6 +53,7 @@ export const MultiCheckboxRenderer = ({
         label={label}
         description={description}
         onClick={() => {}}
+        required={required}
         hideAddButton
       />
       <ErrorBox displayError={errors} />

@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
+import InformationButton from '../../../components/Buttons/InformationButton';
 
 const Checkbox = ({
   title,
   initValue,
   onChange,
   minified,
+  description,
 }: {
   title?: string;
   initValue: boolean;
   onChange(value: boolean): void;
   minified?: boolean;
+  description?: string;
 }) => {
   const [isChecked, setIsChecked] = useState<boolean>(initValue);
 
@@ -70,6 +73,11 @@ const Checkbox = ({
         >
           {title}
         </label>
+        {description && description !== '' ? (
+          <InformationButton title={title} description={description} />
+        ) : (
+          <></>
+        )}
       </label>
     </div>
   );

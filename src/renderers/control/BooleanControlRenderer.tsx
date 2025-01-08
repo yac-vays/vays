@@ -33,6 +33,7 @@ export const BooleanControl = ({
           initValue={initValue}
           title={label}
           onChange={(value: boolean) => handleChange(path, value)}
+          description={description}
         />
         <ErrorBox displayError={errors} />
       </div>

@@ -1,4 +1,6 @@
 #
+# Build: docker build --memory=2g -t myapp .
+# Run: docker run -p 127.0.0.1:5173:80 --mount type=bind,source="$(pwd)"/config2.json,target=/usr/share/nginx/html/config.json,readonly myapp
 # Base Image - Build the TypeScript web app
 # 
 
@@ -6,17 +8,20 @@ FROM node:22.12.0-alpine AS build
 
 WORKDIR /code
 
-# Copy package.json and package-lock.json (npm ci uses these)
+# Copy package.json and package-lock.json
 COPY ./package*.json ./
 
-# Install dependencies using npm ci
+# Install dependencies
 RUN npm ci
 
 # Copy the application code to the container
-COPY ./* /code/
+COPY ./ ./
 
-# Build the TypeScript app (assumes the app uses a 'build' script in package.json)
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+
 RUN npm run build
+
 
 #
 # Final Image - Nginx server to serve the built files
@@ -28,7 +33,8 @@ FROM nginx:alpine AS production
 COPY --from=build /code/dist /usr/share/nginx/html
 
 # Copy the Nginx configuration from the scripts folder in the original codebase
-COPY ./depl/ /etc/nginx/
+# TODO: move nginx config...
+COPY --from=build /code/misc/nginx.conf /etc/nginx/nginx.conf
 
 # Expose port 80 for the web server
 EXPOSE 80

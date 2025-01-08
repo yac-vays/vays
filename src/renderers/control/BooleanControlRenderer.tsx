@@ -1,4 +1,3 @@
-import React from 'react';
 import { isBooleanControl, RankedTester, rankWith, ControlProps } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import Checkbox from '../../view/thirdparty-based-components/ifc/CheckBox/CheckBox';
@@ -16,7 +15,6 @@ export const BooleanControl = ({
   handleChange,
   errors,
   path,
-  config,
   description,
 }: ControlProps) => {
   if (!visible) {

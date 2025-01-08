@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   ControlProps,
   isStringControl,
@@ -6,18 +5,19 @@ import {
   RankedTester,
   rankWith,
   resolveSchema,
-  schemaTypeIs,
   TesterContext,
 } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import { useDebouncedChange } from '@jsonforms/material-renderers';
 import TextInput from '../../view/thirdparty-based-components/ifc/TextInput/TextInput';
 import { tsAddWarningMessage } from '../../controller/global/TroubleShootController';
 import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/EditorState';
+import { useCallback } from 'react';
+import { debounce } from 'lodash';
 // import { MuiInputText } from '../mui-controls/MuiInputText';
 // import { MaterialInputControl } from './MaterialInputControl';
 
-const eventToValue = (ev: any) => (ev.target.value === '' ? undefined : ev.target.value);
+const eventToValue = (ev: React.ChangeEvent<HTMLInputElement>) =>
+  ev.target.value === '' ? undefined : ev.target.value;
 
 export const TextControl = (props: ControlProps) => {
   if (props.label.toLowerCase().includes('password')) {
@@ -84,18 +84,27 @@ export const TextControl = (props: ControlProps) => {
       getCurrentContext()?.rc.backendObject?.title ?? 'Unknown',
     );
   }
-  const [_, onChange, onClear] = useDebouncedChange(
-    props.handleChange,
-    '',
-    props.data,
-    props.path,
-    eventToValue,
-    1500,
+  // // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // const [_, onChange, __] = useDebouncedChange(
+  //   props.handleChange,
+  //   '',
+  //   props.data,
+  //   props.path,
+  //   eventToValue,
+  //   1500,
+  // );
+
+  const onChange = useCallback(
+    debounce(
+      (e: React.ChangeEvent<HTMLInputElement>) => props.handleChange(props.path, eventToValue(e)),
+      1500,
+    ),
+    [props.path],
   );
 
   return (
     <div className="p-1">
-      <TextInput {...props} onChange={onChange} onClear={onClear} />
+      <TextInput {...props} onChange={onChange} />
     </div>
   );
 };
@@ -103,7 +112,9 @@ export const TextControl = (props: ControlProps) => {
 export const TextControlTester: RankedTester = rankWith(
   21,
   or(isStringControl, (uischema, schema, context: TesterContext) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((uischema as any).scope == undefined) return false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const subschema = resolveSchema(schema, (uischema as any).scope, context?.rootSchema);
 
     return subschema.type === undefined && subschema.pattern != undefined;

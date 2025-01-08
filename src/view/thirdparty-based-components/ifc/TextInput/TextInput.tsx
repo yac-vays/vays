@@ -7,7 +7,6 @@ import { useEffect, useRef } from 'react';
 interface MutableInput {
   password?: boolean;
   onChange: React.ChangeEventHandler<Element>;
-  onClear: () => void;
 }
 
 const TextInput = (props: ControlProps & MutableInput) => {
@@ -19,16 +18,14 @@ const TextInput = (props: ControlProps & MutableInput) => {
     data,
     schema,
     errors,
-    label,
+    //label,
     uischema,
     visible,
     required,
-    config,
     onChange,
-    onClear,
   } = props;
   const inputRef = useRef<HTMLInputElement>(null);
-  console.warn('INPUT ELEMENT RECEIVED ' + data);
+
   let inp = schema.default;
   if (uischema.options?.initial_editable && !props.password) {
     inp = uischema.options?.initial ?? '';
@@ -44,9 +41,6 @@ const TextInput = (props: ControlProps & MutableInput) => {
   if (!uischema.options?.initial_editable) {
     placeholder = uischema.options?.initial ?? placeholder;
   }
-
-  console.warn('Inputting now...' + defValue);
-  console.log(props);
 
   /**
    * Again, json forms caching necessitates an according update to the element.

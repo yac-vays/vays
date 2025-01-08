@@ -13,12 +13,9 @@ import SelectStatic from '../../view/thirdparty-based-components/ifc/Selector/Se
 export const OneOfEnumControl = (
   props: ControlProps & OwnPropsOfEnum & WithOptionLabel & TranslateProps,
 ) => {
-  const { config, uischema, errors, required, description, data } = props;
+  const { errors, required, description, data } = props;
 
-  const appliedUiSchemaOptions = { ...config, ...uischema.options };
-  const isValid = errors.length === 0;
-
-  return appliedUiSchemaOptions.autocomplete === false ? (
+  return (
     <div className="p-1">
       <SelectStatic
         title={props.schema.title}
@@ -26,20 +23,6 @@ export const OneOfEnumControl = (
         onChange={(v: string) => props.handleChange(props.path, v)}
         initValue={data}
         required={required}
-        description={description}
-        errors={errors}
-      />
-    </div>
-  ) : (
-    // TODO: This DOES NOT DO AUTOCOMPLETE.
-    // TODO: Allow multiple!
-    <div className="p-1">
-      <SelectStatic
-        title={props.schema.title}
-        options={props.options || []}
-        onChange={(v: string) => props.handleChange(props.path, v)}
-        initValue={data}
-        required={true}
         description={description}
         errors={errors}
       />

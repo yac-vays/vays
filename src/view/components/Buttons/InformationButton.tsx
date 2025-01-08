@@ -20,9 +20,10 @@ const InformationButton = ({ title, description }: InformationButtonProps) => {
   useOutsideClick(popoutRef, () => setShow(false));
   return (
     <>
-      <div ref={popoutRef}>
+      <div ref={popoutRef} onMouseLeave={() => setShow(false)}>
         <InfoPanel show={show} title={title} description={description}>
           <div
+            onMouseEnter={() => setShow(true)}
             onClick={() => setShow(!show)}
             className="cursor-pointer hover:scale-125 duration-300"
           >

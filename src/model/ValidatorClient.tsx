@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { JsonSchema } from '@jsonforms/core';
 import { showError, showSuccess } from '../controller/local/ErrorNotifyController';
 import {
@@ -7,19 +8,12 @@ import {
 } from '../controller/global/URLValidation';
 import { Nullable } from '../utils/typeUtils';
 import { authFailed, sendRequest } from '../utils/AuthedRequest';
-import { validateReturnMsg } from './_srv_resp/validateoutput';
 import { stringify } from 'yaml';
 import { NameGeneratedCond } from './EntityListFetcher';
-import {
-  dumpEditActions,
-  EditActionSnapshot,
-  injectAction,
-  insertActionData,
-  popActions,
-} from '../schema/injectActions';
+import { dumpEditActions, EditActionSnapshot, popActions } from '../schema/injectActions';
 import { actionNames2URLQuery } from '../utils/actionUtils';
 
-export interface ValidateResponse {
+export type ValidateResponse = {
   json_schema: JsonSchema;
   // json_schema : {
   //     //type : string,
@@ -39,7 +33,7 @@ export interface ValidateResponse {
   valid: boolean;
   detail: string;
   yaml?: string;
-}
+};
 
 export interface NewValidateReponse {
   schemas: {

@@ -34,6 +34,7 @@ export const ArrayLayoutRenderer = ({
   path,
   errors,
   uischemas,
+  required,
   addItem,
   translations,
   removeItems,
@@ -86,6 +87,7 @@ export const ArrayLayoutRenderer = ({
           addItemCb(path, createDefaultValue(schema, rootSchema))();
         }}
         description={description}
+        required={required}
       />
       {toRender}
     </>

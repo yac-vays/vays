@@ -99,25 +99,6 @@ export class Table extends React.Component<
   addItem = (path: string, value: any) => this.props.addItem(path, value);
 
   render() {
-    const subschema = resolveSchema(
-      this.props.schema,
-      this.props.uischema.scope,
-      this.props.rootSchema,
-    );
-    // console.log(subschema);
-    // console.log(this.props.uischema.scope);
-    // if (!subschema)
-    //   subschema = resolveSchema(
-    //     this.props.rootSchema,
-    //     this.props.uischema.scope,
-    //     this.props.rootSchema,
-    //   );
-
-    // console.log('<<<<<<<<<<<<<>>>>>>>>>>>>>>>><<<<<<>>>>>>><<<<<<>>>><<<<<>>>><<');
-    // console.log(this.props);
-    // console.log(subschema);
-    // console.log(resolveSchema(this.props.schema, this.props.path, this.props.schema));
-
     return (
       <>
         <FormComponentTitle
@@ -129,6 +110,7 @@ export class Table extends React.Component<
             )();
           }}
           description={this.props.description}
+          required={this.props.required}
         />
         {this.props.data == 0 ? (
           <div className="w-full items-center justify-center text-center py-8">No data...</div>

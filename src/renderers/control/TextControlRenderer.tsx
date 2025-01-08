@@ -13,6 +13,8 @@ import { tsAddWarningMessage } from '../../controller/global/TroubleShootControl
 import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/EditorState';
 import { useCallback } from 'react';
 import { debounce } from 'lodash';
+import OverheadLabel from '../../view/thirdparty-based-components/ifc/Label/OverheadLabel';
+import ErrorBox from '../../view/thirdparty-based-components/ifc/Label/ErrorBox';
 // import { MuiInputText } from '../mui-controls/MuiInputText';
 // import { MaterialInputControl } from './MaterialInputControl';
 
@@ -104,7 +106,20 @@ export const TextControl = (props: ControlProps) => {
 
   return (
     <div className="p-1">
-      <TextInput {...props} onChange={onChange} />
+      <OverheadLabel
+        title={props.label ?? props.schema.title}
+        required={props.required || false}
+        description={props.description}
+      />
+      <TextInput
+        onChange={onChange}
+        data={props.data}
+        enabled={props.enabled}
+        defaultv={props.schema.default}
+        placeholder={props.uischema.options?.initial}
+        placeholderEditable={props.uischema.options?.initial_editable}
+      />
+      <ErrorBox displayError={props.errors} />
     </div>
   );
 };

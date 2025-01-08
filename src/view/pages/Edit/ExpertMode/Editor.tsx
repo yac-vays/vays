@@ -1,6 +1,7 @@
 /**
  * Note: Do not make these two imports below dynamic!
  */
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-ignore
 //@vite-ignore
 import '../../../../../public/editor/monaco-editor.js';
@@ -9,11 +10,13 @@ import '../../../../workerInit';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 import { useRef, useState, useEffect, memo } from 'react';
-import editorPlugins, { editorSetupPlugins } from './EditorPlugins/index.js';
-import Accordion from '../../../components/Accordion/Accordion.js';
-import TextInput from '../../../thirdparty-based-components/ifc/TextInput/TextInput.js';
-import { RequestEditContext } from '../../../../controller/global/URLValidation.js';
-import SubLoader from '../../../thirdparty-based-components/SubLoader/index.js';
+import { debounce } from 'lodash';
+
+import editorPlugins, { editorSetupPlugins } from './EditorPlugins';
+import Accordion from '../../../components/Accordion/Accordion';
+import TextInput from '../../../thirdparty-based-components/ifc/TextInput/TextInput';
+import { RequestEditContext } from '../../../../controller/global/URLValidation';
+import SubLoader from '../../../thirdparty-based-components/SubLoader';
 import {
   getCurrentContext,
   getEntityName,
@@ -22,18 +25,18 @@ import {
   setEntityName,
   setEntityYAML,
   setMonacoYaml,
-} from '../../../../controller/local/EditController/ExpertMode/EditorState.js';
-import { registerInputCallback } from './EditorPlugins/SchemaHandler.js';
-import getEditorSettings, { setupMonacoYAMLPlugin } from './utils.js';
+} from '../../../../controller/local/EditController/ExpertMode/EditorState';
+import { registerInputCallback } from './EditorPlugins/SchemaHandler';
+import getEditorSettings, { setupMonacoYAMLPlugin } from './utils';
 
 import './glyph.css';
-import { updateYAMLschema } from '../../../../controller/local/EditController/ExpertMode/ExpertEditController.js';
+import { updateYAMLschema } from '../../../../controller/local/EditController/ExpertMode/ExpertEditController';
 import {
   editViewNavigateToNewName,
   getYACValidateResponse,
-} from '../../../../controller/local/EditController/shared.js';
-import { debounce } from 'lodash';
-import Checkbox from '../../../thirdparty-based-components/ifc/CheckBox/CheckBox.js';
+} from '../../../../controller/local/EditController/shared';
+import ErrorBox from '../../../thirdparty-based-components/ifc/Label/ErrorBox';
+import OverheadLabel from '../../../thirdparty-based-components/ifc/Label/OverheadLabel';
 
 export const Editor = ({
   requestEditContext,
@@ -50,18 +53,18 @@ export const Editor = ({
   const [isSettingUp, setIsSettingUp] = useState<boolean>(true);
 
   // TODO: Probably move this over to the editor state?
-  (window as any).setEditErrorMsg = setEditErrorMsg;
-  (window as any).setIsValidating = setIsValidating;
+  // (window as any).setEditErrorMsg = setEditErrorMsg;
+  // (window as any).setIsValidating = setIsValidating;
 
   async function handleChange(value: string) {
     const requestEditContext = getCurrentContext();
     if (requestEditContext == null) return;
 
     setEntityYAML(value);
-    (window as any).setIsValidating(true);
+    setIsValidating(true);
     const rep = await updateYAMLschema(getEntityName(), value, requestEditContext); //await retreiveSchema(requestEditContext, true, true);
-    (window as any).setEditErrorMsg(getYACValidateResponse());
-    (window as any).setIsValidating(false);
+    setEditErrorMsg(getYACValidateResponse());
+    setIsValidating(false);
     console.error('HANDLE CHANGE');
     console.error(rep);
     console.error(requestEditContext);
@@ -163,28 +166,11 @@ export const Editor = ({
             <div className="h-4"></div>
             <div className="flex flex-row items-end gap-4">
               <div className="grow">
+                <OverheadLabel title="Entity Name" required={true} description="" />
                 <TextInput
-                  label="Entity Name"
-                  uischema={{
-                    type: 'Control',
-                    scope: '',
-                    options: {
-                      initial: requestEditContext.rc.accessedEntityType?.example ?? 'Enter name...',
-                    },
-                  }}
-                  schema={{
-                    title: 'Entity Name',
-                    pattern: requestEditContext.rc.accessedEntityType?.name_pattern,
-                  }}
+                  placeholder={requestEditContext.rc.accessedEntityType?.example ?? 'Enter name...'}
                   data={requestEditContext.entityName}
-                  errors={nameError}
-                  required
-                  rootSchema={{}}
                   enabled
-                  visible
-                  id=""
-                  path=""
-                  handleChange={() => {}}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     const name = e.target.value === '' ? null : e.target.value;
                     if (name == null) return;
@@ -202,13 +188,13 @@ export const Editor = ({
                         );
                         return;
                       } else setNameError('');
-                    } catch (e) {
+                    } catch {
                       return;
                     }
                     if (editor) update(editor.getValue());
                   }}
-                  onClear={() => {}}
                 />
+                <ErrorBox displayError={nameError} />
               </div>
               {/* <div className="pb-1.5">
                 <Checkbox initValue={false} onChange={() => {}} title="Install" />

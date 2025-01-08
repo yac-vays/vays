@@ -15,6 +15,8 @@ import { debounce } from 'lodash';
 import { hashPassword } from '../../../utils/userInputUtils/passwordHashes';
 
 import { isCustomRenderer } from '../../utils/customTesterUtils';
+import OverheadLabel from '../../../view/thirdparty-based-components/ifc/Label/OverheadLabel';
+import ErrorBox from '../../../view/thirdparty-based-components/ifc/Label/ErrorBox';
 
 export const PasswordRenderer = (props: ControlProps) => {
   const pt = props.uischema?.options?.save_password_as === 'plaintext';
@@ -48,7 +50,20 @@ export const PasswordRenderer = (props: ControlProps) => {
   //
   return (
     <div className="p-1">
-      <TextInput {...props} data={data} onChange={onChange} password />
+      <OverheadLabel
+        title={props.label ?? props.schema.title}
+        required={props.required || false}
+        description={props.description}
+      />
+      <TextInput
+        enabled={props.enabled}
+        defaultv={props.schema.default}
+        placeholder={props.uischema.options?.initial}
+        placeholderEditable={props.uischema.options?.initial_editable}
+        data={data}
+        onChange={onChange}
+        password
+      />
       {props.uischema?.options?.save_password_as === 'plaintext' ? (
         <></>
       ) : (
@@ -59,6 +74,7 @@ export const PasswordRenderer = (props: ControlProps) => {
           </a>
         </em>
       )}
+      <ErrorBox displayError={props.errors} />
     </div>
   );
 };

@@ -19,10 +19,10 @@ import CardRenderer from './CardRenderer';
 import { showModalMessage } from '../../../controller/global/ModalController';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
 
-export const ArrayLayoutRenderer = ({
+export const NestedObjectRenderer = ({
   visible,
-  enabled,
-  id,
+  //enabled,
+  //id,
   description,
   uischema,
   schema,
@@ -32,14 +32,16 @@ export const ArrayLayoutRenderer = ({
   cells,
   data,
   path,
-  errors,
-  uischemas,
+  //errors,
+  //uischemas,
   required,
   addItem,
   translations,
   removeItems,
 }: ArrayLayoutProps & { translations: ArrayTranslations }) => {
+  if (!visible) return <></>;
   const addItemCb = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (p: string, value: any) => {
       return addItem(p, value);
     },
@@ -95,7 +97,9 @@ export const ArrayLayoutRenderer = ({
 };
 
 export default React.memo(
-  withJsonFormsArrayLayoutProps(withTranslateProps(withArrayTranslationProps(ArrayLayoutRenderer))),
+  withJsonFormsArrayLayoutProps(
+    withTranslateProps(withArrayTranslationProps(NestedObjectRenderer)),
+  ),
   (prevProps, props) => _.isEqual(prevProps, props),
 );
 

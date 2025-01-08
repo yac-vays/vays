@@ -1,36 +1,39 @@
-import React, { useCallback, useState } from 'react';
 import {
   ArrayLayoutProps,
   ArrayTranslations,
   RankedTester,
-  Resolve,
   and,
-  encode,
+  createDefaultValue,
   isObjectArrayControl,
   isObjectArrayWithNesting,
   isPrimitiveArrayControl,
-  isStringControl,
   not,
   or,
   rankWith,
-  update,
 } from '@jsonforms/core';
 import {
-  DispatchCell,
-  JsonFormsDispatch,
-  ResolvedJsonFormsDispatch,
   withArrayTranslationProps,
   withJsonFormsArrayLayoutProps,
   withTranslateProps,
 } from '@jsonforms/react';
-// import { MaterialTableControl } from './MaterialTableControl';
-// import { DeleteDialog } from '@jsonforms/material-renderers/lib/complex//DeleteDialog';
 import { showModalMessage } from '../../../controller/global/ModalController';
 import Table from './Table';
+import FormComponentTitle from '../../../view/components/FormComponentTitle';
+
+/**
+ *
+ * The Array Renderer.
+ *
+ * @tutorial https://dev.to/edge33/custom-arraylayout-with-react-and-jsonforms-2ch0 Thanks
+ * for this brilliant guide which has helped writing this component (particularly on how
+ * to communicate with JSON forms at this level. This is not well documented at JSON forms.)
+ *
+ * @returns {JSX.Element}
+ */
 
 export const ArrayControlRenderer = (
   props: ArrayLayoutProps & { translations: ArrayTranslations },
-) => {
+): JSX.Element => {
   const { removeItems, visible, translations } = props;
 
   const openDeleteDialog = (p: string, rowIndex: number) => () => {
@@ -48,28 +51,25 @@ export const ArrayControlRenderer = (
     );
   };
   if (!visible) {
-    return null;
+    return <></>;
   }
-  // props.addItem = (path: string, value: any): void => {
 
-  // }
-  console.log('>>>>>>>>><<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<< aa');
-  console.log(props);
-  console.log(JSON.stringify(props.data));
   return (
     <>
-      {/* <MaterialTableControl
-        {...props}
-        openDeleteDialog={openDeleteDialog}
-        translations={translations}
-      /> */}
       <div className="mb-2">
+        <FormComponentTitle
+          label={props.label}
+          onClick={() => {
+            props.addItem(props.path, createDefaultValue(props.schema, props.rootSchema))();
+          }}
+          description={props.description}
+          required={props.required}
+        />
         <Table {...props} openDeleteDialog={openDeleteDialog} translations={translations} />
       </div>
     </>
   );
 };
-// isObjectArrayControl, isPrimitiveArrayControl
 
 export const ArrayControlTester: RankedTester = rankWith(
   23,

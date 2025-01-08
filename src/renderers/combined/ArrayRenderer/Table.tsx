@@ -1,12 +1,6 @@
-import {
-  ArrayLayoutProps,
-  ArrayTranslations,
-  composePaths,
-  createDefaultValue,
-  LayoutProps,
-  Paths,
-  resolveSchema,
-} from '@jsonforms/core';
+import _ from 'lodash';
+import React, { ComponentType } from 'react';
+import { ArrayLayoutProps, ArrayTranslations, LayoutProps, Paths } from '@jsonforms/core';
 import { WithDeleteDialogSupport } from '@jsonforms/material-renderers';
 import {
   JsonFormsDispatch,
@@ -14,9 +8,6 @@ import {
   useJsonForms,
   withJsonFormsContext,
 } from '@jsonforms/react';
-import _ from 'lodash';
-import React, { ComponentType } from 'react';
-import FormComponentTitle from '../../../view/components/FormComponentTitle';
 
 interface DispatchPropsOfItem {
   onRemove(): () => void;
@@ -24,11 +15,12 @@ interface DispatchPropsOfItem {
 
 interface ItemRendererProps extends LayoutProps, DispatchPropsOfItem {
   index: number;
+  openDeleteDialog: (p: string, rowIndex: number) => () => void;
 }
 
 const withContextToRowItem =
   (Component: ComponentType<ItemRendererProps>): ComponentType<ItemRendererProps> =>
-  ({ ctx2, props }: JsonFormsStateContext & ItemRendererProps) => {
+  ({ props }: JsonFormsStateContext & ItemRendererProps) => {
     const ctx = useJsonForms();
 
     return <Component {...props} {...ctx} />;
@@ -41,9 +33,10 @@ const withCustomProps = (Component: ComponentType<ItemRendererProps>) => {
 };
 
 const TableRow = withCustomProps((props: ItemRendererProps) => {
-  const { uischema, schema, path, renderers, cells, onRemove } = props;
+  const { schema, path, renderers, cells } = props;
 
   const elements = [{ type: 'Control', scope: `#` }]; //.options?.["elements"] ?? [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const itemsToRender = elements.map((element: any, index: number) => {
     return (
       <JsonFormsDispatch
@@ -59,8 +52,6 @@ const TableRow = withCustomProps((props: ItemRendererProps) => {
   });
   return (
     <div>
-      {/* TODO: Do required star, refactor the title into its own component so it can
-      be reused in the nested case. */}
       <div className="group flex flex-row w-full">
         <div className="grow">{itemsToRender}</div>
 
@@ -94,14 +85,14 @@ const TableRow = withCustomProps((props: ItemRendererProps) => {
 
 export class Table extends React.Component<
   ArrayLayoutProps & WithDeleteDialogSupport & { translations: ArrayTranslations },
-  any
+  unknown
 > {
-  addItem = (path: string, value: any) => this.props.addItem(path, value);
+  addItem = (path: string, value: string) => this.props.addItem(path, value);
 
   render() {
     return (
       <>
-        <FormComponentTitle
+        {/* <FormComponentTitle
           label={this.props.label}
           onClick={() => {
             this.addItem(
@@ -111,7 +102,7 @@ export class Table extends React.Component<
           }}
           description={this.props.description}
           required={this.props.required}
-        />
+        /> */}
         {this.props.data == 0 ? (
           <div className="w-full items-center justify-center text-center py-8">No data...</div>
         ) : (
@@ -133,7 +124,6 @@ export class Table extends React.Component<
               );
             })
         )}
-        {/* this.props.removeItems == undefined ? () => {}: this.props.removeItems(this.props.path, [i]) */}
       </>
     );
   }

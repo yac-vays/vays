@@ -8,14 +8,12 @@ FROM node:22.12.0-alpine AS build
 
 WORKDIR /code
 
-# Copy package.json and package-lock.json
-COPY ./package*.json ./
+# Copy the application code to the container
+COPY ./ ./
 
 # Install dependencies
 RUN npm ci
 
-# Copy the application code to the container
-COPY ./ ./
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 

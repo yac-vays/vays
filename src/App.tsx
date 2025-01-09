@@ -46,7 +46,8 @@ const RedirectView = lazy(() =>
 
 const ErrorPage = lazy(() => import('./view/pages/Error/ErrorPage'));
 // const RedirectView = lazy(() => import('./view/pages/Login/RedirectView'));
-const DevInfo = lazy(() => import('./view/pages/DevInfo'));
+//const DevInfo = lazy(() => import('./view/pages/DevInfo/DevInfo'));
+import DevInfo from './view/pages/DevInfo';
 
 /**
  * The main application component that sets up the routing and context providers.

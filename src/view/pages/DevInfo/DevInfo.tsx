@@ -22,7 +22,7 @@ const DevInfo = () => {
       }
       setBackends(jsx);
     })();
-  });
+  }, []);
 
   return (
     <>

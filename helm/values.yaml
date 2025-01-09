@@ -1,0 +1,15 @@
+---
+hostname: ""
+path: /
+image: ""
+env:
+  plain: {}
+config: /dev/zero # path to config.json
+deploy:
+  replicas: 2
+  cpu_limit: 1
+  memory_limit: 500Mi
+  ingress_class: nginx
+build:
+  job: unknown
+  commit: unknown

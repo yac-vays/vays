@@ -1,0 +1,4 @@
+apiVersion: v2
+name: vays
+type: application
+version: 1

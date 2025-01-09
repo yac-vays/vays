@@ -57,7 +57,11 @@ export async function getConfig(): Promise<Nullable<AppConfig>> {
     if (resp == null) return null;
 
     if (resp?.status == 200) {
-      config = (await resp.json()) as AppConfig;
+      try {
+        config = (await resp.json()) as AppConfig;
+      } catch {
+        return null;
+      }
       for (let yacbackend of config.backends) {
         backendURLTable.set(yacbackend.name, yacbackend.url);
       }

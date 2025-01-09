@@ -1,30 +1,28 @@
 import { useEffect, useState } from 'react';
-// import { getConfig } from '../../../model/ConfigFetcher';
+import { getConfig } from '../../../model/ConfigFetcher';
 import PageHeaderTitle from '../../thirdparty-based-components/PageTitle/PageHeaderTitle';
 
 const DevInfo = () => {
   const [backends, setBackends] = useState<React.ReactNode>(undefined);
 
   useEffect(() => {
-    // (async () => {
-    //   const conf = await getConfig();
-    //   if (conf == null) return;
-    //   const jsx = [];
-    //   for (const be of conf.backends) {
-    //     jsx.push(
-    //       <p>
-    //         <span className="font-lg text-black dark:text-white font-bold">{be.title + ' : '}</span>
-    //         <a href={be.url} target="_blank" style={{ color: 'lightblue' }}>
-    //           Documentation
-    //         </a>
-    //       </p>,
-    //     );
-    //   }
-    //   setBackends(jsx);
-    // })();
-    setTimeout(() => {
-      setBackends(<p>Backend information will be displayed here.</p>);
-    }, 1000);
+    (async () => {
+      console.error('Execute again....');
+      const conf = await getConfig();
+      if (conf == null) return;
+      const jsx = [];
+      for (const be of conf.backends) {
+        jsx.push(
+          <p>
+            <span className="font-lg text-black dark:text-white font-bold">{be.title + ' : '}</span>
+            <a href={be.url} target="_blank" style={{ color: 'lightblue' }}>
+              Documentation
+            </a>
+          </p>,
+        );
+      }
+      setBackends(jsx);
+    })();
   }, []);
 
   return (

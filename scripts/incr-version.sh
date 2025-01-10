@@ -93,6 +93,7 @@ if [ "$user_input" = "n" ] || [ "$user_input" = "N" ]; then
 fi
 #############################################################################
 
+git checkout development
 npm pkg set version=$v
 
 echo "
@@ -103,7 +104,6 @@ const VAYS_VERSION = " $v ";
 export default VAYS_VERSION;
 
 " > rsc/version.tsx
-
 git add -A
 git commit -m "[Automated]: Increase version to $v"
 
@@ -118,6 +118,6 @@ fi
 git checkout testing
 git tag $STR_VERSION
 
-git push origin $STR_VERSION testing
+git push origin $STR_VERSION testing development
 
 

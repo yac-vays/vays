@@ -1,3 +1,4 @@
+#!/bin/sh
 
 VAYS_VERSION=$(npm pkg get version --workspaces=false)
 

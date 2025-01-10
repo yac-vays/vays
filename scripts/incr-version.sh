@@ -95,8 +95,17 @@ fi
 
 npm pkg set version=$v
 
-git add package.json
-git commit -m "Increase version to $v"
+echo "
+// Automatically generated version file.
+// Please do not remove this file manually.
+
+const VAYS_VERSION = " $v ";
+export default VAYS_VERSION;
+
+" > rsc/version.tsx
+
+git add -A
+git commit -m "[Automated]: Increase version to $v"
 
 
 if [[ $MERGE -eq 0 ]]; then

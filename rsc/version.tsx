@@ -2,7 +2,7 @@
 // Automatically generated version file.
 // Please do not remove this file manually.
 
-const VAYS_VERSION = '0.2rc3';
+const VAYS_VERSION = '0.2';
 export default VAYS_VERSION;
 
 

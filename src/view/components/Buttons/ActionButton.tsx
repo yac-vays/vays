@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { GUIActionButtonArg } from '../../../controller/local/EntityListController';
+import { GUIActionButtonArg } from '../../../controller/local/Overview/ActionController';
 import { RequestContext } from '../../../controller/global/URLValidation';
 
 interface ActionButtonProps {

@@ -1,10 +1,10 @@
 import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import useOutsideClick from '../../hooks/useOutsideClick';
 import {
-  GUIActionDropdownArg,
   positionDropdownElement,
   registerTableScrollContainerEvent,
-} from '../../../controller/local/EntityListController';
+} from '../../../controller/local/Overview/EntityListController';
+import { GUIActionDropdownArg } from '../../../controller/local/Overview/ActionController';
 import { MINWIDTH_COLUMN } from '../EntityList/EntityListHeaderCell';
 import { RequestContext } from '../../../controller/global/URLValidation';
 import { hashCode } from '../../../utils/hashUtils';

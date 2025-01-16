@@ -9,8 +9,7 @@ import {
   fetchEntities,
   reload,
   registerTableScrollContainer,
-} from '../../../controller/local/EntityListController';
-import PagingButton, { PagingButtonType } from './PagingButton';
+} from '../../../controller/local/Overview/EntityListController';
 import SubLoader from '../../thirdparty-based-components/SubLoader';
 import NoDataIndicator from '../NoDataIndicator';
 import { registerEntityListInvalidationHook } from '../../../model/EntityListFetcher';

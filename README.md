@@ -1,6 +1,6 @@
 # VAYS - Visual AdminInterface for YAC Servers
-![Version](https://img.shields.io/badge/VAYS_Version-0.1-green)
-![Version](https://img.shields.io/badge/Code_Style-prettier-darkgreen)
+![Version](https://img.shields.io/github/v/tag/yac-vays/vays?logo=github&color=green&label=Version)
+![Formatter](https://img.shields.io/badge/Code_Formatter-prettier-darkgreen)
 
 This is the frontend for a Everything-As-A-Service for processes automated using Ansible and YAC.
 

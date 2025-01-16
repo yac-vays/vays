@@ -100,7 +100,7 @@ echo "
 // Automatically generated version file.
 // Please do not remove this file manually.
 
-const VAYS_VERSION = '" $v "';
+const VAYS_VERSION = '"$v"';
 export default VAYS_VERSION;
 
 " > rsc/version.tsx

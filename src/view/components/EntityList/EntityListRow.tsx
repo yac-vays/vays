@@ -1,9 +1,12 @@
 import { ReactNode } from 'react';
-import { ActionsColumnResults } from '../../../controller/local/EntityListController';
+import { ActionsColumnResults } from '../../../controller/local/Overview/ActionController';
 import ActionButton from '../Buttons/ActionButton';
 import ActionDropdown from '../ActionDropdown/ActionDropdown';
 import { RequestContext } from '../../../controller/global/URLValidation';
 import { useModalContext } from '../Modal/ModalContext';
+import { CircularProgressbar } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
+import LogsField from './LogsField';
 
 interface EntityListRow {
   entryValues: string[];
@@ -23,7 +26,7 @@ const EntityListRow = ({ entryValues, requestContext }: EntityListRow) => {
         {(function fillRow() {
           let jsx = [];
 
-          for (let i = 0; i < entryValues.length - 1; i++) {
+          for (let i = 0; i < entryValues.length - 2; i++) {
             const entry = entryValues[i];
             jsx.push(
               // TODO: Make this a bit more elegant, avoid such hard coded flags.
@@ -42,6 +45,15 @@ const EntityListRow = ({ entryValues, requestContext }: EntityListRow) => {
               </td>,
             );
           }
+          jsx.push(
+            <td
+              className="pl-8:first-child border-stroke dark:border-strokedark"
+              style={{ paddingRight: 40 }}
+              role="cell"
+            >
+              <LogsField requestContext={requestContext} entityName={host} />
+            </td>,
+          );
           jsx.push(
             <td
               className="border-stroke dark:border-strokedark"

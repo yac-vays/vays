@@ -34,7 +34,12 @@ export interface EntityTypeDecl {
   create: boolean;
   delete: boolean;
   options: object[]; // TODO: Besseres Typing
-  logs: object[];
+  logs: {
+    name: string;
+    title: string;
+    progress: boolean;
+    problem: boolean;
+  }[];
   actions: ActionDecl[];
   favorites: FavOpObject[];
 }

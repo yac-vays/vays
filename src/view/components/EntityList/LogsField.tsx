@@ -4,6 +4,10 @@ import { EntityLog, getEntityLogs, isLogCached } from '../../../model/LogsFetche
 import BoolLog from './LogSymbols/BoolLog';
 import NumberLog from './LogSymbols/NumberLog';
 import MessageLog from './LogSymbols/MessageLog';
+import InfoPanel from '../InfoPanel';
+import RichInfoPanel from '../RichInfoPanel';
+import { Nullable } from '../../../utils/typeUtils';
+import LogPanel from './LogPanel';
 
 const LogsField = ({
   requestContext,
@@ -14,9 +18,18 @@ const LogsField = ({
 }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [logObject, setLogObject] = useState<{ [key: string]: EntityLog[] }>({});
+  const [numLogElts, setNumLogElts] = useState<number>(
+    !requestContext.accessedEntityType?.logs ? 0 : requestContext.accessedEntityType.logs.length,
+  );
+  useEffect(() => {
+    setNumLogElts(
+      !requestContext.accessedEntityType?.logs ? 0 : requestContext.accessedEntityType.logs.length,
+    );
+  }, [requestContext.entityTypeName, requestContext.yacURL]);
   useEffect(() => {
     let mounted = true;
     let firstIteration = true;
+
     (async () => {
       while (true) {
         if (firstIteration) {
@@ -53,7 +66,7 @@ const LogsField = ({
           }
 
           for (const key of Object.keys(log)) {
-            log[key].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+            log[key].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
           }
           setLogObject(log);
           setIsLoading(false);
@@ -68,10 +81,12 @@ const LogsField = ({
       mounted = false;
     };
   }, [entityName]);
-
+  // opacity-60
   return (
     <div
-      className="flex flex-row xl:flex-wrap 2xl:flex-nowrap gap-1 w-full p-1 min-w-[120px] xl:min-w-[0px] opacity-60"
+      className={`flex flex-row xl:flex-wrap 2xl:flex-nowrap gap-1 w-full p-1 min-w-[${
+        Math.max(2, numLogElts) * 60
+      }px] xl:min-w-[0px]`}
       style={{
         verticalAlign: 'middle',
       }}
@@ -87,16 +102,69 @@ const LogsField = ({
         for (const l of requestContext.accessedEntityType.logs) {
           let problem = null;
           let progress = null;
-          if (logObject[l.name] && logObject[l.name].length > 0) {
+          const hasLogs = logObject[l.name] && logObject[l.name].length > 0;
+          if (hasLogs) {
             problem = logObject[l.name][0].problem ?? null;
             progress = logObject[l.name][0].progress ?? null;
           }
           if (l.problem && !l.progress) {
-            jsx.push(<BoolLog problem={problem} loading={isLoading} />);
+            jsx.push(
+              <div
+                className={`xl:max-w-[${
+                  numLogElts == 2 ? '42' : '38'
+                }px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]`}
+              >
+                {!hasLogs ? (
+                  <div className="opacity-60">
+                    <BoolLog problem={problem} loading={isLoading} />
+                  </div>
+                ) : (
+                  <RichInfoPanel
+                    anchor={
+                      <div className="opacity-60">
+                        <BoolLog problem={problem} loading={isLoading} />
+                      </div>
+                    }
+                  >
+                    <LogPanel title={l.title} logList={logObject[l.name]} />
+                  </RichInfoPanel>
+                )}
+              </div>,
+            );
           } else if (l.progress) {
-            jsx.push(<NumberLog problem={problem} progress={progress} loading={isLoading} />);
+            jsx.push(
+              <div
+                className={`xl:max-w-[${
+                  numLogElts == 2 ? '42' : '38'
+                }px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]`}
+              >
+                {!hasLogs ? (
+                  <div className="opacity-60">
+                    <NumberLog problem={problem} progress={progress} loading={isLoading} />
+                  </div>
+                ) : (
+                  <RichInfoPanel
+                    anchor={
+                      <div className="opacity-60">
+                        <NumberLog problem={problem} progress={progress} loading={isLoading} />
+                      </div>
+                    }
+                  >
+                    <LogPanel title={l.title} logList={logObject[l.name]} />
+                  </RichInfoPanel>
+                )}
+              </div>,
+            );
           } else {
-            jsx.push(<MessageLog loading={isLoading} />);
+            jsx.push(
+              <div
+                className={`xl:max-w-[${
+                  numLogElts == 2 ? '42' : '38'
+                }px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px] opacity-60`}
+              >
+                <MessageLog loading={isLoading} />
+              </div>,
+            );
           }
         }
         return jsx;

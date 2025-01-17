@@ -15,7 +15,7 @@ const NumberLog = ({
       <CircularProgressbarWithChildren
         value={100}
         text={`NA %`}
-        className="xl:max-w-[38px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px] opacity-10"
+        className="opacity-10"
         styles={{
           root: {
             // maxWidth: minW,
@@ -30,7 +30,7 @@ const NumberLog = ({
         }}
       >
         <div
-          className="h-14 w-14 animate-spin rounded-full border-4 border-solid border-darkgrey border-t-transparent opacity-10"
+          className="h-full w-full animate-spin rounded-full border-4 border-solid border-darkgrey border-t-transparent opacity-20"
           style={{ zIndex: -10 }}
         ></div>
       </CircularProgressbarWithChildren>
@@ -42,7 +42,6 @@ const NumberLog = ({
         <CircularProgressbarWithChildren
           value={90}
           text={`NA %`}
-          className="xl:max-w-[38px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px] opacity-50"
           styles={{
             root: {
               // maxWidth: minW,
@@ -69,7 +68,6 @@ const NumberLog = ({
         <CircularProgressbarWithChildren
           value={progress}
           text={`${progress}%`}
-          className="xl:max-w-[38px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]"
           styles={{
             root: {
               // maxWidth: minW,
@@ -99,7 +97,6 @@ const NumberLog = ({
         <CircularProgressbarWithChildren
           value={progress}
           text={`${progress}%`}
-          className="xl:max-w-[38px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]"
           styles={{
             root: {
               // maxWidth: minW,

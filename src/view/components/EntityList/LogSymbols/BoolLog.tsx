@@ -6,7 +6,7 @@ const BoolLog = ({ problem, loading }: { problem: Nullable<boolean>; loading: bo
     return (
       <CircularProgressbarWithChildren
         value={100}
-        className="relative xl:max-w-[38px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px] opacity-10"
+        className="relative opacity-10"
         styles={{
           root: {
             // maxWidth: minW,
@@ -28,7 +28,7 @@ const BoolLog = ({ problem, loading }: { problem: Nullable<boolean>; loading: bo
           <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z" />
         </svg>
         <div
-          className="absolute h-14 w-14 animate-spin rounded-full border-4 border-solid border-darkgrey border-t-transparent opacity-10"
+          className="absolute h-full w-full animate-spin rounded-full border-4 border-solid border-darkgrey border-t-transparent opacity-20"
           style={{ zIndex: -10 }}
         ></div>
       </CircularProgressbarWithChildren>
@@ -40,7 +40,6 @@ const BoolLog = ({ problem, loading }: { problem: Nullable<boolean>; loading: bo
         // No log indicator
         <CircularProgressbarWithChildren
           value={100}
-          className="xl:max-w-[38px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px] opacity-50"
           styles={{
             root: {
               // maxWidth: minW,
@@ -54,7 +53,7 @@ const BoolLog = ({ problem, loading }: { problem: Nullable<boolean>; loading: bo
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="opacity-40"
+            className="opacity-80"
             height="70%"
             viewBox="0 -960 960 960"
             fill="grey"
@@ -66,7 +65,6 @@ const BoolLog = ({ problem, loading }: { problem: Nullable<boolean>; loading: bo
         // Error log indicator
         <CircularProgressbarWithChildren
           value={100}
-          className="xl:max-w-[38px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]"
           styles={{
             root: {
               // maxWidth: minW,
@@ -91,7 +89,6 @@ const BoolLog = ({ problem, loading }: { problem: Nullable<boolean>; loading: bo
       ) : (
         <CircularProgressbarWithChildren
           value={100}
-          className="xl:max-w-[38px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]"
           styles={{
             root: {
               imageRendering: 'crisp-edges',

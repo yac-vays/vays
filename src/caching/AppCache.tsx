@@ -7,13 +7,19 @@ const BLOCKINGWAIT_DURATION = 100;
 class AppCache {
   private _nodes: { [key: string]: CacheNode } = {};
 
-  registerContext(ctx: string): boolean {
+  registerContext(ctx: string, ttl: number = 0): boolean {
     if (!(ctx in this._nodes)) {
-      this._nodes[ctx] = new CacheNode();
+      this._nodes[ctx] = new CacheNode(ttl);
       return true;
     }
 
     return false;
+  }
+
+  isCached(ctx: string, id: string): boolean {
+    if (!(ctx in this._nodes)) return false;
+
+    return this._nodes[ctx].isCached(id);
   }
 
   cache(ctx: string, id: string, value: any, invalidateHook: Nullable<() => void> = null): boolean {
@@ -24,8 +30,6 @@ class AppCache {
       this.registerContext(ctx);
       return this.cache(ctx, id, value, invalidateHook);
     }
-
-    return false;
   }
 
   async retreive(ctx: string, id: string): Promise<any> {
@@ -87,4 +91,5 @@ class AppCache {
 const VAYS_CACHE = new AppCache();
 VAYS_CACHE.registerContext('EntityType');
 VAYS_CACHE.registerContext('EntityList');
+VAYS_CACHE.registerContext('EntityLogs', 30_000);
 export default VAYS_CACHE;

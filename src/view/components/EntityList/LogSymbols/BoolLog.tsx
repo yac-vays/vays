@@ -1,7 +1,39 @@
 import { CircularProgressbarWithChildren } from 'react-circular-progressbar';
 import { Nullable } from '../../../../utils/typeUtils';
 
-const BoolLog = ({ problem }: { problem: Nullable<boolean> }) => {
+const BoolLog = ({ problem, loading }: { problem: Nullable<boolean>; loading: boolean }) => {
+  if (loading) {
+    return (
+      <CircularProgressbarWithChildren
+        value={100}
+        className="relative xl:max-w-[38px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px] opacity-10"
+        styles={{
+          root: {
+            // maxWidth: minW,
+            // maxHeight: minW,
+            imageRendering: 'crisp-edges',
+            transform: 'scale(1)',
+          },
+          path: { stroke: 'grey' },
+          text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'black' },
+        }}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="opacity-20"
+          height="70%"
+          viewBox="0 -960 960 960"
+          fill="grey"
+        >
+          <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z" />
+        </svg>
+        <div
+          className="absolute h-14 w-14 animate-spin rounded-full border-4 border-solid border-darkgrey border-t-transparent opacity-10"
+          style={{ zIndex: -10 }}
+        ></div>
+      </CircularProgressbarWithChildren>
+    );
+  }
   return (
     <>
       {problem === null ? (

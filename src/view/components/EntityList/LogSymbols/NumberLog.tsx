@@ -4,10 +4,37 @@ import { Nullable } from '../../../../utils/typeUtils';
 const NumberLog = ({
   progress,
   problem,
+  loading,
 }: {
   progress: Nullable<number>;
   problem: Nullable<boolean>;
+  loading: boolean;
 }) => {
+  if (loading)
+    return (
+      <CircularProgressbarWithChildren
+        value={100}
+        text={`NA %`}
+        className="xl:max-w-[38px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px] opacity-10"
+        styles={{
+          root: {
+            // maxWidth: minW,
+            // maxHeight: minW,
+            imageRendering: 'crisp-edges',
+            transform: 'scale(1)',
+          },
+          path: {
+            stroke: 'grey',
+          },
+          text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'black' },
+        }}
+      >
+        <div
+          className="h-14 w-14 animate-spin rounded-full border-4 border-solid border-darkgrey border-t-transparent opacity-10"
+          style={{ zIndex: -10 }}
+        ></div>
+      </CircularProgressbarWithChildren>
+    );
   return (
     <>
       {progress === null ? (

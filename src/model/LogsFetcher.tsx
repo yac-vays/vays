@@ -1,3 +1,4 @@
+import VAYS_CACHE from '../caching/AppCache';
 import { RequestContext } from '../controller/global/URLValidation';
 import { showError } from '../controller/local/ErrorNotifyController';
 import { authFailed, sendRequest } from '../utils/AuthedRequest';
@@ -11,6 +12,16 @@ export type EntityLog = {
   problem: Nullable<boolean>;
 };
 
+const LOGS_CACHE_KEY = 'EntityLogs';
+
+export function isLogCached(entityName: string, requestContext: RequestContext) {
+  const url: string | null | undefined = requestContext.yacURL;
+  return VAYS_CACHE.isCached(
+    LOGS_CACHE_KEY,
+    url + `/entity/${requestContext.entityTypeName}/${entityName}/logs`,
+  );
+}
+
 export async function getEntityLogs(
   entityName: string,
   requestContext: RequestContext,
@@ -20,6 +31,8 @@ export async function getEntityLogs(
   const resp: Nullable<Response> = await sendRequest(
     url + `/entity/${requestContext.entityTypeName}/${entityName}/logs`,
     'GET',
+    null,
+    LOGS_CACHE_KEY,
   );
 
   if (resp == null) {

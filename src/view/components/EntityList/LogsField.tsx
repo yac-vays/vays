@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { RequestContext } from '../../../controller/global/URLValidation';
-import { EntityLog, getEntityLogs } from '../../../model/LogsFetcher';
+import { EntityLog, getEntityLogs, isLogCached } from '../../../model/LogsFetcher';
 import BoolLog from './LogSymbols/BoolLog';
 import NumberLog from './LogSymbols/NumberLog';
 import MessageLog from './LogSymbols/MessageLog';
@@ -12,34 +12,61 @@ const LogsField = ({
   requestContext: RequestContext;
   entityName: string;
 }) => {
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [logObject, setLogObject] = useState<{ [key: string]: EntityLog[] }>({});
   useEffect(() => {
+    let mounted = true;
+    let firstIteration = true;
     (async () => {
-      if (
-        !requestContext.accessedEntityType?.logs ||
-        requestContext.accessedEntityType.logs.length == 0
-      ) {
-        return;
-      }
-      const logs = await getEntityLogs(entityName, requestContext);
-      if (logs === null) {
-        setLogObject({});
-      } else {
-        const log: { [key: string]: EntityLog[] } = {};
+      while (true) {
+        if (firstIteration) {
+          firstIteration = false;
+          setIsLoading(true);
+        }
 
-        for (const l of logs) {
-          if (!log[l.name]) {
-            log[l.name] = [];
+        if (!isLogCached(entityName, requestContext))
+          await new Promise((res) =>
+            setTimeout(res, Math.min(2000, 1000 + Math.round(2000 * Math.random()))),
+          );
+
+        if (!mounted) {
+          return;
+        }
+
+        if (
+          !requestContext.accessedEntityType?.logs ||
+          requestContext.accessedEntityType.logs.length == 0
+        ) {
+          return;
+        }
+        const logs = await getEntityLogs(entityName, requestContext);
+        if (logs === null) {
+          setLogObject({});
+        } else {
+          const log: { [key: string]: EntityLog[] } = {};
+
+          for (const l of logs) {
+            if (!log[l.name]) {
+              log[l.name] = [];
+            }
+            log[l.name].push(l);
           }
-          log[l.name].push(l);
-        }
 
-        for (const key of Object.keys(log)) {
-          log[key].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+          for (const key of Object.keys(log)) {
+            log[key].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+          }
+          setLogObject(log);
+          setIsLoading(false);
+
+          await new Promise((res) => setTimeout(res, 10_000 + Math.round(2000 * Math.random())));
         }
-        setLogObject(log);
+        setIsLoading(false);
       }
     })();
+
+    return () => {
+      mounted = false;
+    };
   }, [entityName]);
 
   return (
@@ -58,7 +85,6 @@ const LogsField = ({
           return <em className="opacity-80">No Logs Defined</em>;
         }
         for (const l of requestContext.accessedEntityType.logs) {
-          console.error(logObject);
           let problem = null;
           let progress = null;
           if (logObject[l.name] && logObject[l.name].length > 0) {
@@ -66,11 +92,11 @@ const LogsField = ({
             progress = logObject[l.name][0].progress ?? null;
           }
           if (l.problem && !l.progress) {
-            jsx.push(<BoolLog problem={problem} />);
+            jsx.push(<BoolLog problem={problem} loading={isLoading} />);
           } else if (l.progress) {
-            jsx.push(<NumberLog problem={problem} progress={progress} />);
+            jsx.push(<NumberLog problem={problem} progress={progress} loading={isLoading} />);
           } else {
-            jsx.push(<MessageLog />);
+            jsx.push(<MessageLog loading={isLoading} />);
           }
         }
         return jsx;

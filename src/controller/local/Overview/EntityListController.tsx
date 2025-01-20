@@ -8,9 +8,14 @@ import { RequestContext } from '../../global/URLValidation';
 import entityListCtrlState from '../../state/EntityListCtrlState';
 import { getActions } from './ActionController';
 
+export interface QueryResult {
+  isLink: Nullable<string>;
+  elt: string[];
+}
+
 export interface QueryResponse {
   entityName: string | null;
-  partialResults: string[][];
+  partialResults: QueryResult[];
   totalNumberOfResults: number;
 }
 
@@ -105,7 +110,7 @@ export async function fetchEntities(
     entities = _performSearch(requestContext, entities, searchList);
   }
 
-  let entityList: string[][] = [];
+  let entityList: QueryResult[] = [];
   const numResults = Math.min(offset + maxNumOfResults, entities.length);
   for (let i = offset; i < numResults; i++) {
     const entity = entities[i];
@@ -131,7 +136,7 @@ export async function fetchEntities(
       actionPair: getActions(requestContext, entity),
       host: entity.name,
     } as unknown as string);
-    entityList.push(values);
+    entityList.push({ isLink: entity.link, elt: values });
   }
   // TODO: Do better typing for the value list. It is not just all strings!
   return {
@@ -161,7 +166,7 @@ export function getHeaderEntries(requestContext: RequestContext): string[] {
 
 export interface EntityListVariableHandlers {
   setTableHeaderEntries: (v: string[]) => void;
-  setTableEntries: (v: string[][]) => void;
+  setTableEntries: (v: QueryResult[]) => void;
   setCurrPage: (v: number) => void;
   setLoading: (v: boolean) => void;
   setNumColumns: (v: number) => void;

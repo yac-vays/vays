@@ -9,6 +9,7 @@ import {
   fetchEntities,
   reload,
   registerTableScrollContainer,
+  QueryResult,
 } from '../../../controller/local/Overview/EntityListController';
 import SubLoader from '../../thirdparty-based-components/SubLoader';
 import NoDataIndicator from '../NoDataIndicator';
@@ -30,8 +31,8 @@ const EntityList = ({ requestContext }: EntityListProps) => {
   // Visual State
   const [numColumns, setNumColumns] = useState<number>(0);
   const [reloadCount, setReloadCount] = useState<number>(0);
-  // const [tableEntries, setTable] = useState<string[][]>([]);
-  const tableEntries = useRef<string[][]>([]);
+  const [tableEntries, setTableEntries] = useState<QueryResult[]>([]);
+  //const tableEntries = useRef<QueryResult[]>([]);
   const [tableHeaderEntries, setTableHeaderEntries] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchTerms, setSearchTerms] = useState<(string | null)[]>([]);
@@ -51,11 +52,11 @@ const EntityList = ({ requestContext }: EntityListProps) => {
   // Selecor ref
   const selectorRef: RefObject<HTMLSelectElement> = useRef<HTMLSelectElement>(null);
 
-  const setTableEntries = (l: string[][]) => {
-    console.log('Resetting the table with entries ' + l.length);
-    //setTable(l);
-    tableEntries.current = l;
-  };
+  // const setTableEntries = (l: string[][]) => {
+  //   console.log('Resetting the table with entries ' + l.length);
+  //   //setTable(l);
+  //   tableEntries.current = l;
+  // };
 
   const searchCallback = (index: number) => {
     return async (newSearchTerm: string | null) => {
@@ -266,17 +267,18 @@ const EntityList = ({ requestContext }: EntityListProps) => {
                     </tr>
                   </thead>
                   <tbody role="rowgroup">
-                    {tableEntries.current.length == 0 ? (
+                    {tableEntries.length == 0 ? (
                       <></>
                     ) : (
                       <>
                         {(function fillTable() {
                           let jsx = [];
-                          for (let i = 0; i < tableEntries.current.length; i++) {
+                          for (let i = 0; i < tableEntries.length; i++) {
                             jsx.push(
                               <EntityListRow
-                                entryValues={tableEntries.current[i]}
+                                entryValues={tableEntries[i].elt}
                                 requestContext={requestContext}
+                                link={tableEntries[i].isLink}
                               />,
                             );
                           }
@@ -290,7 +292,7 @@ const EntityList = ({ requestContext }: EntityListProps) => {
             </div>
             {/* Loading screen and no data indicator 
                 They need to be outside of the table to get the spacing right.*/}
-            {tableEntries.current.length == 0 ? (
+            {tableEntries.length == 0 ? (
               <div className="sm:w-screen md:w-full p-8 pb-12 flex flex-row">
                 <div className="group w-full inline-flex flex-col relative" style={{ height: 96 }}>
                   <div

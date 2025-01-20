@@ -14,8 +14,8 @@ const NumberLog = ({
     return (
       <CircularProgressbarWithChildren
         value={100}
+        className="text-black dark:text-white opacity-10"
         text={`NA %`}
-        className="opacity-10"
         styles={{
           root: {
             // maxWidth: minW,
@@ -26,7 +26,7 @@ const NumberLog = ({
           path: {
             stroke: 'grey',
           },
-          text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'black' },
+          text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'currentcolor' },
         }}
       >
         <div
@@ -41,6 +41,7 @@ const NumberLog = ({
         // No log indicator
         <CircularProgressbarWithChildren
           value={90}
+          className="text-black dark:text-white"
           text={`NA %`}
           styles={{
             root: {
@@ -50,7 +51,7 @@ const NumberLog = ({
               transform: 'scale(1)',
             },
             path: { stroke: 'grey' },
-            text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'black' },
+            text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'currentcolor' },
           }}
         >
           <svg
@@ -67,6 +68,7 @@ const NumberLog = ({
         // Error log indicator
         <CircularProgressbarWithChildren
           value={progress}
+          className="text-black dark:text-white"
           text={`${progress}%`}
           styles={{
             root: {
@@ -76,7 +78,7 @@ const NumberLog = ({
               transform: 'scale(1)',
             },
             path: { stroke: '#DC3545' },
-            text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'black' },
+            text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'currentcolor' },
           }}
         >
           {problem === null ? (
@@ -96,6 +98,7 @@ const NumberLog = ({
       ) : (
         <CircularProgressbarWithChildren
           value={progress}
+          className="text-black dark:text-white"
           text={`${progress}%`}
           styles={{
             root: {
@@ -105,7 +108,7 @@ const NumberLog = ({
               transform: 'scale(1)',
             },
             path: { stroke: '#10B981' },
-            text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'black' },
+            text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'currentcolor' },
           }}
         >
           {problem === null ? (

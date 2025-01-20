@@ -4,9 +4,7 @@ import { EntityLog, getEntityLogs, isLogCached } from '../../../model/LogsFetche
 import BoolLog from './LogSymbols/BoolLog';
 import NumberLog from './LogSymbols/NumberLog';
 import MessageLog from './LogSymbols/MessageLog';
-import InfoPanel from '../InfoPanel';
 import RichInfoPanel from '../RichInfoPanel';
-import { Nullable } from '../../../utils/typeUtils';
 import LogPanel from './LogPanel';
 
 const LogsField = ({
@@ -17,6 +15,7 @@ const LogsField = ({
   entityName: string;
 }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
   const [logObject, setLogObject] = useState<{ [key: string]: EntityLog[] }>({});
   const [numLogElts, setNumLogElts] = useState<number>(
     !requestContext.accessedEntityType?.logs ? 0 : requestContext.accessedEntityType.logs.length,
@@ -70,7 +69,6 @@ const LogsField = ({
           }
           setLogObject(log);
           setIsLoading(false);
-
           await new Promise((res) => setTimeout(res, 10_000 + Math.round(2000 * Math.random())));
         }
         setIsLoading(false);
@@ -110,9 +108,9 @@ const LogsField = ({
           if (l.problem && !l.progress) {
             jsx.push(
               <div
-                className={`xl:max-w-[${
-                  numLogElts == 2 ? '42' : '38'
-                }px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]`}
+                className={`${
+                  numLogElts == 2 ? 'xl:max-w-[42px]' : 'xl:max-w-[38px]'
+                } 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]`}
               >
                 {!hasLogs ? (
                   <div className="opacity-60">
@@ -134,9 +132,9 @@ const LogsField = ({
           } else if (l.progress) {
             jsx.push(
               <div
-                className={`xl:max-w-[${
-                  numLogElts == 2 ? '42' : '38'
-                }px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]`}
+                className={`${
+                  numLogElts == 2 ? 'xl:max-w-[42px]' : 'xl:max-w-[38px]'
+                } 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]`}
               >
                 {!hasLogs ? (
                   <div className="opacity-60">
@@ -158,9 +156,9 @@ const LogsField = ({
           } else {
             jsx.push(
               <div
-                className={`xl:max-w-[${
-                  numLogElts == 2 ? '42' : '38'
-                }px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px] opacity-60`}
+                className={`${
+                  numLogElts == 2 ? 'xl:max-w-[42px]' : 'xl:max-w-[38px]'
+                } 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px] opacity-60`}
               >
                 <MessageLog loading={isLoading} />
               </div>,

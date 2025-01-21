@@ -159,9 +159,23 @@ const LogsField = ({
               <div
                 className={`${
                   numLogElts == 2 ? 'xl:max-w-[42px]' : 'xl:max-w-[38px]'
-                } 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px] opacity-60`}
+                } 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]`}
               >
-                <MessageLog loading={isLoading} />
+                {!hasLogs ? (
+                  <div className="opacity-60">
+                    <MessageLog loading={isLoading} hasLogs={hasLogs} />
+                  </div>
+                ) : (
+                  <RichInfoPanel
+                    anchor={
+                      <div className="opacity-60">
+                        <MessageLog loading={isLoading} hasLogs={hasLogs} />
+                      </div>
+                    }
+                  >
+                    <LogPanel title={l.title} logList={logObject[l.name]} />
+                  </RichInfoPanel>
+                )}
               </div>,
             );
           }

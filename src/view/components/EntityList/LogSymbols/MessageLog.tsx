@@ -1,6 +1,6 @@
 import { CircularProgressbarWithChildren } from 'react-circular-progressbar';
 
-const MessageLog = ({ loading }: { loading: boolean }) => {
+const MessageLog = ({ loading, hasLogs }: { loading: boolean; hasLogs: boolean }) => {
   if (loading) {
     return (
       <CircularProgressbarWithChildren
@@ -40,6 +40,7 @@ const MessageLog = ({ loading }: { loading: boolean }) => {
     <CircularProgressbarWithChildren
       // id="message"
       value={100}
+      className={hasLogs ? 'opacity-100' : 'opacity-30'}
       styles={{
         root: {
           // maxWidth: minW,
@@ -47,15 +48,14 @@ const MessageLog = ({ loading }: { loading: boolean }) => {
           imageRendering: 'crisp-edges',
           verticalAlign: 'middle',
         },
-        path: {
-          stroke: `rgba(200, 200, 200)`,
-        },
+        path: { stroke: 'grey' },
+
         text: { fontSize: 28, textRendering: 'optimizeLegibility' },
       }}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="opacity-50"
+        className={hasLogs ? 'opacity-80' : 'opacity-20'}
         height="60%"
         viewBox="0 -960 960 960"
         fill="grey"

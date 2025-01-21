@@ -15,6 +15,7 @@ import SubLoader from '../../thirdparty-based-components/SubLoader';
 import NoDataIndicator from '../NoDataIndicator';
 import { registerEntityListInvalidationHook } from '../../../model/EntityListFetcher';
 import { EntityListPagination } from './Pagination';
+import { invalidateLogCache } from '../../../model/LogsFetcher';
 
 interface EntityListProps {
   requestContext: RequestContext;
@@ -170,6 +171,10 @@ const EntityList = ({ requestContext }: EntityListProps) => {
 
   useEffect(() => {
     registerEntityListInvalidationHook(requestContext.yacURL, requestContext.entityTypeName, () => {
+      for (const entity of tableEntries) {
+        invalidateLogCache(entity.elt[0], requestContext);
+      }
+
       setReloadCount(reloadCount + 1);
     });
   }, [requestContext.yacURL, requestContext.entityTypeName, reloadCount]);

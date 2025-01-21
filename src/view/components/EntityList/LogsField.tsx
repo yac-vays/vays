@@ -38,10 +38,15 @@ const LogsField = ({
           setIsLoading(true);
         }
 
-        if (!isLogCached(entityName, requestContext))
+        if (!isLogCached(entityName, requestContext)) {
           await new Promise((res) =>
             setTimeout(res, Math.min(2000, 1000 + Math.round(2000 * Math.random()))),
           );
+          // if the tab is not active, then do not actually request the logs.
+          if (document.hidden) {
+            continue;
+          }
+        }
 
         if (!mounted) {
           return;
@@ -182,133 +187,6 @@ const LogsField = ({
         }
         return jsx;
       })()}
-      {/* <CircularProgressbarWithChildren
-value={90}
-text={`${90}%`}
-className="xl:max-w-[38px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]"
-styles={{
-  root: {
-    // maxWidth: minW,
-    // maxHeight: minW,
-    imageRendering: 'crisp-edges',
-    transform: 'scale(1)',
-  },
-  path: { stroke: '#10B981' },
-  text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'black' },
-}}
->
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  className="opacity-40"
-  height="70%"
-  viewBox="0 -960 960 960"
-  fill="#10B981"
->
-  <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z" />
-</svg>
-</CircularProgressbarWithChildren>
-
-<CircularProgressbarWithChildren
-value={90}
-text={`${90}%`}
-className="xl:max-w-[38px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]"
-styles={{
-  root: {
-    // maxWidth: minW,
-    // maxHeight: minW,
-    imageRendering: 'crisp-edges',
-    transform: 'scale(1)',
-  },
-  path: { stroke: '#DC3545' },
-  text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'black' },
-}}
->
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  className="opacity-40"
-  height="70%"
-  viewBox="0 -960 960 960"
-  fill="#DC3545"
->
-  <path d="M480-120q-33 0-56.5-23.5T400-200q0-33 23.5-56.5T480-280q33 0 56.5 23.5T560-200q0 33-23.5 56.5T480-120Zm-80-240v-480h160v480H400Z" />
-</svg>
-</CircularProgressbarWithChildren>
-<CircularProgressbarWithChildren
-value={100}
-className="xl:max-w-[38px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]"
-styles={{
-  root: {
-    // maxWidth: minW,
-    // maxHeight: minW,
-    imageRendering: 'crisp-edges',
-    transform: 'scale(1)',
-  },
-  path: { stroke: '#DC3545' },
-  text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'black' },
-}}
->
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  className="opacity-80"
-  height="70%"
-  viewBox="0 -960 960 960"
-  fill="#DC3545"
->
-  <path d="M480-120q-33 0-56.5-23.5T400-200q0-33 23.5-56.5T480-280q33 0 56.5 23.5T560-200q0 33-23.5 56.5T480-120Zm-80-240v-480h160v480H400Z" />
-</svg>
-</CircularProgressbarWithChildren>
-<CircularProgressbarWithChildren
-value={100}
-className="xl:max-w-[38px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]"
-styles={{
-  root: {
-    // maxWidth: minW,
-    // maxHeight: minW,
-    imageRendering: 'crisp-edges',
-    transform: 'scale(1)',
-  },
-  path: { stroke: '#10B981' },
-  text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'black' },
-}}
->
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  className="opacity-80"
-  height="70%"
-  viewBox="0 -960 960 960"
-  fill="#10B981"
->
-  <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z" />
-</svg>
-</CircularProgressbarWithChildren>
-
-<CircularProgressbarWithChildren
-// id="message"
-value={100}
-className="xl:max-w-[38px] 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]"
-styles={{
-  root: {
-    // maxWidth: minW,
-    // maxHeight: minW,
-    imageRendering: 'crisp-edges',
-    verticalAlign: 'middle',
-  },
-  path: {
-    stroke: `rgba(200, 200, 200)`,
-  },
-  text: { fontSize: 28, textRendering: 'optimizeLegibility' },
-}}
->
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  className="opacity-50"
-  height="60%"
-  viewBox="0 -960 960 960"
-  fill="grey"
->
-  <path d="M480-680q-33 0-56.5-23.5T400-760q0-33 23.5-56.5T480-840q33 0 56.5 23.5T560-760q0 33-23.5 56.5T480-680Zm-60 560v-480h120v480H420Z" />
-</svg>
-</CircularProgressbarWithChildren> */}
     </div>
   );
 };

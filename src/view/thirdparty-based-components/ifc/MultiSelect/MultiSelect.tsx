@@ -56,7 +56,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
   };
 
   const select = (index: number) => {
-    const value = options[index].value;
+    const value = options.filter((v) => v.label.startsWith(newInput))[index].value;
     if (!multiple && selected.findIndex((v) => value == v) != -1) {
       remove(index);
       return;

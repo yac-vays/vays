@@ -6,7 +6,12 @@ import { isCustomRenderer } from '../../utils/customTesterUtils';
 export const InfoBoxControl = (props: ControlProps) => {
   return (
     <div className="mt-4 mb-6 pr-4 p-1">
-      <FormComponentTitle label={props.label} description={''} onClick={() => {}} hideAddButton />
+      <FormComponentTitle
+        label={props.schema.title}
+        description={''}
+        onClick={() => {}}
+        hideAddButton
+      />
       <div className="mt-2 pl-1 whitespace-pre-line">{props.description}</div>
     </div>
   );

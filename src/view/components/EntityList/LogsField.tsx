@@ -16,7 +16,9 @@ const LogsField = ({
 }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const [logObject, setLogObject] = useState<{ [key: string]: EntityLog[] }>({});
+  const [logObject, setLogObject] = useState<{
+    [key: string]: EntityLog[];
+  }>({});
   const [numLogElts, setNumLogElts] = useState<number>(
     !requestContext.accessedEntityType?.logs ? 0 : requestContext.accessedEntityType.logs.length,
   );
@@ -68,10 +70,9 @@ const LogsField = ({
             log[key].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
           }
           setLogObject(log);
-          setIsLoading(false);
-          await new Promise((res) => setTimeout(res, 10_000 + Math.round(2000 * Math.random())));
         }
         setIsLoading(false);
+        await new Promise((res) => setTimeout(res, 10_000 + Math.round(2000 * Math.random())));
       }
     })();
 

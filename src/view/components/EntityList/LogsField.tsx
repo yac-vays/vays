@@ -38,7 +38,7 @@ const LogsField = ({
           setIsLoading(true);
         }
 
-        if (!isLogCached(entityName, requestContext)) {
+        if (!firstIteration && !isLogCached(entityName, requestContext)) {
           await new Promise((res) =>
             setTimeout(res, Math.min(2000, 1000 + Math.round(2000 * Math.random()))),
           );
@@ -75,6 +75,9 @@ const LogsField = ({
             log[key].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
           }
           setLogObject(log);
+        }
+        if (!mounted) {
+          return;
         }
         setIsLoading(false);
         await new Promise((res) => setTimeout(res, 10_000 + Math.round(2000 * Math.random())));

@@ -12,7 +12,7 @@ export const InfoBoxControl = (props: ControlProps) => {
         onClick={() => {}}
         hideAddButton
       />
-      <div className="mt-2 pl-1 whitespace-pre-line">{props.description}</div>
+      <div className="pl-1 whitespace-pre-line">{props.description}</div>
     </div>
   );
 };

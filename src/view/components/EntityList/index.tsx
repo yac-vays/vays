@@ -91,16 +91,13 @@ const EntityList = ({ requestContext }: EntityListProps) => {
     // The check is here to avoid multirequest post-context.
     // https://maxrozen.com/race-conditions-fetching-data-react-with-useeffect
     let mounted = true;
-    // if (!mounted) {
-    //   return;
-    // }
     /*
         2 Raceconditions to worry here, multi loading and cross loading
         Good practices here
           https://devtrium.com/posts/async-functions-useeffect#what-if-you-need-to-extract-the-function-outside-useeffect
           https://www.digitalocean.com/community/tutorials/how-to-handle-async-data-loading-lazy-loading-and-code-splitting-with-react
 
-        Note this callback is executed in a closure!!!!!!!!!!!!!
+        Note this callback is executed in a closure!
         So do not expect global variables to behave as usual.
       */
 
@@ -119,7 +116,6 @@ const EntityList = ({ requestContext }: EntityListProps) => {
         setNumColumns(header.length);
         setTableHeaderEntries(header);
 
-        //setSearchTerms(Array(header.length).fill(null));
         let qRes: QueryResponse = await fetchEntities(
           requestContext,
           numResultsPerPage.valueOf(),
@@ -171,35 +167,14 @@ const EntityList = ({ requestContext }: EntityListProps) => {
 
   useEffect(() => {
     registerEntityListInvalidationHook(requestContext.yacURL, requestContext.entityTypeName, () => {
-      for (const entity of tableEntries) {
-        invalidateLogCache(entity.elt[0], requestContext);
-      }
-
       setReloadCount(reloadCount + 1);
+      setTimeout(() => {
+        for (const entity of tableEntries) {
+          invalidateLogCache(entity.elt[0], requestContext);
+        }
+      }, 1000);
     });
   }, [requestContext.yacURL, requestContext.entityTypeName, reloadCount]);
-
-  // const actions: ActionsColumnResults = getActions(requestContext);
-
-  // useEffect(
-  //   () => {
-  //     console.log("Detected change of num results.");
-  //     console.log("Entry gives " + numResultsPerPage);
-  //     await (
-  //       async function (){
-  //         if (requestContext.accessedEntityType?.options == undefined){
-  //           setTableHeaderEntries([]);
-  //         } else {
-  //           const qRes: QueryResponse = await fetchEntities(
-  //             requestContext,
-  //             numResultsPerPage, null);
-  //           setTableEntries(qRes.partialResults);
-  //         }
-  //       }())
-  //     console.log("Exiting num setting");
-
-  //   }, [numResultsPerPage]
-  // );
 
   return (
     <>

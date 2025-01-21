@@ -3,6 +3,7 @@ import { RequestContext } from '../controller/global/URLValidation';
 import { showError } from '../controller/local/ErrorNotifyController';
 import { authFailed, sendRequest } from '../utils/AuthedRequest';
 import { Nullable } from '../utils/typeUtils';
+import { invalidateEntityListCache } from './EntityListFetcher';
 
 export type EntityLog = {
   name: string;
@@ -14,12 +15,25 @@ export type EntityLog = {
 
 const LOGS_CACHE_KEY = 'EntityLogs';
 
+function getLogID(
+  url: string | null | undefined,
+  entityTypeName: string | null,
+  entityName: string,
+) {
+  return url + `/entity/${entityTypeName}/${entityName}/logs`;
+}
+
 export function isLogCached(entityName: string, requestContext: RequestContext) {
   const url: string | null | undefined = requestContext.yacURL;
   return VAYS_CACHE.isCached(
     LOGS_CACHE_KEY,
-    url + `/entity/${requestContext.entityTypeName}/${entityName}/logs`,
+    getLogID(url, requestContext.entityTypeName, entityName),
   );
+}
+
+export function invalidateLogCache(entityName: string, requestContext: RequestContext) {
+  const url: string | null | undefined = requestContext.yacURL;
+  VAYS_CACHE.invalidate(LOGS_CACHE_KEY, getLogID(url, requestContext.entityTypeName, entityName));
 }
 
 export async function getEntityLogs(
@@ -41,7 +55,9 @@ export async function getEntityLogs(
   }
 
   if (resp.status == 200) return resp.json();
-  else if (resp.status == 422) {
+  else if (resp.status == 404) {
+    invalidateEntityListCache(url, requestContext.entityTypeName);
+  } else if (resp.status == 422) {
     // No validation error should happen here.
     showError('Internal Error', 'Error ID-VAL-GEL-01. Please file a bug report!');
     return null;

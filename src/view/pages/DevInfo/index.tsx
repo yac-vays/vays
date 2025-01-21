@@ -16,7 +16,16 @@ const DevInfo = () => {
           <p>
             <span className="font-lg text-black dark:text-white font-bold">{be.title + ' : '}</span>
             <a href={be.url} target="_blank" style={{ color: 'lightblue' }}>
-              Documentation
+              Documentation{' '}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="fill-current opacity-40 inline pl-0.5 cursor-pointer"
+                height="20px"
+                viewBox="0 -960 960 960"
+                width="20px"
+              >
+                <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z" />
+              </svg>
             </a>
           </p>,
         );
@@ -36,22 +45,63 @@ const DevInfo = () => {
           }}
         >
           <div className="w-full text-lg overflow-y-auto">
-            Both, the frontend (powered by VAYS) and the backend (powered by YAC) are fully open
-            sourced software developed at ETH Zürich. The repositories are at
+            Both, frontend and backend are open source software developed at ETH Zürich. If you
+            experience any issues with the software itself, please open an issue in one of the
+            repositories below. For questions regarding the software, you may also open a discussion
+            in the{' '}
+            <a style={{ color: 'lightblue' }} href="https://github.com/yac-vays" target="_blank">
+              corresponding organisation.{' '}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="fill-current opacity-40 inline pl-0.5 cursor-pointer"
+                height="16px"
+                viewBox="0 -960 960 960"
+                width="16px"
+              >
+                <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z" />
+              </svg>
+            </a>
             <p className="my-5">
               <span className="font-lg text-black dark:text-white font-bold">
                 Frontend Repository (VAYS):{' '}
               </span>
-              <a href="https://duckduckgo.com" style={{ color: 'red' }} target="_blank">
-                Link Nonexistent
+              <a
+                href="https://github.com/yac-vays/vays"
+                style={{ color: 'lightblue' }}
+                target="_blank"
+              >
+                Github{' '}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="fill-current opacity-40 inline pl-1 cursor-pointer"
+                  height="20px"
+                  viewBox="0 -960 960 960"
+                  width="20px"
+                >
+                  <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z" />
+                </svg>
               </a>
               <br />
               <span className="font-lg text-black dark:text-white font-bold">
                 Backend Repository (YAC):{' '}
               </span>
-              <a href="https://duckduckgo.com" style={{ color: 'red' }} target="_blank">
-                Link Nonexistent
+              <a
+                href="https://github.com/yac-vays/yac"
+                style={{ color: 'lightblue' }}
+                target="_blank"
+              >
+                Github{' '}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="fill-current opacity-40 inline pl-1 cursor-pointer"
+                  height="20px"
+                  viewBox="0 -960 960 960"
+                  width="20px"
+                >
+                  <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z" />
+                </svg>
               </a>
+              <br />
             </p>
             For the backend APIs, have a look at the documentation:
             {backends}

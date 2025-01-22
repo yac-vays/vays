@@ -56,7 +56,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
   };
 
   const select = (index: number) => {
-    const value = options.filter((v) => v.label.startsWith(newInput))[index].value;
+    const value = options[index].value;
     if (!multiple && selected.findIndex((v) => value == v) != -1) {
       remove(index);
       return;
@@ -135,7 +135,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
                         setNewInput(event.target.value);
                       }}
                       onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
+                        if (event.key === 'Enter' || event.key === 'Tab') {
                           const filterResults = filterOptions(options, event.currentTarget.value);
                           if (filterResults.length == 1) {
                             select(

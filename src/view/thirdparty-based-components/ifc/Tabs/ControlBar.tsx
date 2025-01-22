@@ -17,7 +17,7 @@ const ControlBar = ({ children }: ControlBarProps) => {
     } else {
       setShowFurther(false);
     }
-  }, [cbar, width]);
+  }, [cbar, width, children]);
 
   return (
     <>
@@ -35,7 +35,7 @@ const ControlBar = ({ children }: ControlBarProps) => {
               .........
             </div>
             <div
-              className="absolute bg-white cursor-pointer"
+              className="absolute bg-white cursor-pointer dark:bg-boxdark"
               style={{ top: 0, right: 0, height: cbar.current?.clientHeight }}
               onClick={() => {
                 if (cbar.current?.scrollLeft != undefined) {

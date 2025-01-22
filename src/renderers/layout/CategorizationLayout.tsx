@@ -26,7 +26,7 @@
   THE SOFTWARE.
 */
 import { useState, useMemo } from 'react';
-import Tab from '../../view/thirdparty-based-components/ifc/Tabs/Tab';
+import Tab from '../../view/components/Tabs/Tab';
 import {
   and,
   Categorization,
@@ -47,7 +47,7 @@ import {
   MaterialLayoutRendererProps,
   withAjvProps,
 } from '@jsonforms/material-renderers';
-import ControlBar from '../../view/thirdparty-based-components/ifc/Tabs/ControlBar';
+import ControlBar from '../../view/components/Tabs/ControlBar';
 import {
   getCurrentTab,
   setCurrentTab,

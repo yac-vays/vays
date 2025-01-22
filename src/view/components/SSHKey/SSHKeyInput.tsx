@@ -1,10 +1,10 @@
 import React from 'react';
 import { ControlProps } from '@jsonforms/core';
-import ErrorBox from '../Label/ErrorBox';
+import ErrorBox from '../thirdparty-based-components/ifc/Label/ErrorBox';
 import { useEffect, useRef, useState } from 'react';
-import useOutsideClick from '../../../hooks/useOutsideClick';
+import useOutsideClick from '../../hooks/useOutsideClick';
 
-import { showError, showSuccess } from '../../../../controller/local/ErrorNotifyController';
+import { showError, showSuccess } from '../../../controller/local/ErrorNotifyController';
 
 interface MutableInput {
   password?: boolean;

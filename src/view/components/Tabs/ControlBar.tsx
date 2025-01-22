@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useContainerDimensions } from '../../../hooks/useContainerDimensions';
+import { useContainerDimensions } from '../../hooks/useContainerDimensions';
 
 interface ControlBarProps {
   children: React.ReactNode;

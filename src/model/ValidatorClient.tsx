@@ -352,6 +352,7 @@ export async function patchEntity(
   name: string,
   patch: any,
   requestEditContext: RequestEditContext,
+  oldYaml?: string,
 ): Promise<boolean> {
   if (requestEditContext.entityName == null) {
     showError('Frontend error', 'Name of entity is null. Please file a bug report!');
@@ -364,7 +365,7 @@ export async function patchEntity(
         requestEditContext.entityName
       }${actionNames2URLQuery(dumpEditActions(editActions))}`,
     'PATCH',
-    JSON.stringify({ name: name, data: patch }),
+    JSON.stringify({ name: name, data: patch, old_yaml: oldYaml ?? null }),
   );
 
   // Network error

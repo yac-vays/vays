@@ -1,18 +1,11 @@
-import _ from 'lodash';
-
 import { navigateToURL, RequestEditContext } from '../../global/URLValidation';
-import {
-  getSchema,
-  validate,
-  ValidateResponse,
-  validateYAML,
-} from '../../../model/ValidatorClient';
+import { getSchema, ValidateResponse } from '../../../model/ValidatorClient';
 import { NameGeneratedCond } from '../../../model/EntityListFetcher';
 import { Nullable } from '../../../utils/typeUtils';
 import { getEntityData } from '../../../model/EntityDataFetcher';
 import editingState from '../../state/EditCtrlState';
-import { popSettableName, injectSettableName } from '../../../schema/injectName';
-import { insertDefaults, mergeDefaults, updateDefaults } from '../../../schema/defaultsHandling';
+import { injectSettableName } from '../../../schema/injectName';
+import { insertDefaults, mergeDefaults } from '../../../schema/defaultsHandling';
 import { injectAction, insertActionData, popActions } from '../../../schema/injectActions';
 import { updateSchema } from './StandardMode/StandardEditController';
 
@@ -58,7 +51,7 @@ async function retreiveEditSchema(
   valResp.yaml = entityData.yaml;
   valResp.data = entityData?.data;
 
-  editingState.initialYAML = entityData.yaml;
+  setInitialEntityYAML(entityData.yaml);
   editingState.initialData = structuredClone(valResp.data);
 
   mergeDefaults(valResp);
@@ -143,4 +136,12 @@ export function setYACValidStatus(valid: boolean) {
 
 export function getYACValidateResponse() {
   return editingState.yacResponse;
+}
+
+export function getInitialEntityYAML() {
+  return editingState.initialYAML;
+}
+
+export function setInitialEntityYAML(yaml: string) {
+  editingState.initialYAML = yaml;
 }

@@ -18,7 +18,12 @@ import { showModalMessage } from '../../../global/ModalController';
 import { navigateToURL, RequestContext, RequestEditContext } from '../../../global/URLValidation';
 import editingState from '../../../state/EditCtrlState';
 import { showError } from '../../ErrorNotifyController';
-import { editViewNavigateToNewName, setYACValidateResponse, setYACValidStatus } from '../shared';
+import {
+  editViewNavigateToNewName,
+  getInitialEntityYAML,
+  setYACValidateResponse,
+  setYACValidStatus,
+} from '../shared';
 
 export async function updateSchema(
   frontData: { [key: string]: any },
@@ -175,7 +180,7 @@ export function sendFormData(requestContext: RequestEditContext) {
 }
 
 async function sendCreateNewEntity(newData: any, requestContext: RequestContext): Promise<boolean> {
-  let data = structuredClone(newData);
+  const data = structuredClone(newData);
   let name: Nullable<string> = '';
   if (hasSettableName(data)) {
     name = popSettableName(data) ?? name;
@@ -188,7 +193,6 @@ async function sendCreateNewEntity(newData: any, requestContext: RequestContext)
 }
 
 async function sendPatchEntity(data: any, requestContext: RequestEditContext): Promise<boolean> {
-  console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> SEND PATCH');
   let name = '';
   if (hasSettableName(data)) {
     name = popSettableName(data) ?? name;
@@ -197,12 +201,12 @@ async function sendPatchEntity(data: any, requestContext: RequestEditContext): P
   } else {
     return false;
   }
-  console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> PATCH');
 
-  console.log(requestContext);
-  console.log(editingState.initialData);
-
-  const ret = await patchEntity(name, extractPatch(editingState.initialData, data), requestContext);
-  console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> SEND PATCH');
+  const ret = await patchEntity(
+    name,
+    extractPatch(editingState.initialData, data),
+    requestContext,
+    getInitialEntityYAML(),
+  );
   return ret;
 }

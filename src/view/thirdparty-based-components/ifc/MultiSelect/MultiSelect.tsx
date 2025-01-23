@@ -88,7 +88,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
 
   return (
     <div
-      className="relative z-40 p-1"
+      className="relative p-1"
       onClick={() =>
         setTimeout(() => {
           inputRef.current?.focus();
@@ -103,17 +103,18 @@ const MultiSelect: React.FC<DropdownProps> = ({
         </select>
 
         <div className="flex flex-col items-center">
-          <div className="relative z-20 inline-block w-full">
+          <div className="relative inline-block w-full">
             <div className="relative flex flex-col items-center">
-              <div ref={trigger} onClick={open} className="w-full">
+              <div ref={trigger} onClick={open} className="relative w-full z-0">
                 <div
-                  className={`mb-2 flex rounded border  py-2 pl-3 pr-3 outline-none transition  dark:bg-form-input ${
+                  id="inputfieldSelect"
+                  className={`relative mb-2 flex rounded border  py-2 pl-3 pr-3 outline-none transition  dark:bg-form-input ${
                     isOpen()
                       ? 'border-primary border-primary'
                       : 'border-stroke dark:border-form-strokedark'
                   }`}
                 >
-                  <div className="flex flex-auto flex-wrap gap-3">
+                  <div className="flex flex-auto flex-wrap gap-3 z-10">
                     {selected.map((value, idx) => {
                       const valueIndex = optionsValues.indexOf(value);
                       if (valueIndex == -1) return <></>;
@@ -158,7 +159,10 @@ const MultiSelect: React.FC<DropdownProps> = ({
                   <DropdownButton open={open} showExpand={show} />
                 </div>
               </div>
-              <div id="dropdown-multiselect" className="w-full px-4 overflow-scroll border-black">
+              <div
+                id="dropdown-multiselect"
+                className="relative w-full px-4 overflow-visible border-black flex z-40 drop-shadow-xl"
+              >
                 <div
                   className={`max-h-select absolute top-full left-0 z-40 w-full overflow-y-auto rounded bg-white shadow dark:bg-form-input ${
                     isOpen() ? '' : 'hidden'
@@ -167,7 +171,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
                   onFocus={() => setShow(true)}
                   onBlur={() => setShow(false)}
                 >
-                  <div className="flex w-full flex-col">
+                  <div className="relative flex w-full flex-col z-50 max-h-50">
                     {filterOptions(options, newInput).map((option, index) => (
                       <div key={index}>
                         <div
@@ -175,7 +179,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
                           onClick={() => select(index)}
                         >
                           <div
-                            className={`relative flex w-full items-center border-l-2  p-2 pl-2 ${
+                            className={`relative flex w-full items-center border-l-[3px]  p-2 pl-2 ${
                               selected.findIndex((v) => v === option.value) != -1
                                 ? 'border-primary'
                                 : 'border-transparent'

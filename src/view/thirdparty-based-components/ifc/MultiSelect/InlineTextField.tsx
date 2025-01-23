@@ -15,7 +15,7 @@ const InlineTextField = ({
 }) => {
   return (
     <div
-      className="flex flex-row grow relative items-center pl-1 pr-1"
+      className="flex flex-row grow relative items-center pl-1 pr-1 z-0"
       style={{ minWidth: numItemsInList > 0 ? 120 : '90%', minHeight: 36 }}
     >
       <label

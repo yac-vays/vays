@@ -16,6 +16,7 @@ import OverheadLabel from '../../../view/thirdparty-based-components/ifc/Label/O
 import ErrorBox from '../../../view/thirdparty-based-components/ifc/Label/ErrorBox';
 
 export const SSHKeyRenderer = (props: ControlProps) => {
+  if (!props.visible) return <></>;
   const sshlist: string[] = (props.data ?? '').split('\n');
   return (
     <div className="p-1">
@@ -28,8 +29,9 @@ export const SSHKeyRenderer = (props: ControlProps) => {
           />
           {sshlist.map((v: string) => (
             <SSHKeyInput
-              {...props}
               data={v}
+              id={props.id}
+              placeholder={props.uischema?.options?.initial ?? 'Click to select file...'}
               enabled={false}
               onChange={(v: string) => props.handleChange(props.path, v)}
             />

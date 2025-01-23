@@ -55,7 +55,11 @@ const TableRow = withCustomProps((props: ItemRendererProps) => {
   });
   return (
     <div>
-      <div className="group flex flex-row w-full">
+      <div
+        className={`group flex flex-row w-full ${
+          elements.length > 1 ? 'border border-[#c9c9c9] rounded p-2 my-2' : ''
+        }`}
+      >
         <div className="grow">{itemsToRender}</div>
 
         <div className="w-[60px] flex items-center justify-center">

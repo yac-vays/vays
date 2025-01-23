@@ -122,8 +122,7 @@ export function mergeDefaults(valResp: ValidateResponse): boolean {
     navigateToURL('/');
   }
 
-  console.log(JSON.stringify(valResp.data));
-  const mergeResult = _.merge(defaults, valResp.data);
+  const mergeResult = _.assign(defaults, valResp.data);
   const isEqual = _.isEqual(mergeResult, valResp.data);
 
   valResp.data = mergeResult;

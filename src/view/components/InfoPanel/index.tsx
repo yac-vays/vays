@@ -58,7 +58,7 @@ const InfoPanel = ({
                 </h4>
               </div>
               <div className="px-5 pt-1 pb-5 text-center">
-                <p className="font-medium">{description}</p>
+                <p className="font-medium whitespace-pre-line">{description}</p>
               </div>
             </div>
           </div>

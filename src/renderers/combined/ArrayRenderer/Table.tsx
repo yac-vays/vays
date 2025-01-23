@@ -35,7 +35,10 @@ const withCustomProps = (Component: ComponentType<ItemRendererProps>) => {
 const TableRow = withCustomProps((props: ItemRendererProps) => {
   const { schema, path, renderers, cells } = props;
 
-  const elements = [{ type: 'Control', scope: `#` }]; //.options?.["elements"] ?? [];
+  // const elements = [{ type: 'Control', scope: `#` }]; //.options?.["elements"] ?? [];
+  const elements = props.uischema.options?.details?.elements
+    ? props.uischema.options?.details?.elements
+    : [{ type: 'Control', scope: `#` }];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const itemsToRender = elements.map((element: any, index: number) => {
     return (
@@ -43,7 +46,7 @@ const TableRow = withCustomProps((props: ItemRendererProps) => {
         schema={schema}
         uischema={element}
         path={path}
-        enabled={true}
+        enabled={props.enabled}
         renderers={renderers}
         cells={cells}
         key={index}

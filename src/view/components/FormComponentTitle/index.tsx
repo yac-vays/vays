@@ -1,3 +1,5 @@
+import ErrorButton from '../Buttons/ErrorButton';
+
 const FormComponentTitle = ({
   label,
   large,
@@ -5,6 +7,7 @@ const FormComponentTitle = ({
   description,
   hideAddButton,
   required,
+  errors,
 }: {
   label?: string;
   large?: boolean;
@@ -12,6 +15,7 @@ const FormComponentTitle = ({
   description?: string;
   hideAddButton?: boolean;
   required?: boolean;
+  errors?: string;
 }) => {
   return (
     <>
@@ -41,9 +45,20 @@ const FormComponentTitle = ({
           </div>
         )}
       </div>
-      {description ?? (
-        <em className="opacity-50 text-black dark:text-white">No description provided.</em>
-      )}
+      <div className="inline flex flex-row">
+        {description ?? (
+          <em className="opacity-50 text-black dark:text-white">No description provided.</em>
+        )}
+        {errors ? (
+          <label className="inline ml-2.5 block text-black dark:text-white flex flex-row">
+            <div className="relative">
+              <ErrorButton content={errors} />
+            </div>
+          </label>
+        ) : (
+          <></>
+        )}
+      </div>
     </>
   );
 };

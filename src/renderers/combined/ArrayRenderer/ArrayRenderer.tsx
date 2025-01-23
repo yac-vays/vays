@@ -64,7 +64,9 @@ export const ArrayControlRenderer = (
           }}
           description={props.description}
           required={props.required}
+          errors={props.errors ? [...new Set(props.errors.split('\n'))].join('\n') : ''}
         />
+
         <Table {...props} openDeleteDialog={openDeleteDialog} translations={translations} />
       </div>
     </>

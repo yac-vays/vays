@@ -48,6 +48,7 @@ const ErrorPage = lazy(() => import('./view/pages/Error/ErrorPage'));
 // const RedirectView = lazy(() => import('./view/pages/Login/RedirectView'));
 //const DevInfo = lazy(() => import('./view/pages/DevInfo/DevInfo'));
 import DevInfo from './view/pages/DevInfo';
+import { generateCSP } from './session/csp';
 
 /**
  * The main application component that sets up the routing and context providers.
@@ -86,15 +87,15 @@ function App(): JSX.Element {
 
   useEffect(() => {
     (async () => {
-      const backends: YACBackend[] = await getBackends();
-      console.error(backends);
-      setBackendsList(backends);
       const conf = await getConfig();
-      console.error(conf);
+
       if (conf == null) {
         showError('Config Not Available', 'Cannot fetch the config. Please contact the admin.');
         return;
       }
+      generateCSP(conf);
+      const backends: YACBackend[] = await getBackends();
+      setBackendsList(backends);
       setConfig(conf);
       setLoading(false);
       // setTimeout(() => {

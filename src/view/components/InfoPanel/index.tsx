@@ -51,14 +51,14 @@ const InfoPanel = ({
               tipRadius={3}
               className="dark:fill-white"
             />
-            <div className="border z-50 rounded ml-3 w-max max-w-[350px] bg-white drop-shadow-xl dark:bg-meta-4">
+            <div className="border z-50 rounded ml-3 w-max max-w-[350px] max-h-[500px] bg-white drop-shadow-xl dark:bg-meta-4">
               <div className="p-3">
                 <h4 className="text-center text-title-sm font-bold text-solid hyphens-auto">
                   {title}
                 </h4>
               </div>
               <div className="px-5 pt-1 pb-5 text-center">
-                <p className="font-medium whitespace-pre-line">{description}</p>
+                <p className="font-medium whitespace-pre-line hyphens-auto">{description}</p>
               </div>
             </div>
           </div>

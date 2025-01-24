@@ -45,7 +45,7 @@ const FormComponentTitle = ({
           </div>
         )}
       </div>
-      <div className="inline flex flex-row">
+      <div className="inline flex flex-row hyphens-auto">
         {description ?? (
           <em className="opacity-50 text-black dark:text-white">No description provided.</em>
         )}

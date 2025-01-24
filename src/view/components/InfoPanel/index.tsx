@@ -22,7 +22,7 @@ const InfoPanel = ({
       }),
       offset(10),
       flip({
-        fallbackPlacements: ['right', 'top', 'bottom'],
+        fallbackPlacements: ['top', 'right', 'bottom'],
         fallbackStrategy: 'initialPlacement',
         flipAlignment: false,
       }),
@@ -51,7 +51,7 @@ const InfoPanel = ({
               tipRadius={3}
               className="dark:fill-white"
             />
-            <div className="border z-50 rounded ml-3 w-max max-w-[350px] max-h-[500px] bg-white drop-shadow-xl dark:bg-meta-4">
+            <div className="border z-50 rounded ml-3 w-max max-w-[350px] max-h-[300px] overflow-y-auto bg-white drop-shadow-xl dark:bg-meta-4">
               <div className="p-3">
                 <h4 className="text-center text-title-sm font-bold text-solid hyphens-auto">
                   {title}

@@ -12,6 +12,7 @@ import { stringify } from 'yaml';
 import { NameGeneratedCond } from './EntityListFetcher';
 import { dumpEditActions, EditActionSnapshot, popActions } from '../schema/injectActions';
 import { actionNames2URLQuery } from '../utils/actionUtils';
+import { handleCollision } from '../schema/concurrency';
 
 export type ValidateResponse = {
   json_schema: JsonSchema;
@@ -381,6 +382,10 @@ export async function patchEntity(
       'Frontend Error',
       'Invalid specification used, cannot talk to YAC servers. Please report ID-NEW-SD-01.',
     );
+  } else if (resp.status == 409) {
+    // concurrency issue: someone has changed the file while this user has been editing.
+    handleCollision(name, patch, requestEditContext, oldYaml);
+    return false;
   } else if (resp.status >= 500) {
     const ans = await resp.json();
     showError(

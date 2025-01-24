@@ -57,6 +57,7 @@ export async function getEntityLogs(
   if (resp.status == 200) return resp.json();
   else if (resp.status == 404) {
     invalidateEntityListCache(url, requestContext.entityTypeName);
+    return null;
   } else if (resp.status == 422) {
     // No validation error should happen here.
     showError('Internal Error', 'Error ID-VAL-GEL-01. Please file a bug report!');

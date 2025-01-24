@@ -160,7 +160,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
                 <h3 className="text-xl font-bold text-black dark:text-white sm:text-2xl mt-0 pb-2 mr-14">
                   {this.state.title}
                 </h3>
-                <p className="font-medium mb-4" style={{ whiteSpace: 'pre-wrap' }}>
+                <p className="font-medium mb-4 whitespace-pre-line hyphens-auto">
                   {this.state.text}
                 </p>
               </div>

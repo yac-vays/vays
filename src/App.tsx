@@ -108,6 +108,8 @@ function App(): JSX.Element {
   return (
     <ToastContextProvider>
       <Suspense fallback={<Loader />}>
+        {/* While getting config and generating csp, do not proceed
+      to load other data. */}
         {loading ? (
           <Loader />
         ) : (

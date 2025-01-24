@@ -365,7 +365,7 @@ export async function patchEntity(
         requestEditContext.entityName
       }${actionNames2URLQuery(dumpEditActions(editActions))}`,
     'PATCH',
-    JSON.stringify({ name: name, data: patch, old_yaml: oldYaml ?? null }),
+    JSON.stringify({ name: name, data: patch, yaml_old: oldYaml ?? null }),
   );
 
   // Network error

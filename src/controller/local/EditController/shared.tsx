@@ -15,6 +15,8 @@ export async function retreiveSchema(
   preventInjectActions: boolean = false,
 ): Promise<ValidateResponse | null> {
   if (requestEditContext.rc.yacURL == null) return null;
+  setYACValidateResponse('');
+  setYACValidStatus(true);
 
   if (requestEditContext.mode === 'create') {
     return await retreiveNewCreateSchema(

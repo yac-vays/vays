@@ -22,7 +22,7 @@ const RichInfoPanel = ({
       }),
       offset(10),
       flip({
-        fallbackPlacements: ['right', 'top', 'bottom'],
+        fallbackPlacements: ['left', 'top', 'bottom', 'right'],
         fallbackStrategy: 'initialPlacement',
         flipAlignment: false,
       }),
@@ -59,6 +59,8 @@ const RichInfoPanel = ({
                     ? { left: 0 }
                     : placement.startsWith('top')
                     ? {}
+                    : placement.startsWith('left')
+                    ? { left: 360 }
                     : { top: -14 }
                 }
                 tipRadius={3}

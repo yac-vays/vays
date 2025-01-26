@@ -40,7 +40,7 @@ const Checkbox = ({
           <input type="checkbox" className="sr-only" />
           <div
             className={`flex  h-5 w-5 items-center justify-center rounded border cursor-pointer  ${
-              isChecked && 'border-primary dark:border-white bg-gray dark:bg-transparent'
+              isChecked && 'border-primary dark:border-white bg-primary-10 dark:bg-transparent'
             }`}
             onClick={callback}
           >

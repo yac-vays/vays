@@ -23,7 +23,7 @@ const EntityListRow = ({ entryValues, requestContext, link }: EntityListRow) => 
   return (
     <>
       <tr
-        className="border-t border-stroke dark:border-strokedark hover:bg-primary/5"
+        className="border-t border-stroke dark:border-strokedark hover:bg-primary-5"
         role="row"
         title={link ? 'Link to ' + link : undefined}
       >
@@ -122,13 +122,6 @@ const EntityListRow = ({ entryValues, requestContext, link }: EntityListRow) => 
                             cancel: () => void,
                           ) => {
                             showModal(title, text, conf, cancel, confVerb);
-                            // setTitle(title);
-                            // setText(text);
-                            // setConfirmVerb(confVerb);
-
-                            // console.log(conf);
-                            // setCancelCallback(() => cancel);
-                            // setConfirmCallback(() => conf);setShowAlert(true);
                           }}
                         />,
                       );

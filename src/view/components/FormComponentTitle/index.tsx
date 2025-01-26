@@ -21,7 +21,7 @@ const FormComponentTitle = ({
     <>
       <div className="relative flex flex-row w-full">
         <h4 className={`mb-0 ${large ? 'text-2xl' : 'text-xl'} text-black dark:text-white`}>
-          {label} {required ? <span className="text-meta-1 pr-2"> *</span> : <></>}
+          {label} {required ? <span className="text-danger pr-2"> *</span> : <></>}
         </h4>
 
         {/* TODO: Do error reporting... */}

@@ -97,6 +97,7 @@ function App(): JSX.Element {
       const backends: YACBackend[] = await getBackends();
       setBackendsList(backends);
       setConfig(conf);
+      // document.documentElement.style.setProperty('--color-primary', '#00AA00');
       setLoading(false);
       // setTimeout(() => {
       //   driverObj.drive();

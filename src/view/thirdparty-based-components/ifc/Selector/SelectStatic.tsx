@@ -48,7 +48,7 @@ const SelectStatic: React.FC<DropdownProps> = ({ options, onChange, initValue }:
           setSelectedOption(e.target.value);
           changeTextColor();
         }}
-        className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-5 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary ${
+        className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-5 outline-none focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary ${
           isOptionSelected ? 'text-black dark:text-white' : ''
         }`}
       >

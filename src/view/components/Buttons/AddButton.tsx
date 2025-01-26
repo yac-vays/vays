@@ -23,8 +23,8 @@ const AddButton = ({ entityName, yacBackendObject }: AddButtonProps) => {
           e.preventDefault();
           navigate(buildCreateURL(yacBackendObject, entityName));
         }}
-        className="inline-flex items-center justify-center border border-primary text-center gap-2.5 font-medium text-primary rounded hover:bg-greydark dark:hover:bg-meta-4 
-          bg-graydark dark:bg-meta-4 cursor-pointer"
+        className="inline-flex items-center justify-center border border-primary text-center gap-2.5 font-medium text-primary rounded 
+          bg-primary dark:bg-meta-4 cursor-pointer"
         style={{ right: 0, position: 'absolute' }}
       >
         <span>

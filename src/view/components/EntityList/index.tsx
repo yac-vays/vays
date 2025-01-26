@@ -299,7 +299,7 @@ const EntityList = ({ requestContext }: EntityListProps) => {
                 <p className="pl-2 text-black dark:text-white">Show entries</p>
                 <select
                   ref={selectorRef}
-                  className="bg-transparent pl-2"
+                  className="bg-transparent ml-2 pl-1 rounded border border-grey"
                   onChange={(e) => {
                     setNumResultsPerPage(parseInt(e.target.value));
                   }}

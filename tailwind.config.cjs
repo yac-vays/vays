@@ -1,93 +1,61 @@
+const defaultTheme = require('tailwindcss/defaultTheme');
+const plugin = require('tailwindcss/plugin');
+
 /**
- * MIT License
- * 
- * Copyright (c) 2023 TailAdmin
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-const defaultTheme = require('tailwindcss/defaultTheme')
-const plugin = require('tailwindcss/plugin')
-
-/** @type {import('tailwindcss').Config} */
+ * Part of the spacing, min/maxWidth/Height definitions and some colors have
+ * been adapted from Tailadmin FOSS template.
+ * See src/view/thirdparty-based-components for more information and license.
+ *
+ * @type {import('tailwindcss').Config}
+ **/
 module.exports = {
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
-  safelist: [
-    "border-lime-300",
-    "border-red-500",
-    "border-orange-500",
-    "border-yellow-300"
+  content: [
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}',
+    './src/**/**/*.{js,ts,jsx,tsx}',
+    './src/**/**/**/*.{js,ts,jsx,tsx}',
   ],
+  safelist: ['border-lime-300', 'border-red-500', 'border-orange-500', 'border-yellow-300'],
   darkMode: 'class',
   theme: {
     fontFamily: {
       satoshi: ['Satoshi', 'sans-serif'],
-    },
-    screens: {
-      '2xsm': '375px',
-      xsm: '425px',
-      '1.5xl': '1435px',
-      '3xl': '2000px',
-      ...defaultTheme.screens,
     },
     extend: {
       colors: {
         current: 'currentColor',
         transparent: 'transparent',
         white: '#FFFFFF',
-        black: '#1C2434',
-        'black-2': '#010101',
+        black: '#000000',
         body: '#64748B',
         bodydark: '#AEB7C0',
         bodydark1: '#DEE4EE',
         bodydark2: '#8A99AF',
-        primary: '#3C50E0',
-        secondary: '#80CAEE',
+        primary: 'var(--color-primary)',
+        'primary-5': 'var(--color-primary-5)',
+        'primary-10': 'var(--color-primary-10)',
+        'primary-20': 'var(--color-primary-20)',
+        'primary-30': 'var(--color-primary-30)',
+        'primary-40': 'var(--color-primary-40)',
+        'primary-50': 'var(--color-primary-50)',
+        'primary-60': 'var(--color-primary-60)',
+        'primary-70': 'var(--color-primary-70)',
+        'primary-80': 'var(--color-primary-80)',
+        'primary-90': 'var(--color-primary-90)',
+        'primary-highlighted': 'var(--color-primary-highlighted)',
+        background: 'var(--color-background)',
         stroke: '#E2E8F0',
         gray: '#EFF4FB',
-        graydark: '#333A48',
         'gray-2': '#F7F9FC',
-        'gray-3': '#FAFAFA',
-        whiten: '#F1F5F9',
-        whiter: '#F5F7FD',
         boxdark: '#24303F',
         'boxdark-2': '#1A222C',
         strokedark: '#2E3A47',
-        'form-strokedark': '#3d4d60',
-        'form-input': '#1d2a39',
-        'meta-1': '#DC3545',
-        'meta-2': '#EFF2F7',
-        'meta-3': '#10B981',
+        'form-strokedark': '#2E3A47',
+        'form-input': '#313D4A',
         'meta-4': '#313D4A',
-        'meta-5': '#259AE6',
-        'meta-6': '#FFBA00',
-        'meta-7': '#FF6766',
-        'meta-8': '#F0950C',
-        'meta-9': '#E5E7EB',
-        success: '#219653',
-        danger: '#D34053',
-        warning: '#FFA70B',
+        danger: '#DC3545',
       },
       fontSize: {
-        'title-xxl': ['44px', '55px'],
-        'title-xl': ['36px', '45px'],
-        'title-xl2': ['33px', '45px'],
         'title-lg': ['28px', '35px'],
         'title-md': ['24px', '30px'],
         'title-md2': ['26px', '30px'],
@@ -171,14 +139,8 @@ module.exports = {
         100: '25rem',
         115: '28.75rem',
         125: '31.25rem',
-        132.5: '33.125rem',
         150: '37.5rem',
-        171.5: '42.875rem',
         180: '45rem',
-        187.5: '46.875rem',
-        203: '50.75rem',
-        230: '57.5rem',
-        242.5: '60.625rem',
       },
       maxWidth: {
         2.5: '0.625rem',
@@ -210,14 +172,13 @@ module.exports = {
         242.5: '60.625rem',
         270: '67.5rem',
         280: '70rem',
-        292.5: '73.125rem',
       },
       maxHeight: {
         35: '8.75rem',
         70: '17.5rem',
         90: '22.5rem',
-        550: '34.375rem',
         300: '18.75rem',
+        550: '34.375rem',
       },
       minWidth: {
         22.5: '5.625rem',
@@ -226,26 +187,17 @@ module.exports = {
         75: '18.75rem',
       },
       zIndex: {
-        999999: '999999',
         99999: '99999',
         9999: '9999',
         999: '999',
         99: '99',
-        9: '9',
         1: '1',
       },
-      opacity: {
-        65: '.65',
-      },
-      backgroundImage: {
-        video: "url('../images/video/video.png')",
-      },
-      content: {
-        'icon-copy': 'url("../images/icon/icon-copy-alt.svg")',
-      },
-      transitionProperty: { width: 'width', stroke: 'stroke' },
-      borderWidth: {
-        6: '6px',
+      screens: {
+        '2xsm': '375px',
+        '1.5xl': '1435px',
+        '3xl': '2000px',
+        ...defaultTheme.screens,
       },
       boxShadow: {
         default: '0px 8px 13px -3px rgba(0, 0, 0, 0.07)',
@@ -263,28 +215,6 @@ module.exports = {
         7: '-5px 0 0 #313D4A, 5px 0 0 #313D4A',
         8: '1px 0 0 #313D4A, -1px 0 0 #313D4A, 0 1px 0 #313D4A, 0 -1px 0 #313D4A, 0 3px 13px rgb(0 0 0 / 8%)',
       },
-      dropShadow: {
-        1: '0px 1px 0px #E2E8F0',
-        2: '0px 1px 4px rgba(0, 0, 0, 0.12)',
-      },
-      keyframes: {
-        rotating: {
-          '0%, 100%': { transform: 'rotate(360deg)' },
-          '50%': { transform: 'rotate(0deg)' },
-        },
-        fadeOut : {
-          '100%' : {opacity : 0}
-        }
-      },
-      animation: {
-        'ping-once': 'ping 5s cubic-bezier(0, 0, 0.2, 1)',
-        rotating: 'rotating 30s linear infinite',
-        'spin-1.5': 'spin 1.5s linear infinite',
-        'spin-2': 'spin 2s linear infinite',
-        'spin-3': 'spin 3s linear infinite',
-        "opacity-fadeout": 'fadeOut 1s ease-in-out forwards'
-
-      },
     },
   },
   plugins: [
@@ -295,8 +225,8 @@ module.exports = {
             animationDelay: value,
           }),
         },
-        { values: theme('transitionDelay') }
-      )
+        { values: theme('transitionDelay') },
+      );
     }),
-  ]
-}
+  ],
+};

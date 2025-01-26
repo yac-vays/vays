@@ -26,14 +26,14 @@ const DropdownNotification = () => {
             setDropdownOpen(!dropdownOpen);
           }}
           to="#"
-          className="relative flex h-10 w-10 items-center justify-center rounded-full border-[0.5px] border-stroke bg-gray hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-white sm:hover:scale-125 lg:hover:scale-100 duration-500"
+          className="relative flex h-10 w-10 items-center justify-center rounded-full border-[0.5px] border-stroke bg-primary-5 hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-white sm:hover:scale-125 lg:hover:scale-100 duration-500"
         >
           <span
-            className={`absolute -top-0.5 right-0 z-1 h-2 w-2 rounded-full bg-meta-1 ${
+            className={`absolute -top-0.5 right-0 z-1 h-2 w-2 rounded-full bg-danger ${
               notifying === false ? 'hidden' : 'inline'
             }`}
           >
-            <span className="absolute -z-1 inline-flex h-full w-full animate-ping rounded-full bg-meta-1 opacity-75"></span>
+            <span className="absolute -z-1 inline-flex h-full w-full animate-ping rounded-full bg-danger opacity-75"></span>
           </span>
 
           <svg

@@ -1,4 +1,4 @@
-import useColorMode from '../../hooks/useColorMode';
+import useColorMode from '../useColorMode';
 
 const DarkModeSwitcher = () => {
   const [colorMode, setColorMode] = useColorMode();
@@ -22,7 +22,7 @@ const DarkModeSwitcher = () => {
         <span
           className={`absolute top-1/2 left-[3px] flex h-7.5 w-7.5 -translate-y-1/2 translate-x-0 items-center justify-center rounded-full bg-white shadow-switcher duration-75 ease-linear ${''}`}
         >
-          <span className="dark:hidden transition-300">
+          <span className="dark:hidden">
             <svg
               width="18"
               height="18"
@@ -40,7 +40,7 @@ const DarkModeSwitcher = () => {
               />
             </svg>
           </span>
-          <span className="hidden dark:inline-block transition-300 on">
+          <span className="hidden dark:inline-block on">
             <svg
               width="18"
               height="18"

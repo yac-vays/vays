@@ -221,17 +221,17 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
               <div className="h-4"></div>
             </>
             <div className="-mx-3 flex flex-wrap gap-y-2">
-              <div className="2xsm:w-1/2 w-full h-full px-3">
+              <div className="w-1/2 h-full px-3">
                 <button
-                  className="w-full rounded border border-stroke bg-gray p-3 text-center font-medium text-black transition hover:border-meta-4 hover:bg-meta-4 hover:text-white dark:border-strokedark dark:bg-meta-4 dark:text-white dark:hover:border-meta-1 dark:hover:bg-meta-1 hover:scale-105"
+                  className="w-full rounded border border-stroke bg-gray p-3 text-center font-medium text-black transition hover:border-meta-4 hover:bg-meta-4 hover:text-white dark:border-strokedark dark:bg-meta-4 dark:text-white dark:hover:border-danger dark:hover:bg-danger hover:scale-105"
                   onClick={() => this._cancel()}
                 >
                   Cancel
                 </button>
               </div>
-              <div className="2xsm:w-1/2 w-full px-3">
+              <div className="w-1/2 px-3">
                 <button
-                  className="w-full rounded border border-stroke dark:border-stroke bg-meta-1 dark:bg-meta-4 p-3 text-center font-medium text-white transition hover:bg-meta-1 hover:border-meta-1 hover:dark:bg-meta-1 hover:scale-105"
+                  className="w-full rounded border border-stroke dark:border-stroke bg-danger dark:bg-meta-4 p-3 text-center font-medium text-white transition hover:bg-danger hover:border-danger hover:dark:bg-danger hover:scale-105"
                   onClick={() => this._confirm()}
                 >
                   {this.state.isSending ? (

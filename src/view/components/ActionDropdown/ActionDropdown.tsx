@@ -99,8 +99,8 @@ const ActionDropdown = ({ actions, requestContext, entityName }: ActionDropdownP
               // Disables the dropdown click if isEmpty is true.
               setOpen(!open && !isEmpty);
             }
-            // "inline-flex items-center justify-center border border-primary text-center gap-2.5 font-medium text-primary rounded hover:bg-greydark dark:hover:bg-meta-4
-            //     bg-graydark dark:bg-meta-4">
+            // "inline-flex items-center justify-center border border-primary text-center gap-2.5 font-medium text-primary rounded hover:bg-greydark dark:hover:bg-danger
+            //     bg-graydark dark:bg-danger">
           }
           // "inline-flex border-y border-stroke py-1 px-2 font-medium text-black hover:border-primary hover:bg-primary hover:text-white dark:border-strokedark dark:text-white dark:hover:border-primary sm:py-3 sm:px-6"
           // text-[#98A6AD] hover:text-body

@@ -18,13 +18,17 @@ let config: Nullable<AppConfig> = null;
  */
 let backendURLTable: Map<string, string> = new Map();
 
+type HexColor = `#${string}`;
 /**
  * The interface of the application config as it is retreived from the frontend.
  */
 export interface AppConfig {
   title: string;
   logo: string;
-  color: string;
+  color?: {
+    primary: HexColor;
+    primaryHighlighted: HexColor;
+  };
   oidcConf: {
     server: string;
     clientID: string;

@@ -1,7 +1,10 @@
 {
   "title": "Linux Client Self-Service",
   "logo": "url",
-  "color": "...",
+  "color": {
+    "primary" : "#08407E",
+    "primaryHighlighted" : "#215CAF"
+  },
   "production": false,
   "oidcConf": {
     "server": "https://access.ethz.ch/spa1/.well-known/openid-configuration",

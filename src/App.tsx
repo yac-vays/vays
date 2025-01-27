@@ -49,6 +49,7 @@ const ErrorPage = lazy(() => import('./view/pages/Error/ErrorPage'));
 //const DevInfo = lazy(() => import('./view/pages/DevInfo/DevInfo'));
 import DevInfo from './view/pages/DevInfo';
 import { generateCSP } from './session/csp';
+import { setColors } from './session/color';
 
 /**
  * The main application component that sets up the routing and context providers.
@@ -97,7 +98,7 @@ function App(): JSX.Element {
       const backends: YACBackend[] = await getBackends();
       setBackendsList(backends);
       setConfig(conf);
-      // document.documentElement.style.setProperty('--color-primary', '#00AA00');
+      setColors(conf);
       setLoading(false);
       // setTimeout(() => {
       //   driverObj.drive();

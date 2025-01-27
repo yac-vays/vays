@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import SidebarGroup from './SidebarGroup';
 import Logo from '../../../../rsc/logo/eth_logo.svg';
-import { YACBackend } from '../../../model/ConfigFetcher';
+import { getConfig, YACBackend } from '../../../model/ConfigFetcher';
 
 import VAYS_VERSION from '../../../../rsc/version';
 
@@ -17,6 +17,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, backendList }: SidebarProps) => 
   const trigger = useRef<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const sidebar = useRef<any>(null);
+
+  const logoImg = useRef<HTMLImageElement>(null);
 
   const storedSidebarExpanded = localStorage.getItem('sidebar-expanded');
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -47,6 +49,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, backendList }: SidebarProps) => 
   });
 
   useEffect(() => {
+    (async () => {
+      if (logoImg.current) logoImg.current.src = (await getConfig())?.logo ?? Logo;
+    })();
+  });
+
+  useEffect(() => {
     localStorage.setItem('sidebar-expanded', sidebarExpanded.toString());
     if (sidebarExpanded) {
       document.querySelector('body')?.classList.add('sidebar-expanded');
@@ -65,8 +73,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, backendList }: SidebarProps) => 
       {/* <!-- SIDEBAR HEADER --> */}
       <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
         <NavLink style={{ width: '100%' }} to="https://ethz.ch">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <img src={Logo} alt="Logo" />
+          <div
+            className="rounded overflow-hidden"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <img ref={logoImg} src={Logo} alt="Logo" />
           </div>
         </NavLink>
 

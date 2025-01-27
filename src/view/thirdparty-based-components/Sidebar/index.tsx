@@ -50,7 +50,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, backendList }: SidebarProps) => 
 
   useEffect(() => {
     (async () => {
-      if (logoImg.current) logoImg.current.src = (await getConfig())?.logo ?? Logo;
+      // if (logoImg.current) logoImg.current.src = (await getConfig())?.logo ?? Logo;
     })();
   });
 

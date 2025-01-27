@@ -81,7 +81,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, backendList }: SidebarProps) => 
               justifyContent: 'center',
             }}
           >
-            <img ref={logoImg} src={Logo} alt="Logo" />
+            <img src={Logo} alt="Logo" />
           </div>
         </NavLink>
 

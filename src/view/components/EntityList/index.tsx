@@ -178,7 +178,7 @@ const EntityList = ({ requestContext }: EntityListProps) => {
 
   return (
     <>
-      <section className="rounded-sm border border-stroke bg-white shadow-default py-2 dark:border-strokedark dark:bg-boxdark">
+      <section className="rounded-sm border border-stroke bg-white shadow-default py-2 dark:bg-boxdark">
         {/* Must do two seperate divs to make sure the border is showing properly when scrolling... */}
         <div
           style={{
@@ -207,11 +207,7 @@ const EntityList = ({ requestContext }: EntityListProps) => {
                   style={{ width: '100%' }}
                 >
                   <thead id="entity-table-header" className="border-separate px-4">
-                    <tr
-                      ref={headerRef}
-                      className="border-t border-stroke dark:border-strokedark"
-                      role="row"
-                    >
+                    <tr ref={headerRef} className="border-t border-stroke" role="row">
                       {tableHeaderEntries.length == 0 ? (
                         <EntityListHeaderCell
                           title=""
@@ -239,10 +235,10 @@ const EntityList = ({ requestContext }: EntityListProps) => {
                         })()
                       )}
                     </tr>
-                    <tr className="border-stroke border-b dark:border-opacity-80">
+                    <tr className="border-stroke border-b dark:border-white dark:border-opacity-60">
                       <td></td>
                     </tr>
-                    <tr className="border-stroke border-b dark:border-opacity-80">
+                    <tr className="border-stroke border-b dark:border-white dark:border-opacity-60">
                       <td></td>
                     </tr>
                   </thead>
@@ -288,7 +284,7 @@ const EntityList = ({ requestContext }: EntityListProps) => {
             )}
             {/* TODO: Find a better fix for the pagination, num entries setter for when you are using phone,
                 scrolling is in this case not that pretty. You are using too much space for the pagination probably, too. */}
-            <div className="flex justify-between border-t border-stroke px-6 pt-5 dark:border-strokedark overflow-auto">
+            <div className="flex justify-between border-t border-stroke px-6 pt-5 overflow-auto">
               <EntityListPagination
                 pageSwitch={pageSwitch}
                 currPage={currPage}

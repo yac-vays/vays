@@ -1,6 +1,6 @@
 const ErrorPage = () => {
   return (
-    <section className="rounded-sm border border-stroke bg-white py-4 shadow-default dark:border-strokedark dark:bg-boxdark">
+    <section className="rounded-sm border border-stroke bg-white py-4 shadow-default dark:bg-boxdark">
       <div
         className="max-w-screen-xl px-4 flex items-center justify-start align-middle md:px-8"
         style={{

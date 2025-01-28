@@ -23,7 +23,7 @@ const EntityListRow = ({ entryValues, requestContext, link }: EntityListRow) => 
   return (
     <>
       <tr
-        className="border-t border-stroke dark:border-strokedark hover:bg-primary-5"
+        className="border-t border-stroke hover:bg-primary-5"
         role="row"
         title={link ? 'Link to ' + link : undefined}
       >
@@ -36,9 +36,7 @@ const EntityListRow = ({ entryValues, requestContext, link }: EntityListRow) => 
               jsx.push(
                 // TODO: Make this a bit more elegant, avoid such hard coded flags.
                 <td
-                  className={`pl-8:first-child border-stroke dark:border-strokedark ${
-                    i != 0 ? 'opacity-40' : ''
-                  }`}
+                  className={`pl-8:first-child border-stroke ${i != 0 ? 'opacity-40' : ''}`}
                   style={{ paddingRight: 40 }}
                   role="cell"
                 >
@@ -69,7 +67,7 @@ const EntityListRow = ({ entryValues, requestContext, link }: EntityListRow) => 
             jsx.push(
               // TODO: Make this a bit more elegant, avoid such hard coded flags.
               <td
-                className="pl-8:first-child border-stroke dark:border-strokedark"
+                className="pl-8:first-child border-stroke"
                 style={{ paddingRight: 40 }}
                 role="cell"
               >
@@ -84,19 +82,12 @@ const EntityListRow = ({ entryValues, requestContext, link }: EntityListRow) => 
             );
           }
           jsx.push(
-            <td
-              className="pl-8:first-child border-stroke dark:border-strokedark"
-              style={{ paddingRight: 40 }}
-              role="cell"
-            >
+            <td className="pl-8:first-child border-stroke" style={{ paddingRight: 40 }} role="cell">
               <LogsField requestContext={requestContext} entityName={host} />
             </td>,
           );
           jsx.push(
-            <td
-              className="border-stroke dark:border-strokedark"
-              style={{ overflowClipMargin: 100 }}
-            >
+            <td className="border-stroke" style={{ overflowClipMargin: 100 }}>
               {/* overflow:"hidden" */}
               {/* The buttons stacking up version...*/}
               {/* <div className="flex flex-col items-center" style={{width:"100%"}}>

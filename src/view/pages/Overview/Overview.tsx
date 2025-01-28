@@ -103,7 +103,7 @@ const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) 
         </button>
       </PageHeaderTitle>
       <section
-        className={`rounded-sm border border-stroke bg-white shadow-default py-2 dark:border-strokedark dark:bg-boxdark ${
+        className={`rounded-sm border border-stroke bg-white shadow-default py-2 dark:bg-boxdark ${
           showInfoText ? 'block' : 'hidden'
         }`}
         style={{ whiteSpace: 'pre-wrap' }}
@@ -114,7 +114,6 @@ const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) 
           {requestContext.rc.accessedEntityType?.description}
         </div>
       </section>
-      <TextArea />
 
       <EntityList requestContext={requestContext.rc} />
     </>

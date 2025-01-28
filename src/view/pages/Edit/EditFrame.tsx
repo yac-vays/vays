@@ -34,12 +34,12 @@ const EditFrame = ({
     }
   };
   return (
-    <section className="rounded-sm border border-stroke bg-white py-4 shadow-default dark:border-strokedark dark:bg-boxdark">
+    <section className="rounded-sm border border-stroke bg-white py-4 shadow-default dark:bg-boxdark">
       <div
         className="relative px-4 overflow-hidden md:px-8 flex flex-col"
         style={{ minHeight: window.outerHeight - 320 }}
       >
-        {/* <section className="rounded-sm border border-stroke bg-white py-4 shadow-default dark:border-strokedark dark:bg-boxdark">
+        {/* <section className="rounded-sm border border-stroke bg-white py-4 shadow-default dark:bg-boxdark">
       <div className="relative px-4 overflow-hidden md:px-8 flex flex-col"></div> */}
 
         <div className="relative grow flex flex-col">

@@ -29,7 +29,7 @@ const SchemaWarningMessage = ({
   }
   return (
     <div className={`border-l-8 border-${color}`}>
-      <div className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-primary-2 dark:border-strokedark dark:hover:bg-meta-4">
+      <div className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-primary-2 dark:hover:bg-meta-4">
         <p className="text-sm">
           <span className=" font-bold text-plainfont">{title}</span> {subtitle}
           <Accordion

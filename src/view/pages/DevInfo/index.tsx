@@ -37,7 +37,7 @@ const DevInfo = () => {
   return (
     <>
       <PageHeaderTitle title="Developer Information" subText="" />
-      <section className="rounded-sm border border-stroke bg-white py-4 shadow-default dark:border-strokedark dark:bg-boxdark">
+      <section className="rounded-sm border border-stroke bg-white py-4 shadow-default dark:bg-boxdark">
         <div
           className="max-w-screen-xl mx-4 flex md:mx-8"
           style={{

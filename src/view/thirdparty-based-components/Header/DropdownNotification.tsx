@@ -28,7 +28,7 @@ const DropdownNotification = () => {
             setDropdownOpen(!dropdownOpen);
           }}
           to="#"
-          className="relative flex h-10 w-10 items-center justify-center rounded-full border-[0.5px] border-stroke bg-primary-5 hover:text-primary dark:border-strokedark dark:bg-meta-4 dark:text-white sm:hover:scale-125 lg:hover:scale-100 duration-500"
+          className="relative flex h-10 w-10 items-center justify-center rounded-full border-[0.5px] border-stroke bg-primary-5 hover:text-primary dark:bg-meta-4 dark:text-white sm:hover:scale-125 lg:hover:scale-100 duration-500"
         >
           <span
             className={`absolute -top-0.5 right-0 z-1 h-2 w-2 rounded-full bg-danger ${
@@ -66,7 +66,7 @@ const DropdownNotification = () => {
 
         {dropdownOpen && (
           <div
-            className={`absolute -right-27 mt-2.5 flex max-h-90 w-75 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark sm:right-0 sm:w-80 drop-shadow-md`}
+            className={`absolute -right-27 mt-2.5 flex max-h-90 w-75 flex-col rounded-sm border border-stroke bg-white shadow-default dark:bg-boxdark sm:right-0 sm:w-80 drop-shadow-md`}
           >
             <div className="px-4.5 py-3 flex flex-row">
               <h5 className="text-medium font-bold grow">Schema Warnings</h5>

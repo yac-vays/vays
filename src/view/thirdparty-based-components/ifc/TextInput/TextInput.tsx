@@ -51,7 +51,7 @@ const TextInput = ({
           type={password ? 'password' : 'text'}
           disabled={!enabled}
           defaultValue={defValue}
-          className="w-full rounded-md border border-stroke bg-transparent px-5 py-2.5 outline-none focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:focus:border-primary"
+          className="w-full rounded-md border border-stroke bg-transparent px-5 py-2.5 outline-none focus:border-primary  dark:bg-meta-4 dark:focus:border-primary"
           placeholder={ph}
           onChange={(e) => {
             setIsCurrentlyEditingString(true);

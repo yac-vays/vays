@@ -183,7 +183,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
                   <input
                     ref={this.textInputRef}
                     type="text"
-                    className="w-full rounded-md border border-stroke bg-transparent px-5 py-2.5 outline-none focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:focus:border-primary dark:text-white"
+                    className="w-full rounded-md border border-stroke bg-transparent px-5 py-2.5 outline-none focus:border-primary dark:bg-meta-4 dark:focus:border-primary dark:text-white"
                     placeholder="Enter Name..."
                   />
                 </div>
@@ -222,7 +222,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
             <div className="-mx-3 flex flex-wrap gap-y-2">
               <div className="w-1/2 h-full px-3">
                 <button
-                  className="w-full rounded border border-stroke bg-primary-5 p-3 text-center font-medium text-plain transition hover:border-meta-4 hover:bg-meta-4 hover:text-white dark:border-strokedark dark:bg-meta-4 dark:hover:border-danger dark:hover:bg-danger hover:scale-105"
+                  className="w-full rounded border border-stroke bg-primary-5 p-3 text-center font-medium text-plain transition hover:border-meta-4 hover:bg-meta-4 hover:text-white dark:bg-meta-4 dark:hover:border-danger dark:hover:bg-danger hover:scale-105"
                   onClick={() => this._cancel()}
                 >
                   Cancel

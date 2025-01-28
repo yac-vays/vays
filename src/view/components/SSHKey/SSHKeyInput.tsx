@@ -92,9 +92,7 @@ const SSHKeyInput = ({ id, placeholder, data, enabled, onChange }: SSHKeyProps) 
           />
           <div
             className={`grow flex flex-row w-full rounded-r-md border bg-transparent pl-5 pr-2 py-2.5 outline-none dark:bg-meta-4 ${
-              isEditable
-                ? 'focus:border-primary dark:focus:border-primary'
-                : 'border-stroke dark:border-strokedark'
+              isEditable ? 'focus:border-primary' : 'border-stroke'
             }`}
           >
             <input

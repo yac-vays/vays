@@ -175,7 +175,7 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
             ))}
           </ControlBar>
         </div>
-        {/* <div className='bg-white w-full h-5 static mb-6 flex gap-4 border-b border-stroke dark:border-strokedark sm:gap-10'></div> */}
+        {/* <div className='bg-white w-full h-5 static mb-6 flex gap-4 border-b border-stroke sm:gap-10'></div> */}
         {/* 0.5em */}
         <div
           className="flex flex-col rounded grow overflow-auto pb-12"

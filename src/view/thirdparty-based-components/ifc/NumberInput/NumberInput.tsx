@@ -41,7 +41,7 @@ const NumberInput = ({
         type="number"
         disabled={!enabled}
         defaultValue={inp}
-        className="w-full rounded-md border border-stroke bg-transparent px-5 py-2.5 mb-2 outline-none focus:border-primary dark:border-strokedark dark:bg-meta-4 dark:focus:border-primary"
+        className="w-full rounded-md border border-stroke bg-transparent px-5 py-2.5 mb-2 outline-none focus:border-primary  dark:bg-meta-4 dark:focus:border-primary"
         placeholder={ph.toString()}
         onChange={onChange}
       />

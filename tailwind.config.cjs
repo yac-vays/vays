@@ -23,15 +23,27 @@ module.exports = {
     },
     extend: {
       colors: {
+        /**
+         * For comfort
+         */
         current:      'currentColor',
         transparent:  'transparent',
         white:        '#FFFFFF',
         black:        '#000000',
-        plainfont:    'var(--color-plainfont)', /* MODIFIED BY DARKMODE */
-        'plainfont-inv': 'var(--color-plainfont-inv)', /* MODIFIED BY DARKMODE */
-        reducedfont:  'var(--color-reducedfont)', /* MODIFIED BY DARKMODE */
-        bodydark1:    '#DEE4EE',
-        bodydark2:    '#8A99AF',
+
+        /**
+         * Commonly used colors, which will be changed by darkmode.
+         */
+        plainfont:    'var(--color-plainfont)', 
+        'plainfont-inv': 'var(--color-plainfont-inv)', 
+        reducedfont:  'var(--color-reducedfont)', 
+        stroke:       'var(--color-stroke)', 
+        
+
+        /**
+         * Primary colors and different opacities.
+         * Dynamically configured using the config.
+         */
         primary:      'var(--color-primary)',
         'primary-2':  'var(--color-primary-2)',
         'primary-5':  'var(--color-primary-5)',
@@ -46,18 +58,22 @@ module.exports = {
         'primary-90': 'var(--color-primary-90)',
         'primary-highlighted': 'var(--color-primary-highlighted)',
         background:   'var(--color-background)',
-        stroke:       '#E2E8F0',
 
         /** Component background for dark mode. */
         boxdark:      '#24303F',
 
         /** Rear background, dark mode. (Only used there) */
         'boxdark-2':  '#1A222C',
-        strokedark:   '#2E3A47',
         'form-strokedark': '#2E3A47',
         'form-input': '#313D4A',
-        'meta-4':     '#313D4A',
+        'meta-4':     '#313D4A', /** for thirdparty components */
         danger:       '#DC3545',
+
+        /**
+         * Misc
+         */
+        bodydark1:    '#DEE4EE',
+        bodydark2:    '#8A99AF',
       },
       fontSize: {
         'title-lg': ['28px', '35px'],

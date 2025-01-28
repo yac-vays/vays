@@ -17,17 +17,12 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     #a2e66b,
     #018fa9
   );
-  /* 
-    #4cd964,
-    #5ac8fa,
-    #007aff,
-    #34aadc,
-    #5856d6,
-    #ff2d55 */
+
   --toastify-color-error: linear-gradient(
       to right,
       #ffb01d,
-      #ff4635
+      #DC3545
+      /* #ff4635 */
       
     );
     /* #d70eff */
@@ -46,6 +41,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 :root{
   --color-primary:  #08407E;
+  --color-primary-2:  color-mix(in srgb, var(--color-primary) 2% , transparent);
   --color-primary-5:  color-mix(in srgb, var(--color-primary) 5% , transparent);
   --color-primary-10: color-mix(in srgb, var(--color-primary) 10%, transparent);
   --color-primary-20: color-mix(in srgb, var(--color-primary) 20%, transparent);
@@ -61,4 +57,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
   --color-background: color-mix(in srgb, var(--color-primary) 5% , white);
 
+  --color-plainfont: #000000;
+  --color-plainfont-inv: #FFFFFF;
+  --color-reducedfont: #64748B;
 }

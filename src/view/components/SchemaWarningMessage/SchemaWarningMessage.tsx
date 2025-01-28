@@ -8,11 +8,12 @@ export interface TroubleShootMessageProps {
 }
 
 /**
+ * Schema Warning Message. The element is incorporated by the header element.
  *
  * @param priority a number between 1 and 10 with higher being more critical
  * @returns
  */
-const TroubleShootMessage = ({
+const SchemaWarningMessage = ({
   priority,
   title,
   subtitle,
@@ -28,9 +29,9 @@ const TroubleShootMessage = ({
   }
   return (
     <div className={`border-l-8 border-${color}`}>
-      <div className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4">
+      <div className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-primary-2 dark:border-strokedark dark:hover:bg-meta-4">
         <p className="text-sm">
-          <span className=" font-bold text-black dark:text-white">{title}</span> {subtitle}
+          <span className=" font-bold text-plainfont">{title}</span> {subtitle}
           <Accordion
             title="Show affected keys"
             reduced
@@ -60,4 +61,4 @@ const TroubleShootMessage = ({
   );
 };
 
-export default TroubleShootMessage;
+export default SchemaWarningMessage;

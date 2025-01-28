@@ -10,7 +10,7 @@ const PageHeaderTitle = ({ title, subText, children }: PageHeaderTitleProps) => 
       <div className="mb-5 flex items-center justify-between">
         <div>
           <div className="flex flex-row" style={{ marginLeft: 0 }}>
-            <h2 className="mb-1.5 text-title-md md:text-title-md2 font-bold text-black dark:text-white">
+            <h2 className="mb-1.5 text-title-md md:text-title-md2 font-bold text-plainfont">
               {title}
             </h2>
           </div>

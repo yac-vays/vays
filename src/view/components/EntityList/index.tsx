@@ -296,7 +296,7 @@ const EntityList = ({ requestContext }: EntityListProps) => {
                 numResultsPerPage={numResultsPerPage}
               />
               <div className="flex items-center font-medium">
-                <p className="pl-2 text-black dark:text-white">Show entries</p>
+                <p className="pl-2 text-plainfont">Show entries</p>
                 <select
                   ref={selectorRef}
                   className="bg-transparent ml-2 pl-1 rounded border border-grey"

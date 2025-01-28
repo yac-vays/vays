@@ -14,7 +14,7 @@ const NumberLog = ({
     return (
       <CircularProgressbarWithChildren
         value={100}
-        className="text-black dark:text-white opacity-10"
+        className="text-plainfont opacity-10"
         text={`NA %`}
         styles={{
           root: {
@@ -41,7 +41,7 @@ const NumberLog = ({
         // No log indicator
         <CircularProgressbarWithChildren
           value={90}
-          className="text-black dark:text-white"
+          className="text-plainfont"
           text={`NA %`}
           styles={{
             root: {
@@ -68,7 +68,7 @@ const NumberLog = ({
         // Error log indicator
         <CircularProgressbarWithChildren
           value={progress}
-          className="text-black dark:text-white"
+          className="text-plainfont"
           text={`${progress}%`}
           styles={{
             root: {
@@ -98,7 +98,7 @@ const NumberLog = ({
       ) : (
         <CircularProgressbarWithChildren
           value={progress}
-          className="text-black dark:text-white"
+          className="text-plainfont"
           text={`${progress}%`}
           styles={{
             root: {

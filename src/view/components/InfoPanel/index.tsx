@@ -51,14 +51,16 @@ const InfoPanel = ({
               tipRadius={3}
               className="dark:fill-white"
             />
-            <div className="border z-50 rounded ml-3 w-max max-w-[350px] max-h-[300px] overflow-y-auto bg-white drop-shadow-xl dark:bg-meta-4">
+            <div className="border border-plainfont z-50 rounded ml-3 w-max max-w-[350px] max-h-[300px] overflow-y-auto bg-white drop-shadow-xl dark:bg-meta-4">
               <div className="p-3">
-                <h4 className="text-center text-title-sm font-bold text-solid hyphens-auto">
+                <h4 className="text-center text-title-sm font-bold text-solid text-plainfont hyphens-auto">
                   {title}
                 </h4>
               </div>
               <div className="px-5 pt-1 pb-5 text-center">
-                <p className="font-medium whitespace-pre-line hyphens-auto">{description}</p>
+                <p className="font-medium whitespace-pre-line hyphens-auto text-reducedfont">
+                  {description}
+                </p>
               </div>
             </div>
           </div>
@@ -71,67 +73,5 @@ const InfoPanel = ({
     </>
   );
 };
-
-// import './styles.css';
-
-// function Popover() {
-//   const [isOpen, setIsOpen] = useState(false);
-
-//   const { refs, floatingStyles, context } = useFloating({
-//     open: isOpen,
-//     onOpenChange: setIsOpen,
-//     middleware: [offset(10), flip({ fallbackAxisSideDirection: 'end' }), shift()],
-//     whileElementsMounted: autoUpdate,
-//   });
-
-//   const click = useClick(context);
-//   const dismiss = useDismiss(context);
-//   const role = useRole(context);
-
-//   const { getReferenceProps, getFloatingProps } = useInteractions([click, dismiss, role]);
-
-//   const headingId = useId();
-
-//   return (
-//     <>
-//       <button ref={refs.setReference} {...getReferenceProps()}>
-//         Add review
-//       </button>
-//       {isOpen && (
-//         <FloatingFocusManager context={context} modal={false}>
-//           <div
-//             className="Popover"
-//             ref={refs.setFloating}
-//             style={floatingStyles}
-//             aria-labelledby={headingId}
-//             {...getFloatingProps()}
-//           >
-//             <h2 id={headingId}>Review balloon</h2>
-//             <textarea placeholder="Write your review..." />
-//             <br />
-//             <button
-//               style={{ float: 'right' }}
-//               onClick={() => {
-//                 console.log('Added review.');
-//                 setIsOpen(false);
-//               }}
-//             >
-//               Add
-//             </button>
-//           </div>
-//         </FloatingFocusManager>
-//       )}
-//     </>
-//   );
-// }
-
-// export default function App() {
-//   return (
-//     <div className="App">
-//       <h1>Floating UI Popover</h1>
-//       <Popover />
-//     </div>
-//   );
-// }
 
 export default InfoPanel;

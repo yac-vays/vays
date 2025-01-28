@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply font-satoshi font-normal text-base text-body bg-background relative z-1;
+    @apply font-satoshi font-normal text-base text-reducedfont bg-background relative z-1;
   }
 }
 
@@ -39,10 +39,10 @@
   @apply dark:!border-b-boxdark;
 }
 .flatpickr-calendar {
-  @apply !p-6 dark:!bg-boxdark dark:!text-bodydark dark:!shadow-8 2xsm:!w-auto;
+  @apply !p-6 dark:!bg-boxdark dark:!text-reducedfont dark:!shadow-8 2xsm:!w-auto;
 }
 .flatpickr-day {
-  @apply dark:!text-bodydark dark:hover:!border-danger dark:hover:!bg-danger;
+  @apply dark:!text-reducedfont dark:hover:!border-danger dark:hover:!bg-danger;
 }
 .flatpickr-months .flatpickr-prev-month,
 .flatpickr-months .flatpickr-next-month {
@@ -76,7 +76,7 @@ span.flatpickr-weekday,
 .flatpickr-day:focus,
 .flatpickr-day.prevMonthDay:focus,
 .flatpickr-day.nextMonthDay:focus {
-  @apply border-gray bg-gray dark:!border-danger dark:!bg-danger;
+  @apply dark:!border-danger dark:!bg-danger;
 }
 .flatpickr-day.selected,
 .flatpickr-day.startRange,

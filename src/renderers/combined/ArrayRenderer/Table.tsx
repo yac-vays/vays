@@ -70,7 +70,7 @@ const TableRow = withCustomProps((props: ItemRendererProps) => {
                 e.currentTarget.blur();
                 props.openDeleteDialog(path, props.index)();
               }}
-              className="text-[#98A6AD] hover:text-body grow items-center justify-center"
+              className="text-[#98A6AD] hover:text-plainfont grow items-center justify-center"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

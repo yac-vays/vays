@@ -12,3 +12,15 @@ export function setColors(config: AppConfig) {
       config.color.primaryHighlighted,
     );
 }
+
+export function enableDarkMode() {
+  document.documentElement.style.setProperty('--color-plainfont', '#FFFFFF');
+  document.documentElement.style.setProperty('--color-plainfont-inv', '#000000');
+  document.documentElement.style.setProperty('--color-reducedfont', '#AEB7C0');
+}
+
+export function disableDarkMode() {
+  document.documentElement.style.setProperty('--color-plainfont', '#000000');
+  document.documentElement.style.setProperty('--color-plainfont-inv', '#FFFFFF');
+  document.documentElement.style.setProperty('--color-reducedfont', '#64748B');
+}

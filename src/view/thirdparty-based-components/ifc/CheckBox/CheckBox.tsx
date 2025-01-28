@@ -66,9 +66,7 @@ const Checkbox = ({
           </div>
         </div>
         <label
-          className={`mx-${
-            minified ? '1' : '4'
-          } block text-black dark:text-white flex flex-row cursor-pointer`}
+          className={`mx-${minified ? '1' : '4'} block text-plainfont flex flex-row cursor-pointer`}
           onClick={callback}
         >
           {title}

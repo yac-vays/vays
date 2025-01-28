@@ -15,8 +15,8 @@ const SuccessNotification = ({ title, detail }: { title: string; detail: string 
         </div>
         <div>
           {/* Need to be more explicit with the text color to overwrite the default style of toastify. */}
-          <h4 className="mb-0.5 text-title-xsm font-medium text-black dark:text-white">{title}</h4>
-          <p className="text-sm font-medium dark:text-bodydark">{detail}</p>
+          <h4 className="mb-0.5 text-title-xsm font-medium text-plainfont">{title}</h4>
+          <p className="text-sm font-medium text-reducedfont">{detail}</p>
         </div>
       </div>
     </>

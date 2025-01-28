@@ -14,7 +14,7 @@ const DevInfo = () => {
       for (const be of conf.backends) {
         jsx.push(
           <p>
-            <span className="font-lg text-black dark:text-white font-bold">{be.title + ' : '}</span>
+            <span className="font-lg text-plainfont font-bold">{be.title + ' : '}</span>
             <a href={be.url} target="_blank" style={{ color: 'lightblue' }}>
               Documentation{' '}
               <svg
@@ -62,9 +62,7 @@ const DevInfo = () => {
               </svg>
             </a>
             <p className="my-5">
-              <span className="font-lg text-black dark:text-white font-bold">
-                Frontend Repository (VAYS):{' '}
-              </span>
+              <span className="font-lg text-plainfont font-bold">Frontend Repository (VAYS): </span>
               <a
                 href="https://github.com/yac-vays/vays"
                 style={{ color: 'lightblue' }}
@@ -82,9 +80,7 @@ const DevInfo = () => {
                 </svg>
               </a>
               <br />
-              <span className="font-lg text-black dark:text-white font-bold">
-                Backend Repository (YAC):{' '}
-              </span>
+              <span className="font-lg text-plainfont font-bold">Backend Repository (YAC): </span>
               <a
                 href="https://github.com/yac-vays/yac"
                 style={{ color: 'lightblue' }}

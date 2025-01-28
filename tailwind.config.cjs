@@ -23,16 +23,18 @@ module.exports = {
     },
     extend: {
       colors: {
-        current: 'currentColor',
-        transparent: 'transparent',
-        white: '#FFFFFF',
-        black: '#000000',
-        body: '#64748B',
-        bodydark: '#AEB7C0',
-        bodydark1: '#DEE4EE',
-        bodydark2: '#8A99AF',
-        primary: 'var(--color-primary)',
-        'primary-5': 'var(--color-primary-5)',
+        current:      'currentColor',
+        transparent:  'transparent',
+        white:        '#FFFFFF',
+        black:        '#000000',
+        plainfont:    'var(--color-plainfont)', /* MODIFIED BY DARKMODE */
+        'plainfont-inv': 'var(--color-plainfont-inv)', /* MODIFIED BY DARKMODE */
+        reducedfont:  'var(--color-reducedfont)', /* MODIFIED BY DARKMODE */
+        bodydark1:    '#DEE4EE',
+        bodydark2:    '#8A99AF',
+        primary:      'var(--color-primary)',
+        'primary-2':  'var(--color-primary-2)',
+        'primary-5':  'var(--color-primary-5)',
         'primary-10': 'var(--color-primary-10)',
         'primary-20': 'var(--color-primary-20)',
         'primary-30': 'var(--color-primary-30)',
@@ -43,17 +45,19 @@ module.exports = {
         'primary-80': 'var(--color-primary-80)',
         'primary-90': 'var(--color-primary-90)',
         'primary-highlighted': 'var(--color-primary-highlighted)',
-        background: 'var(--color-background)',
-        stroke: '#E2E8F0',
-        gray: '#EFF4FB',
-        'gray-2': '#F7F9FC',
-        boxdark: '#24303F',
-        'boxdark-2': '#1A222C',
-        strokedark: '#2E3A47',
+        background:   'var(--color-background)',
+        stroke:       '#E2E8F0',
+
+        /** Component background for dark mode. */
+        boxdark:      '#24303F',
+
+        /** Rear background, dark mode. (Only used there) */
+        'boxdark-2':  '#1A222C',
+        strokedark:   '#2E3A47',
         'form-strokedark': '#2E3A47',
         'form-input': '#313D4A',
-        'meta-4': '#313D4A',
-        danger: '#DC3545',
+        'meta-4':     '#313D4A',
+        danger:       '#DC3545',
       },
       fontSize: {
         'title-lg': ['28px', '35px'],

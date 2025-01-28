@@ -8,8 +8,8 @@ const ErrorPage = () => {
         }}
       >
         <div className="max-w-lg mx-auto justify-center space-y-3 text-center">
-          <h3 className="font-lg text-black dark:text-white font-bold">404 Error</h3>
-          <div className="pb-4 text-5xl font-black text-black dark:text-white">Page not found</div>
+          <h3 className="font-lg text-plainfont font-bold">404 Error</h3>
+          <div className="pb-4 text-5xl font-black text-plainfont">Page not found</div>
           <p className="font-medium">
             Sorry, the page you are looking for could not be found or has been removed.
           </p>

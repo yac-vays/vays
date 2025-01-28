@@ -157,21 +157,20 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
           >
             <div className="flex flex-row">
               <div className="grow">
-                <h3 className="text-xl font-bold text-black dark:text-white sm:text-2xl mt-0 pb-2 mr-14">
+                <h3 className="text-xl font-bold text-plainfont sm:text-2xl mt-0 pb-2 mr-14">
                   {this.state.title}
                 </h3>
                 <p className="font-medium mb-4 whitespace-pre-line hyphens-auto">
                   {this.state.text}
                 </p>
               </div>
-              <div className="mr-2 pt-2" style={{ right: 0 }}>
+              <div className="mr-2 pt-2 fill-danger" style={{ right: 0 }}>
                 <span className="mx-auto inline-block">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     height="48px"
                     viewBox="0 -960 960 960"
                     width="48px"
-                    fill="#dc3545"
                   >
                     <path d="m40-120 440-760 440 760H40Zm138-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm-40-120h80v-200h-80v200Zm40-100Z" />
                   </svg>
@@ -223,7 +222,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
             <div className="-mx-3 flex flex-wrap gap-y-2">
               <div className="w-1/2 h-full px-3">
                 <button
-                  className="w-full rounded border border-stroke bg-gray p-3 text-center font-medium text-black transition hover:border-meta-4 hover:bg-meta-4 hover:text-white dark:border-strokedark dark:bg-meta-4 dark:text-white dark:hover:border-danger dark:hover:bg-danger hover:scale-105"
+                  className="w-full rounded border border-stroke bg-primary-5 p-3 text-center font-medium text-plain transition hover:border-meta-4 hover:bg-meta-4 hover:text-white dark:border-strokedark dark:bg-meta-4 dark:hover:border-danger dark:hover:bg-danger hover:scale-105"
                   onClick={() => this._cancel()}
                 >
                   Cancel

@@ -82,7 +82,7 @@ const EditFrame = ({
                   if (!isValidating) sendYAMLData(requestEditContext);
                 }
               }}
-              className="cursor-pointer inline-flex items-center justify-center rounded border border-black dark:border-meta-4 py-1.5 px-4 m-4 text-center font-medium text-black dark:text-white hover:bg-opacity-90 hover:bg-primary hover:text-white dark:bg-meta-4 dark:hover:bg-white dark:hover:text-black"
+              className="cursor-pointer inline-flex items-center justify-center rounded border border-black dark:border-meta-4 py-1.5 px-4 m-4 text-center font-medium text-plainfont hover:bg-opacity-90 hover:bg-primary hover:text-white dark:bg-meta-4 dark:hover:bg-white dark:hover:text-black"
             >
               {isValidating ? (
                 <div

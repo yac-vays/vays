@@ -22,7 +22,7 @@ function Accordion(props: {
               }`}
               title={(isExpanded ? 'Collapse ' : 'Expand ') + props.title}
             >
-              <h4 className={`text-black dark:text-white ${props.reduced ? 'text-md' : 'text-xl'}`}>
+              <h4 className={`text-plainfont ${props.reduced ? 'text-md' : 'text-xl'}`}>
                 {props.title}
               </h4>
               <div className={`duration-500 ${isExpanded ? '' : 'rotate-180'}`}>

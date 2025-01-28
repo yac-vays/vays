@@ -33,7 +33,7 @@ const LoginView: React.FC<LoginViewProps> = ({ config }) => {
             )}
           </div>
           <div className="rounded-xl p-4 lg:p-8 xl:p-14 shadow-lg bg-white dark:bg-boxdark">
-            <div className="mb-2.5 text-3xl font-black leading-loose text-black dark:text-white">
+            <div className="mb-2.5 text-3xl font-black leading-loose text-plainfont">
               {config.title}
             </div>
             <p className="mb-12 font-medium">
@@ -45,7 +45,7 @@ const LoginView: React.FC<LoginViewProps> = ({ config }) => {
             <button
               className={`flex w-full justify-center rounded-md ${
                 iSessionStorage.isLoggedIn() ? 'bg-[grey]' : 'bg-primary'
-              } p-4 font-bold text-gray hover:bg-opacity-60`}
+              } p-4 font-bold text-plainfont-inv hover:bg-opacity-60`}
               onClick={async () => {
                 if (iSessionStorage.isLoggedIn()) {
                   logOut();

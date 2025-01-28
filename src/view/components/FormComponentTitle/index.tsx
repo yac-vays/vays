@@ -20,7 +20,7 @@ const FormComponentTitle = ({
   return (
     <>
       <div className="relative flex flex-row w-full">
-        <h4 className={`mb-0 ${large ? 'text-2xl' : 'text-xl'} text-black dark:text-white`}>
+        <h4 className={`mb-0 ${large ? 'text-2xl' : 'text-xl'} text-plainfont`}>
           {label} {required ? <span className="text-danger pr-2"> *</span> : <></>}
         </h4>
 
@@ -29,7 +29,7 @@ const FormComponentTitle = ({
         {hideAddButton ? (
           <></>
         ) : (
-          <div className="text-[#98A6AD] hover:text-body">
+          <div className="text-[#98A6AD] hover:text-plainfont">
             <button className="absolute" style={{ right: 0 }} onClick={onClick}>
               <svg
                 className="fill-current mr-3"
@@ -46,11 +46,9 @@ const FormComponentTitle = ({
         )}
       </div>
       <div className="inline flex flex-row hyphens-auto">
-        {description ?? (
-          <em className="opacity-50 text-black dark:text-white">No description provided.</em>
-        )}
+        {description ?? <em className="opacity-50 text-plainfont">No description provided.</em>}
         {errors ? (
-          <label className="inline ml-2.5 block text-black dark:text-white flex flex-row">
+          <label className="inline ml-2.5 block text-plainfont flex flex-row">
             <div className="relative">
               <ErrorButton content={errors} />
             </div>

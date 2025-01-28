@@ -132,7 +132,7 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
       >
         <button
           title={isExpertMode ? 'Toggle Standard Mode' : 'Toggle Expert Mode'}
-          className="text-[#98A6AD] hover:text-body"
+          className="text-[#98A6AD] hover:text-plainfont"
           onClick={(e) => {
             e.currentTarget.blur();
             showModalMessage(

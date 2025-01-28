@@ -26,6 +26,7 @@
  **/
 import { useEffect } from 'react';
 import useLocalStorage from './useLocalStorage';
+import { disableDarkMode, enableDarkMode } from '../../session/color';
 
 const useColorMode = () => {
   const [colorMode, setColorMode] = useLocalStorage('color-theme', 'light');
@@ -37,6 +38,7 @@ const useColorMode = () => {
     colorMode === 'dark' ? bodyClass.add(className) : bodyClass.remove(className);
     // TODO: Do better than this.
     window.dispatchEvent(new Event('theme-switch'));
+    colorMode === 'dark' ? enableDarkMode() : disableDarkMode();
   }, [colorMode]);
 
   return [colorMode, setColorMode];

@@ -77,7 +77,7 @@ const EntityListHeaderCell = ({
         }
       >
         <div className={`flex items-center ${openSearch ? 'hidden' : 'block'}`}>
-          <span className=" py-1 text-black dark:text-white grow text-left"> {title}</span>
+          <span className=" py-1 text-plainfont grow text-left"> {title}</span>
           {/* TODO:_Need to decide whether alphanumerical sorting is a sought for feature. */}
           {searchable ? (
             <div

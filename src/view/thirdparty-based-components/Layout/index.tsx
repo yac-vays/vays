@@ -19,7 +19,7 @@ const DefaultLayout: React.FC<{ children: ReactNode; backendList: YACBackend[] }
   registerModalCallback(showModal);
 
   return (
-    <div className="dark:bg-boxdark-2 dark:text-bodydark">
+    <div className="dark:bg-boxdark-2 dark:text-reducedfont">
       {/* <ErrorNotification /> */}
       <div className="flex h-screen overflow-hidden">
         <Sidebar

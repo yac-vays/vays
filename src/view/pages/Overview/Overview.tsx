@@ -13,6 +13,7 @@ import { useParams } from 'react-router-dom';
 import { YACBackend } from '../../../model/ConfigFetcher';
 import { showError } from '../../../controller/local/ErrorNotifyController';
 import { invalidateEntityListCache } from '../../../model/EntityListFetcher';
+import TextArea from '../../thirdparty-based-components/ifc/TextArea';
 
 interface OverviewPageProps {
   backends: Required<YACBackend[]>;
@@ -57,7 +58,7 @@ const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) 
     <>
       <PageHeaderTitle title={title} subText={subText}>
         <button
-          className="text-[#98A6AD] hover:text-body"
+          className="text-[#98A6AD] hover:text-plainfont"
           title="Refresh"
           onClick={() =>
             invalidateEntityListCache(requestContext.rc.yacURL, requestContext.rc.entityTypeName)
@@ -85,7 +86,7 @@ const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) 
               setShowInfoText(!showInfoText);
             }
           }}
-          className="text-[#98A6AD] hover:text-body"
+          className="text-[#98A6AD] hover:text-plainfont"
           style={{ paddingLeft: 15 }}
           title="Display Help"
         >
@@ -113,6 +114,7 @@ const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) 
           {requestContext.rc.accessedEntityType?.description}
         </div>
       </section>
+      <TextArea />
 
       <EntityList requestContext={requestContext.rc} />
     </>

@@ -33,7 +33,7 @@ const DropdownUser = () => {
         style={{ cursor: 'pointer' }}
       >
         <span className="hidden text-right lg:block">
-          <span className="block text-sm font-medium text-black dark:text-white">{userName}</span>
+          <span className="block text-sm font-medium text-plainfont">{userName}</span>
         </span>
 
         {iSessionStorage.isLoggedIn() ? (

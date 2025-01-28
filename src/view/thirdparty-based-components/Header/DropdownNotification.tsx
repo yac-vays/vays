@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import ClickOutside from '../ClickOutside';
-import TroubleShootMessage, { TroubleShootMessageProps } from './TroubleShootMessage';
+import SchemaWarningMessage, {
+  TroubleShootMessageProps,
+} from '../../components/SchemaWarningMessage/SchemaWarningMessage';
 import troubleshootCtrlState from '../../../controller/state/TroubleShootState';
 import {
   clearWarningMessageBuffer,
@@ -79,7 +81,7 @@ const DropdownNotification = () => {
                   const jsx = [];
                   for (const elt of content) {
                     jsx.push(
-                      <TroubleShootMessage
+                      <SchemaWarningMessage
                         priority={elt.prop.priority}
                         title={elt.prop.title}
                         affectedKeys={elt.prop.affectedKeys}

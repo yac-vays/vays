@@ -1,6 +1,6 @@
-# React Guide and VAYS Wiki
+# Technology Onboarding Info
 
-## Preparation
+## React
 To get started with React, the best way is getting hands-on. So get the react seed app,
 clone it and play around by adding your own components.
 
@@ -20,7 +20,7 @@ Further resources that you may enjoy are
 https://link.springer.com/book/10.1007/978-1-4842-9855-8
 
 
-### Common Errors
+### React - Common Errors
 Beginner's mistake: Make sure that your components are always returning a single element. In case you have a collection of HTML elements
 to return, rather than a single one, you need to wrap them into a JSX element like this:
 
@@ -35,7 +35,7 @@ const Component = () => {
 }
 ```
 
-### Functional vs. Class components
+#### Functional vs. Class components
 You may stuble on code where a component is defined as a class, rather than a function.
 Generally, React allows both. Class is typically considered legacy.
 
@@ -45,11 +45,8 @@ The downside there is that a functional component cannot have methods, unlike cl
 reason, a very few components in the GUI use this, namely the modal. It is a singleton and upon invoking 
 `show(...)` the modal is displayed.
 
-### Global accessibility of hooks
-Note that hooks typically need to be applied *inside of the component which defines them*.
 
-
-### Performance
+#### Performance
 https://react.dev/reference/react/memo
 
 
@@ -80,7 +77,7 @@ You can see the following items:
 - onChange: The callback called when the data changes. Note that the renderers have some control over when
     exactly this happens. This is very important for performance. (See also section about debouncing).
 
-### Other resources you may find interesting
+#### Other resources you may find interesting
 - The JSON Forms documentation for custom renderers at https://jsonforms.io/docs/tutorial/custom-renderers
 - The following discussions
     - For passing custom props https://jsonforms.discourse.group/t/how-do-i-pass-custom-props/2110/7
@@ -112,8 +109,8 @@ export const TextControlTester: RankedTester = rankWith(
 In the following, there is a basic TextControl, which displays the text boxes.
 ```jsx
 export const TextControl = (props: ControlProps) => {
-    console.log(props.handleChange)
-    const eventToValue = (ev: any) =>
+
+const eventToValue = (ev: any) =>
         ev.target.value === '' ? undefined : ev.target.value;
     const [_, onChange, onClear] = useDebouncedChange(
         props.handleChange,
@@ -150,18 +147,16 @@ Otherwhise, the control will be missing a number of important props, such as
 
 Beware to not use `useState` and corresponding setter hooks inside custom control components.
 Calling a setter causes a rerender to be queued. This can sometimes interfere with the JSON forms library
-which manages rerendering of the custom control itself.
+which manages rerendering of the custom control itself. The endresult is an infinite loop, which json form does abort early by throwing an error.
 
 
 #### Performance trap tight validation: Use Debouncing for text input
 
 To make sure that the GUI runs smooth, validates should only be performed rarely.
-Note that validates usually happen when the onchange callback is called too.
+Validates happen when the onchange callback is called.
 
-[TBD]
 Note that the entire form is validated at once. Thus, you need to make sure this happens rarely,
 or the user will eventually no longer be able to type, once the json schema reaches a certain size.
-(This is reached quickly.)
 
 
 #### Other performance tips

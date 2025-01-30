@@ -11,14 +11,8 @@ function getCertificate(path) {
 }
 export default defineConfig({
   plugins: [react()],
-//   build: {
-//     rollupOptions: {
-//       external: ['monaco-editor']  // Monaco can be loaded externally to avoid bundling
-//     }
-//   }
-// ,
+  build: { sourcemap: false },
   server:{
-
     host: '127.0.0.1',
     port: 5173,
     https: {

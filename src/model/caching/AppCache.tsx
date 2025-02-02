@@ -1,10 +1,10 @@
-import { hashCode } from '../utils/hashUtils';
-import { Nullable } from '../utils/typeUtils';
+import { hashCode } from '../../utils/hashUtils';
+import { Nullable } from '../../utils/types/typeUtils';
 import CacheNode from './CacheNode';
 
 const BLOCKINGWAIT_DURATION = 100;
 
-class AppCache {
+export class AppCache {
   private _nodes: { [key: string]: CacheNode } = {};
 
   registerContext(ctx: string, ttl: number = 0): boolean {
@@ -87,9 +87,3 @@ class AppCache {
     return hashCode(yacBackendURL + apiCall);
   }
 }
-
-const VAYS_CACHE = new AppCache();
-VAYS_CACHE.registerContext('EntityType');
-VAYS_CACHE.registerContext('EntityList');
-VAYS_CACHE.registerContext('EntityLogs', 30_000);
-export default VAYS_CACHE;

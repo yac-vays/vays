@@ -1,5 +1,4 @@
-import { Nullable } from '../../utils/typeUtils';
-import { TroubleShootMessageProps } from '../../view/thirdparty-based-components/Header/TroubleShootMessage';
+import { TroubleShootMessageProps } from '../../view/components/SchemaWarningMessage/SchemaWarningMessage';
 
 /**
  * The State for the Notification controller.

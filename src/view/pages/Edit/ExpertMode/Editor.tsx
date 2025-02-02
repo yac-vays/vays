@@ -15,7 +15,7 @@ import { debounce } from 'lodash';
 import editorPlugins, { editorSetupPlugins } from './EditorPlugins';
 import Accordion from '../../../components/Accordion/Accordion';
 import TextInput from '../../../thirdparty-based-components/ifc/TextInput/TextInput';
-import { RequestEditContext } from '../../../../controller/global/URLValidation';
+import { RequestEditContext } from '../../../../utils/types/internal/request.js';
 import SubLoader from '../../../thirdparty-based-components/SubLoader';
 import {
   getCurrentContext,

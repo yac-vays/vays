@@ -1,4 +1,4 @@
-import { isInjectedNameKey } from '../../schema/injectName';
+import { isInjectedNameKey } from '../../utils/schema/injectName';
 import { hashCode } from '../../utils/hashUtils';
 import troubleshootCtrlState from '../state/TroubleShootState';
 

@@ -1,4 +1,4 @@
-import { Nullable } from '../../utils/typeUtils';
+import { Nullable } from '../../utils/types/typeUtils';
 
 /**
  * The State for the EntityList controller.

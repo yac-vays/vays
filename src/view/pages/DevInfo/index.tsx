@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getConfig } from '../../../model/ConfigFetcher';
+import { getConfig } from '../../../model/config';
 import PageHeaderTitle from '../../thirdparty-based-components/PageTitle/PageHeaderTitle';
 
 const DevInfo = () => {

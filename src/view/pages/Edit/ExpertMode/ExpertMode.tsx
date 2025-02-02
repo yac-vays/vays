@@ -1,4 +1,4 @@
-import { RequestEditContext } from '../../../../controller/global/URLValidation';
+import { RequestEditContext } from '../../../../utils/types/internal/request';
 // import Editor from ;
 
 import { lazy, Suspense } from 'react';

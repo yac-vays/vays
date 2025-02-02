@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import { showModalMessage } from '../controller/global/ModalController';
-import { RequestEditContext } from '../controller/global/URLValidation';
-import { getEntityData } from '../model/EntityDataFetcher';
-import { getObjectDiff, transformObjectUsingTitle } from '../utils/userInputUtils/objectdiff';
+import { RequestEditContext } from './types/internal/request';
+import { getEntityData } from '../model/entityData';
+import { getObjectDiff, transformObjectUsingTitle } from './objectdiff';
 import { parse } from 'yaml';
 import { retreiveSchema } from '../controller/local/EditController/shared';
 

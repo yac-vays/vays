@@ -1,6 +1,6 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
-import { RequestEditContext } from '../../../../../controller/global/URLValidation';
+import { RequestEditContext } from '../../../../../utils/types/internal/request';
 
 export default async function editorErrorDecoration(
   ed: monaco.editor.IStandaloneCodeEditor,

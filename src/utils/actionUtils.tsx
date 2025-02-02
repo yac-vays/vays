@@ -1,4 +1,4 @@
-import { ActionDecl } from '../model/EntityListFetcher';
+import { ActionDecl } from './types/api';
 
 export function isTriggable(ctx: 'create' | 'change' | 'delete', act: ActionDecl) {
   let hasHook = false;

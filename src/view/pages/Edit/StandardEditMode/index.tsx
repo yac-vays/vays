@@ -7,7 +7,7 @@ import { JsonFormsCore } from '@jsonforms/core';
 import FormsErrorBoundary from './ErrorBoundary';
 
 import { customRenderers } from '../../../../renderers';
-import { RequestEditContext } from '../../../../controller/global/URLValidation';
+import { RequestEditContext } from '../../../../utils/types/internal/request';
 import { showError } from '../../../../controller/local/ErrorNotifyController';
 import { updateSchema } from '../../../../controller/local/EditController/StandardMode/StandardEditController';
 import {
@@ -17,7 +17,7 @@ import {
 } from '../../../../controller/local/EditController/StandardMode/StandardState';
 import { setCurrentContext } from '../../../../controller/local/EditController/ExpertMode/EditorState';
 // import { Nullable } from '../../../../utils/typeUtils';
-import { isValidDataObject } from '../../../../schema/injectName';
+import { isValidDataObject } from '../../../../utils/schema/injectName';
 import editingState from '../../../../controller/state/EditCtrlState';
 import SubLoader from '../../../thirdparty-based-components/SubLoader';
 import NoDataIndicator from '../../../components/NoDataIndicator';

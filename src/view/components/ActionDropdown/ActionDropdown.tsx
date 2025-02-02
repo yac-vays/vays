@@ -4,11 +4,11 @@ import {
   positionDropdownElement,
   registerTableScrollContainerEvent,
 } from '../../../controller/local/Overview/EntityListController';
-import { GUIActionDropdownArg } from '../../../controller/local/Overview/ActionController';
+import { GUIActionDropdownArg } from '../../../utils/types/internal/actions';
 import { MINWIDTH_COLUMN } from '../EntityList/EntityListHeaderCell';
-import { RequestContext } from '../../../controller/global/URLValidation';
+import { RequestContext } from '../../../utils/types/internal/request';
 import { hashCode } from '../../../utils/hashUtils';
-import { Nullable } from '../../../utils/typeUtils';
+import { Nullable } from '../../../utils/types/typeUtils';
 
 interface ActionDropdownProps {
   actions: GUIActionDropdownArg[];

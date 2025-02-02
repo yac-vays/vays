@@ -3,7 +3,7 @@ import eth_logo_dark from '../../../../rsc/logo/eth_logo.svg';
 import { useEffect, useState } from 'react';
 import { navigateToURL } from '../../../controller/global/URLValidation';
 import { getUserName, logOut, performDiscovery } from '../../../session/login/loginProcess';
-import { AppConfig } from '../../../model/ConfigFetcher';
+import { AppConfig } from '../../../utils/types/config';
 import iSessionStorage from '../../../session/storage/SessionStorage';
 
 interface LoginViewProps {

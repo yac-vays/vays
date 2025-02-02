@@ -1,24 +1,28 @@
 import { ReactNode } from 'react';
-import { ActionsColumnResults } from '../../../controller/local/Overview/ActionController';
+import { ActionsColumnResults } from '../../../utils/types/internal/actions';
 import ActionButton from '../Buttons/ActionButton';
 import ActionDropdown from '../ActionDropdown/ActionDropdown';
-import { RequestContext } from '../../../controller/global/URLValidation';
+import { RequestContext } from '../../../utils/types/internal/request';
 import { useModalContext } from '../Modal/ModalContext';
 import 'react-circular-progressbar/dist/styles.css';
 import LogsField from './LogsField';
-import { Nullable } from '../../../utils/typeUtils';
+import { Nullable } from '../../../utils/types/typeUtils';
 
 interface EntityListRow {
   entryValues: string[];
   requestContext: RequestContext;
   link: Nullable<string>;
+  actionPair: ActionsColumnResults;
+  entityName: string;
 }
 
-const EntityListRow = ({ entryValues, requestContext, link }: EntityListRow) => {
-  const tmp = entryValues[entryValues.length - 1] as any;
-  const actionPair: ActionsColumnResults = tmp.actionPair;
-  const host: string = tmp.host;
-
+const EntityListRow = ({
+  entryValues,
+  requestContext,
+  link,
+  actionPair,
+  entityName,
+}: EntityListRow) => {
   const { showModal } = useModalContext();
   return (
     <>
@@ -83,7 +87,7 @@ const EntityListRow = ({ entryValues, requestContext, link }: EntityListRow) => 
           }
           jsx.push(
             <td className="pl-8:first-child border-stroke" style={{ paddingRight: 40 }} role="cell">
-              <LogsField requestContext={requestContext} entityName={host} />
+              <LogsField requestContext={requestContext} entityName={entityName} />
             </td>,
           );
           jsx.push(
@@ -103,7 +107,7 @@ const EntityListRow = ({ entryValues, requestContext, link }: EntityListRow) => 
                         <ActionButton
                           actArgs={act}
                           isLeft={isLeft}
-                          entityName={host}
+                          entityName={entityName}
                           requestContext={requestContext}
                           alertEnableCallback={(
                             title: string,
@@ -124,7 +128,7 @@ const EntityListRow = ({ entryValues, requestContext, link }: EntityListRow) => 
                   })()}
                 </div>
                 <ActionDropdown
-                  entityName={host}
+                  entityName={entityName}
                   actions={actionPair.dropdownActs}
                   requestContext={requestContext}
                 />

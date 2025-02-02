@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { YACBackend } from '../../../model/ConfigFetcher';
+import { YACBackend } from '../../../utils/types/config';
 import SidebarGroupHeader from './SidebarGroupHeader';
 import SidebarGroupEntry from './SidebarGroupEntry';
-import { EntityTypeDecl, getEntityTypes } from '../../../model/EntityListFetcher';
+import { getEntityTypes } from '../../../model/entityType';
+import { EntityTypeDecl } from '../../../utils/types/api';
 import { buildOverviewURL } from '../../../controller/global/URLValidation';
 import iLocalStorage from '../../../session/persistent/LocalStorage';
 import iSessionStorage from '../../../session/storage/SessionStorage';
@@ -28,7 +29,7 @@ const SidebarGroup = ({ yacBackendObject, isOpen }: SidebarLinkGroupProps) => {
           await new Promise((res) => setTimeout(res, 500));
         }
       }
-      const data = await getEntityTypes(yacBackendObject.name, yacBackendObject.title);
+      const data = await getEntityTypes(yacBackendObject);
       setEntityList(data);
     }
     loadingEntityTypes();

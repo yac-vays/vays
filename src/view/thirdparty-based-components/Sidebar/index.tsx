@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import SidebarGroup from './SidebarGroup';
 import Logo from '../../../../rsc/logo/eth_logo.svg';
-import { getConfig, YACBackend } from '../../../model/ConfigFetcher';
+import { getConfig } from '../../../model/config';
+import { YACBackend } from '../../../utils/types/config';
 
 import VAYS_VERSION from '../../../../rsc/version';
 

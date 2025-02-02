@@ -1,7 +1,7 @@
-import { RequestContext, RequestEditContext } from '../controller/global/URLValidation';
-import { ActionDecl } from '../model/EntityListFetcher';
-import { ValidateResponse } from '../model/ValidatorClient';
-import { actions2URLQuery, isTriggable } from '../utils/actionUtils';
+import { RequestContext, RequestEditContext } from '../types/internal/request';
+import { ActionDecl } from '../types/api';
+import { ValidateResponse } from '../types/internal/validation';
+import { actions2URLQuery, isTriggable } from '../actionUtils';
 import { injectControls, injectGeneralUICategory } from './injectName';
 
 const INJECTED_ACTION_BASENAME = 'action39242yiwqj3enionsoiufn3i4d2q';

@@ -3,32 +3,15 @@ import {
   getActionCallback,
   OPERATIONS,
   OPERATIONS_META,
-} from '../../../model/ActionCaller';
-import { ActionDecl, EntityObject, FavOpObject } from '../../../model/EntityListFetcher';
-import { RequestContext } from '../../global/URLValidation';
+} from '../../../model/action';
+import { ActionDecl, EntityObject, FavOpObject } from '../../../utils/types/api';
+import {
+  ActionsColumnResults,
+  GUIActionButtonArg,
+  GUIActionDropdownArg,
+} from '../../../utils/types/internal/actions';
+import { RequestContext } from '../../../utils/types/internal/request';
 
-export interface GUIActionButtonArg {
-  action: ActionDecl;
-  isAllowed: boolean;
-  /**
-   *
-   * @param requestContext
-   * @param entityName
-   * @param actionName
-   * @returns A boolean, indicating, whether the action worked.
-   */
-  performAction: () => Promise<boolean>;
-}
-
-export interface GUIActionDropdownArg {
-  action: ActionDecl;
-  performAction: () => Promise<boolean>;
-}
-
-export interface ActionsColumnResults {
-  favActs: GUIActionButtonArg[];
-  dropdownActs: GUIActionDropdownArg[];
-}
 export function getActions(
   requestContext: RequestContext,
   entity: EntityObject,
@@ -120,7 +103,6 @@ function __isFav(actionName: string, isAction: boolean, favorites: FavOpObject[]
   return false;
 }
 /**
- * TODO: Make this more efficient (find more efficient algorithm)
  * @param favorites
  * @param actions
  * @param yacURL

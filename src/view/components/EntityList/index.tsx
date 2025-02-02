@@ -1,21 +1,20 @@
 import { ReactNode, RefObject, useEffect, useRef, useState } from 'react';
 import './entity-list-styles.css';
 import EntityListHeaderCell from './EntityListHeaderCell';
-import { RequestContext } from '../../../controller/global/URLValidation';
+import { RequestContext } from '../../../utils/types/internal/request';
 import EntityListRow from './EntityListRow';
 import {
   getHeaderEntries,
-  QueryResponse,
   fetchEntities,
   reload,
   registerTableScrollContainer,
-  QueryResult,
 } from '../../../controller/local/Overview/EntityListController';
+import { QueryResponse, QueryResult } from '../../../utils/types/internal/entityList';
 import SubLoader from '../../thirdparty-based-components/SubLoader';
 import NoDataIndicator from '../NoDataIndicator';
-import { registerEntityListInvalidationHook } from '../../../model/EntityListFetcher';
+import { registerEntityListInvalidationHook } from '../../../model/entityList';
 import { EntityListPagination } from './Pagination';
-import { invalidateLogCache } from '../../../model/LogsFetcher';
+import { invalidateLogCache } from '../../../model/logs';
 
 interface EntityListProps {
   requestContext: RequestContext;
@@ -252,9 +251,11 @@ const EntityList = ({ requestContext }: EntityListProps) => {
                           for (let i = 0; i < tableEntries.length; i++) {
                             jsx.push(
                               <EntityListRow
+                                entityName={tableEntries[i].entityName}
                                 entryValues={tableEntries[i].elt}
                                 requestContext={requestContext}
                                 link={tableEntries[i].isLink}
+                                actionPair={tableEntries[i].actionPair}
                               />,
                             );
                           }

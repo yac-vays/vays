@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RequestEditContext } from '../../../controller/global/URLValidation';
+import { RequestEditContext } from '../../../utils/types/internal/request';
 import ExpertMode from './ExpertMode/ExpertMode';
 import StandardEditMode from './StandardEditMode';
 import { sendFormData } from '../../../controller/local/EditController/StandardMode/StandardEditController';

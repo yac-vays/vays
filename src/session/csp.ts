@@ -1,4 +1,4 @@
-import { AppConfig } from '../model/ConfigFetcher';
+import { AppConfig } from '../utils/types/config';
 
 export function generateCSP(config: AppConfig) {
   const cspMetaTag = document.createElement('meta');

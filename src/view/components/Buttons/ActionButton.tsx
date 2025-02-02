@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { GUIActionButtonArg } from '../../../controller/local/Overview/ActionController';
-import { RequestContext } from '../../../controller/global/URLValidation';
+import { GUIActionButtonArg } from '../../../utils/types/internal/actions';
+import { RequestContext } from '../../../utils/types/internal/request';
 
 interface ActionButtonProps {
   actArgs: GUIActionButtonArg;

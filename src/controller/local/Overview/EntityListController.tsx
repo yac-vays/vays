@@ -2,87 +2,27 @@
  * Controller element for the EntityList in the Overview page.
  */
 
-import { EntityObject, getEntityList } from '../../../model/EntityListFetcher';
-import { Nullable } from '../../../utils/typeUtils';
-import { RequestContext } from '../../global/URLValidation';
+import { getEntityList } from '../../../model/entityList';
+import { EntityObject } from '../../../utils/types/api';
+import { Nullable } from '../../../utils/types/typeUtils';
+import { RequestContext } from '../../../utils/types/internal/request';
 import entityListCtrlState from '../../state/EntityListCtrlState';
 import { getActions } from './ActionController';
-
-export interface QueryResult {
-  isLink: Nullable<string>;
-  elt: string[];
-}
-
-export interface QueryResponse {
-  entityName: string | null;
-  partialResults: QueryResult[];
-  totalNumberOfResults: number;
-}
+import { QueryResponse, QueryResult } from '../../../utils/types/internal/entityList';
+import { performSearch } from './SearchController';
 
 /**
- * Assumes that requestContext.accessedEntityType?.options is not undefined
- * TODO: Fix search for boolean values.
- * @param requestContext
- * @param entities
- * @param searchList
- * @returns
- */
-function _performSearch(
-  requestContext: RequestContext,
-  entities: EntityObject[],
-  searchQueries: (string | null)[],
-) {
-  let filteredEntities: EntityObject[] = [];
-  const searchList = searchQueries.map((v) => v?.toLowerCase());
-  for (const entity of entities) {
-    let i: number = 1;
-    let passed = true;
-    const hasNameSearch = searchList[0] != null && searchList[0] != '';
-    if (hasNameSearch) {
-      if (!entity.name.includes(searchList[0] as string)) {
-        continue;
-      }
-    }
-    for (const option of requestContext.accessedEntityType?.options as object[]) {
-      // TODO: This is ugly, do better typing!
-      const value: string = (
-        (entity.options as any)[(option as any).name]?.toString() ?? ''
-      ).toLowerCase();
-      if (value in (option as any).aliases) {
-        const actualValue: string = (option as any).aliases[value].toLowerCase();
-        // if (searchList[i] != null)
-        // console.log(searchList[i]);
-        // TODO check the type warning on the searchList again..
-        if (searchList[i] != null && !actualValue.includes(searchList[i] as string)) {
-          passed = false;
-          break;
-        }
-      } else if (
-        searchList[i] != null &&
-        value != undefined &&
-        !value.includes(searchList[i] as string)
-      ) {
-        passed = false;
-        break;
-      } else if (searchList[i] != null && searchList[i] != '' && (value === '' || value == null)) {
-        passed = false;
-        break;
-      }
-      i++;
-    }
-    if (passed) filteredEntities.push(entity);
-  }
-  return filteredEntities;
-}
-
-/**
- * Currently does not allocate more stuff.
- * @param requestContext
- * @param numOfResults
- * @param searchDict TODO: Currently unused.
- * @returns
+ * Fetches a list of entities based on the provided request context, pagination parameters, and optional search criteria.
  *
- * Allowed search parameters so far is ONLY THE OPTIONS.
+ * @param requestContext - The context of the request, including the entity type and other relevant information.
+ * @param maxNumOfResults - The maximum number of results to return.
+ * @param offset - The starting index for the results to return.
+ * @param searchList - An optional list of search terms to filter the entities.
+ * @returns A promise that resolves to a QueryResponse containing the entity name, partial results, and the total number of results.
+ *
+ * @remarks
+ * - If the accessed entity type or its options are undefined, the function returns an empty result set.
+ * - The results are paginated based on the provided offset and maximum number of results.
  */
 export async function fetchEntities(
   requestContext: RequestContext,
@@ -101,44 +41,27 @@ export async function fetchEntities(
     };
   }
 
-  // TODO: Need to set the right parameters
   let entities: EntityObject[] = await getEntityList(requestContext);
 
   // Perform search
   // TODO: Make this more performant.
   if (searchList != null) {
-    entities = _performSearch(requestContext, entities, searchList);
+    entities = performSearch(requestContext, entities, searchList);
   }
 
   let entityList: QueryResult[] = [];
   const numResults = Math.min(offset + maxNumOfResults, entities.length);
   for (let i = offset; i < numResults; i++) {
     const entity = entities[i];
-    let values = [entity.name];
-    // TODO: Required like this to ensure consistent ordering?
-    // Probably not, since expert mode! The order may have been permuted.
-    for (const option of requestContext.accessedEntityType?.options) {
-      // TODO: This is ugly, do better typing!
-      const value: string = (entity.options as any)[(option as any).name] as string;
-      if (value in (option as any).aliases) {
-        values.push((option as any).aliases[value]);
-      } else if (value == null) {
-        // TODO: Make this italics, rather than normal text.
-        // Can maybe leave this code and just filter for this flag.
-        values.push('(None)');
-      } else {
-        values.push(value.toString().replaceAll(',', ', ')); //value.toString()
-      }
-    }
-    values.push('Not available');
-    // TODO: Fix typing!!!
-    values.push({
+    const values = representEntity(entity, requestContext);
+
+    entityList.push({
+      isLink: entity.link,
+      elt: values,
       actionPair: getActions(requestContext, entity),
-      host: entity.name,
-    } as unknown as string);
-    entityList.push({ isLink: entity.link, elt: values });
+      entityName: entity.name,
+    });
   }
-  // TODO: Do better typing for the value list. It is not just all strings!
   return {
     entityName: requestContext.entityTypeName,
     partialResults: entityList,
@@ -146,6 +69,55 @@ export async function fetchEntities(
   };
 }
 
+/**
+ * Represents an entity by extracting and formatting its relevant information.
+ *
+ * @param entity - The entity object containing the data to be represented.
+ * @param requestContext - The context of the request, including accessed entity type and options.
+ * @returns An array of strings representing the entity's formatted values.
+ *
+ * @remarks
+ * - The function iterates over the options of the accessed entity type from the request context.
+ * - If the value is found in the option's aliases, the alias is used.
+ * - If the value is null, it adds '(None)' to the values array.
+ * - The function ensures that commas in the values are properly spaced.
+ * - Additional values such as 'Logs' and 'Actions' are added to the end
+ *
+ */
+function representEntity(entity: EntityObject, requestContext: RequestContext): string[] {
+  let values = [entity.name];
+  for (const option of requestContext.accessedEntityType?.options!) {
+    // TODO: This is ugly, do better typing!
+    const value: string = (entity.options as any)[(option as any).name] as string;
+    if (value in (option as any).aliases) {
+      values.push((option as any).aliases[value]);
+    } else if (value == null) {
+      // TODO: Make this italics, rather than normal text.
+      // Can maybe leave this code and just filter for this flag.
+      values.push('(None)');
+    } else {
+      values.push(value.toString().replaceAll(',', ', '));
+    }
+  }
+  values.push('Logs');
+  values.push('Actions');
+
+  return values;
+}
+
+/**
+ * Generates an array of header entries based on the provided request context.
+ *
+ * @param requestContext - The context of the request containing the accessed entity type and its options.
+ * @returns An array of strings representing the header entries.
+ * If the accessed entity type or its options are undefined or null, an empty array is returned.
+ *
+ * The header entries include:
+ * - 'Name': A default entry.
+ * - Titles of the options from the accessed entity type.
+ * - 'Logs': A placeholder for logs (needs further validation).
+ * - 'Actions': A default entry for actions.
+ */
 export function getHeaderEntries(requestContext: RequestContext): string[] {
   if (
     requestContext.accessedEntityType == undefined ||
@@ -173,7 +145,6 @@ export interface EntityListVariableHandlers {
 }
 
 /**
- * TODO: Enable search queries.
  * @param requestContext
  * @param param1
  * @param numResultsPerPage

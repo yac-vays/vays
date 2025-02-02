@@ -1,13 +1,15 @@
-import { navigateToURL, RequestEditContext } from '../../global/URLValidation';
-import { getSchema, ValidateResponse } from '../../../model/ValidatorClient';
-import { NameGeneratedCond } from '../../../model/EntityListFetcher';
-import { Nullable } from '../../../utils/typeUtils';
-import { getEntityData } from '../../../model/EntityDataFetcher';
 import editingState from '../../state/EditCtrlState';
-import { injectSettableName } from '../../../schema/injectName';
-import { insertDefaults, mergeDefaults } from '../../../schema/defaultsHandling';
-import { injectAction, insertActionData, popActions } from '../../../schema/injectActions';
+import { navigateToURL } from '../../global/URLValidation';
 import { updateSchema } from './StandardMode/StandardEditController';
+import { getEntityData } from '../../../model/entityData';
+import { getSchema } from '../../../model/validate';
+import { ValidateResponse } from '../../../utils/types/internal/validation';
+import { RequestEditContext } from '../../../utils/types/internal/request';
+import { NameGeneratedCond } from '../../../utils/types/api';
+import { Nullable } from '../../../utils/types/typeUtils';
+import { injectSettableName } from '../../../utils/schema/injectName';
+import { insertDefaults, mergeDefaults } from '../../../utils/schema/defaultsHandling';
+import { injectAction, insertActionData, popActions } from '../../../utils/schema/injectActions';
 
 export async function retreiveSchema(
   requestEditContext: RequestEditContext,
@@ -34,7 +36,6 @@ async function retreiveEditSchema(
   preventInjectName: boolean = false,
   preventInjectActions: boolean = false,
 ): Promise<ValidateResponse | null> {
-  console.log('Edit Controller [RECV]: Got request to get UPDATE schema');
   if (requestEditContext.entityName == null) return null;
 
   const entityData = await getEntityData(requestEditContext.entityName, requestEditContext.rc);
@@ -72,8 +73,6 @@ async function retreiveNewCreateSchema(
   preventInjectName: boolean = false,
   preventInjectActions: boolean = false,
 ): Promise<ValidateResponse | null> {
-  console.log('Edit Controller [RECV]: Got request to get initial schema');
-  console.log(requestEditContext);
   const editActions = popActions({}, requestEditContext.rc);
 
   let valResp: Nullable<ValidateResponse> = await getSchema(requestEditContext, editActions);
@@ -81,17 +80,12 @@ async function retreiveNewCreateSchema(
     return null;
   }
 
-  console.error(requestEditContext);
   if (!preventInjectActions) {
     valResp = insertActionData(injectAction(valResp, requestEditContext), editActions);
   }
-  console.error('Edit Controller [RECV]: Got schema');
-
-  console.log(valResp);
 
   insertDefaults(valResp);
 
-  console.error(requestEditContext);
   return await updateSchema(valResp.data, requestEditContext, false, false);
   // if (valResp == null) return null;
   // if (

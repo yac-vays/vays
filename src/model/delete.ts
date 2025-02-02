@@ -1,5 +1,5 @@
-import { RequestContext } from '../controller/global/URLValidation';
-import { Nullable } from '../utils/typeUtils';
+import { RequestContext } from '../utils/types/internal/request';
+import { Nullable } from '../utils/types/typeUtils';
 import { sendRequest } from '../utils/AuthedRequest';
 import { showError } from '../controller/local/ErrorNotifyController';
 

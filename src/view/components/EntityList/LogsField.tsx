@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { RequestContext } from '../../../controller/global/URLValidation';
-import { EntityLog, getEntityLogs, isLogCached } from '../../../model/LogsFetcher';
+import { RequestContext } from '../../../utils/types/internal/request';
+import { getEntityLogs, isLogCached } from '../../../model/logs';
+import { EntityLog } from '../../../utils/types/api';
 import BoolLog from './LogSymbols/BoolLog';
 import NumberLog from './LogSymbols/NumberLog';
 import MessageLog from './LogSymbols/MessageLog';

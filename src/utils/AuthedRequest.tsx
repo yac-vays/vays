@@ -1,12 +1,16 @@
-import VAYS_CACHE from '../caching/AppCache';
+import VAYS_CACHE from '../model/caching';
 import { showError } from '../controller/local/ErrorNotifyController';
 import { getTokenFromStorage } from '../session/login/loginProcess';
-// TODO: Revert
-import { logError } from './logger';
-import { Nullable } from './typeUtils';
+import { Nullable } from './types/typeUtils';
 
 /**
- * TODO: This function should be rewritten, probably once authentication is worked on.
+ * Request some resource. WILL ATTACH THE TOKEN, so only use for YAC requests.
+ * In the future, the token will noo longer be attached explicitly, but stored as secure cookie.
+ * If cachecontext is supplied, then the cache will be checked for a previous answer
+ * and returned if available. Else, the resource will be fetched and cached.
+ * If caching is enabled and some other request for this resource is already
+ * ongoing, then this request will be blocked until the other request has succeeded.
+ *
  * @param URL The full URL to be accessed.
  * @param method The method to use.
  * @param requestBody the body as string
@@ -88,14 +92,6 @@ export async function sendRequest(
       .then((resp) => resp)
       .catch(resultCallback);
   }
-
-  // console.error('-- REQUEST');
-  // console.error(resp.json());
-  // console.error('-- DONE');
-  // console.error(resp);
-  // console.error(resp.status);
-  // console.error(resp.body);
-  // console.error(JSON.stringify(resp));
 
   if (cacheContext) {
     VAYS_CACHE.preCacheUnregister(cacheContext, URL);

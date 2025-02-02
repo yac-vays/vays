@@ -1,8 +1,8 @@
-import { RequestContext } from '../controller/global/URLValidation';
-import { NameGeneratedCond } from '../model/EntityListFetcher';
-import { ValidateResponse } from '../model/ValidatorClient';
-import { Nullable } from '../utils/typeUtils';
-import { GLOBAL_YAC_REGEX } from '../utils/constants';
+import { RequestContext } from '../types/internal/request';
+import { NameGeneratedCond } from '../types/api';
+import { ValidateResponse } from '../types/internal/validation';
+import { Nullable } from '../types/typeUtils';
+import { GLOBAL_YAC_REGEX } from '../constants';
 
 const INJECTED_LABEL = 'General';
 

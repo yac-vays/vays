@@ -1,4 +1,4 @@
-import { ActionDecl } from '../../model/EntityListFetcher';
+import { ActionDecl } from '../../utils/types/api';
 import { CallbackSuccessType } from '../../view/components/Modal';
 import { ModalCallback } from '../../view/components/Modal/ModalContext';
 import modalCtrlState from '../state/ModalCtrlState';

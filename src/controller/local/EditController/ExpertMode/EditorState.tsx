@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { validateYAML } from '../../../../model/ValidatorClient';
-import { Nullable } from '../../../../utils/typeUtils';
-import { RequestEditContext } from '../../../global/URLValidation';
+import { Nullable } from '../../../../utils/types/typeUtils';
+import { RequestEditContext } from '../../../../utils/types/internal/request';
 import editingState from '../../../state/EditCtrlState';
-import { setYACValidateResponse, setYACValidStatus } from '../shared';
 
 export let currentEditContext: RequestEditContext | null = null;
 

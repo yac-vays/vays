@@ -1,5 +1,5 @@
 import { ModalCallback } from '../../view/components/Modal/ModalContext';
-import { Nullable } from '../../utils/typeUtils';
+import { Nullable } from '../../utils/types/typeUtils';
 
 /**
  * The State for the Modal controller.

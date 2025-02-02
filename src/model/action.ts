@@ -1,12 +1,16 @@
 import { showError, showSuccess } from '../controller/local/ErrorNotifyController';
 import { showModalMessage } from '../controller/global/ModalController';
-import { navigateToURL, RequestContext } from '../controller/global/URLValidation';
-import { Nullable } from '../utils/typeUtils';
+import { navigateToURL } from '../controller/global/URLValidation';
+import { RequestContext } from '../utils/types/internal/request';
+import { Nullable } from '../utils/types/typeUtils';
 import { sendRequest } from '../utils/AuthedRequest';
-import { ActionDecl, invalidateEntityListCache } from './EntityListFetcher';
-import { deleteEntity } from './DeleteCaller';
+import { invalidateEntityListCache } from './entityList';
+import { ActionDecl } from '../utils/types/api';
+import { deleteEntity } from './delete';
 import { isTriggable } from '../utils/actionUtils';
-import { copyEntity, linkEntity } from './NewEntity';
+import { linkEntity } from './link';
+import { copyEntity } from './copy';
+import { OperationsMetaInfo } from '../utils/types/internal/actions';
 
 export function getActionCallback(
   requestContext: RequestContext,
@@ -14,11 +18,8 @@ export function getActionCallback(
   actionObj: ActionDecl,
 ): () => Promise<boolean> {
   return async () => {
-    // TODO: Add error message that was received..
-    // ...
     const doAction = async () => {
       const successfullySubmitted = await sendAction(requestContext, entityName, actionObj.name);
-      // const successfullySubmitted: boolean = await actArgs.performAction(requestContext, entityName, actArgs.action.name);
       if (successfullySubmitted) {
         showSuccess(
           `Action '${actionObj.title}' has been submitted successfully.`,
@@ -46,16 +47,7 @@ export function getActionCallback(
       await doAction();
     }
 
-    return true; // TODO: Why?
-  };
-}
-
-export interface OperationsMetaInfo {
-  [key: string]: {
-    getOperationCallback: (
-      entityName: string,
-      requestContext: RequestContext,
-    ) => () => Promise<boolean>;
+    return true;
   };
 }
 
@@ -77,9 +69,7 @@ export function checkPermissions(permsAvailable: string[], permsRequ: string[]):
 export const OPERATIONS_META: OperationsMetaInfo = {
   /**
    * Copy operation. This operation copies an entity.
-   *
-   * TODO: Implement operation.
-   */
+   **/
   create_copy: {
     getOperationCallback: (entityName: string, requestContext: RequestContext) => {
       return async () => {
@@ -116,7 +106,6 @@ export const OPERATIONS_META: OperationsMetaInfo = {
   /**
    * Change operation. This operation is the modification.
    *
-   * TODO: Maybe YAC should do a more consistent naming scheme...
    */
   change: {
     getOperationCallback: (entityName: string, requestContext: RequestContext) => {
@@ -164,9 +153,7 @@ export const OPERATIONS_META: OperationsMetaInfo = {
   },
   /**
    * Linking operation. Creates a link to an existing entity.
-   *
-   * TODO: Implement.
-   */
+   **/
   create_link: {
     getOperationCallback: (entityName: string, requestContext: RequestContext) => {
       return async () => {
@@ -200,16 +187,14 @@ export const OPERATIONS_META: OperationsMetaInfo = {
   },
 };
 
-// TODO: Review icon choice.
 export const OPERATIONS: { [key: string]: ActionDecl } = {
   create_copy: {
-    // TODO: Correct icon.
     name: 'create_copy',
     title: 'Copy Entity',
     perms: ['cpy'],
     icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="grey"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>',
     dangerous: false,
-    force: true, // ???
+    force: true,
     hooks: [],
     description: '',
   },
@@ -219,7 +204,7 @@ export const OPERATIONS: { [key: string]: ActionDecl } = {
     perms: ['edt'],
     icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="grey"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>',
     dangerous: false,
-    force: true, // ???
+    force: true,
     hooks: [],
     description: '',
   },
@@ -229,7 +214,7 @@ export const OPERATIONS: { [key: string]: ActionDecl } = {
     perms: ['del'],
     icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="grey"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>',
     dangerous: true,
-    force: true, // ???
+    force: true,
     hooks: [],
     description: `Deleting the entity will remove it from the index. This action cannot be undone without direct admin support.`,
   },
@@ -239,19 +224,13 @@ export const OPERATIONS: { [key: string]: ActionDecl } = {
     perms: ['lnk'],
     icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="grey"><path d="M680-160v-120H560v-80h120v-120h80v120h120v80H760v120h-80ZM440-280H280q-83 0-141.5-58.5T80-480q0-83 58.5-141.5T280-680h160v80H280q-50 0-85 35t-35 85q0 50 35 85t85 35h160v80ZM320-440v-80h320v80H320Zm560-40h-80q0-50-35-85t-85-35H520v-80h160q83 0 141.5 58.5T880-480Z"/></svg>',
     dangerous: false,
-    force: true, // ???
+    force: true,
     hooks: [],
     description: `Creating a link of an entity will create a new 'shallow' entity which takes all values from this entity.`,
   },
-
-  // TODO: Add other operations, choose correct icons.
 };
 
 /**
- * TODO: Avoid request context in a model component, is possible.
- * TODO: There is talk about potentially returning values. In this case
- * one must wrap this funciton into a model based calllback and the model component
- * then should deal with the additional output, potentially calling in a toast.
  * @param requestContext
  * @param entityName
  * @param actionName

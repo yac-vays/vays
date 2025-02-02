@@ -1,17 +1,8 @@
 import { showError } from '../controller/local/ErrorNotifyController';
-import { RequestContext } from '../controller/global/URLValidation';
-import { Nullable } from '../utils/typeUtils';
+import { RequestContext } from '../utils/types/internal/request';
+import { Nullable } from '../utils/types/typeUtils';
 import { authFailed, sendRequest } from '../utils/AuthedRequest';
-
-export interface EntityData {
-  name: string;
-  link: string;
-  options: any;
-  perms: string[];
-  logs: any[];
-  data: any;
-  yaml: string;
-}
+import { EntityData } from '../utils/types/api';
 
 export async function getEntityData(
   entityName: string,

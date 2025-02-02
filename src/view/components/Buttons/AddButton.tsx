@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { YACBackend } from '../../../model/ConfigFetcher';
+import { YACBackend } from '../../../utils/types/config';
 import { buildCreateURL } from '../../../controller/global/URLValidation';
 
 interface AddButtonProps {

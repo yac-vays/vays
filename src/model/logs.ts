@@ -1,19 +1,13 @@
-import VAYS_CACHE from '../caching/AppCache';
-import { RequestContext } from '../controller/global/URLValidation';
+import VAYS_CACHE from './caching';
+import { RequestContext } from '../utils/types/internal/request';
 import { showError } from '../controller/local/ErrorNotifyController';
 import { authFailed, sendRequest } from '../utils/AuthedRequest';
-import { Nullable } from '../utils/typeUtils';
-import { invalidateEntityListCache } from './EntityListFetcher';
+import { Nullable } from '../utils/types/typeUtils';
+import { invalidateEntityListCache } from './entityList';
+import { EntityLog } from '../utils/types/api';
 
-export type EntityLog = {
-  name: string;
-  message: string;
-  time: string;
-  progress: Nullable<number>;
-  problem: Nullable<boolean>;
-};
-
-const LOGS_CACHE_KEY = 'EntityLogs';
+export const LOGS_CACHE_KEY = 'EntityLogs';
+export const LOGS_CACHE_TTL = 30_000;
 
 function getLogID(
   url: string | null | undefined,

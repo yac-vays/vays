@@ -1,5 +1,5 @@
 import { CircularProgressbarWithChildren } from 'react-circular-progressbar';
-import { Nullable } from '../../../../utils/typeUtils';
+import { Nullable } from '../../../../utils/types/typeUtils';
 
 const BoolLog = ({ problem, loading }: { problem: Nullable<boolean>; loading: boolean }) => {
   if (loading) {

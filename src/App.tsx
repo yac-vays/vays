@@ -6,8 +6,9 @@ import Loader from './view/thirdparty-based-components/Loader';
 import PageTitle from './view/thirdparty-based-components/PageTitle/PageTitle';
 import LoginView from './view/pages/Login/LoginView';
 
-import { AppConfig, getConfig, YACBackend } from './model/ConfigFetcher';
-import { getBackends } from './controller/global/YACBackends';
+import { getConfig } from './model/config';
+import { YACBackend } from './utils/types/config';
+import { AppConfig } from './utils/types/config';
 import { registerNavigationHook } from './controller/global/URLValidation';
 import { showError } from './controller/local/ErrorNotifyController';
 import { ToastContextProvider } from './view/components/ToastNotification/ToastContext';
@@ -95,8 +96,7 @@ function App(): JSX.Element {
         return;
       }
       generateCSP(conf);
-      const backends: YACBackend[] = await getBackends();
-      setBackendsList(backends);
+      setBackendsList(conf.backends ?? []);
       setConfig(conf);
       setColors(conf);
       setLoading(false);

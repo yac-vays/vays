@@ -1,4 +1,4 @@
-import { RequestEditContext } from '../../../../../controller/global/URLValidation';
+import { RequestEditContext } from '../../../../../utils/types/internal/request';
 import editorErrorDecoration from './ErrorDecoration';
 import editorSchemaHandler from './SchemaHandler';
 import editorTheme from './Theme';

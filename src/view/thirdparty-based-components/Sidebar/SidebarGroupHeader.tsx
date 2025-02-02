@@ -1,4 +1,4 @@
-import { YACBackend } from '../../../model/ConfigFetcher';
+import { YACBackend } from '../../../utils/types/config';
 
 const SidebarGroupHeader = ({
   open,

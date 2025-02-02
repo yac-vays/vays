@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import PageHeaderTitle from '../../thirdparty-based-components/PageTitle/PageHeaderTitle';
 import {
-  EditViewMode,
   getDefaultEditContext,
   getDefaultURL,
   getRequestContextEdit,
   isValidQueryEdit,
   navigateToURL,
-  RequestEditContext,
 } from '../../../controller/global/URLValidation';
+import { EditViewMode, RequestEditContext } from '../../../utils/types/internal/request';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { YACBackend } from '../../../model/ConfigFetcher';
-import { NameGeneratedCond } from '../../../model/EntityListFetcher';
+import { YACBackend } from '../../../utils/types/config';
+import { NameGeneratedCond } from '../../../utils/types/api';
 import EditFrame from './EditFrame';
 import iSessionStorage from '../../../session/storage/SessionStorage';
 import { showModalMessage } from '../../../controller/global/ModalController';

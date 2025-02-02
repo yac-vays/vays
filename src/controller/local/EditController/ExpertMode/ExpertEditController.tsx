@@ -1,11 +1,14 @@
-import { invalidateEntityListCache } from '../../../../model/EntityListFetcher';
-import { createNewEntity, putYAMLEntity, validateYAML } from '../../../../model/ValidatorClient';
-import { Nullable } from '../../../../utils/typeUtils';
-import { showModalMessage } from '../../../global/ModalController';
-import { navigateToURL, RequestContext, RequestEditContext } from '../../../global/URLValidation';
-import editingState from '../../../state/EditCtrlState';
-import { showError } from '../../ErrorNotifyController';
 import { setYACValidateResponse, setYACValidStatus } from '../shared';
+import { showError } from '../../ErrorNotifyController';
+import { invalidateEntityListCache } from '../../../../model/entityList';
+import { validateYAML } from '../../../../model/validate';
+import { putYAMLEntity } from '../../../../model/put';
+import { createNewEntity } from '../../../../model/create';
+import { Nullable } from '../../../../utils/types/typeUtils';
+import { showModalMessage } from '../../../global/ModalController';
+import { navigateToURL } from '../../../global/URLValidation';
+import { RequestContext, RequestEditContext } from '../../../../utils/types/internal/request';
+import editingState from '../../../state/EditCtrlState';
 import { getEntityName, getEntityYAML, getOldYAML, setEntityName } from './EditorState';
 
 export async function updateYAMLschema(
@@ -22,7 +25,6 @@ export async function updateYAMLschema(
 }
 
 export function sendYAMLData(requestContext: RequestEditContext) {
-  console.log('GOT REQUEST TO SEND AN ENTITY DATA.');
   if (!editingState.isValidYAC) {
     showModalMessage(
       'Data not valid',

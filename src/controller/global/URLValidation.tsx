@@ -1,37 +1,14 @@
-import { EntityTypeDecl, getEntityTypes } from '../../model/EntityListFetcher';
-import { YACBackend } from '../../model/ConfigFetcher';
+import { getEntityTypes } from '../../model/entityType';
+import { EntityTypeDecl } from '../../utils/types/api';
+import { YACBackend } from '../../utils/types/config';
 import iSessionStorage from '../../session/storage/SessionStorage';
-import { Nullable } from '../../utils/typeUtils';
-
-export type EditViewMode = 'create' | 'modify';
-
-export interface RequestOverviewContext {
-  searchQueries?: { [key: string]: string };
-  pageNumber: number;
-  numPerPage: number;
-  rc: RequestContext;
-}
-
-export interface RequestEditContext {
-  entityName?: string;
-  mode: EditViewMode;
-  rc: RequestContext;
-  viewMode: 'standard' | 'expert';
-}
-
-/**
- * Stores the context of the request as per URL.
- */
-export interface RequestContext {
-  yacURL: string | null | undefined; // TODO: Remove undefined when also redoing the index thing.
-  entityTypeName: string | null;
-  accessedEntityType: EntityTypeDecl | null;
-  // isSearch: boolean; // TODO: Currently not supplied.
-  // searchProperty: string | null; // TODO: CURRENTLY NOT SUPPLIED
-  // searchQuery: string | null; // TODO: CURRENTLY NOT SUPPLIED
-  backendObject: YACBackend | null;
-  entityTypeList: EntityTypeDecl[] | null; // The list of entities that this particular backend defines
-}
+import { Nullable } from '../../utils/types/typeUtils';
+import {
+  RequestContext,
+  RequestOverviewContext,
+  RequestEditContext,
+  EditViewMode,
+} from '../../utils/types/internal/request';
 
 /**
  * Get the default request context, returned when no verifiable contexts is yet available,
@@ -85,7 +62,7 @@ export async function getRequestContextOverview(
       be = backend;
     }
   }
-  const entityTypeList: EntityTypeDecl[] = await getEntityTypes(backendName, be?.title);
+  const entityTypeList: EntityTypeDecl[] = await getEntityTypes(be);
 
   return {
     searchQueries: {},
@@ -118,7 +95,7 @@ export async function getRequestContextEdit(
       be = backend;
     }
   }
-  const entityTypeList: EntityTypeDecl[] = await getEntityTypes(backendName, be?.title);
+  const entityTypeList: EntityTypeDecl[] = await getEntityTypes(be);
 
   const sanitizedViewMode =
     viewMode !== 'standard' && viewMode !== 'expert' ? 'standard' : viewMode;
@@ -186,7 +163,7 @@ export async function isValidQueryOverview(
 
   // TODO: Maybe postpone this check?
   // 2. Check if the type exists.
-  const etd: EntityTypeDecl[] = await getEntityTypes(backendName, be?.title);
+  const etd: EntityTypeDecl[] = await getEntityTypes(be ?? null);
   for (const typeDef of etd) {
     if (entityTypeName === typeDef.name) {
       return true;
@@ -218,16 +195,12 @@ export async function isValidQueryEdit(
 export async function getDefaultURL(backends: YACBackend[]): Promise<string> {
   if (backends.length == 0 || !iSessionStorage.isLoggedIn()) {
     return '/';
-    // TODO: Revisit what this case should look like...?
-    // Note that this is actually a frontend configuration error
   }
   for (let i = 0; i < backends.length; i++) {
     const backendName = backends[i].name;
-    const etd: EntityTypeDecl[] = await getEntityTypes(backendName, backends[i].title);
+    const etd: EntityTypeDecl[] = await getEntityTypes(backends[i]);
     if (etd.length == 0) {
       continue;
-      // TODO: Again, revisit this case as well. This is a backend configuration
-      // error.
     }
     return `/${backendName}/${etd[0].name}/`;
   }

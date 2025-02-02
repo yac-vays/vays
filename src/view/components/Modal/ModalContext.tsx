@@ -1,6 +1,6 @@
 import { createContext, useContext, useRef } from 'react';
 import ConfirmAlert, { CallbackSuccessType } from '.';
-import { ActionDecl } from '../../../model/EntityListFetcher';
+import { ActionDecl } from '../../../utils/types/api';
 
 /**
  * Mode is either

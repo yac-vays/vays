@@ -1,29 +1,29 @@
-import { invalidateEntityListCache, NameGeneratedCond } from '../../../../model/EntityListFetcher';
-import {
-  createNewEntity,
-  patchEntity,
-  validate,
-  ValidateResponse,
-} from '../../../../model/ValidatorClient';
-import { extractPatch, removeOldData } from '../../../../schema/dataUtils';
-import { mergeDefaults, updateDefaults } from '../../../../schema/defaultsHandling';
-import { injectAction, insertActionData, popActions } from '../../../../schema/injectActions';
-import {
-  hasSettableName,
-  injectSettableName,
-  popSettableName,
-} from '../../../../schema/injectName';
-import { Nullable } from '../../../../utils/typeUtils';
 import { showModalMessage } from '../../../global/ModalController';
-import { navigateToURL, RequestContext, RequestEditContext } from '../../../global/URLValidation';
-import editingState from '../../../state/EditCtrlState';
+import { navigateToURL } from '../../../global/URLValidation';
 import { showError } from '../../ErrorNotifyController';
+import editingState from '../../../state/EditCtrlState';
 import {
   editViewNavigateToNewName,
   getInitialEntityYAML,
   setYACValidateResponse,
   setYACValidStatus,
 } from '../shared';
+import { invalidateEntityListCache } from '../../../../model/entityList';
+import { validate } from '../../../../model/validate';
+import { patchEntity } from '../../../../model/patch';
+import { createNewEntity } from '../../../../model/create';
+import { extractPatch, removeOldData } from '../../../../utils/schema/dataUtils';
+import { mergeDefaults, updateDefaults } from '../../../../utils/schema/defaultsHandling';
+import { injectAction, insertActionData, popActions } from '../../../../utils/schema/injectActions';
+import {
+  hasSettableName,
+  injectSettableName,
+  popSettableName,
+} from '../../../../utils/schema/injectName';
+import { NameGeneratedCond } from '../../../../utils/types/api';
+import { ValidateResponse } from '../../../../utils/types/internal/validation';
+import { RequestContext, RequestEditContext } from '../../../../utils/types/internal/request';
+import { Nullable } from '../../../../utils/types/typeUtils';
 
 export async function updateSchema(
   frontData: { [key: string]: any },
@@ -108,7 +108,6 @@ function cleanData(valResp: ValidateResponse) {
 }
 
 export function sendFormData(requestContext: RequestEditContext) {
-  console.log('GOT REQUEST TO SEND AN ENTITY DATA.');
   if (!editingState.isValidYAC) {
     showModalMessage(
       'Data not valid',
@@ -126,9 +125,7 @@ export function sendFormData(requestContext: RequestEditContext) {
     '',
     async () => {
       let success = false;
-      console.log('---> CONFIRM SUCCESS');
       if (requestContext.mode === 'create') {
-        console.log('---> CREATE');
         success = await sendCreateNewEntity(editingState.entityDataObject, requestContext.rc);
       } else {
         success = await sendPatchEntity(editingState.entityDataObject, requestContext);

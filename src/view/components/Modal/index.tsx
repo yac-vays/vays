@@ -1,7 +1,7 @@
 import { Component, DetailedHTMLProps, InputHTMLAttributes } from 'react';
 import React from 'react';
 import Checkbox from '../../thirdparty-based-components/ifc/CheckBox/CheckBox';
-import { ActionDecl } from '../../../model/EntityListFetcher';
+import { ActionDecl } from '../../../utils/types/api';
 
 export type CallbackSuccessType = (
   enteredName?: string,

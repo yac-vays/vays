@@ -1,7 +1,7 @@
 import React, { useState, ReactNode } from 'react';
 import Header from '../Header/index';
 import Sidebar from '../Sidebar/index';
-import { YACBackend } from '../../../model/ConfigFetcher';
+import { YACBackend } from '../../../utils/types/config';
 import { useToastContext } from '../../components/ToastNotification/ToastContext';
 import { registerErrorNotifyCallback } from '../../../controller/local/ErrorNotifyController';
 import { useModalContext } from '../../components/Modal/ModalContext';

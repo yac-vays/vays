@@ -4,9 +4,9 @@ import { setCurrentContext } from '../../../../controller/local/EditController/E
 import { retreiveSchema } from '../../../../controller/local/EditController/shared';
 import { showError } from '../../../../controller/local/ErrorNotifyController';
 import editingState from '../../../../controller/state/EditCtrlState';
-import { RequestEditContext } from '../../../../controller/global/URLValidation';
-import { ValidateResponse } from '../../../../model/ValidatorClient';
-import { Nullable } from '../../../../utils/typeUtils';
+import { RequestEditContext } from '../../../../utils/types/internal/request';
+import { ValidateResponse } from '../../../../utils/types/internal/validation';
+import { Nullable } from '../../../../utils/types/typeUtils';
 
 /**
  * Custom hook to initialize the form state for the edit page.

@@ -1,5 +1,5 @@
 import { ToastCallback } from '../../view/components/ToastNotification/ToastContext';
-import { Nullable } from '../../utils/typeUtils';
+import { Nullable } from '../../utils/types/typeUtils';
 
 /**
  * The State for the Notification controller.

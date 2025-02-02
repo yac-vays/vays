@@ -1,8 +1,8 @@
 import { debounce } from 'lodash';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { retreiveSchema } from '../../../../../controller/local/EditController/shared';
-import { RequestEditContext } from '../../../../../controller/global/URLValidation';
-import { getDefaultsAsYAML } from '../../../../../schema/defaultsHandling';
+import { RequestEditContext } from '../../../../../utils/types/internal/request';
+import { getDefaultsAsYAML } from '../../../../../utils/schema/defaultsHandling';
 import {
   getCurrentContext,
   setEntityYAML,

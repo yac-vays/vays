@@ -1,7 +1,7 @@
 import * as client from 'openid-client';
 
-import { AppConfig } from '../../model/ConfigFetcher';
-import { Nullable } from '../../utils/typeUtils';
+import { AppConfig } from '../../utils/types/config';
+import { Nullable } from '../../utils/types/typeUtils';
 import { navigateToURL } from '../../controller/global/URLValidation';
 import iSessionStorage from '../storage/SessionStorage';
 import { showError } from '../../controller/local/ErrorNotifyController';

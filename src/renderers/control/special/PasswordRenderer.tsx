@@ -12,7 +12,7 @@ import {
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import TextInput from '../../../view/thirdparty-based-components/ifc/TextInput/TextInput';
 import { debounce } from 'lodash';
-import { hashPassword } from '../../../utils/userInputUtils/passwordHashes';
+import { hashPassword } from '../../../utils/passwordHashes';
 
 import { isCustomRenderer } from '../../utils/customTesterUtils';
 import OverheadLabel from '../../../view/thirdparty-based-components/ifc/Label/OverheadLabel';

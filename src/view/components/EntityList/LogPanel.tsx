@@ -1,5 +1,5 @@
 // import { useState } from 'react';
-import { EntityLog } from '../../../model/LogsFetcher';
+import { EntityLog } from '../../../utils/types/api';
 
 const LogPanel = ({ logList, title }: { logList: EntityLog[]; title: string }) => {
   //   const [expand, setExpand] = useState<boolean>(false);

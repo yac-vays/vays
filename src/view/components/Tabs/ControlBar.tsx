@@ -23,7 +23,7 @@ const ControlBar = ({ children }: ControlBarProps) => {
     <>
       <div
         ref={cbar}
-        className="static mb-1 flex gap-4 border-b border-stroke dark:bg-boxdark sm:gap-10"
+        className="static mb-1 flex gap-4 border-b border-stroke dark:bg-boxdark sm:gap-10 whitespace-nowrap"
         role="tablist"
         style={{ overflowX: 'scroll', scrollbarWidth: 'none' }}
       >

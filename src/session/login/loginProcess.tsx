@@ -6,7 +6,6 @@ import { navigateToURL } from '../../controller/global/url';
 import iSessionStorage from '../storage/SessionStorage';
 import { showError } from '../../controller/local/notification';
 import { jwtDecode } from 'jwt-decode';
-import { sendLogin } from '../../utils/authRequest';
 
 export interface AuthDiscConfig {
   nonce: string;
@@ -76,6 +75,7 @@ export async function getToken(appconf: AppConfig): Promise<boolean> {
   const configString = localStorage.getItem(LS_CONFIG_KEY);
   if (configString == null) return false;
   const config: AuthDiscConfig = JSON.parse(configString);
+  console.log(config);
 
   let id_token: string | undefined;
 
@@ -126,10 +126,7 @@ function setTokenCookie(token: string, appconf: AppConfig) {
   // document.cookie = `authorization=Bearer ABCDLOL; max-age=500; SameSite=None; Domain=api.oskiosk-test.inf.ethz.ch; Secure`;
 
   // TODO: Move to cookie... for another URL.....
-  for (const conf of appconf.backends) {
-    sendLogin(conf.url, token);
-  }
-  //iSessionStorage.setToken(`Bearer ${token}`);
+  iSessionStorage.setToken(`Bearer ${token}`);
 }
 
 export function getTokenFromStorage() {
@@ -140,6 +137,8 @@ export function requestFailedNoAuth() {
   // iSessionStorage.setIsLoggedIn(false);
   const url = new URL(window.location.href);
   // note that pathname of window.location does not include the query string or the index...
+  console.log(window.location.href.startsWith('/'));
+  console.log(url.href.substring(url.origin.length, url.href.length));
   const localPath = window.location.href.startsWith('/')
     ? window.location.href
     : url.href.substring(url.origin.length, url.href.length);
@@ -152,6 +151,7 @@ export function requestFailedNoAuth() {
     return;
   }
   if (iSessionStorage.getMostRecentURL() === undefined) {
+    console.log('SETTING THE PATH to ' + localPath);
     iSessionStorage.setMostRecentURL(localPath);
     return;
   }
@@ -171,25 +171,19 @@ export function logOut() {
 
 export function getUserName(): string {
   if (!iSessionStorage.isLoggedIn) return 'Not Logged In';
-  if (iSessionStorage.getToken() === '') return 'Not Logged In';
 
-  try {
-    const { givenName, surname, name, mail } = jwtDecode(iSessionStorage.getToken() ?? '') as any;
-    if (givenName && surname) {
-      return givenName + ' ' + surname;
-    } else if (mail) {
-      return mail;
-    }
-    return name;
-  } catch (error) {
-    return 'Not Logged In';
+  const { givenName, surname, name, mail } = jwtDecode(iSessionStorage.getToken() ?? '') as any;
+
+  if (givenName && surname) {
+    return givenName + ' ' + surname;
+  } else if (mail) {
+    return mail;
   }
+  return name;
 }
 
 function tokenExpired(token: Nullable<string>): boolean {
   if (!token) return false;
-  if (token === '') return false;
-  console.error(token);
   const { exp } = jwtDecode(token);
   if (!exp) return false;
   const currentTime = new Date().getTime() / 1000;

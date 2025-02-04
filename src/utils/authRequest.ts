@@ -2,7 +2,6 @@ import VAYS_CACHE from '../model/caching';
 import { showError } from '../controller/local/notification';
 import { getTokenFromStorage } from '../session/login/loginProcess';
 import { Nullable } from './types/typeUtils';
-import { joinUrl } from './urlUtils';
 
 /**
  * Request some resource. WILL ATTACH THE TOKEN, so only use for YAC requests.
@@ -38,14 +37,14 @@ export async function sendRequest(
 
   const addHeaders: HeadersInit = new Headers();
   addHeaders.append('Content-Type', 'application/json');
-  // const token_id = getTokenFromStorage();
-  // if (token_id) {
-  //   // TODO: Very crude way to make sure the link is sent via https.
-  //   // TODO: MUST MOVE THIS WHOLE THING TO COOKIES.
-  //   if (URL.startsWith('https://')) {
-  //     addHeaders.append('Authorization', token_id);
-  //   }
-  // }
+  const token_id = getTokenFromStorage();
+  if (token_id) {
+    // TODO: Very crude way to make sure the link is sent via https.
+    // TODO: MUST MOVE THIS WHOLE THING TO COOKIES.
+    if (URL.startsWith('https://')) {
+      addHeaders.append('Authorization', token_id);
+    }
+  }
   // } else {
   //   addHeaders.append('Authorization', getTokenFromStorage() ?? 'None'); //`Bearer ${token}`);
   // }
@@ -65,7 +64,7 @@ export async function sendRequest(
       method: method,
       headers: addHeaders,
       body: requestBody,
-      credentials: 'include', // TODO: Currently does not work because YAC Allow Origin setting
+      // credentials: 'include', // TODO: Currently does not work because YAC Allow Origin setting
     })
       // .then((r) => {
       //   if (r.status >= 500) {
@@ -81,7 +80,7 @@ export async function sendRequest(
       mode: 'cors',
       method: method,
       headers: addHeaders,
-      credentials: 'include', // TODO: Currently does not work because YAC Allow Origin setting
+      // credentials: 'include', // TODO: Currently does not work because YAC Allow Origin setting
     })
       // .then((r) => {
       //   if (r.status >= 500) {
@@ -108,34 +107,4 @@ export async function sendRequest(
 
 export function authFailed(status: number): boolean {
   return status == 401 || status == 403;
-}
-
-export async function sendLogin(yacURL: string, tokenID: string) {
-  const addHeaders: HeadersInit = new Headers();
-  addHeaders.append('Content-Type', 'application/json');
-  addHeaders.append('Authorization', `Bearer ${tokenID}`);
-
-  let error: boolean = false;
-  const resultCallback = (response: Response) => {
-    if (response.status == undefined)
-      showError('Network Error', `Cannot fetch data from backend ${URL}.`);
-    error = true;
-    return response;
-  };
-
-  let resp: Response;
-  resp = await fetch(joinUrl(yacURL, '/token'), {
-    mode: 'cors',
-    method: 'POST',
-    headers: addHeaders,
-    credentials: 'include', // TODO: Currently does not work because YAC Allow Origin setting
-  })
-    .then((resp) => resp)
-    .catch(resultCallback);
-  if (error || resp.status === undefined) return null;
-  if (resp.status === 204) {
-    return true;
-  }
-
-  return false;
 }

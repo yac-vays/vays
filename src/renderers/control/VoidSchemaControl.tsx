@@ -21,13 +21,13 @@ export const VoidControl = (props: ControlProps) => {
   if (props.uischema.type !== 'VerticalLayout') {
     tsAddWarningMessage(
       9,
-      'No Renderer Found',
-      'The schema has constructs which VAYS currently does not support.',
+      'Empty schema to be rendered',
+      'The schema has a subschema which is empty (undefined).',
       props.id?.split('/').pop() ?? 'key',
       getCurrentContext()?.rc.backendObject?.title ?? 'Unknown',
     );
   }
-  return <>{/* <div style={{ color: 'red' }}>Renderer not found</div> */}</>;
+  return <></>;
 };
 
 export const VoidTester: RankedTester = rankWith(

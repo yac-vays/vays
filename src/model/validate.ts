@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { showError } from '../controller/local/ErrorNotifyController';
-import { navigateToURL } from '../controller/global/URLValidation';
+import { showError } from '../controller/local/notification';
+import { navigateToURL } from '../controller/global/url';
 import { RequestEditContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
-import { authFailed, sendRequest } from '../utils/AuthedRequest';
+import { authFailed, sendRequest } from '../utils/authRequest';
 import { dumpEditActions, EditActionSnapshot } from '../utils/schema/injectActions';
 import { getEntityObject } from '../utils/validatorUtils';
 import { ValidateResponse } from '../utils/types/internal/validation';

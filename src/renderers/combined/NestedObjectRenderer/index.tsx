@@ -16,7 +16,7 @@ import _ from 'lodash';
 import React from 'react';
 import { useCallback } from 'react';
 import CardRenderer from './CardRenderer';
-import { showModalMessage } from '../../../controller/global/ModalController';
+import { showModalMessage } from '../../../controller/global/modal';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
 
 export const NestedObjectRenderer = ({

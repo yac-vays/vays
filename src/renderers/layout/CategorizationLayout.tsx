@@ -51,9 +51,9 @@ import ControlBar from '../../view/components/Tabs/ControlBar';
 import {
   getCurrentTab,
   setCurrentTab,
-} from '../../controller/local/EditController/StandardMode/StandardState';
-import { tsAddWarningMessage } from '../../controller/global/TroubleShootController';
-import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/EditorState';
+} from '../../controller/local/EditController/StandardMode/access';
+import { tsAddWarningMessage } from '../../controller/global/troubleshoot';
+import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/access';
 
 export const isSingleLevelCategorization: Tester = and(
   uiTypeIs('Categorization'),

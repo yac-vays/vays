@@ -1,6 +1,6 @@
 import { RequestEditContext } from '../utils/types/internal/request';
-import { showError } from '../controller/local/ErrorNotifyController';
-import { sendRequest } from '../utils/AuthedRequest';
+import { showError } from '../controller/local/notification';
+import { sendRequest } from '../utils/authRequest';
 import { Nullable } from '../utils/types/typeUtils';
 
 export async function getYAML(

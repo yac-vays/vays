@@ -3,7 +3,7 @@ import ClickOutside from '../ClickOutside';
 import UserOne from '../../../../rsc/user/user.png';
 import { getUserName, logOut } from '../../../session/login/loginProcess';
 import iSessionStorage from '../../../session/storage/SessionStorage';
-import { navigateToURL } from '../../../controller/global/URLValidation';
+import { navigateToURL } from '../../../controller/global/url';
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);

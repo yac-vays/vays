@@ -1,7 +1,7 @@
 import VAYS_CACHE from './caching';
 import { RequestContext } from '../utils/types/internal/request';
-import { showError } from '../controller/local/ErrorNotifyController';
-import { authFailed, sendRequest } from '../utils/AuthedRequest';
+import { showError } from '../controller/local/notification';
+import { authFailed, sendRequest } from '../utils/authRequest';
 import { Nullable } from '../utils/types/typeUtils';
 import { invalidateEntityListCache } from './entityList';
 import { EntityLog } from '../utils/types/api';

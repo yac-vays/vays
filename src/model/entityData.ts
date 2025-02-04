@@ -1,7 +1,7 @@
-import { showError } from '../controller/local/ErrorNotifyController';
+import { showError } from '../controller/local/notification';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
-import { authFailed, sendRequest } from '../utils/AuthedRequest';
+import { authFailed, sendRequest } from '../utils/authRequest';
 import { EntityData } from '../utils/types/api';
 
 export async function getEntityData(

@@ -4,7 +4,7 @@ import SidebarGroupHeader from './SidebarGroupHeader';
 import SidebarGroupEntry from './SidebarGroupEntry';
 import { getEntityTypes } from '../../../model/entityType';
 import { EntityTypeDecl } from '../../../utils/types/api';
-import { buildOverviewURL } from '../../../controller/global/URLValidation';
+import { buildOverviewURL } from '../../../controller/global/url';
 import iLocalStorage from '../../../session/persistent/LocalStorage';
 import iSessionStorage from '../../../session/storage/SessionStorage';
 

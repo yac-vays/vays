@@ -1,20 +1,21 @@
-import { ReactNode, RefObject, useEffect, useRef, useState } from 'react';
+import { RefObject, useEffect, useRef, useState } from 'react';
 import './entity-list-styles.css';
-import EntityListHeaderCell from './EntityListHeaderCell';
 import { RequestContext } from '../../../utils/types/internal/request';
-import EntityListRow from './EntityListRow';
 import {
   getHeaderEntries,
   fetchEntities,
   reload,
   registerTableScrollContainer,
-} from '../../../controller/local/Overview/EntityListController';
+} from '../../../controller/local/Overview/list';
 import { QueryResponse, QueryResult } from '../../../utils/types/internal/entityList';
 import SubLoader from '../../thirdparty-based-components/SubLoader';
 import NoDataIndicator from '../NoDataIndicator';
 import { registerEntityListInvalidationHook } from '../../../model/entityList';
 import { EntityListPagination } from './Pagination';
 import { invalidateLogCache } from '../../../model/logs';
+import TableFrame from './TableFrame';
+import TableHeader from './TableHeader';
+import TableBody from './TableBody';
 
 interface EntityListProps {
   requestContext: RequestContext;
@@ -37,7 +38,6 @@ const EntityList = ({ requestContext }: EntityListProps) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [searchTerms, setSearchTerms] = useState<(string | null)[]>([]);
 
-  const headerRef = useRef<HTMLTableRowElement>(null);
   // TODO Make this more performant...
   // Or brdige until this is actually done
 
@@ -72,7 +72,6 @@ const EntityList = ({ requestContext }: EntityListProps) => {
         searchTerms,
       );
 
-      console.log(requestContext.entityTypeName + ' is done');
       // if (qRes.loadingAlreadyOngoing) {
       //   console.log('Leaving because loading is ongoing ' + requestContext.entityTypeName);
       // } else
@@ -101,7 +100,6 @@ const EntityList = ({ requestContext }: EntityListProps) => {
       */
 
     (async function () {
-      console.log('Initiating the loading.');
       if (requestContext.accessedEntityType?.options == undefined) {
         setTableHeaderEntries([]);
       } else {
@@ -177,144 +175,70 @@ const EntityList = ({ requestContext }: EntityListProps) => {
 
   return (
     <>
-      <section className="rounded-sm border border-stroke bg-white shadow-default py-2 dark:bg-boxdark">
-        {/* Must do two seperate divs to make sure the border is showing properly when scrolling... */}
+      <TableFrame>
         <div
-          style={{
-            top: 10,
-            left: 10,
-            right: 10,
-            bottom: 10,
-            overflow: 'hidden',
-          }}
+          ref={scrollDivRef}
+          style={{ overflowX: 'auto', overscrollBehaviorX: 'none', width: '100%' }}
         >
-          <div
-            style={{
-              paddingLeft: 10,
-              paddingRight: 10,
-            }}
-          >
-            <div
-              ref={scrollDivRef}
-              style={{ overflowX: 'auto', overscrollBehaviorX: 'none', width: '100%' }}
+          <div>
+            {/* md:table-fixed                                                                                           xl or xl2?       md:table-fixed md:overflow-auto md:px-8  */}
+            <table
+              role="table"
+              className="entity-list w-full table-auto border-collapse  break-words px-4 xl:table-fixed xl:overflow-x-auto overflow-y-block xl:px-8"
+              style={{ width: '100%' }}
             >
-              <div>
-                {/* md:table-fixed                                                                                           xl or xl2?       md:table-fixed md:overflow-auto md:px-8  */}
-                <table
-                  role="table"
-                  className="entity-list w-full table-auto border-collapse  break-words px-4 xl:table-fixed xl:overflow-x-auto overflow-y-block xl:px-8"
-                  style={{ width: '100%' }}
-                >
-                  <thead id="entity-table-header" className="border-separate px-4">
-                    <tr ref={headerRef} className="border-t border-stroke" role="row">
-                      {tableHeaderEntries.length == 0 ? (
-                        <EntityListHeaderCell
-                          title=""
-                          searchable={false}
-                          firstField={true}
-                          searchCallback={(a: string) => {}}
-                        />
-                      ) : (
-                        (function fillHeader() {
-                          let jsx = [];
-                          let i = 0;
-                          const len = tableHeaderEntries.length;
-                          // TODO: Searchable should be exited by the controller.
-                          for (const value of tableHeaderEntries) {
-                            jsx.push(
-                              <EntityListHeaderCell
-                                searchCallback={searchCallback(i++)}
-                                title={value}
-                                searchable={i <= len - 2}
-                                firstField={i === 1}
-                              />,
-                            );
-                          }
-                          return jsx;
-                        })()
-                      )}
-                    </tr>
-                    <tr className="border-stroke border-b dark:border-white dark:border-opacity-60">
-                      <td></td>
-                    </tr>
-                    <tr className="border-stroke border-b dark:border-white dark:border-opacity-60">
-                      <td></td>
-                    </tr>
-                  </thead>
-                  <tbody role="rowgroup">
-                    {tableEntries.length == 0 ? (
-                      <></>
-                    ) : (
-                      <>
-                        {(function fillTable() {
-                          let jsx = [];
-                          for (let i = 0; i < tableEntries.length; i++) {
-                            jsx.push(
-                              <EntityListRow
-                                entityName={tableEntries[i].entityName}
-                                entryValues={tableEntries[i].elt}
-                                requestContext={requestContext}
-                                link={tableEntries[i].isLink}
-                                actionPair={tableEntries[i].actionPair}
-                              />,
-                            );
-                          }
-                          return jsx;
-                        })()}
-                      </>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            {/* Loading screen and no data indicator 
-                They need to be outside of the table to get the spacing right.*/}
-            {tableEntries.length == 0 ? (
-              <div className="sm:w-screen md:w-full p-8 pb-12 flex flex-row">
-                <div className="group w-full inline-flex flex-col relative" style={{ height: 96 }}>
-                  <div
-                    className="group flex flex-col items-center justify-center"
-                    style={{ alignItems: 'center' }}
-                  >
-                    {loading ? <SubLoader action="Loading entries..." /> : <NoDataIndicator />}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <></>
-            )}
-            {/* TODO: Find a better fix for the pagination, num entries setter for when you are using phone,
-                scrolling is in this case not that pretty. You are using too much space for the pagination probably, too. */}
-            <div className="flex justify-between border-t border-stroke px-6 pt-5 overflow-auto">
-              <EntityListPagination
-                pageSwitch={pageSwitch}
-                currPage={currPage}
-                totalNumResults={totalNumResults}
-                numResultsPerPage={numResultsPerPage}
+              <TableHeader
+                tableHeaderEntries={tableHeaderEntries}
+                searchCallback={searchCallback}
               />
-              <div className="flex items-center font-medium">
-                <p className="pl-2 text-plainfont">Show entries</p>
-                <select
-                  ref={selectorRef}
-                  className="bg-transparent ml-2 pl-1 rounded border border-grey"
-                  onChange={(e) => {
-                    setNumResultsPerPage(parseInt(e.target.value));
-                  }}
-                >
-                  <option value="5">5</option>
-                  <option value="10" selected={true}>
-                    10
-                  </option>
-                  <option value="20">20</option>
-                  <option value="50">50</option>
-                </select>
+              <TableBody tableEntries={tableEntries} requestContext={requestContext} />
+            </table>
+          </div>
+        </div>
+        {/* Loading screen and no data indicator 
+                They need to be outside of the table to get the spacing right.*/}
+        {tableEntries.length == 0 ? (
+          <div className="sm:w-screen md:w-full p-8 pb-12 flex flex-row">
+            <div className="group w-full inline-flex flex-col relative" style={{ height: 96 }}>
+              <div
+                className="group flex flex-col items-center justify-center"
+                style={{ alignItems: 'center' }}
+              >
+                {loading ? <SubLoader action="Loading entries..." /> : <NoDataIndicator />}
               </div>
             </div>
           </div>
+        ) : (
+          <></>
+        )}
+        {/* TODO: Find a better fix for the pagination, num entries setter for when you are using phone,
+                scrolling is in this case not that pretty. You are using too much space for the pagination probably, too. */}
+        <div className="flex justify-between border-t border-stroke px-6 pt-5 overflow-auto">
+          <EntityListPagination
+            pageSwitch={pageSwitch}
+            currPage={currPage}
+            totalNumResults={totalNumResults}
+            numResultsPerPage={numResultsPerPage}
+          />
+          <div className="flex items-center font-medium">
+            <p className="pl-2 text-plainfont">Show entries</p>
+            <select
+              ref={selectorRef}
+              className="bg-transparent ml-2 pl-1 rounded border border-grey"
+              onChange={(e) => {
+                setNumResultsPerPage(parseInt(e.target.value));
+              }}
+            >
+              <option value="5">5</option>
+              <option value="10" selected={true}>
+                10
+              </option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
         </div>
-        {/* </div>
-        </div> */}
-      </section>
+      </TableFrame>
     </>
   );
 };

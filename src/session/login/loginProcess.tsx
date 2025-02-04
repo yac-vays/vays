@@ -2,9 +2,9 @@ import * as client from 'openid-client';
 
 import { AppConfig } from '../../utils/types/config';
 import { Nullable } from '../../utils/types/typeUtils';
-import { navigateToURL } from '../../controller/global/URLValidation';
+import { navigateToURL } from '../../controller/global/url';
 import iSessionStorage from '../storage/SessionStorage';
-import { showError } from '../../controller/local/ErrorNotifyController';
+import { showError } from '../../controller/local/notification';
 import { jwtDecode } from 'jwt-decode';
 
 export interface AuthDiscConfig {

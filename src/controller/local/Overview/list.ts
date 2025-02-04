@@ -7,9 +7,9 @@ import { EntityObject } from '../../../utils/types/api';
 import { Nullable } from '../../../utils/types/typeUtils';
 import { RequestContext } from '../../../utils/types/internal/request';
 import entityListCtrlState from '../../state/EntityListCtrlState';
-import { getActions } from './ActionController';
+import { getActions } from './action';
 import { QueryResponse, QueryResult } from '../../../utils/types/internal/entityList';
-import { performSearch } from './SearchController';
+import { performSearch } from './search';
 
 /**
  * Fetches a list of entities based on the provided request context, pagination parameters, and optional search criteria.

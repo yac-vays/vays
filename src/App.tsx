@@ -9,8 +9,8 @@ import LoginView from './view/pages/Login/LoginView';
 import { getConfig } from './model/config';
 import { YACBackend } from './utils/types/config';
 import { AppConfig } from './utils/types/config';
-import { registerNavigationHook } from './controller/global/URLValidation';
-import { showError } from './controller/local/ErrorNotifyController';
+import { registerNavigationHook } from './controller/global/url';
+import { showError } from './controller/local/notification';
 import { ToastContextProvider } from './view/components/ToastNotification/ToastContext';
 import { ModalContextProvider } from './view/components/Modal/ModalContext';
 

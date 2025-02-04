@@ -1,7 +1,6 @@
 import { RequestEditContext } from '../utils/types/internal/request';
-import { showError, showSuccess } from "../controller/local/ErrorNotifyController";
-import { sendRequest, authFailed } from "../utils/AuthedRequest";
-
+import { showError, showSuccess } from '../controller/local/notification';
+import { sendRequest, authFailed } from '../utils/authRequest';
 
 /**
  * @param name
@@ -14,7 +13,7 @@ export async function putYAMLEntity(
   name: string,
   yaml: string,
   yaml_old: string,
-  requestEditContext: RequestEditContext
+  requestEditContext: RequestEditContext,
 ): Promise<boolean> {
   if (requestEditContext.entityName == null) {
     showError('Frontend error', 'Name of entity is null. Please file a bug report!');
@@ -22,9 +21,9 @@ export async function putYAMLEntity(
   }
   const resp = await sendRequest(
     requestEditContext.rc.yacURL +
-    `/entity/${requestEditContext.rc.entityTypeName}/${requestEditContext.entityName}`,
+      `/entity/${requestEditContext.rc.entityTypeName}/${requestEditContext.entityName}`,
     'PUT',
-    JSON.stringify({ name: name, yaml_old: yaml_old, yaml_new: yaml })
+    JSON.stringify({ name: name, yaml_old: yaml_old, yaml_new: yaml }),
   );
 
   // Network error
@@ -38,15 +37,15 @@ export async function putYAMLEntity(
   } else if (resp.status == 422) {
     showError(
       'Frontend Error',
-      'Invalid specification used, cannot talk to YAC servers. Please report ID-NEW-SD-01.'
+      'Invalid specification used, cannot talk to YAC servers. Please report ID-NEW-SD-01.',
     );
   } else if (resp.status >= 500) {
     const ans = await resp.json();
     showError(
       `${requestEditContext.rc.backendObject?.title}: ` +
-      (ans.title ?? `Cannot update ${name} (Status ${resp.status})`),
+        (ans.title ?? `Cannot update ${name} (Status ${resp.status})`),
       (ans.message ?? 'Please contact your admin on this issue. ') +
-      'The data you entered is cached for now.'
+        'The data you entered is cached for now.',
     );
   } else if (authFailed(resp.status)) {
     // TODO

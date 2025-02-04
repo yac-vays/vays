@@ -8,14 +8,14 @@ import FormsErrorBoundary from './ErrorBoundary';
 
 import { customRenderers } from '../../../../renderers';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
-import { showError } from '../../../../controller/local/ErrorNotifyController';
-import { updateSchema } from '../../../../controller/local/EditController/StandardMode/StandardEditController';
+import { showError } from '../../../../controller/local/notification';
+import { updateSchema } from '../../../../controller/local/EditController/StandardMode';
 import {
   IsCurrentlyEditingString,
   setFormData,
   setIsCurrentlyEditingString,
-} from '../../../../controller/local/EditController/StandardMode/StandardState';
-import { setCurrentContext } from '../../../../controller/local/EditController/ExpertMode/EditorState';
+} from '../../../../controller/local/EditController/StandardMode/access';
+import { setCurrentContext } from '../../../../controller/local/EditController/ExpertMode/access';
 // import { Nullable } from '../../../../utils/typeUtils';
 import { isValidDataObject } from '../../../../utils/schema/injectName';
 import editingState from '../../../../controller/state/EditCtrlState';

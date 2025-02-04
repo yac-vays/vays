@@ -1,7 +1,7 @@
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
-import { sendRequest } from '../utils/AuthedRequest';
-import { showError } from '../controller/local/ErrorNotifyController';
+import { sendRequest } from '../utils/authRequest';
+import { showError } from '../controller/local/notification';
 
 export async function deleteEntity(entityName: string, requestContext: RequestContext) {
   const url: string | null | undefined = requestContext.yacURL;

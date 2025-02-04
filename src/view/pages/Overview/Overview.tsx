@@ -7,11 +7,11 @@ import {
   getRequestContextOverview,
   isValidQueryOverview,
   navigateToURL,
-} from '../../../controller/global/URLValidation';
+} from '../../../controller/global/url';
 import { RequestOverviewContext } from '../../../utils/types/internal/request';
 import { useParams } from 'react-router-dom';
 import { YACBackend } from '../../../utils/types/config';
-import { showError } from '../../../controller/local/ErrorNotifyController';
+import { showError } from '../../../controller/local/notification';
 import { invalidateEntityListCache } from '../../../model/entityList';
 import TextArea from '../../thirdparty-based-components/ifc/TextArea';
 

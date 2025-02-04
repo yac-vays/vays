@@ -7,8 +7,8 @@ import {
   TesterContext,
   UISchemaElement,
 } from '@jsonforms/core';
-import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/EditorState';
-import { tsAddWarningMessage } from '../../controller/global/TroubleShootController';
+import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/access';
+import { tsAddWarningMessage } from '../../controller/global/troubleshoot';
 
 /**
  * Void schema renderer that renders false/null schemas

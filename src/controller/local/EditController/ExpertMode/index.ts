@@ -1,15 +1,15 @@
 import { setYACValidateResponse, setYACValidStatus } from '../shared';
-import { showError } from '../../ErrorNotifyController';
+import { showError } from '../../notification';
 import { invalidateEntityListCache } from '../../../../model/entityList';
 import { validateYAML } from '../../../../model/validate';
 import { putYAMLEntity } from '../../../../model/put';
 import { createNewEntity } from '../../../../model/create';
 import { Nullable } from '../../../../utils/types/typeUtils';
-import { showModalMessage } from '../../../global/ModalController';
-import { navigateToURL } from '../../../global/URLValidation';
+import { showModalMessage } from '../../../global/modal';
+import { navigateToURL } from '../../../global/url';
 import { RequestContext, RequestEditContext } from '../../../../utils/types/internal/request';
 import editingState from '../../../state/EditCtrlState';
-import { getEntityName, getEntityYAML, getOldYAML, setEntityName } from './EditorState';
+import { getEntityName, getEntityYAML, getOldYAML, setEntityName } from './access';
 
 export async function updateYAMLschema(
   name: Nullable<string>,

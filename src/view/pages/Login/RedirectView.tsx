@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { getDefaultURL, navigateToURL } from '../../../controller/global/URLValidation';
+import { getDefaultURL, navigateToURL } from '../../../controller/global/url';
 import Loader from '../../thirdparty-based-components/Loader';
 import { getToken } from '../../../session/login/loginProcess';
 import { AppConfig } from '../../../utils/types/config';

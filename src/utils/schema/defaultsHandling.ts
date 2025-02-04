@@ -5,8 +5,8 @@ import editingState from '../../controller/state/EditCtrlState';
 import { ValidateResponse } from '../types/internal/validation';
 import { logError } from '../logger';
 import { JsonSchema } from '@jsonforms/core';
-import { showError } from '../../controller/local/ErrorNotifyController';
-import { navigateToURL } from '../../controller/global/URLValidation';
+import { showError } from '../../controller/local/notification';
+import { navigateToURL } from '../../controller/global/url';
 
 /**
  * Retunrs whether the data has been removed.

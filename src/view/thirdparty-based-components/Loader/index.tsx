@@ -1,5 +1,5 @@
-import { registerModalCallback } from '../../../controller/global/ModalController';
-import { registerErrorNotifyCallback } from '../../../controller/local/ErrorNotifyController';
+import { registerModalCallback } from '../../../controller/global/modal';
+import { registerErrorNotifyCallback } from '../../../controller/local/notification';
 import { useModalContext } from '../../components/Modal/ModalContext';
 import { useToastContext } from '../../components/ToastNotification/ToastContext';
 

@@ -1,6 +1,6 @@
-import { showModalMessage } from '../../../global/ModalController';
-import { navigateToURL } from '../../../global/URLValidation';
-import { showError } from '../../ErrorNotifyController';
+import { showModalMessage } from '../../../global/modal';
+import { navigateToURL } from '../../../global/url';
+import { showError } from '../../notification';
 import editingState from '../../../state/EditCtrlState';
 import {
   editViewNavigateToNewName,

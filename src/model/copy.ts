@@ -1,16 +1,15 @@
 import { RequestContext } from '../utils/types/internal/request';
-import { showError } from "../controller/local/ErrorNotifyController";
-import { actions2URLQuery } from "../utils/actionUtils";
-import { sendRequest } from "../utils/AuthedRequest";
-import { Nullable } from "../utils/types/typeUtils";
+import { showError } from '../controller/local/notification';
+import { actions2URLQuery } from '../utils/actionUtils';
+import { sendRequest } from '../utils/authRequest';
+import { Nullable } from '../utils/types/typeUtils';
 import { ActionDecl } from '../utils/types/api';
-
 
 export async function copyEntity(
   entityName: string,
   copyEntityName: string,
   actions: ActionDecl[],
-  requestContext: RequestContext
+  requestContext: RequestContext,
 ) {
   const url: string | null | undefined = requestContext.yacURL;
 
@@ -19,7 +18,7 @@ export async function copyEntity(
   const resp: Nullable<Response> = await sendRequest(
     url + `/entity/${requestContext.entityTypeName}${actions2URLQuery(actions)}`,
     'POST',
-    JSON.stringify({ name: entityName, copy: copyEntityName })
+    JSON.stringify({ name: entityName, copy: copyEntityName }),
   );
   if (resp == null) return false;
 
@@ -28,8 +27,8 @@ export async function copyEntity(
     const ans = await resp.json();
     showError(
       `${requestContext.backendObject?.title}: ` +
-      (ans.title ?? `Cannot Copy ${entityName} (Status ${resp.status})`),
-      ans.message ?? 'Waking up the admin, please stand by...'
+        (ans.title ?? `Cannot Copy ${entityName} (Status ${resp.status})`),
+      ans.message ?? 'Waking up the admin, please stand by...',
     );
     return null;
   }

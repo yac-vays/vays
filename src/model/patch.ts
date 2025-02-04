@@ -1,10 +1,9 @@
 import { RequestEditContext } from '../utils/types/internal/request';
-import { showError, showSuccess } from "../controller/local/ErrorNotifyController";
-import { handleCollision } from "../utils/concurrency";
-import { popActions, dumpEditActions } from "../utils/schema/injectActions";
-import { actionNames2URLQuery } from "../utils/actionUtils";
-import { sendRequest, authFailed } from "../utils/AuthedRequest";
-
+import { showError, showSuccess } from '../controller/local/notification';
+import { handleCollision } from '../utils/concurrency';
+import { popActions, dumpEditActions } from '../utils/schema/injectActions';
+import { actionNames2URLQuery } from '../utils/actionUtils';
+import { sendRequest, authFailed } from '../utils/authRequest';
 
 /**
  * TODO: DO MORE TESTING FOR THOSE WITH ACTIONS.
@@ -18,7 +17,7 @@ export async function patchEntity(
   name: string,
   patch: any,
   requestEditContext: RequestEditContext,
-  oldYaml?: string
+  oldYaml?: string,
 ): Promise<boolean> {
   if (requestEditContext.entityName == null) {
     showError('Frontend error', 'Name of entity is null. Please file a bug report!');
@@ -27,9 +26,11 @@ export async function patchEntity(
   const editActions = popActions(patch, requestEditContext.rc);
   const resp = await sendRequest(
     requestEditContext.rc.yacURL +
-    `/entity/${requestEditContext.rc.entityTypeName}/${requestEditContext.entityName}${actionNames2URLQuery(dumpEditActions(editActions))}`,
+      `/entity/${requestEditContext.rc.entityTypeName}/${
+        requestEditContext.entityName
+      }${actionNames2URLQuery(dumpEditActions(editActions))}`,
     'PATCH',
-    JSON.stringify({ name: name, data: patch, yaml_old: oldYaml ?? null })
+    JSON.stringify({ name: name, data: patch, yaml_old: oldYaml ?? null }),
   );
 
   // Network error
@@ -43,7 +44,7 @@ export async function patchEntity(
   } else if (resp.status == 422) {
     showError(
       'Frontend Error',
-      'Invalid specification used, cannot talk to YAC servers. Please report ID-NEW-SD-01.'
+      'Invalid specification used, cannot talk to YAC servers. Please report ID-NEW-SD-01.',
     );
   } else if (resp.status == 409) {
     // concurrency issue: someone has changed the file while this user has been editing.
@@ -53,9 +54,9 @@ export async function patchEntity(
     const ans = await resp.json();
     showError(
       `${requestEditContext.rc.backendObject?.title}: ` +
-      (ans.title ?? `Cannot update ${name} (Status ${resp.status})`),
+        (ans.title ?? `Cannot update ${name} (Status ${resp.status})`),
       (ans.message ?? 'Please contact your admin on this issue. ') +
-      'The data you entered is cached for now.'
+        'The data you entered is cached for now.',
     );
   } else if (authFailed(resp.status)) {
     // TODO

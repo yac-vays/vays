@@ -6,7 +6,7 @@ import DeleteButton from '../MultiSelect/DeleteButton';
 import useOutsideClick from '../../../hooks/useOutsideClick';
 import ListItem from '../MultiSelect/ListItem';
 import InlineTextField from '../MultiSelect/InlineTextField';
-import { setIsCurrentlyEditingString } from '../../../../controller/local/EditController/StandardMode/StandardState';
+import { setIsCurrentlyEditingString } from '../../../../controller/local/EditController/StandardMode/access';
 
 interface LargeStringProps {
   handleChange: (path: string, value: string[]) => void;

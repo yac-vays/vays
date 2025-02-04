@@ -25,12 +25,12 @@ import {
   setEntityName,
   setEntityYAML,
   setMonacoYaml,
-} from '../../../../controller/local/EditController/ExpertMode/EditorState';
+} from '../../../../controller/local/EditController/ExpertMode/access.js';
 import { registerInputCallback } from './EditorPlugins/SchemaHandler';
 import getEditorSettings, { setupMonacoYAMLPlugin } from './utils';
 
 import './glyph.css';
-import { updateYAMLschema } from '../../../../controller/local/EditController/ExpertMode/ExpertEditController';
+import { updateYAMLschema } from '../../../../controller/local/EditController/ExpertMode/index.js';
 import {
   editViewNavigateToNewName,
   getYACValidateResponse,
@@ -65,9 +65,6 @@ export const Editor = ({
     const rep = await updateYAMLschema(getEntityName(), value, requestEditContext); //await retreiveSchema(requestEditContext, true, true);
     setEditErrorMsg(getYACValidateResponse());
     setIsValidating(false);
-    console.error('HANDLE CHANGE');
-    console.error(rep);
-    console.error(requestEditContext);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (rep == null) return;
@@ -89,8 +86,6 @@ export const Editor = ({
     setCurrentContext(requestEditContext);
     if (requestEditContext.mode == 'modify') setEntityName(requestEditContext.entityName ?? null);
     else setEntityName(null);
-    console.error('SETTING THE REQUEST CONTEXT');
-    console.error(requestEditContext);
 
     if (monacoEl && requestEditContext.rc.yacURL != null) {
       setIsSettingUp(true);

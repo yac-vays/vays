@@ -1,9 +1,9 @@
-import { showError, showSuccess } from '../controller/local/ErrorNotifyController';
-import { showModalMessage } from '../controller/global/ModalController';
-import { navigateToURL } from '../controller/global/URLValidation';
+import { showError, showSuccess } from '../controller/local/notification';
+import { showModalMessage } from '../controller/global/modal';
+import { navigateToURL } from '../controller/global/url';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
-import { sendRequest } from '../utils/AuthedRequest';
+import { sendRequest } from '../utils/authRequest';
 import { invalidateEntityListCache } from './entityList';
 import { ActionDecl } from '../utils/types/api';
 import { deleteEntity } from './delete';

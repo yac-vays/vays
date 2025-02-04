@@ -1,7 +1,7 @@
 import { RequestContext } from '../utils/types/internal/request';
-import { showError } from '../controller/local/ErrorNotifyController';
+import { showError } from '../controller/local/notification';
 import { actions2URLQuery } from '../utils/actionUtils';
-import { sendRequest } from '../utils/AuthedRequest';
+import { sendRequest } from '../utils/authRequest';
 import { Nullable } from '../utils/types/typeUtils';
 import { ActionDecl } from '../utils/types/api';
 

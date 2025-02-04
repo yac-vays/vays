@@ -3,9 +3,9 @@ import Header from '../Header/index';
 import Sidebar from '../Sidebar/index';
 import { YACBackend } from '../../../utils/types/config';
 import { useToastContext } from '../../components/ToastNotification/ToastContext';
-import { registerErrorNotifyCallback } from '../../../controller/local/ErrorNotifyController';
+import { registerErrorNotifyCallback } from '../../../controller/local/notification';
 import { useModalContext } from '../../components/Modal/ModalContext';
-import { registerModalCallback } from '../../../controller/global/ModalController';
+import { registerModalCallback } from '../../../controller/global/modal';
 import Tour from '../../components/Tour';
 
 const DefaultLayout: React.FC<{ children: ReactNode; backendList: YACBackend[] }> = ({

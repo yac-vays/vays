@@ -8,7 +8,7 @@ import troubleshootCtrlState from '../../../controller/state/TroubleShootState';
 import {
   clearWarningMessageBuffer,
   getWarningMessageBuffer,
-} from '../../../controller/global/TroubleShootController';
+} from '../../../controller/global/troubleshoot';
 
 const DropdownNotification = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);

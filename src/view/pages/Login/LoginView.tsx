@@ -1,7 +1,7 @@
 import eth_logo from '../../../../rsc/logo/eth_logo_black.svg';
 import eth_logo_dark from '../../../../rsc/logo/eth_logo.svg';
 import { useEffect, useState } from 'react';
-import { navigateToURL } from '../../../controller/global/URLValidation';
+import { navigateToURL } from '../../../controller/global/url';
 import { getUserName, logOut, performDiscovery } from '../../../session/login/loginProcess';
 import { AppConfig } from '../../../utils/types/config';
 import iSessionStorage from '../../../session/storage/SessionStorage';

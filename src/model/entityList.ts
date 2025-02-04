@@ -1,7 +1,7 @@
 import { logError } from '../utils/logger';
-import { authFailed, sendRequest } from '../utils/AuthedRequest';
+import { authFailed, sendRequest } from '../utils/authRequest';
 import { Nullable } from '../utils/types/typeUtils';
-import { showError } from '../controller/local/ErrorNotifyController';
+import { showError } from '../controller/local/notification';
 import VAYS_CACHE from './caching';
 import { RequestContext } from '../utils/types/internal/request';
 import { EntityObject } from '../utils/types/api';

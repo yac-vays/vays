@@ -1,4 +1,4 @@
-import { setIsCurrentlyEditingString } from '../../../../controller/local/EditController/StandardMode/StandardState';
+import { setIsCurrentlyEditingString } from '../../../../controller/local/EditController/StandardMode/access';
 import { useEffect, useRef } from 'react';
 
 interface InputProps {

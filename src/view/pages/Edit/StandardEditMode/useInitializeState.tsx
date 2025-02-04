@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { setCurrentTab } from '../../../../controller/local/EditController/StandardMode/StandardState';
-import { setCurrentContext } from '../../../../controller/local/EditController/ExpertMode/EditorState';
+import { setCurrentTab } from '../../../../controller/local/EditController/StandardMode/access';
+import { setCurrentContext } from '../../../../controller/local/EditController/ExpertMode/access';
 import { retreiveSchema } from '../../../../controller/local/EditController/shared';
-import { showError } from '../../../../controller/local/ErrorNotifyController';
+import { showError } from '../../../../controller/local/notification';
 import editingState from '../../../../controller/state/EditCtrlState';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../../utils/types/internal/validation';

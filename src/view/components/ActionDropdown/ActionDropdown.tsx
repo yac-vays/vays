@@ -3,7 +3,7 @@ import useOutsideClick from '../../hooks/useOutsideClick';
 import {
   positionDropdownElement,
   registerTableScrollContainerEvent,
-} from '../../../controller/local/Overview/EntityListController';
+} from '../../../controller/local/Overview/list';
 import { GUIActionDropdownArg } from '../../../utils/types/internal/actions';
 import { MINWIDTH_COLUMN } from '../EntityList/EntityListHeaderCell';
 import { RequestContext } from '../../../utils/types/internal/request';

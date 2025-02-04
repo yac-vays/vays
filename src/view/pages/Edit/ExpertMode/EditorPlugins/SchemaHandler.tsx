@@ -6,9 +6,9 @@ import { getDefaultsAsYAML } from '../../../../../utils/schema/defaultsHandling'
 import {
   getCurrentContext,
   setEntityYAML,
-} from '../../../../../controller/local/EditController/ExpertMode/EditorState';
+} from '../../../../../controller/local/EditController/ExpertMode/access';
 
-import { updateYAMLschema } from '../../../../../controller/local/EditController/ExpertMode/ExpertEditController';
+import { updateYAMLschema } from '../../../../../controller/local/EditController/ExpertMode';
 
 export default async function editorSchemaHandler(
   ed: monaco.editor.IStandaloneCodeEditor,

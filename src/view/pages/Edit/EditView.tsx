@@ -6,14 +6,14 @@ import {
   getRequestContextEdit,
   isValidQueryEdit,
   navigateToURL,
-} from '../../../controller/global/URLValidation';
+} from '../../../controller/global/url';
 import { EditViewMode, RequestEditContext } from '../../../utils/types/internal/request';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { YACBackend } from '../../../utils/types/config';
 import { NameGeneratedCond } from '../../../utils/types/api';
 import EditFrame from './EditFrame';
 import iSessionStorage from '../../../session/storage/SessionStorage';
-import { showModalMessage } from '../../../controller/global/ModalController';
+import { showModalMessage } from '../../../controller/global/modal';
 
 interface EditViewProps {
   backends: Required<YACBackend[]>;

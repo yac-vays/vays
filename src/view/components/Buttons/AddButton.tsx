@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { YACBackend } from '../../../utils/types/config';
-import { buildCreateURL } from '../../../controller/global/URLValidation';
+import { buildCreateURL } from '../../../controller/global/url';
 
 interface AddButtonProps {
   entityName: string;

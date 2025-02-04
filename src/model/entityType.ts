@@ -1,11 +1,10 @@
-import { showError } from "../controller/local/ErrorNotifyController";
-import { requestFailedNoAuth } from "../session/login/loginProcess";
-import { sendRequest, authFailed } from "../utils/AuthedRequest";
-import { logError } from "../utils/logger";
-import { EntityTypeDecl } from "../utils/types/api";
-import { Nullable } from "../utils/types/typeUtils";
+import { showError } from '../controller/local/notification';
+import { requestFailedNoAuth } from '../session/login/loginProcess';
+import { sendRequest, authFailed } from '../utils/authRequest';
+import { logError } from '../utils/logger';
+import { EntityTypeDecl } from '../utils/types/api';
+import { Nullable } from '../utils/types/typeUtils';
 import { YACBackend } from '../utils/types/config';
-
 
 export const ENTITY_TYPE_CACHE_KEY = 'EntityType';
 /**
@@ -26,7 +25,7 @@ export async function getEntityTypes(yacBackend: YACBackend | null): Promise<Ent
     url + '/entity',
     'GET',
     null,
-    ENTITY_TYPE_CACHE_KEY
+    ENTITY_TYPE_CACHE_KEY,
   );
 
   if (resp == null) {
@@ -35,8 +34,8 @@ export async function getEntityTypes(yacBackend: YACBackend | null): Promise<Ent
     const ans = await resp.json();
     showError(
       `${yacBackend.title}: ` +
-      (ans.title ?? `Could not fetch Entity Types on ${yacBackend.name} (Status ${resp.status})`),
-      ans.message ?? 'Waking up the admin, please stand by...'
+        (ans.title ?? `Could not fetch Entity Types on ${yacBackend.name} (Status ${resp.status})`),
+      ans.message ?? 'Waking up the admin, please stand by...',
     );
     return [];
   } else if (resp.status == 200) {
@@ -48,7 +47,7 @@ export async function getEntityTypes(yacBackend: YACBackend | null): Promise<Ent
   } else {
     showError(
       `Error ${resp.status}: Can't fetch Entity Types of ${yacBackend.name}`,
-      `Server returned: ${JSON.stringify(resp.json())}`
+      `Server returned: ${JSON.stringify(resp.json())}`,
     );
   }
 

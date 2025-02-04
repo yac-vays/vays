@@ -16,7 +16,7 @@ import {
   withJsonFormsArrayLayoutProps,
   withTranslateProps,
 } from '@jsonforms/react';
-import { showModalMessage } from '../../../controller/global/ModalController';
+import { showModalMessage } from '../../../controller/global/modal';
 import Table from './Table';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
 

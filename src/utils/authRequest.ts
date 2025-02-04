@@ -1,5 +1,5 @@
 import VAYS_CACHE from '../model/caching';
-import { showError } from '../controller/local/ErrorNotifyController';
+import { showError } from '../controller/local/notification';
 import { getTokenFromStorage } from '../session/login/loginProcess';
 import { Nullable } from './types/typeUtils';
 

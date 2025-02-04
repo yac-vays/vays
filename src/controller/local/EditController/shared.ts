@@ -1,6 +1,6 @@
 import editingState from '../../state/EditCtrlState';
-import { navigateToURL } from '../../global/URLValidation';
-import { updateSchema } from './StandardMode/StandardEditController';
+import { navigateToURL } from '../../global/url';
+import { updateSchema } from './StandardMode';
 import { getEntityData } from '../../../model/entityData';
 import { getSchema } from '../../../model/validate';
 import { ValidateResponse } from '../../../utils/types/internal/validation';

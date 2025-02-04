@@ -9,8 +9,8 @@ import {
 } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import TextInput from '../../view/thirdparty-based-components/ifc/TextInput/TextInput';
-import { tsAddWarningMessage } from '../../controller/global/TroubleShootController';
-import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/EditorState';
+import { tsAddWarningMessage } from '../../controller/global/troubleshoot';
+import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/access';
 import { useCallback } from 'react';
 import { debounce } from 'lodash';
 import OverheadLabel from '../../view/thirdparty-based-components/ifc/Label/OverheadLabel';

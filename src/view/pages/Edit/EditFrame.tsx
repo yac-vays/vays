@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { RequestEditContext } from '../../../utils/types/internal/request';
 import ExpertMode from './ExpertMode/ExpertMode';
 import StandardEditMode from './StandardEditMode';
-import { sendFormData } from '../../../controller/local/EditController/StandardMode/StandardEditController';
-import { sendYAMLData } from '../../../controller/local/EditController/ExpertMode/ExpertEditController';
+import { sendFormData } from '../../../controller/local/EditController/StandardMode';
+import { sendYAMLData } from '../../../controller/local/EditController/ExpertMode';
 
 /**
  * Component that renders an editing frame with expert or standard mode and feedback.

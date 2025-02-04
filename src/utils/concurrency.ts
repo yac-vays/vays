@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { showModalMessage } from '../controller/global/ModalController';
+import { showModalMessage } from '../controller/global/modal';
 import { RequestEditContext } from './types/internal/request';
 import { getEntityData } from '../model/entityData';
 import { getObjectDiff, transformObjectUsingTitle } from './objectdiff';

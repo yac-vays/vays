@@ -1,17 +1,19 @@
 import { showError } from '../controller/local/notification';
+import { hasAuthFailed, sendRequest } from '../utils/authRequest';
+import { EntityData } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
-import { authFailed, sendRequest } from '../utils/authRequest';
-import { EntityData } from '../utils/types/api';
+import { joinUrl } from '../utils/urlUtils';
 
 export async function getEntityData(
   entityName: string,
   requestContext: RequestContext,
 ): Promise<EntityData | null> {
   const url: string | null | undefined = requestContext.yacURL;
+  if (url == null || url == undefined) return null;
 
   const resp: Nullable<Response> = await sendRequest(
-    url + `/entity/${requestContext.entityTypeName}/${entityName}`,
+    joinUrl(url, `/entity/${requestContext.entityTypeName}/${entityName}`),
     'GET',
   );
 
@@ -33,7 +35,7 @@ export async function getEntityData(
       ans.message ?? 'Could not fetch entity data. Please contact the admin to resolve this issue.',
     );
     return null;
-  } else if (authFailed(resp.status)) {
+  } else if (hasAuthFailed(resp.status)) {
     // TODO
 
     return null;

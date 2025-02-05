@@ -1,20 +1,20 @@
 import { useEffect } from 'react';
 import { getDefaultURL, navigateToURL } from '../../../controller/global/url';
 import Loader from '../../thirdparty-based-components/Loader';
-import { getToken } from '../../../session/login/loginProcess';
+import { setUserLoggedIn, userIsLoggedIn } from '../../../session/login/tokenHandling';
+import { finalizeAuthentication } from '../../../session/login/loginProcess';
 import { AppConfig } from '../../../utils/types/config';
-import iSessionStorage from '../../../session/storage/SessionStorage';
 import { getConfig } from '../../../model/config';
+import iSessionStorage from '../../../session/storage/SessionStorage';
 
 const RedirectView = ({ appconf }: { appconf: AppConfig }) => {
   useEffect(() => {
     (async () => {
-      if (!iSessionStorage.isLoggedIn() && !(await getToken(appconf))) {
+      if (!userIsLoggedIn() && !(await finalizeAuthentication(appconf))) {
         navigateToURL('/error-page');
-        iSessionStorage.setIsLoggedIn(false);
+        setUserLoggedIn(false);
         return;
       }
-      iSessionStorage.setIsLoggedIn(true);
 
       const mostRecentURL = iSessionStorage.getMostRecentURL(true);
       if (mostRecentURL && mostRecentURL !== '/') {
@@ -26,13 +26,13 @@ const RedirectView = ({ appconf }: { appconf: AppConfig }) => {
   }, []);
   /************
    *   useLayoutEffect(() => {
-    getToken(appconf).then((authSuccessful) => {
+    finalizeAuthentication(appconf).then((authSuccessful) => {
       if (!iSessionStorage.isLoggedIn() && !authSuccessful) {
         navigateToURL('/error-page');
-        iSessionStorage.setIsLoggedIn(false);
+        setUserLoggedIn(false);
         return;
       }
-      iSessionStorage.setIsLoggedIn(true);
+      setUserLoggedIn(true);
 
       const mostRecentURL = iSessionStorage.getMostRecentURL();
       if (mostRecentURL) {

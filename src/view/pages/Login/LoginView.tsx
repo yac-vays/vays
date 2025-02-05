@@ -2,9 +2,10 @@ import eth_logo from '../../../../rsc/logo/eth_logo_black.svg';
 import eth_logo_dark from '../../../../rsc/logo/eth_logo.svg';
 import { useEffect, useState } from 'react';
 import { navigateToURL } from '../../../controller/global/url';
-import { getUserName, logOut, performDiscovery } from '../../../session/login/loginProcess';
+import { getUserName, userIsLoggedIn } from '../../../session/login/tokenHandling';
+import { logOut, startAuthentication } from '../../../session/login/loginProcess';
 import { AppConfig } from '../../../utils/types/config';
-import iSessionStorage from '../../../session/storage/SessionStorage';
+import VAYS_CACHE from '../../../model/caching';
 
 interface LoginViewProps {
   config: AppConfig;
@@ -15,9 +16,6 @@ const LoginView: React.FC<LoginViewProps> = ({ config }) => {
 
   useEffect(() => {
     window.addEventListener('theme-switch', () => {
-      /**
-       * TODO: Do better handling of the dark mode.
-       */
       setIsDarkMode(window.document.body.classList.contains('dark'));
     });
   }, [window.document.body.classList]);
@@ -37,31 +35,26 @@ const LoginView: React.FC<LoginViewProps> = ({ config }) => {
               {config.title}
             </div>
             <p className="mb-12 font-medium">
-              {iSessionStorage.isLoggedIn()
+              {userIsLoggedIn()
                 ? `You are logged in as ${getUserName()}. When you log out, make sure you close the browser to clear all data.`
                 : 'Please sign in to access the self-service portal. If you think it is a mistake that you see this, please contact the IT Services.'}
             </p>
 
             <button
               className={`flex w-full justify-center rounded-md ${
-                iSessionStorage.isLoggedIn() ? 'bg-[grey]' : 'bg-primary'
+                userIsLoggedIn() ? 'bg-[grey]' : 'bg-primary'
               } p-4 font-bold text-plainfont-inv hover:bg-opacity-60`}
               onClick={async () => {
-                if (iSessionStorage.isLoggedIn()) {
+                if (userIsLoggedIn()) {
                   logOut();
-                  // TODO: Invalidate the whole cache!
+                  VAYS_CACHE.invalidateAll();
                   navigateToURL('/');
                 } else {
-                  const resp = await performDiscovery(config);
-                  if (resp == null) {
-                    navigateToURL('/error-page');
-                    return;
-                  }
-                  window.location.replace(resp.href);
+                  await startAuthentication(config);
                 }
               }}
             >
-              {iSessionStorage.isLoggedIn() ? 'Log Out' : 'Log In'} {'>'}
+              {userIsLoggedIn() ? 'Log Out' : 'Log In'} {'>'}
             </button>
           </div>
         </div>

@@ -1,16 +1,17 @@
-import { showError, showSuccess } from '../controller/local/notification';
 import { showModalMessage } from '../controller/global/modal';
 import { navigateToURL } from '../controller/global/url';
+import { showError, showSuccess } from '../controller/local/notification';
+import { isTriggable } from '../utils/actionUtils';
+import { sendRequest } from '../utils/authRequest';
+import { ActionDecl } from '../utils/types/api';
+import { OperationsMetaInfo } from '../utils/types/internal/actions';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
-import { sendRequest } from '../utils/authRequest';
-import { invalidateEntityListCache } from './entityList';
-import { ActionDecl } from '../utils/types/api';
-import { deleteEntity } from './delete';
-import { isTriggable } from '../utils/actionUtils';
-import { linkEntity } from './link';
+import { joinUrl } from '../utils/urlUtils';
 import { copyEntity } from './copy';
-import { OperationsMetaInfo } from '../utils/types/internal/actions';
+import { deleteEntity } from './delete';
+import { invalidateEntityListCache } from './entityList';
+import { linkEntity } from './link';
 
 export function getActionCallback(
   requestContext: RequestContext,
@@ -57,7 +58,7 @@ export function getActionCallback(
  * @returns Boolean, whether this action can be executed.
  */
 export function checkPermissions(permsAvailable: string[], permsRequ: string[]): boolean {
-  var setB = new Set(permsAvailable);
+  const setB = new Set(permsAvailable);
   return [...new Set(permsRequ)].filter((x) => setB.has(x)).length > 0;
 }
 
@@ -89,8 +90,7 @@ export const OPERATIONS_META: OperationsMetaInfo = {
                 `Success Copying ${entityName}`,
                 'The entry is now available in the entity list.',
               );
-            } else if (success == null) {
-            } else {
+            } else if (success !== null) {
               showError(`Could not create link ${newName}`, 'Please try again.');
             }
           },
@@ -170,8 +170,7 @@ export const OPERATIONS_META: OperationsMetaInfo = {
             );
             if (success) {
               showSuccess(`Successfully created link ${newName}`, '');
-            } else if (success == null) {
-            } else {
+            } else if (success !== null) {
               showError(`Could not create link ${newName}`, 'Please try again.');
             }
           },
@@ -245,11 +244,8 @@ export async function sendAction(
 
   if (url == undefined || url == null) return false;
 
-  // TODO: Do a proper URL joining utility!
-  // TODO: Add the possibility to check status, declare the desired status, and else do error logging.
-  // TODO: Do a bug report that the argumkents are switched.
   const resp: Nullable<Response> = await sendRequest(
-    url + `/entity/${requestContext.entityTypeName}/${entityName}/run/${actionName}`,
+    joinUrl(url, `/entity/${requestContext.entityTypeName}/${entityName}/run/${actionName}`),
     'POST',
   );
   if (resp?.status == 204) return true;

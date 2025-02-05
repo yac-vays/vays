@@ -1,17 +1,20 @@
 import { useState } from 'react';
 import ClickOutside from '../ClickOutside';
 import UserOne from '../../../../rsc/user/user.png';
-import { getUserName, logOut } from '../../../session/login/loginProcess';
-import iSessionStorage from '../../../session/storage/SessionStorage';
+import { getUserName, userIsLoggedIn } from '../../../session/login/tokenHandling';
+import { logOut } from '../../../session/login/loginProcess';
 import { navigateToURL } from '../../../controller/global/url';
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [userName, setUserName] = useState<string>(
-    iSessionStorage.isLoggedIn() ? getUserName() : 'Not Logged In',
+    userIsLoggedIn() ? getUserName() : 'Not Logged In',
   );
 
   window.addEventListener('sign-in', () => {
+    console.error('SIGN IN DETECTED');
+    console.error(getUserName());
+    console.error(userIsLoggedIn());
     setUserName(getUserName());
   });
 
@@ -23,7 +26,7 @@ const DropdownUser = () => {
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
       <a
         onClick={() => {
-          if (!iSessionStorage.isLoggedIn()) {
+          if (!userIsLoggedIn()) {
             navigateToURL('/');
           } else {
             setDropdownOpen(!dropdownOpen);
@@ -36,7 +39,7 @@ const DropdownUser = () => {
           <span className="block text-sm font-medium text-plainfont">{userName}</span>
         </span>
 
-        {iSessionStorage.isLoggedIn() ? (
+        {userIsLoggedIn() ? (
           <>
             <span className="h-12 w-12 rounded-full">
               <img src={UserOne} alt="User" />

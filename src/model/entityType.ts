@@ -1,17 +1,17 @@
 import { showError } from '../controller/local/notification';
-import { requestFailedNoAuth } from '../session/login/loginProcess';
-import { sendRequest, authFailed } from '../utils/authRequest';
+import { handleAuthFailed } from '../session/login/tokenHandling';
+import { hasAuthFailed, sendRequest } from '../utils/authRequest';
 import { logError } from '../utils/logger';
 import { EntityTypeDecl } from '../utils/types/api';
-import { Nullable } from '../utils/types/typeUtils';
 import { YACBackend } from '../utils/types/config';
+import { Nullable } from '../utils/types/typeUtils';
+import { joinUrl } from '../utils/urlUtils';
+import { ENTITY_TYPE_CACHE_KEY } from './caching/cachekeys';
 
-export const ENTITY_TYPE_CACHE_KEY = 'EntityType';
 /**
  * @param yacBackend The backend in question.
  * @returns A list of entity types definitions.
  */
-
 export async function getEntityTypes(yacBackend: YACBackend | null): Promise<EntityTypeDecl[]> {
   if (yacBackend == null) return [];
   if (yacBackend.url === undefined) {
@@ -22,7 +22,7 @@ export async function getEntityTypes(yacBackend: YACBackend | null): Promise<Ent
   const url: string = yacBackend.url;
 
   const resp: Nullable<Response> = await sendRequest(
-    url + '/entity',
+    joinUrl(url, '/entity'),
     'GET',
     null,
     ENTITY_TYPE_CACHE_KEY,
@@ -41,9 +41,9 @@ export async function getEntityTypes(yacBackend: YACBackend | null): Promise<Ent
   } else if (resp.status == 200) {
     const res = await resp.json();
     return res;
-  } else if (authFailed(resp.status)) {
+  } else if (hasAuthFailed(resp.status)) {
     // TODO
-    requestFailedNoAuth();
+    handleAuthFailed();
   } else {
     showError(
       `Error ${resp.status}: Can't fetch Entity Types of ${yacBackend.name}`,

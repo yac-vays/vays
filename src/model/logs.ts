@@ -1,20 +1,20 @@
-import VAYS_CACHE from './caching';
-import { RequestContext } from '../utils/types/internal/request';
 import { showError } from '../controller/local/notification';
-import { authFailed, sendRequest } from '../utils/authRequest';
-import { Nullable } from '../utils/types/typeUtils';
-import { invalidateEntityListCache } from './entityList';
+import { hasAuthFailed, sendRequest } from '../utils/authRequest';
 import { EntityLog } from '../utils/types/api';
-
-export const LOGS_CACHE_KEY = 'EntityLogs';
-export const LOGS_CACHE_TTL = 30_000;
+import { RequestContext } from '../utils/types/internal/request';
+import { Nullable } from '../utils/types/typeUtils';
+import { joinUrl } from '../utils/urlUtils';
+import VAYS_CACHE from './caching';
+import { LOGS_CACHE_KEY } from './caching/cachekeys';
+import { invalidateEntityListCache } from './entityList';
 
 function getLogID(
   url: string | null | undefined,
   entityTypeName: string | null,
   entityName: string,
 ) {
-  return url + `/entity/${entityTypeName}/${entityName}/logs`;
+  if (url == null || url == undefined) return url + `/entity/${entityTypeName}/${entityName}/logs`;
+  return joinUrl(url, `/entity/${entityTypeName}/${entityName}/logs`);
 }
 
 export function isLogCached(entityName: string, requestContext: RequestContext) {
@@ -36,8 +36,10 @@ export async function getEntityLogs(
 ): Promise<EntityLog[] | null> {
   const url: string | null | undefined = requestContext.yacURL;
 
+  if (url == null || url == undefined) return null;
+
   const resp: Nullable<Response> = await sendRequest(
-    url + `/entity/${requestContext.entityTypeName}/${entityName}/logs`,
+    joinUrl(url, `/entity/${requestContext.entityTypeName}/${entityName}/logs`),
     'GET',
     null,
     LOGS_CACHE_KEY,
@@ -64,7 +66,7 @@ export async function getEntityLogs(
       ans.message ?? 'Could not fetch entity logs. Please contact the admin to resolve this issue.',
     );
     return null;
-  } else if (authFailed(resp.status)) {
+  } else if (hasAuthFailed(resp.status)) {
     // TODO
 
     return null;

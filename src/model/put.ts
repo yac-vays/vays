@@ -1,6 +1,7 @@
-import { RequestEditContext } from '../utils/types/internal/request';
 import { showError, showSuccess } from '../controller/local/notification';
-import { sendRequest, authFailed } from '../utils/authRequest';
+import { hasAuthFailed, sendRequest } from '../utils/authRequest';
+import { RequestEditContext } from '../utils/types/internal/request';
+import { joinUrl } from '../utils/urlUtils';
 
 /**
  * @param name
@@ -19,9 +20,15 @@ export async function putYAMLEntity(
     showError('Frontend error', 'Name of entity is null. Please file a bug report!');
     return false;
   }
+  const url = requestEditContext.rc.yacURL;
+  if (url == null || url == undefined) {
+    return false;
+  }
   const resp = await sendRequest(
-    requestEditContext.rc.yacURL +
+    joinUrl(
+      url,
       `/entity/${requestEditContext.rc.entityTypeName}/${requestEditContext.entityName}`,
+    ),
     'PUT',
     JSON.stringify({ name: name, yaml_old: yaml_old, yaml_new: yaml }),
   );
@@ -47,7 +54,7 @@ export async function putYAMLEntity(
       (ans.message ?? 'Please contact your admin on this issue. ') +
         'The data you entered is cached for now.',
     );
-  } else if (authFailed(resp.status)) {
+  } else if (hasAuthFailed(resp.status)) {
     // TODO
   } else if (resp.status >= 400) {
     const jresp = await resp.json();

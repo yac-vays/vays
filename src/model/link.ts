@@ -1,9 +1,10 @@
-import { RequestContext } from '../utils/types/internal/request';
 import { showError } from '../controller/local/notification';
 import { actions2URLQuery } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
-import { Nullable } from '../utils/types/typeUtils';
 import { ActionDecl } from '../utils/types/api';
+import { RequestContext } from '../utils/types/internal/request';
+import { Nullable } from '../utils/types/typeUtils';
+import { joinUrl } from '../utils/urlUtils';
 
 export async function linkEntity(
   entityName: string,
@@ -16,7 +17,7 @@ export async function linkEntity(
   if (url == undefined || url == null) return false;
 
   const resp: Nullable<Response> = await sendRequest(
-    url + `/entity/${requestContext.entityTypeName}${actions2URLQuery(actions)}`,
+    joinUrl(url, `/entity/${requestContext.entityTypeName}${actions2URLQuery(actions)}`),
     'POST',
     JSON.stringify({ name: entityName, link: copyEntityName }),
   );

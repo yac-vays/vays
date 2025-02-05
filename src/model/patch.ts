@@ -1,9 +1,10 @@
-import { RequestEditContext } from '../utils/types/internal/request';
 import { showError, showSuccess } from '../controller/local/notification';
-import { handleCollision } from '../utils/concurrency';
-import { popActions, dumpEditActions } from '../utils/schema/injectActions';
 import { actionNames2URLQuery } from '../utils/actionUtils';
-import { sendRequest, authFailed } from '../utils/authRequest';
+import { hasAuthFailed, sendRequest } from '../utils/authRequest';
+import { handleCollision } from '../utils/concurrency';
+import { dumpEditActions, popActions } from '../utils/schema/injectActions';
+import { RequestEditContext } from '../utils/types/internal/request';
+import { joinUrl } from '../utils/urlUtils';
 
 /**
  * TODO: DO MORE TESTING FOR THOSE WITH ACTIONS.
@@ -15,7 +16,7 @@ import { sendRequest, authFailed } from '../utils/authRequest';
 
 export async function patchEntity(
   name: string,
-  patch: any,
+  patch: { [key: string]: unknown },
   requestEditContext: RequestEditContext,
   oldYaml?: string,
 ): Promise<boolean> {
@@ -23,12 +24,20 @@ export async function patchEntity(
     showError('Frontend error', 'Name of entity is null. Please file a bug report!');
     return false;
   }
+
+  const url = requestEditContext.rc.yacURL;
+  if (url == null || url == undefined) {
+    return false;
+  }
+
   const editActions = popActions(patch, requestEditContext.rc);
   const resp = await sendRequest(
-    requestEditContext.rc.yacURL +
+    joinUrl(
+      url,
       `/entity/${requestEditContext.rc.entityTypeName}/${
         requestEditContext.entityName
       }${actionNames2URLQuery(dumpEditActions(editActions))}`,
+    ),
     'PATCH',
     JSON.stringify({ name: name, data: patch, yaml_old: oldYaml ?? null }),
   );
@@ -58,7 +67,7 @@ export async function patchEntity(
       (ans.message ?? 'Please contact your admin on this issue. ') +
         'The data you entered is cached for now.',
     );
-  } else if (authFailed(resp.status)) {
+  } else if (hasAuthFailed(resp.status)) {
     // TODO
   } else if (resp.status >= 400) {
     const jresp = await resp.json();

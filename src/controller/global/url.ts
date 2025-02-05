@@ -1,7 +1,6 @@
 import { getEntityTypes } from '../../model/entityType';
 import { EntityTypeDecl } from '../../utils/types/api';
 import { YACBackend } from '../../utils/types/config';
-import iSessionStorage from '../../session/storage/SessionStorage';
 import { Nullable } from '../../utils/types/typeUtils';
 import {
   RequestContext,
@@ -9,6 +8,7 @@ import {
   RequestEditContext,
   EditViewMode,
 } from '../../utils/types/internal/request';
+import { userIsLoggedIn } from '../../session/login/tokenHandling';
 
 /**
  * Get the default request context, returned when no verifiable contexts is yet available,
@@ -193,7 +193,7 @@ export async function isValidQueryEdit(
  * @returns
  */
 export async function getDefaultURL(backends: YACBackend[]): Promise<string> {
-  if (backends.length == 0 || !iSessionStorage.isLoggedIn()) {
+  if (backends.length == 0 || !userIsLoggedIn()) {
     return '/';
   }
   for (let i = 0; i < backends.length; i++) {

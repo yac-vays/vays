@@ -6,7 +6,7 @@ import { getEntityTypes } from '../../../model/entityType';
 import { EntityTypeDecl } from '../../../utils/types/api';
 import { buildOverviewURL } from '../../../controller/global/url';
 import iLocalStorage from '../../../session/persistent/LocalStorage';
-import iSessionStorage from '../../../session/storage/SessionStorage';
+import { userIsLoggedIn } from '../../../session/login/tokenHandling';
 
 interface SidebarLinkGroupProps {
   yacBackendObject: YACBackend;
@@ -25,7 +25,7 @@ const SidebarGroup = ({ yacBackendObject, isOpen }: SidebarLinkGroupProps) => {
   useEffect(() => {
     async function loadingEntityTypes() {
       if (window.location.pathname.startsWith('/oauth2-redirect')) {
-        while (!iSessionStorage.isLoggedIn()) {
+        while (!userIsLoggedIn()) {
           await new Promise((res) => setTimeout(res, 500));
         }
       }

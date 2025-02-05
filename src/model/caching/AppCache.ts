@@ -4,6 +4,9 @@ import CacheNode from './CacheNode';
 
 const BLOCKINGWAIT_DURATION = 100;
 
+/**
+ * Class which provides a multi-context cache with TTL.
+ */
 export class AppCache {
   private _nodes: { [key: string]: CacheNode } = {};
 
@@ -22,7 +25,12 @@ export class AppCache {
     return this._nodes[ctx].isCached(id);
   }
 
-  cache(ctx: string, id: string, value: any, invalidateHook: Nullable<() => void> = null): boolean {
+  cache(
+    ctx: string,
+    id: string,
+    value: unknown,
+    invalidateHook: Nullable<() => void> = null,
+  ): boolean {
     if (ctx in this._nodes) {
       this._nodes[ctx].cache(id, value, invalidateHook);
       return true;
@@ -32,7 +40,7 @@ export class AppCache {
     }
   }
 
-  async retreive(ctx: string, id: string): Promise<any> {
+  async retreive(ctx: string, id: string): Promise<unknown> {
     if (ctx in this._nodes) {
       while (this._nodes[ctx].hasRegistration(id)) {
         await new Promise((res) => setTimeout(res, BLOCKINGWAIT_DURATION));
@@ -81,6 +89,13 @@ export class AppCache {
     if (ctx in this._nodes) {
       this._nodes[ctx].invalidate(id);
     }
+  }
+
+  invalidateAll(): void {
+    for (const ctx of Object.keys(this._nodes)) {
+      this._nodes[ctx] = new CacheNode(this._nodes[ctx].ttl);
+    }
+    console.error(this._nodes);
   }
 
   getIDFromRequest(yacBackendURL: string, apiCall: string) {

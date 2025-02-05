@@ -1,12 +1,13 @@
-import { logError } from '../utils/logger';
-import { authFailed, sendRequest } from '../utils/authRequest';
-import { Nullable } from '../utils/types/typeUtils';
 import { showError } from '../controller/local/notification';
-import VAYS_CACHE from './caching';
-import { RequestContext } from '../utils/types/internal/request';
+import { handleAuthFailed } from '../session/login/tokenHandling';
+import { hasAuthFailed, sendRequest } from '../utils/authRequest';
+import { logError } from '../utils/logger';
 import { EntityObject } from '../utils/types/api';
-
-export const ENTITY_LIST_CACHE_KEY: string = 'EntityList';
+import { RequestContext } from '../utils/types/internal/request';
+import { Nullable } from '../utils/types/typeUtils';
+import { joinUrl } from '../utils/urlUtils';
+import VAYS_CACHE from './caching';
+import { ENTITY_LIST_CACHE_KEY } from './caching/cachekeys';
 
 export function invalidateEntityListCache(
   yacURL: string | null | undefined,
@@ -39,7 +40,7 @@ export async function getEntityList(requestContext: RequestContext): Promise<Ent
   const url = requestContext.backendObject?.url;
 
   const resp: Nullable<Response> = await sendRequest(
-    url + `/entity/${requestContext.entityTypeName}`,
+    joinUrl(url, `/entity/${requestContext.entityTypeName}`),
     'GET',
     null,
     ENTITY_LIST_CACHE_KEY,
@@ -60,8 +61,8 @@ export async function getEntityList(requestContext: RequestContext): Promise<Ent
       ans.message ?? 'Waking up the admin, please stand by...',
     );
     return [];
-  } else if (authFailed(resp.status)) {
-    // TODO
+  } else if (hasAuthFailed(resp.status)) {
+    handleAuthFailed();
   }
 
   return [];

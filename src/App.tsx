@@ -10,19 +10,10 @@ import { getConfig } from './model/config';
 import { YACBackend } from './utils/types/config';
 import { AppConfig } from './utils/types/config';
 import { registerNavigationHook } from './controller/global/url';
-import { showError } from './controller/local/notification';
 import { ToastContextProvider } from './view/components/ToastNotification/ToastContext';
 import { ModalContextProvider } from './view/components/Modal/ModalContext';
-
-// LAZY PAGES
-// let Overview = lazy(() => import('./view/pages/Overview/Overview'));
-// let EditView = lazy(() => import('./view/pages/Edit/EditView'));
-// let RedirectView: any;
-// const [Overview, RedirectView, EditView] = multiLazy([
-//   () => import('./view/pages/Overview/Overview'),
-//   () => import('./view/pages/Login/RedirectView'),
-//   () => import('./view/pages/Edit/EditView'),
-// ]);
+import { generateCSP } from './session/csp';
+import { setColors } from './session/color';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let EditView: React.FC<any>;
@@ -46,11 +37,7 @@ const RedirectView = lazy(() =>
 );
 
 const ErrorPage = lazy(() => import('./view/pages/Error/ErrorPage'));
-// const RedirectView = lazy(() => import('./view/pages/Login/RedirectView'));
-//const DevInfo = lazy(() => import('./view/pages/DevInfo/DevInfo'));
 import DevInfo from './view/pages/DevInfo';
-import { generateCSP } from './session/csp';
-import { setColors } from './session/color';
 
 /**
  * The main application component that sets up the routing and context providers.
@@ -92,7 +79,6 @@ function App(): JSX.Element {
       const conf = await getConfig();
 
       if (conf == null) {
-        showError('Config Not Available', 'Cannot fetch the config. Please contact the admin.');
         return;
       }
       generateCSP(conf);

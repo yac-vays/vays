@@ -1,11 +1,10 @@
-import { EntityTypeDecl } from "../api";
-import { YACBackend } from "../config";
-
+import { EntityTypeDecl } from '../api';
+import { YACBackend } from '../config';
 
 export type EditViewMode = 'create' | 'modify';
 
 export interface RequestOverviewContext {
-  searchQueries?: { [key: string]: string; };
+  searchQueries?: { [key: string]: string };
   pageNumber: number;
   numPerPage: number;
   rc: RequestContext;
@@ -30,4 +29,13 @@ export interface RequestContext {
   // searchQuery: string | null; // TODO: CURRENTLY NOT SUPPLIED
   backendObject: YACBackend | null;
   entityTypeList: EntityTypeDecl[] | null; // The list of entities that this particular backend defines
+}
+
+/**
+ * Data Object Type for temporarily storing authentication information.
+ */
+export interface AuthDiscConfig {
+  nonce: string;
+  clientID: string;
+  code_verifier: string;
 }

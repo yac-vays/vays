@@ -1,21 +1,5 @@
 class ISessionStorage {
-  public KEYS: readonly string[] = ['isLoggedIn', 'token', 'eMostRecentURL'];
-
-  public setIsLoggedIn(v: boolean) {
-    this.set('isLoggedIn', v);
-  }
-
-  public isLoggedIn(): boolean | undefined {
-    return this.get('isLoggedIn');
-  }
-
-  public setToken(v: string) {
-    this.set('token', v);
-  }
-
-  public getToken(): string | undefined {
-    return this.get('token');
-  }
+  public KEYS: readonly string[] = ['eMostRecentURL'];
 
   /**
    * ephemeral information: Will vanish after a single read access.

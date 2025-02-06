@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import ListItem from './ListItem';
+import React, { useEffect, useRef, useState } from 'react';
 import DeleteButton from './DeleteButton';
 import DropdownButton from './DropdownButton';
 import InlineTextField from './InlineTextField';
+import ListItem from './ListItem';
 
 interface Option {
   value: number | string;
@@ -41,7 +41,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
   const [newInput, setNewInput] = useState<string>('');
 
   /**
-   * Again, json forms caching necessitates an according update to the element.
+   * caching fix
    */
   useEffect(() => {
     setSelected(data ?? []);

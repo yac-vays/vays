@@ -1,5 +1,5 @@
-import { setIsCurrentlyEditingString } from '../../../../controller/local/EditController/StandardMode/access';
 import { useEffect, useRef } from 'react';
+import { setIsCurrentlyEditingString } from '../../../../controller/local/EditController/StandardMode/access';
 
 interface InputProps {
   data?: string;
@@ -36,7 +36,7 @@ const TextInput = ({
   }
 
   /**
-   * Again, json forms caching necessitates an according update to the element.
+   * caching fix
    */
   useEffect(() => {
     if (!inputRef.current) return;

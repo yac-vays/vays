@@ -55,7 +55,7 @@ const SSHKeyInput = ({ id, placeholder, data, enabled, onChange }: SSHKeyProps) 
   });
 
   /**
-   * Again, json forms caching necessitates an according update to the element.
+   * caching fix
    */
   useEffect(() => {
     const keyData = data ? data.toString() : '';

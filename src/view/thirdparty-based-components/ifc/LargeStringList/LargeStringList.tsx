@@ -1,12 +1,12 @@
 import { debounce } from 'lodash';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import DropdownButton from '../MultiSelect/DropdownButton';
-import DeleteButton from '../MultiSelect/DeleteButton';
-import useOutsideClick from '../../../hooks/useOutsideClick';
-import ListItem from '../MultiSelect/ListItem';
-import InlineTextField from '../MultiSelect/InlineTextField';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { setIsCurrentlyEditingString } from '../../../../controller/local/EditController/StandardMode/access';
+import useOutsideClick from '../../../hooks/useOutsideClick';
+import DeleteButton from '../MultiSelect/DeleteButton';
+import DropdownButton from '../MultiSelect/DropdownButton';
+import InlineTextField from '../MultiSelect/InlineTextField';
+import ListItem from '../MultiSelect/ListItem';
 
 interface LargeStringProps {
   handleChange: (path: string, value: string[]) => void;
@@ -33,7 +33,7 @@ const LargeStringList: React.FC<LargeStringProps> = ({ id, handleChange, path, d
   );
 
   /**
-   * Again, json forms caching necessitates an according update to the element.
+   * caching fix
    */
   useEffect(() => {
     setSelected(data ?? []);

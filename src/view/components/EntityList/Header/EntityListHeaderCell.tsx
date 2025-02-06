@@ -1,5 +1,5 @@
-import { useState, useRef, InputHTMLAttributes, DetailedHTMLProps, MutableRefObject } from 'react';
-import useOutsideClick from '../../hooks/useOutsideClick';
+import { DetailedHTMLProps, InputHTMLAttributes, useRef, useState } from 'react';
+import useOutsideClick from '../../../hooks/useOutsideClick';
 
 export const MINWIDTH_COLUMN = 100; // px
 
@@ -25,7 +25,7 @@ const EntityListHeaderCell = ({
 }: ELHeaderCellProps) => {
   const [openSearch, setOpenSearch] = useState(false);
   const headerEntryRef = useRef<HTMLTableCellElement>(null);
-  const inputBar: MutableRefObject<HTMLInputElement | null> = useRef(null);
+  const inputBar = useRef<HTMLInputElement>(null);
 
   const toggleOpenSearch = () => {
     if (searchable) {
@@ -46,7 +46,7 @@ const EntityListHeaderCell = ({
     event: DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>,
   ) => {
     if ((event as KeyboardEvent).code === 'Escape' && inputBar.current != null) {
-      (inputBar.current as any).value = '';
+      inputBar.current.value = '';
       setOpenSearch(false);
       if (inputBar.current != null && searchCallback != undefined) {
         searchCallback('');
@@ -109,6 +109,7 @@ const EntityListHeaderCell = ({
             type="text"
             className=" rounded-md border border-stroke px-3 py-1 outline-none focus:border-primary "
             style={{
+              //@ts-expect-error Ignore init
               maxWidth: headerEntryRef.current?.clientWidth - 30 - (firstField ? 30 : 0),
               left: 0,
             }}

@@ -1,6 +1,7 @@
 import { createContext, useContext, useRef } from 'react';
-import ConfirmAlert, { CallbackSuccessType } from '.';
+import ConfirmAlert from '.';
 import { ActionDecl } from '../../../utils/types/api';
+import { CallbackSuccessType } from '../../../utils/types/internal/modal';
 
 /**
  * Mode is either

@@ -1,21 +1,17 @@
-import { RefObject, useEffect, useRef, useState } from 'react';
-import './entity-list-styles.css';
+import { RefObject, useEffect, useRef } from 'react';
+import { registerTableScrollContainer, reload } from '../../../controller/local/Overview/list';
+import { registerEntityListInvalidationHook } from '../../../model/entityList';
+import { invalidateLogCache } from '../../../model/logs';
 import { RequestContext } from '../../../utils/types/internal/request';
-import {
-  getHeaderEntries,
-  fetchEntities,
-  reload,
-  registerTableScrollContainer,
-} from '../../../controller/local/Overview/list';
-import { QueryResponse, QueryResult } from '../../../utils/types/internal/entityList';
 import SubLoader from '../../thirdparty-based-components/SubLoader';
 import NoDataIndicator from '../NoDataIndicator';
-import { registerEntityListInvalidationHook } from '../../../model/entityList';
-import { EntityListPagination } from './Pagination';
-import { invalidateLogCache } from '../../../model/logs';
+import TableBody from './Body/TableBody';
+import './entity-list-styles.css';
+import { EntityListPagination } from './Footer/Pagination';
+import TableHeader from './Header/TableHeader';
 import TableFrame from './TableFrame';
-import TableHeader from './TableHeader';
-import TableBody from './TableBody';
+import { getSearchCallback } from './utils/searchCallback';
+import { useInitializeList } from './utils/useInitializeList';
 
 interface EntityListProps {
   requestContext: RequestContext;
@@ -23,118 +19,48 @@ interface EntityListProps {
 
 /**
  * The table which is presented in the overview view.
- * TODO: Need to switch to RequestOverviewRequest to allow URL directed rendering.
  *
  * @param requestContext the requestcontext.
  * @returns
  */
 const EntityList = ({ requestContext }: EntityListProps) => {
-  // Visual State
-  const [numColumns, setNumColumns] = useState<number>(0);
-  const [reloadCount, setReloadCount] = useState<number>(0);
-  const [tableEntries, setTableEntries] = useState<QueryResult[]>([]);
-  //const tableEntries = useRef<QueryResult[]>([]);
-  const [tableHeaderEntries, setTableHeaderEntries] = useState<string[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [searchTerms, setSearchTerms] = useState<(string | null)[]>([]);
-
-  // TODO Make this more performant...
-  // Or brdige until this is actually done
+  const {
+    reloadCount,
+    setReloadCount,
+    tableEntries,
+    setTableEntries,
+    tableHeaderEntries,
+    setTableHeaderEntries,
+    loading,
+    setLoading,
+    searchTerms,
+    setSearchTerms,
+    currPage,
+    setCurrPage,
+    numResultsPerPage,
+    setNumResultsPerPage,
+    totalNumResults,
+    setTotalNumResults,
+  } = useInitializeList(requestContext);
 
   const scrollDivRef = useRef<HTMLDivElement>(null);
   registerTableScrollContainer(scrollDivRef);
 
-  // Query Level information
-  const [currPage, setCurrPage] = useState<number>(1);
-  const [numResultsPerPage, setNumResultsPerPage] = useState<number>(10);
-  const [totalNumResults, setTotalNumResults] = useState<number>(10);
-
   // Selecor ref
   const selectorRef: RefObject<HTMLSelectElement> = useRef<HTMLSelectElement>(null);
 
-  // const setTableEntries = (l: string[][]) => {
-  //   console.log('Resetting the table with entries ' + l.length);
-  //   //setTable(l);
-  //   tableEntries.current = l;
-  // };
-
-  const searchCallback = (index: number) => {
-    return async (newSearchTerm: string | null) => {
-      setCurrPage(1);
-      setLoading(true);
-      searchTerms[index] = newSearchTerm;
-
-      setSearchTerms(searchTerms);
-      const qRes: QueryResponse = await fetchEntities(
-        requestContext,
-        numResultsPerPage.valueOf(),
-        0,
-        searchTerms,
-      );
-
-      // if (qRes.loadingAlreadyOngoing) {
-      //   console.log('Leaving because loading is ongoing ' + requestContext.entityTypeName);
-      // } else
-      {
-        setLoading(false);
-        setTotalNumResults(qRes.totalNumberOfResults);
-        setTableEntries(qRes.partialResults);
-      }
-    };
-  };
-
-  // Set the header entries and load basic entry.
-  useEffect(() => {
-    // Race condition prevention.
-    // The check is here to avoid multirequest post-context.
-    // https://maxrozen.com/race-conditions-fetching-data-react-with-useeffect
-    let mounted = true;
-    /*
-        2 Raceconditions to worry here, multi loading and cross loading
-        Good practices here
-          https://devtrium.com/posts/async-functions-useeffect#what-if-you-need-to-extract-the-function-outside-useeffect
-          https://www.digitalocean.com/community/tutorials/how-to-handle-async-data-loading-lazy-loading-and-code-splitting-with-react
-
-        Note this callback is executed in a closure!
-        So do not expect global variables to behave as usual.
-      */
-
-    (async function () {
-      if (requestContext.accessedEntityType?.options == undefined) {
-        setTableHeaderEntries([]);
-      } else {
-        setTableHeaderEntries([]);
-        setTableEntries([]);
-        setCurrPage(1);
-        setTotalNumResults(1);
-        setLoading(true);
-
-        const header: string[] = getHeaderEntries(requestContext);
-        setNumColumns(header.length);
-        setTableHeaderEntries(header);
-
-        let qRes: QueryResponse = await fetchEntities(
-          requestContext,
-          numResultsPerPage.valueOf(),
-          0,
-          null,
-        );
-        // TODO make sure that spamming reload does not cause problem with this.
-        // It is likely beneficial to include a cooldown on the reload button.
-
-        if (mounted) {
-          setLoading(false);
-          setTotalNumResults(qRes.totalNumberOfResults);
-          setTableEntries(qRes.partialResults);
-          console.log(qRes);
-          console.log(requestContext.entityTypeName);
-        }
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [requestContext.entityTypeName, requestContext.yacURL, numResultsPerPage, reloadCount]);
+  const searchCallback = getSearchCallback(
+    {
+      setCurrPage,
+      setLoading,
+      searchTerms,
+      setSearchTerms,
+      setTotalNumResults,
+      setTableEntries,
+    },
+    numResultsPerPage,
+    requestContext,
+  );
 
   const pageSwitch = (targetPageNr: number) => {
     return function () {
@@ -144,7 +70,6 @@ const EntityList = ({ requestContext }: EntityListProps) => {
       if (selectorRef.current != undefined) {
         numRes = parseInt(selectorRef.current.value);
       }
-      // TODO: Reload needs to be updated to allow searching properly.
       reload(
         requestContext,
         {
@@ -152,7 +77,6 @@ const EntityList = ({ requestContext }: EntityListProps) => {
           setTableEntries,
           setCurrPage,
           setLoading,
-          setNumColumns,
         },
         numRes,
         false,

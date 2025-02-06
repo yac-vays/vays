@@ -1,18 +1,16 @@
-import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import useOutsideClick from '../../hooks/useOutsideClick';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import {
   positionDropdownElement,
   registerTableScrollContainerEvent,
 } from '../../../controller/local/Overview/list';
-import { GUIActionDropdownArg } from '../../../utils/types/internal/actions';
-import { MINWIDTH_COLUMN } from '../EntityList/EntityListHeaderCell';
-import { RequestContext } from '../../../utils/types/internal/request';
 import { hashCode } from '../../../utils/hashUtils';
+import { GUIActionDropdownArg } from '../../../utils/types/internal/actions';
 import { Nullable } from '../../../utils/types/typeUtils';
+import useOutsideClick from '../../hooks/useOutsideClick';
+import { MINWIDTH_COLUMN } from '../EntityList/Header/EntityListHeaderCell';
 
 interface ActionDropdownProps {
   actions: GUIActionDropdownArg[];
-  requestContext: RequestContext;
   entityName: string;
 }
 
@@ -30,20 +28,19 @@ interface ActionDropdownProps {
  * Assumes that the actions have been filtered previously (permission check) and that
  * the user does have permissions to execute.
  * @param actions the actions to display
- * @param requestContext DEPRECATED
  * @param entityName the name of the entity to apply the action to
  * @returns
  *
  * @satisfies ID: The actionable dropdown items have the ID "action-dropdown-" + hashCode(`${entityName}-${act.action.name}-${act.action.description}`).
  */
-const ActionDropdown = ({ actions, requestContext, entityName }: ActionDropdownProps) => {
+const ActionDropdown = ({ actions, entityName }: ActionDropdownProps) => {
   const [open, setOpen] = useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const dropdownHeaderRef = useRef<HTMLDivElement>(null);
   const dropdownContentRef = useRef<HTMLDivElement>(null);
 
   const isEmpty = actions.length == 0;
-  let dropdownWidth: number = MINWIDTH_COLUMN;
+  const dropdownWidth: number = MINWIDTH_COLUMN;
   if (!isEmpty) {
     // TODO: Get more examples and check if this is necessary
     // const maxString: string = (actions.reduce((a, b) =>
@@ -55,22 +52,9 @@ const ActionDropdown = ({ actions, requestContext, entityName }: ActionDropdownP
   useOutsideClick(dropdownRef, () => {
     setOpen(false);
   });
-  // TODO: Need to make this generic, not just doing a isLast!
-  // useLayoutEffect(
-  //   () => {
-  //     console.log();
-  //     console.log("HELLO This is some " + dropdownContentRef.current?.clientHeight);
-  //   }, [dropdownContentRef.current?.clientHeight]
-  // )
-
-  // useLayoutEffect(
-  //   () => {
-  //     positionDropdownElement(dropdownContentRef, dropdownHeaderRef);
-  //   }
-  // )
   let tick = false;
   useEffect(() => {
-    const update = (time: number) => {
+    const update = () => {
       positionDropdownElement(dropdownContentRef, dropdownHeaderRef);
       if (tick) {
         window.requestAnimationFrame(update);
@@ -165,9 +149,9 @@ const ActionDropdown = ({ actions, requestContext, entityName }: ActionDropdownP
         >
           <ul className="flex flex-col p-2">
             {(function () {
-              let jsx: ReactNode[] = [];
+              const jsx: ReactNode[] = [];
               let i: number = 0;
-              for (let act of actions) {
+              for (const act of actions) {
                 const id: string =
                   'action-dropdown-' +
                   hashCode(`${entityName}-${act.action.name}-${act.action.description}`).toString();

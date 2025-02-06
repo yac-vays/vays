@@ -1,12 +1,11 @@
 import { ReactNode } from 'react';
-import { ActionsColumnResults } from '../../../utils/types/internal/actions';
-import ActionButton from '../Buttons/ActionButton';
-import ActionDropdown from '../ActionDropdown/ActionDropdown';
-import { RequestContext } from '../../../utils/types/internal/request';
-import { useModalContext } from '../Modal/ModalContext';
 import 'react-circular-progressbar/dist/styles.css';
-import LogsField from './LogsField';
-import { Nullable } from '../../../utils/types/typeUtils';
+import { ActionsColumnResults } from '../../../../utils/types/internal/actions';
+import { RequestContext } from '../../../../utils/types/internal/request';
+import { Nullable } from '../../../../utils/types/typeUtils';
+import ActionDropdown from '../../ActionDropdown/ActionDropdown';
+import ActionButton from '../../Buttons/ActionButton';
+import LogsField from '../Logs/LogsField';
 
 interface EntityListRow {
   entryValues: string[];
@@ -23,7 +22,6 @@ const EntityListRow = ({
   actionPair,
   entityName,
 }: EntityListRow) => {
-  const { showModal } = useModalContext();
   return (
     <>
       <tr
@@ -32,7 +30,7 @@ const EntityListRow = ({
         title={link ? 'Link to ' + link : undefined}
       >
         {(function fillRow() {
-          let jsx = [];
+          const jsx = [];
 
           for (let i = 0; i < entryValues.length - 2; i++) {
             const entry = entryValues[i];
@@ -100,38 +98,17 @@ const EntityListRow = ({
               <div className="flex flex-col items-center" style={{}}>
                 <div className="items-center flex flex-row">
                   {(function () {
-                    let jsx: ReactNode[] = [];
+                    const jsx: ReactNode[] = [];
                     let isLeft = true;
-                    for (let act of actionPair.favActs) {
-                      jsx.push(
-                        <ActionButton
-                          actArgs={act}
-                          isLeft={isLeft}
-                          entityName={entityName}
-                          requestContext={requestContext}
-                          alertEnableCallback={(
-                            title: string,
-                            text: string,
-                            confVerb: string,
-                            conf: () => void,
-                            cancel: () => void,
-                          ) => {
-                            showModal(title, text, conf, cancel, confVerb);
-                          }}
-                        />,
-                      );
+                    for (const act of actionPair.favActs) {
+                      jsx.push(<ActionButton actArgs={act} isLeft={isLeft} />);
                       isLeft = false;
-                      // TODO: Make right button also rounded and you can push all this logic into
-                      // the css logic, using pseudoclasses
+                      // TODO: using pseudoclass?
                     }
                     return jsx;
                   })()}
                 </div>
-                <ActionDropdown
-                  entityName={entityName}
-                  actions={actionPair.dropdownActs}
-                  requestContext={requestContext}
-                />
+                <ActionDropdown entityName={entityName} actions={actionPair.dropdownActs} />
               </div>
             </td>,
           );

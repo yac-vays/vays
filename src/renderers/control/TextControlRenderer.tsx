@@ -8,20 +8,49 @@ import {
   TesterContext,
 } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import TextInput from '../../view/thirdparty-based-components/ifc/TextInput/TextInput';
+import { debounce } from 'lodash';
+import { useCallback } from 'react';
 import { tsAddWarningMessage } from '../../controller/global/troubleshoot';
 import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/access';
-import { useCallback } from 'react';
-import { debounce } from 'lodash';
-import OverheadLabel from '../../view/thirdparty-based-components/ifc/Label/OverheadLabel';
 import ErrorBox from '../../view/thirdparty-based-components/ifc/Label/ErrorBox';
-// import { MuiInputText } from '../mui-controls/MuiInputText';
-// import { MaterialInputControl } from './MaterialInputControl';
+import OverheadLabel from '../../view/thirdparty-based-components/ifc/Label/OverheadLabel';
+import TextInput from '../../view/thirdparty-based-components/ifc/TextInput/TextInput';
 
 const eventToValue = (ev: React.ChangeEvent<HTMLInputElement>) =>
   ev.target.value === '' ? undefined : ev.target.value;
 
 export const TextControl = (props: ControlProps) => {
+  doTroubleShootCheck(props);
+
+  const onChange = useCallback(
+    debounce(
+      (e: React.ChangeEvent<HTMLInputElement>) => props.handleChange(props.path, eventToValue(e)),
+      1500,
+    ),
+    [props.path],
+  );
+
+  return (
+    <div className="p-1">
+      <OverheadLabel
+        title={props.label ?? props.schema.title}
+        required={props.required || false}
+        description={props.description}
+      />
+      <TextInput
+        onChange={onChange}
+        data={props.data}
+        enabled={props.enabled}
+        defaultv={props.schema.default}
+        placeholder={props.uischema.options?.initial}
+        placeholderEditable={props.uischema.options?.initial_editable}
+      />
+      <ErrorBox displayError={props.errors} />
+    </div>
+  );
+};
+
+function doTroubleShootCheck(props: ControlProps) {
   if (props.label.toLowerCase().includes('password')) {
     tsAddWarningMessage(
       9,
@@ -86,43 +115,7 @@ export const TextControl = (props: ControlProps) => {
       getCurrentContext()?.rc.backendObject?.title ?? 'Unknown',
     );
   }
-  // // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // const [_, onChange, __] = useDebouncedChange(
-  //   props.handleChange,
-  //   '',
-  //   props.data,
-  //   props.path,
-  //   eventToValue,
-  //   1500,
-  // );
-
-  const onChange = useCallback(
-    debounce(
-      (e: React.ChangeEvent<HTMLInputElement>) => props.handleChange(props.path, eventToValue(e)),
-      1500,
-    ),
-    [props.path],
-  );
-
-  return (
-    <div className="p-1">
-      <OverheadLabel
-        title={props.label ?? props.schema.title}
-        required={props.required || false}
-        description={props.description}
-      />
-      <TextInput
-        onChange={onChange}
-        data={props.data}
-        enabled={props.enabled}
-        defaultv={props.schema.default}
-        placeholder={props.uischema.options?.initial}
-        placeholderEditable={props.uischema.options?.initial_editable}
-      />
-      <ErrorBox displayError={props.errors} />
-    </div>
-  );
-};
+}
 
 export const TextControlTester: RankedTester = rankWith(
   21,

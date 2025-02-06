@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { RequestContext } from '../../../utils/types/internal/request';
-import { getEntityLogs, isLogCached } from '../../../model/logs';
-import { EntityLog } from '../../../utils/types/api';
-import BoolLog from './LogSymbols/BoolLog';
-import NumberLog from './LogSymbols/NumberLog';
-import MessageLog from './LogSymbols/MessageLog';
-import RichInfoPanel from '../RichInfoPanel';
+import { getEntityLogs, isLogCached } from '../../../../model/logs';
+import { EntityLog } from '../../../../utils/types/api';
+import { RequestContext } from '../../../../utils/types/internal/request';
+import RichInfoPanel from '../../RichInfoPanel';
+import BoolLog from './BoolLog';
 import LogPanel from './LogPanel';
+import MessageLog from './MessageLog';
+import NumberLog from './NumberLog';
 
 const LogsField = ({
   requestContext,

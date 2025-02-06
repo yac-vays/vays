@@ -4,11 +4,11 @@
 
 import { getEntityList } from '../../../model/entityList';
 import { EntityObject } from '../../../utils/types/api';
-import { Nullable } from '../../../utils/types/typeUtils';
+import { QueryResponse, QueryResult } from '../../../utils/types/internal/entityList';
 import { RequestContext } from '../../../utils/types/internal/request';
+import { Nullable } from '../../../utils/types/typeUtils';
 import entityListCtrlState from '../../state/EntityListCtrlState';
 import { getActions } from './action';
-import { QueryResponse, QueryResult } from '../../../utils/types/internal/entityList';
 import { performSearch } from './search';
 
 /**
@@ -49,7 +49,7 @@ export async function fetchEntities(
     entities = performSearch(requestContext, entities, searchList);
   }
 
-  let entityList: QueryResult[] = [];
+  const entityList: QueryResult[] = [];
   const numResults = Math.min(offset + maxNumOfResults, entities.length);
   for (let i = offset; i < numResults; i++) {
     const entity = entities[i];
@@ -85,8 +85,8 @@ export async function fetchEntities(
  *
  */
 function representEntity(entity: EntityObject, requestContext: RequestContext): string[] {
-  let values = [entity.name];
-  for (const option of requestContext.accessedEntityType?.options!) {
+  const values = [entity.name];
+  for (const option of requestContext.accessedEntityType?.options ?? []) {
     // TODO: This is ugly, do better typing!
     const value: string = (entity.options as any)[(option as any).name] as string;
     if (value in (option as any).aliases) {
@@ -126,8 +126,9 @@ export function getHeaderEntries(requestContext: RequestContext): string[] {
     return [];
   }
 
-  let header: string[] = ['Name'];
-  for (const option of requestContext.accessedEntityType?.options) {
+  const header: string[] = ['Name'];
+  for (const option of requestContext.accessedEntityType?.options ?? []) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const optName: string = (option as any).title as string;
     header.push(optName);
   }
@@ -141,7 +142,6 @@ export interface EntityListVariableHandlers {
   setTableEntries: (v: QueryResult[]) => void;
   setCurrPage: (v: number) => void;
   setLoading: (v: boolean) => void;
-  setNumColumns: (v: number) => void;
 }
 
 /**
@@ -154,13 +154,7 @@ export interface EntityListVariableHandlers {
  */
 export async function reload(
   requestContext: RequestContext,
-  {
-    setTableHeaderEntries,
-    setTableEntries,
-    setCurrPage,
-    setLoading,
-    setNumColumns,
-  }: EntityListVariableHandlers,
+  { setTableHeaderEntries, setTableEntries, setCurrPage, setLoading }: EntityListVariableHandlers,
 
   numResultsPerPage: number,
   resetPage: boolean,
@@ -179,7 +173,6 @@ export async function reload(
 
     setLoading(true);
     const header: string[] = await getHeaderEntries(requestContext);
-    setNumColumns(header.length);
     setTableHeaderEntries(header);
 
     const qRes: QueryResponse = await fetchEntities(

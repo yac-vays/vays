@@ -24,8 +24,6 @@ const FormComponentTitle = ({
           {label} {required ? <span className="text-danger pr-2"> *</span> : <></>}
         </h4>
 
-        {/* TODO: Do error reporting... */}
-        {/* <ErrorBox displayError={this.props.errors} /> */}
         {hideAddButton ? (
           <></>
         ) : (

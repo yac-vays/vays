@@ -7,8 +7,8 @@ import {
   TesterContext,
   UISchemaElement,
 } from '@jsonforms/core';
-import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/access';
 import { tsAddWarningMessage } from '../../controller/global/troubleshoot';
+import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/access';
 
 /**
  * Void schema renderer that renders false/null schemas
@@ -17,7 +17,7 @@ import { tsAddWarningMessage } from '../../controller/global/troubleshoot';
  * @returns
  */
 export const VoidControl = (props: ControlProps) => {
-  //@ts-ignore
+  //@ts-expect-error uischema is not sufficiently typed on the json form side
   if (props.uischema.type !== 'VerticalLayout') {
     tsAddWarningMessage(
       9,
@@ -33,6 +33,7 @@ export const VoidControl = (props: ControlProps) => {
 export const VoidTester: RankedTester = rankWith(
   20,
   (uischema: UISchemaElement, schema: JsonSchema, context: TesterContext) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return resolveSchema(schema, (uischema as any).scope, context?.rootSchema) == undefined;
   },
 );

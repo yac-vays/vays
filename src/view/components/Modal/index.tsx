@@ -1,12 +1,7 @@
-import { Component, DetailedHTMLProps, InputHTMLAttributes } from 'react';
-import React from 'react';
-import Checkbox from '../../thirdparty-based-components/ifc/CheckBox/CheckBox';
+import React, { Component, DetailedHTMLProps, InputHTMLAttributes } from 'react';
 import { ActionDecl } from '../../../utils/types/api';
-
-export type CallbackSuccessType = (
-  enteredName?: string,
-  actionsSelected?: ActionDecl[],
-) => Promise<void>;
+import { CallbackSuccessType } from '../../../utils/types/internal/modal';
+import Checkbox from '../../thirdparty-based-components/ifc/CheckBox/CheckBox';
 
 interface ConfirmationModalState {
   show: boolean;
@@ -18,17 +13,17 @@ interface ConfirmationModalState {
   isSending: boolean;
   textInputEnabled: boolean;
   actions: ActionDecl[];
-  actionsChoice: any;
+  actionsChoice: boolean[];
 }
 
-interface ConfirmationModalProps {}
+type ConfirmationModalProps = object;
 
 class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalState> {
   private ref: React.RefObject<HTMLDivElement>;
   private textInputRef: React.RefObject<HTMLInputElement>;
   private blockConfirm: boolean;
 
-  constructor(props: any) {
+  constructor(props: object) {
     super(props);
     this.state = {
       title: '',
@@ -61,7 +56,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
 
   handleClickOutside(event: Event): void {
     if (this.ref.current && !this.ref.current.contains(event.target as Node)) {
-      this.state.callbackCancel().then((res) => {
+      this.state.callbackCancel().then(() => {
         this.hide();
       });
     }
@@ -84,7 +79,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
     if (this.blockConfirm) return;
     this.blockConfirm = true;
     this._setSending(true);
-    const finish = (res: any) => {
+    const finish = () => {
       this._setSending(false);
       this.hide();
     };
@@ -93,13 +88,13 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
       this.state
         .callbackSuccess(
           this.textInputRef.current?.value,
-          this.state.actions.filter((v, i) => this.state.actionsChoice[i]),
+          this.state.actions.filter((_v, i) => this.state.actionsChoice[i]),
         )
         .then(finish);
   }
 
   _cancel() {
-    this.state.callbackCancel().then((res) => {
+    this.state.callbackCancel().then(() => {
       this.hide();
     });
   }
@@ -132,14 +127,14 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
   }
 
   hide(): void {
-    let stateCopy: ConfirmationModalState = { ...this.state };
+    const stateCopy: ConfirmationModalState = { ...this.state };
     stateCopy.show = false;
     this.setState(stateCopy);
     if (this.textInputRef.current != undefined) this.textInputRef.current.value = '';
   }
 
   private _setSending(value: boolean): void {
-    let stateCopy: ConfirmationModalState = { ...this.state };
+    const stateCopy: ConfirmationModalState = { ...this.state };
     stateCopy.isSending = value;
     this.setState(stateCopy);
   }
@@ -211,6 +206,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
                           <div className="h-2 w-10"></div>
                         </>,
                       );
+                      i++;
                     }
 
                     return jsx;

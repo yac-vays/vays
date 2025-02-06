@@ -1,5 +1,5 @@
 import { ActionDecl } from '../../utils/types/api';
-import { CallbackSuccessType } from '../../view/components/Modal';
+import { CallbackSuccessType } from '../../utils/types/internal/modal';
 import { ModalCallback } from '../../view/components/Modal/ModalContext';
 import modalCtrlState from '../state/ModalCtrlState';
 

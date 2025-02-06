@@ -1,5 +1,5 @@
-import { QueryResult } from '../../../utils/types/internal/entityList';
-import { RequestContext } from '../../../utils/types/internal/request';
+import { QueryResult } from '../../../../utils/types/internal/entityList';
+import { RequestContext } from '../../../../utils/types/internal/request';
 import EntityListRow from './EntityListRow';
 
 const TableBody = ({

@@ -1,19 +1,9 @@
 import { useState } from 'react';
 import { GUIActionButtonArg } from '../../../utils/types/internal/actions';
-import { RequestContext } from '../../../utils/types/internal/request';
 
 interface ActionButtonProps {
   actArgs: GUIActionButtonArg;
   isLeft: boolean;
-  alertEnableCallback: (
-    title: string,
-    text: string,
-    verb: string,
-    confirm: () => void,
-    cancel: () => void,
-  ) => void;
-  requestContext: RequestContext;
-  entityName: string;
 }
 
 /**
@@ -25,18 +15,13 @@ interface ActionButtonProps {
  * @param entityName DEPRECATED
  * @returns
  */
-const ActionButton = ({
-  actArgs,
-  isLeft,
-  alertEnableCallback,
-  requestContext,
-  entityName,
-}: ActionButtonProps) => {
+const ActionButton = ({ actArgs, isLeft }: ActionButtonProps) => {
   const [isSending, setSending] = useState<boolean>(false);
-  const red =
-    'brightness(0) saturate(100%) invert(52%) sepia(57%) saturate(4337%) hue-rotate(329deg) brightness(99%) contrast(99%)';
-  const purple =
-    'brightness(0) saturate(100%) invert(9%) sepia(57%) saturate(5132%) hue-rotate(290deg) brightness(128%) contrast(119%)';
+  // const red =
+  //   'brightness(0) saturate(100%) invert(52%) sepia(57%) saturate(4337%) hue-rotate(329deg) brightness(99%) contrast(99%)';
+  // const purple =
+  //   'brightness(0) saturate(100%) invert(9%) sepia(57%) saturate(5132%) hue-rotate(290deg) brightness(128%) contrast(119%)';
+  // Color transform over to gray from any svg
   const grey =
     'brightness(0) saturate(100%) invert(42%) sepia(24%) saturate(434%) hue-rotate(176deg) brightness(99%) contrast(85%)';
   const action = actArgs.action;
@@ -49,7 +34,7 @@ const ActionButton = ({
               actArgs.performAction();
             } else {
               setSending(true);
-              actArgs.performAction().then((_) => {
+              actArgs.performAction().then(() => {
                 setSending(false);
               });
             }

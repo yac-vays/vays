@@ -3,7 +3,7 @@ import 'react-circular-progressbar/dist/styles.css';
 import { ActionsColumnResults } from '../../../../utils/types/internal/actions';
 import { RequestContext } from '../../../../utils/types/internal/request';
 import { Nullable } from '../../../../utils/types/typeUtils';
-import ActionDropdown from '../../ActionDropdown/ActionDropdown';
+import ActionDropdown from '../../ActionDropdown';
 import ActionButton from '../../Buttons/ActionButton';
 import LogsField from '../Logs/LogsField';
 

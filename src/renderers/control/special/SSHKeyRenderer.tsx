@@ -10,10 +10,10 @@ import {
 } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 
-import { isCustomRenderer } from '../../utils/customTesterUtils';
-import SSHKeyInput from '../../../view/components/SSHKey/SSHKeyInput';
-import OverheadLabel from '../../../view/thirdparty-based-components/ifc/Label/OverheadLabel';
+import SSHKeyInput from '../../../view/components/SSHKeyInput';
 import ErrorBox from '../../../view/thirdparty-based-components/ifc/Label/ErrorBox';
+import OverheadLabel from '../../../view/thirdparty-based-components/ifc/Label/OverheadLabel';
+import { isCustomRenderer } from '../../utils/customTesterUtils';
 
 export const SSHKeyRenderer = (props: ControlProps) => {
   if (!props.visible) return <></>;

@@ -15,11 +15,11 @@ const TableHeader = ({
             title=""
             searchable={false}
             firstField={true}
-            searchCallback={(a: string) => {}}
+            searchCallback={() => {}}
           />
         ) : (
           (function fillHeader() {
-            let jsx = [];
+            const jsx = [];
             let i = 0;
             const len = tableHeaderEntries.length;
             // TODO: Searchable should be exited by the controller.

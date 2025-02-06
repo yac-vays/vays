@@ -7,12 +7,8 @@ interface ActionButtonProps {
 }
 
 /**
- * TODO: Use pseudocls for left.
  * @param actArgs the arguments for this specific action
  * @param isLeft whether this action is to the very left of the action row.
- * @param alertEnableCallback DEPRECATED
- * @param requestContext DEPRECATED
- * @param entityName DEPRECATED
  * @returns
  */
 const ActionButton = ({ actArgs, isLeft }: ActionButtonProps) => {

@@ -13,11 +13,10 @@ import {
   withTranslateProps,
 } from '@jsonforms/react';
 import _ from 'lodash';
-import React from 'react';
-import { useCallback } from 'react';
-import CardRenderer from './CardRenderer';
+import React, { useCallback } from 'react';
 import { showModalMessage } from '../../../controller/global/modal';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
+import CardRenderer from './CardRenderer';
 
 export const NestedObjectRenderer = ({
   visible,
@@ -84,7 +83,6 @@ export const NestedObjectRenderer = ({
       <FormComponentTitle
         label={label}
         onClick={() => {
-          console.log(path);
           // createDefaultValue(this.props.schema, this.props.rootSchema)
           addItemCb(path, createDefaultValue(schema, rootSchema))();
         }}

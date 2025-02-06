@@ -16,7 +16,7 @@ const TableBody = ({
       ) : (
         <>
           {(function fillTable() {
-            let jsx = [];
+            const jsx = [];
             for (let i = 0; i < tableEntries.length; i++) {
               jsx.push(
                 <EntityListRow

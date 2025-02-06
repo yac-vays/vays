@@ -95,7 +95,6 @@ export class AppCache {
     for (const ctx of Object.keys(this._nodes)) {
       this._nodes[ctx] = new CacheNode(this._nodes[ctx].ttl);
     }
-    console.error(this._nodes);
   }
 
   getIDFromRequest(yacBackendURL: string, apiCall: string) {

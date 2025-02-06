@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 class ILocalStorage {
   public KEYS: readonly string[] = ['isSidebarGroupExpanded.*', 'isLoggedIn', 'token'];
 
@@ -20,7 +21,6 @@ class ILocalStorage {
   }
 
   public setIsLoggedIn(v: boolean) {
-    console.error('Setting is logged in to ' + v);
     this.set('isLoggedIn', v);
   }
 
@@ -29,7 +29,6 @@ class ILocalStorage {
   }
 
   public setToken(v: string) {
-    console.error('Setting the token');
     this.set('token', v);
   }
 

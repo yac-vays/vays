@@ -1,11 +1,11 @@
 import * as client from 'openid-client';
 
-import { AppConfig } from '../../utils/types/config';
-import { Nullable } from '../../utils/types/typeUtils';
 import { navigateToURL } from '../../controller/global/url';
+import { AppConfig } from '../../utils/types/config';
+import { AuthDiscConfig } from '../../utils/types/internal/request';
+import { Nullable } from '../../utils/types/typeUtils';
 import iLocalStorage from '../persistent/LocalStorage';
 import { setUserLoggedIn } from './tokenHandling';
-import { AuthDiscConfig } from '../../utils/types/internal/request';
 
 const LS_CONFIG_KEY = 'OIDC_DS_CONF';
 
@@ -82,7 +82,8 @@ export async function finalizeAuthentication(appconf: AppConfig): Promise<boolea
   let config: AuthDiscConfig;
   try {
     config = JSON.parse(configString);
-  } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (_e) {
     return false;
   }
 

@@ -7,7 +7,6 @@ const DevInfo = () => {
 
   useEffect(() => {
     (async () => {
-      console.error('Execute again....');
       const conf = await getConfig();
       if (conf == null) return;
       const jsx = [];

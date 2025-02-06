@@ -1,14 +1,9 @@
 import { debounce } from 'lodash';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import { getCurrentContext } from '../../../../../controller/local/EditController/ExpertMode/access';
 import { retreiveSchema } from '../../../../../controller/local/EditController/shared';
-import { RequestEditContext } from '../../../../../utils/types/internal/request';
 import { getDefaultsAsYAML } from '../../../../../utils/schema/defaultsHandling';
-import {
-  getCurrentContext,
-  setEntityYAML,
-} from '../../../../../controller/local/EditController/ExpertMode/access';
-
-import { updateYAMLschema } from '../../../../../controller/local/EditController/ExpertMode';
+import { RequestEditContext } from '../../../../../utils/types/internal/request';
 
 export default async function editorSchemaHandler(
   ed: monaco.editor.IStandaloneCodeEditor,
@@ -23,16 +18,16 @@ export default async function editorSchemaHandler(
   //     ed.getModel()!.setValue(str);
   //   }
   // });
-  console.error('Calling schema handler');
+  console.log('Calling schema handler');
   requestEditContext = getCurrentContext() ?? requestEditContext;
   const v = await retreiveSchema(requestEditContext, true, true);
   const defaultStr = "---\n\n# Please enter here... (btw couldn't fetch the data in time, sorry)";
-  console.error('Retreiving the schema');
-  console.error(requestEditContext);
-  console.error(v);
+  console.log('Retreiving the schema');
+  console.log(requestEditContext);
 
   if (v == null) {
     ed.setValue(defaultStr);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (window as any).monacoYaml.update({
       schemas: [
         {
@@ -51,8 +46,6 @@ export default async function editorSchemaHandler(
     ed.setValue(v.yaml ?? defaultStr);
   }
 
-  console.error(v.json_schema);
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (window as any).monacoYaml.update({
     schemas: [
@@ -65,6 +58,7 @@ export default async function editorSchemaHandler(
   });
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function registerInputCallback(model: any, handleChange: (v: string) => void) {
   const update = debounce(async (value: string) => {
     handleChange(value);

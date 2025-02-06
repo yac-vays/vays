@@ -1,12 +1,12 @@
 import _ from 'lodash';
 import { stringify } from 'yaml';
 
-import editingState from '../../controller/state/EditCtrlState';
-import { ValidateResponse } from '../types/internal/validation';
-import { logError } from '../logger';
 import { JsonSchema } from '@jsonforms/core';
-import { showError } from '../../controller/local/notification';
 import { navigateToURL } from '../../controller/global/url';
+import { showError } from '../../controller/local/notification';
+import editingState from '../../controller/state/EditCtrlState';
+import { logError } from '../logger';
+import { ValidateResponse } from '../types/internal/validation';
 
 /**
  * Retunrs whether the data has been removed.
@@ -69,7 +69,7 @@ export function updateDefaults(valResp: ValidateResponse): boolean {
     return false;
   }
 
-  let newDefault = {};
+  const newDefault = {};
   try {
     const validate = editingState.ajv.compile(valResp.json_schema);
     validate(newDefault);
@@ -78,10 +78,6 @@ export function updateDefaults(valResp: ValidateResponse): boolean {
     navigateToURL('/');
   }
 
-  console.log('The updated');
-  console.log(newDefault);
-  console.log(editingState.previousDefaultsObject);
-  console.log(valResp.data);
   const ret = _refreshDefaults(newDefault, editingState.previousDefaultsObject, valResp.data);
   if (ret.removedData) {
     // Forces removal of the keyword below and thus revalidation of the data

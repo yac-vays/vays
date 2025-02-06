@@ -2,12 +2,12 @@ import { ReactNode, useEffect, useRef, useState } from 'react';
 import {
   positionDropdownElement,
   registerTableScrollContainerEvent,
-} from '../../../controller/local/Overview/list';
-import { hashCode } from '../../../utils/hashUtils';
-import { GUIActionDropdownArg } from '../../../utils/types/internal/actions';
-import { Nullable } from '../../../utils/types/typeUtils';
-import useOutsideClick from '../../hooks/useOutsideClick';
-import { MINWIDTH_COLUMN } from '../EntityList/Header/EntityListHeaderCell';
+} from '../../controller/local/Overview/list';
+import { hashCode } from '../../utils/hashUtils';
+import { GUIActionDropdownArg } from '../../utils/types/internal/actions';
+import { Nullable } from '../../utils/types/typeUtils';
+import useOutsideClick from '../hooks/useOutsideClick';
+import { MINWIDTH_COLUMN } from './EntityList/Header/EntityListHeaderCell';
 
 interface ActionDropdownProps {
   actions: GUIActionDropdownArg[];

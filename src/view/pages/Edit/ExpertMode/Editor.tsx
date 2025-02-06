@@ -9,14 +9,9 @@ import '../../../../workerInit';
 //import 'monaco-editor/esm/vs/editor/editor.all.js';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
-import { useRef, useState, useEffect, memo } from 'react';
 import { debounce } from 'lodash';
+import { memo, useEffect, useRef, useState } from 'react';
 
-import editorPlugins, { editorSetupPlugins } from './EditorPlugins';
-import Accordion from '../../../components/Accordion/Accordion';
-import TextInput from '../../../thirdparty-based-components/ifc/TextInput/TextInput';
-import { RequestEditContext } from '../../../../utils/types/internal/request.js';
-import SubLoader from '../../../thirdparty-based-components/SubLoader';
 import {
   getCurrentContext,
   getEntityName,
@@ -26,10 +21,14 @@ import {
   setEntityYAML,
   setMonacoYaml,
 } from '../../../../controller/local/EditController/ExpertMode/access.js';
+import { RequestEditContext } from '../../../../utils/types/internal/request.js';
+import Accordion from '../../../components/Accordion.js';
+import TextInput from '../../../thirdparty-based-components/ifc/TextInput/TextInput';
+import SubLoader from '../../../thirdparty-based-components/SubLoader';
+import editorPlugins, { editorSetupPlugins } from './EditorPlugins';
 import { registerInputCallback } from './EditorPlugins/SchemaHandler';
 import getEditorSettings, { setupMonacoYAMLPlugin } from './utils';
 
-import './glyph.css';
 import { updateYAMLschema } from '../../../../controller/local/EditController/ExpertMode/index.js';
 import {
   editViewNavigateToNewName,
@@ -37,6 +36,7 @@ import {
 } from '../../../../controller/local/EditController/shared';
 import ErrorBox from '../../../thirdparty-based-components/ifc/Label/ErrorBox';
 import OverheadLabel from '../../../thirdparty-based-components/ifc/Label/OverheadLabel';
+import './glyph.css';
 
 export const Editor = ({
   requestEditContext,

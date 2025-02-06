@@ -1,27 +1,27 @@
 import { useNavigate } from 'react-router-dom';
-import { YACBackend } from '../../../utils/types/config';
 import { buildCreateURL } from '../../../controller/global/url';
+import { YACBackend } from '../../../utils/types/config';
 
 interface AddButtonProps {
-  entityName: string;
+  entityTypeName: string;
   yacBackendObject: YACBackend;
 }
 
 /**
  * Add button, which is displayed on the sidebar.
  *
- * @param entityName DEPRECATED: rename
+ * @param entityName
  * @param yacBackendObject the backend object
  * @returns
  */
-const AddButton = ({ entityName, yacBackendObject }: AddButtonProps) => {
+const AddButton = ({ entityTypeName, yacBackendObject }: AddButtonProps) => {
   const navigate = useNavigate();
   return (
     <>
       <div
         onClick={(e) => {
           e.preventDefault();
-          navigate(buildCreateURL(yacBackendObject, entityName));
+          navigate(buildCreateURL(yacBackendObject, entityTypeName));
         }}
         className="inline-flex items-center justify-center border border-primary text-center gap-2.5 font-medium text-primary rounded 
           bg-primary dark:bg-meta-4 cursor-pointer"

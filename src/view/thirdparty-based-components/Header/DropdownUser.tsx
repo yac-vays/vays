@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import ClickOutside from '../ClickOutside';
 import UserOne from '../../../../rsc/user/user.png';
-import { getUserName, userIsLoggedIn } from '../../../session/login/tokenHandling';
-import { logOut } from '../../../session/login/loginProcess';
 import { navigateToURL } from '../../../controller/global/url';
+import { logOut } from '../../../session/login/loginProcess';
+import { getUserName, userIsLoggedIn } from '../../../session/login/tokenHandling';
+import ClickOutside from '../ClickOutside';
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -12,9 +12,6 @@ const DropdownUser = () => {
   );
 
   window.addEventListener('sign-in', () => {
-    console.error('SIGN IN DETECTED');
-    console.error(getUserName());
-    console.error(userIsLoggedIn());
     setUserName(getUserName());
   });
 

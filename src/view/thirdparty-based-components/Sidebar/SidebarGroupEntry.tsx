@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
-import AddButton from '../../components/Buttons/AddButton';
-import { YACBackend } from '../../../utils/types/config';
 import { EntityTypeDecl } from '../../../utils/types/api';
+import { YACBackend } from '../../../utils/types/config';
+import AddButton from '../../components/Buttons/AddButton';
 
 interface SidebarGroupEntryProps {
   yacBackendObject: YACBackend;
@@ -22,7 +22,7 @@ const SidebarGroupEntry = ({ entityDecl, href, yacBackendObject }: SidebarGroupE
             {entityDecl.title}
           </NavLink>
           {entityDecl.create ? (
-            <AddButton entityName={entityDecl.name} yacBackendObject={yacBackendObject} />
+            <AddButton entityTypeName={entityDecl.name} yacBackendObject={yacBackendObject} />
           ) : (
             <></>
           )}

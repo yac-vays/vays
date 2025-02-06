@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 class ISessionStorage {
   public KEYS: readonly string[] = ['eMostRecentURL'];
 
@@ -5,7 +6,6 @@ class ISessionStorage {
    * ephemeral information: Will vanish after a single read access.
    */
   public setMostRecentURL(v: string) {
-    console.log('Setting the most recently visited URL to ' + v);
     this.set('eMostRecentURL', v);
   }
 

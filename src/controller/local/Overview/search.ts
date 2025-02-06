@@ -16,7 +16,7 @@ export function performSearch(
   entities: EntityObject[],
   searchQueries: (string | null)[],
 ) {
-  let filteredEntities: EntityObject[] = [];
+  const filteredEntities: EntityObject[] = [];
   const searchList = searchQueries.map((v) => v?.toLowerCase());
   for (const entity of entities) {
     let i: number = 1;
@@ -27,7 +27,7 @@ export function performSearch(
         continue;
       }
     }
-    for (const option of requestContext.accessedEntityType?.options!) {
+    for (const option of requestContext.accessedEntityType?.options ?? []) {
       // TODO: This is ugly, do better typing!
       const value: string = (
         (entity.options as any)[(option as any).name]?.toString() ?? ''

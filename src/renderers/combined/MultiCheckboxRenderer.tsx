@@ -17,8 +17,8 @@ import {
 import { withJsonFormsMultiEnumProps } from '@jsonforms/react';
 import { ReactNode } from 'react';
 import FormComponentTitle from '../../view/components/FormComponentTitle';
-import { BooleanControl } from '../control/BooleanControlRenderer';
 import ErrorBox from '../../view/thirdparty-based-components/ifc/Label/ErrorBox';
+import { BooleanControl } from '../control/BooleanControlRenderer';
 import { isCustomRenderer } from '../utils/customTesterUtils';
 
 interface Option {
@@ -62,7 +62,6 @@ export const MultiCheckboxRenderer = ({
         {options.map((option: Option, index: number) => {
           const optionPath = Paths.compose(path, `${index}`);
           const checkboxValue = data?.includes(option.value); // ? option.value : undefined;
-          console.log(checkboxValue);
           const n: ReactNode = (
             <BooleanControl
               label={option.label}

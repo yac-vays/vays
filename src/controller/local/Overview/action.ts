@@ -21,12 +21,12 @@ export function getActions(
     return { favActs: [], dropdownActs: [] };
   }
 
-  let actions: { [key: string]: ActionDecl } = {};
-  for (let a of acts) {
+  const actions: { [key: string]: ActionDecl } = {};
+  for (const a of acts) {
     actions[a.name] = a;
   }
 
-  let res: ActionsColumnResults = { favActs: [], dropdownActs: [] };
+  const res: ActionsColumnResults = { favActs: [], dropdownActs: [] };
   res.favActs = _getFavActs(
     requestContext.accessedEntityType.favorites,
     actions,
@@ -51,8 +51,8 @@ function _getFavActs(
   requestContext: RequestContext,
 ): GUIActionButtonArg[] {
   const entityName: string = entity.name;
-  let favActs: GUIActionButtonArg[] = [];
-  for (let action of favorites) {
+  const favActs: GUIActionButtonArg[] = [];
+  for (const action of favorites) {
     if (action.action) {
       // okay, this is not an operation, but a usual action
       if (!(action.name in actions)) {
@@ -115,7 +115,7 @@ function _getDropdownActs(
   entity: EntityObject,
   requestContext: RequestContext,
 ): GUIActionDropdownArg[] {
-  let result = [];
+  const result = [];
   for (const opName in OPERATIONS) {
     if (__isFav(opName, false, favorites)) {
       continue;

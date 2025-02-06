@@ -1,8 +1,7 @@
-import React from 'react';
-import { useEffect, useRef, useState } from 'react';
-import useOutsideClick from '../../hooks/useOutsideClick';
+import React, { useEffect, useRef, useState } from 'react';
+import useOutsideClick from '../hooks/useOutsideClick';
 
-import { showError, showSuccess } from '../../../controller/local/notification';
+import { showError, showSuccess } from '../../controller/local/notification';
 
 interface SSHKeyProps {
   id: string;

@@ -1,4 +1,4 @@
-import { TroubleShootMessageProps } from '../../view/components/SchemaWarningMessage/SchemaWarningMessage';
+import { TroubleShootMessageProps } from '../../view/components/SchemaWarningMessage';
 
 /**
  * The State for the Notification controller.

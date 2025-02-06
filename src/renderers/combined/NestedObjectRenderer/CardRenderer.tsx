@@ -1,9 +1,8 @@
-import _ from 'lodash';
-import React from 'react';
 import { LayoutProps } from '@jsonforms/core';
 import { JsonFormsDispatch, JsonFormsStateContext, withJsonFormsContext } from '@jsonforms/react';
-import { ComponentType } from 'react';
-import Accordion from '../../../view/components/Accordion/Accordion';
+import _ from 'lodash';
+import React, { ComponentType } from 'react';
+import Accordion from '../../../view/components/Accordion';
 
 interface DispatchPropsOfCardRenderer {
   onRemove(path: string, index: number): () => void;

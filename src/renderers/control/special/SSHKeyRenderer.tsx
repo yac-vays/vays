@@ -11,8 +11,8 @@ import {
 import { withJsonFormsControlProps } from '@jsonforms/react';
 
 import SSHKeyInput from '../../../view/components/SSHKeyInput';
-import ErrorBox from '../../../view/thirdparty-based-components/ifc/Label/ErrorBox';
-import OverheadLabel from '../../../view/thirdparty-based-components/ifc/Label/OverheadLabel';
+import ErrorBox from '../../../view/thirdparty/components/ifc/Label/ErrorBox';
+import OverheadLabel from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import { isCustomRenderer } from '../../utils/customTesterUtils';
 
 export const SSHKeyRenderer = (props: ControlProps) => {

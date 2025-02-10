@@ -1,10 +1,10 @@
-import merge from 'lodash/merge';
 import { ControlProps, isDateControl, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import DatePicker from '../../view/thirdparty-based-components/ifc/Datepicker/DatePicker';
-import ErrorBox from '../../view/thirdparty-based-components/ifc/Label/ErrorBox';
+import merge from 'lodash/merge';
 import { hashCode } from '../../utils/hashUtils';
-import OverheadLabel from '../../view/thirdparty-based-components/ifc/Label/OverheadLabel';
+import DatePicker from '../../view/thirdparty/components/ifc/Datepicker/DatePicker';
+import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
+import OverheadLabel from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 
 export const DateControl = (props: ControlProps) => {
   const {

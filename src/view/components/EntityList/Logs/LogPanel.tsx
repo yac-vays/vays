@@ -4,7 +4,7 @@ import { EntityLog } from '../../../../utils/types/api';
 const LogPanel = ({ logList, title }: { logList: EntityLog[]; title: string }) => {
   //   const [expand, setExpand] = useState<boolean>(false);
   return (
-    <div className="relative border z-99 rounded ml-3 w-max max-w-[350px] max-h-[500px] overflow-y-auto bg-white drop-shadow-xl dark:bg-meta-4">
+    <div className="relative border z-99 rounded ml-3 w-max max-w-[350px] max-h-[500px] overflow-y-auto bg-bg drop-shadow-xl">
       {/* <button className="absolute right-4 top-2">x</button> */}
       <div className="p-3">
         <h4 className="text-center text-title-sm font-bold text-solid hyphens-auto">{title}</h4>

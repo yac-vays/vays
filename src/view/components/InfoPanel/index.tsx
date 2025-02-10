@@ -1,5 +1,5 @@
+import { arrow, autoUpdate, flip, FloatingArrow, offset, useFloating } from '@floating-ui/react';
 import { useRef } from 'react';
-import { useFloating, autoUpdate, offset, flip, arrow, FloatingArrow } from '@floating-ui/react';
 
 const InfoPanel = ({
   children,
@@ -51,7 +51,7 @@ const InfoPanel = ({
               tipRadius={3}
               className="dark:fill-white"
             />
-            <div className="border border-plainfont z-50 rounded ml-3 w-max max-w-[350px] max-h-[300px] overflow-y-auto bg-white drop-shadow-xl dark:bg-meta-4">
+            <div className="border border-plainfont z-50 rounded ml-3 w-max max-w-[350px] max-h-[300px] overflow-y-auto bg-bg drop-shadow-xl">
               <div className="p-3">
                 <h4 className="text-center text-title-sm font-bold text-solid text-plainfont hyphens-auto">
                   {title}

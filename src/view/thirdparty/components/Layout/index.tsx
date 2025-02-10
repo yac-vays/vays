@@ -1,18 +1,18 @@
-import React, { useState, ReactNode } from 'react';
-import Header from '../Header/index';
+import React, { ReactNode, useState } from 'react';
+import { registerModalCallback } from '../../../../controller/global/modal';
+import { registerErrorNotifyCallback } from '../../../../controller/local/notification';
+import { YACBackend } from '../../../../utils/types/config';
+import { useModalContext } from '../../../components/Modal/ModalContext';
+import { useToastContext } from '../../../components/ToastNotification/ToastContext';
+import Header from '../../components/Header/index';
 import Sidebar from '../Sidebar/index';
-import { YACBackend } from '../../../utils/types/config';
-import { useToastContext } from '../../components/ToastNotification/ToastContext';
-import { registerErrorNotifyCallback } from '../../../controller/local/notification';
-import { useModalContext } from '../../components/Modal/ModalContext';
-import { registerModalCallback } from '../../../controller/global/modal';
-import Tour from '../../components/Tour';
 
 const DefaultLayout: React.FC<{ children: ReactNode; backendList: YACBackend[] }> = ({
   children,
   backendList,
 }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { showToast }: any = useToastContext();
   registerErrorNotifyCallback(showToast);
   const { showModal } = useModalContext();

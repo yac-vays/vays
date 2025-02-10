@@ -12,9 +12,9 @@ import { debounce } from 'lodash';
 import { useCallback } from 'react';
 import { tsAddWarningMessage } from '../../controller/global/troubleshoot';
 import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/access';
-import ErrorBox from '../../view/thirdparty-based-components/ifc/Label/ErrorBox';
-import OverheadLabel from '../../view/thirdparty-based-components/ifc/Label/OverheadLabel';
-import TextInput from '../../view/thirdparty-based-components/ifc/TextInput/TextInput';
+import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
+import OverheadLabel from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
+import TextInput from '../../view/thirdparty/components/ifc/TextInput/TextInput';
 
 const eventToValue = (ev: React.ChangeEvent<HTMLInputElement>) =>
   ev.target.value === '' ? undefined : ev.target.value;

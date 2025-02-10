@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import EntityList from '../../components/EntityList';
-import PageHeaderTitle from '../../thirdparty-based-components/PageTitle/PageHeaderTitle';
+import { useParams } from 'react-router-dom';
 import {
   getDefaultRequestOverviewContext,
   getDefaultURL,
@@ -8,12 +7,12 @@ import {
   isValidQueryOverview,
   navigateToURL,
 } from '../../../controller/global/url';
-import { RequestOverviewContext } from '../../../utils/types/internal/request';
-import { useParams } from 'react-router-dom';
-import { YACBackend } from '../../../utils/types/config';
 import { showError } from '../../../controller/local/notification';
 import { invalidateEntityListCache } from '../../../model/entityList';
-import TextArea from '../../thirdparty-based-components/ifc/TextArea';
+import { YACBackend } from '../../../utils/types/config';
+import { RequestOverviewContext } from '../../../utils/types/internal/request';
+import EntityList from '../../components/EntityList';
+import PageHeaderTitle from '../../thirdparty/components/PageTitle/PageHeaderTitle';
 
 interface OverviewPageProps {
   backends: Required<YACBackend[]>;

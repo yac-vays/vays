@@ -2,7 +2,7 @@
 * Stylesheet. Provides some styling for third party libraries (toastify, etc)
 * and some basic style settings.
 **/
-@import url('../thirdparty-based-components/style.css');
+@import url('../thirdparty/styles/style.css');
 
 input[type="date"]::-webkit-calendar-picker-indicator {
   display: none;
@@ -62,4 +62,5 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   --color-plainfont-inv: #FFFFFF;
   --color-reducedfont: #64748B;
   --color-stroke: #E2E8F0;
+  --color-dyn-bg: #ffffff;
 }

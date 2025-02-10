@@ -18,6 +18,7 @@ export function enableDarkMode() {
   document.documentElement.style.setProperty('--color-plainfont-inv', '#000000');
   document.documentElement.style.setProperty('--color-reducedfont', '#AEB7C0');
   document.documentElement.style.setProperty('--color-stroke', '#2E3A47');
+  document.documentElement.style.setProperty('--color-dyn-bg', '#313D4A');
 }
 
 export function disableDarkMode() {
@@ -25,4 +26,5 @@ export function disableDarkMode() {
   document.documentElement.style.setProperty('--color-plainfont-inv', '#FFFFFF');
   document.documentElement.style.setProperty('--color-reducedfont', '#64748B');
   document.documentElement.style.setProperty('--color-stroke', '#E2E8F0');
+  document.documentElement.style.setProperty('--color-dyn-bg', '#FFFFFF');
 }

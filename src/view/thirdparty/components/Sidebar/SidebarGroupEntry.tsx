@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
-import { EntityTypeDecl } from '../../../utils/types/api';
-import { YACBackend } from '../../../utils/types/config';
-import AddButton from '../../components/Buttons/AddButton';
+import { EntityTypeDecl } from '../../../../utils/types/api';
+import { YACBackend } from '../../../../utils/types/config';
+import AddButton from '../../../components/Buttons/AddButton';
 
 interface SidebarGroupEntryProps {
   yacBackendObject: YACBackend;

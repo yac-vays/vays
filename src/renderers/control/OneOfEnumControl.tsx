@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   ControlProps,
   isOneOfEnumControl,
@@ -6,11 +5,12 @@ import {
   RankedTester,
   rankWith,
 } from '@jsonforms/core';
-import { TranslateProps, withJsonFormsOneOfEnumProps, withTranslateProps } from '@jsonforms/react';
 import { WithOptionLabel } from '@jsonforms/material-renderers/lib/mui-controls';
-import SelectStatic from '../../view/thirdparty-based-components/ifc/Selector/SelectStatic';
-import OverheadLabel from '../../view/thirdparty-based-components/ifc/Label/OverheadLabel';
-import ErrorBox from '../../view/thirdparty-based-components/ifc/Label/ErrorBox';
+import { TranslateProps, withJsonFormsOneOfEnumProps, withTranslateProps } from '@jsonforms/react';
+import React from 'react';
+import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
+import OverheadLabel from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
+import SelectStatic from '../../view/thirdparty/components/ifc/Selector/SelectStatic';
 
 export const OneOfEnumControl = (
   props: ControlProps & OwnPropsOfEnum & WithOptionLabel & TranslateProps,

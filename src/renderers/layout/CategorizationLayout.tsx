@@ -25,8 +25,6 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-import { useState, useMemo } from 'react';
-import Tab from '../../view/components/Tabs/Tab';
 import {
   and,
   Categorization,
@@ -40,20 +38,22 @@ import {
   UISchemaElement,
   uiTypeIs,
 } from '@jsonforms/core';
-import { TranslateProps, withJsonFormsLayoutProps, withTranslateProps } from '@jsonforms/react';
 import {
   AjvProps,
   MaterialLayoutRenderer,
   MaterialLayoutRendererProps,
   withAjvProps,
 } from '@jsonforms/material-renderers';
-import ControlBar from '../../view/components/Tabs/ControlBar';
+import { TranslateProps, withJsonFormsLayoutProps, withTranslateProps } from '@jsonforms/react';
+import { useMemo, useState } from 'react';
+import { tsAddWarningMessage } from '../../controller/global/troubleshoot';
+import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/access';
 import {
   getCurrentTab,
   setCurrentTab,
 } from '../../controller/local/EditController/StandardMode/access';
-import { tsAddWarningMessage } from '../../controller/global/troubleshoot';
-import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/access';
+import ControlBar from '../../view/components/Tabs/ControlBar';
+import Tab from '../../view/components/Tabs/Tab';
 
 export const isSingleLevelCategorization: Tester = and(
   uiTypeIs('Categorization'),
@@ -120,7 +120,7 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
   const categories = useMemo(
     () =>
       categorization.elements.filter((category: Category | Categorization) =>
-        // @ts-ignore
+        //@ts-expect-error ................
         isVisible(category, data, undefined, ajv),
       ),
     [categorization, data, ajv],
@@ -185,7 +185,6 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
           {/* <div className='' style={{ height:"100%", flexGrow: 0, flexShrink: 0, flexBasis: 100, flexDirection:"row", flex:0 }}> */}
           <MaterialLayoutRenderer {...childProps} key={safeCategory} />
           {/* </div> */}
-          {/* <div className='relative bg-white dark:bg-boxdark w-full' style={{bottom:0}}><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /></div> */}
         </div>
       </div>
     </>

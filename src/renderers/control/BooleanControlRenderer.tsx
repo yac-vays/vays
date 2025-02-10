@@ -1,7 +1,7 @@
-import { isBooleanControl, RankedTester, rankWith, ControlProps } from '@jsonforms/core';
+import { ControlProps, isBooleanControl, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import Checkbox from '../../view/thirdparty-based-components/ifc/CheckBox/CheckBox';
-import ErrorBox from '../../view/thirdparty-based-components/ifc/Label/ErrorBox';
+import Checkbox from '../../view/thirdparty/components/ifc/CheckBox/CheckBox';
+import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
 
 export const BooleanControl = ({
   data,

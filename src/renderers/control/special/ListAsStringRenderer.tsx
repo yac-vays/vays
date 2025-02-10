@@ -9,10 +9,10 @@ import {
   TesterContext,
 } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import { isCustomRenderer } from '../../utils/customTesterUtils';
-import LargeStringList from '../../../view/thirdparty-based-components/ifc/LargeStringList/LargeStringList';
-import ErrorBox from '../../../view/thirdparty-based-components/ifc/Label/ErrorBox';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
+import ErrorBox from '../../../view/thirdparty/components/ifc/Label/ErrorBox';
+import LargeStringList from '../../../view/thirdparty/components/ifc/LargeStringList/LargeStringList';
+import { isCustomRenderer } from '../../utils/customTesterUtils';
 
 export const ListAsStringRenderer = (props: ControlProps) => {
   const sep = props.uischema.options?.separator ?? ',';

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import InformationButton from '../../../components/Buttons/InformationButton';
+import InformationButton from '../../../../components/Buttons/InformationButton';
 
 const Checkbox = ({
   title,

@@ -1,4 +1,4 @@
-import InformationButton from '../../../components/Buttons/InformationButton';
+import InformationButton from '../../../../components/Buttons/InformationButton';
 
 interface OverheadLabelProps {
   required: boolean;

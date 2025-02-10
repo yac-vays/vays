@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getConfig } from '../../../model/config';
 import { YACBackend } from '../../../utils/types/config';
-import PageHeaderTitle from '../../thirdparty-based-components/PageTitle/PageHeaderTitle';
+import PageHeaderTitle from '../../thirdparty/components/PageTitle/PageHeaderTitle';
 
 const DevInfo = () => {
   const [backends, setBackends] = useState<YACBackend[]>([]);

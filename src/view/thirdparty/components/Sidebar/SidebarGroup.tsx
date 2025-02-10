@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { YACBackend } from '../../../utils/types/config';
-import SidebarGroupHeader from './SidebarGroupHeader';
+import React, { useEffect, useState } from 'react';
+import { buildOverviewURL } from '../../../../controller/global/url';
+import { getEntityTypes } from '../../../../model/entityType';
+import { userIsLoggedIn } from '../../../../session/login/tokenHandling';
+import iLocalStorage from '../../../../session/persistent/LocalStorage';
+import { EntityTypeDecl } from '../../../../utils/types/api';
+import { YACBackend } from '../../../../utils/types/config';
 import SidebarGroupEntry from './SidebarGroupEntry';
-import { getEntityTypes } from '../../../model/entityType';
-import { EntityTypeDecl } from '../../../utils/types/api';
-import { buildOverviewURL } from '../../../controller/global/url';
-import iLocalStorage from '../../../session/persistent/LocalStorage';
-import { userIsLoggedIn } from '../../../session/login/tokenHandling';
+import SidebarGroupHeader from './SidebarGroupHeader';
 
 interface SidebarLinkGroupProps {
   yacBackendObject: YACBackend;

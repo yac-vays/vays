@@ -1,4 +1,3 @@
-import { ChangeEvent, useCallback, useState } from 'react';
 import {
   and,
   ControlProps,
@@ -10,13 +9,14 @@ import {
   TesterContext,
 } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import TextInput from '../../../view/thirdparty-based-components/ifc/TextInput/TextInput';
 import { debounce } from 'lodash';
+import { ChangeEvent, useCallback, useState } from 'react';
 import { hashPassword } from '../../../utils/passwordHashes';
+import TextInput from '../../../view/thirdparty/components/ifc/TextInput/TextInput';
 
+import ErrorBox from '../../../view/thirdparty/components/ifc/Label/ErrorBox';
+import OverheadLabel from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import { isCustomRenderer } from '../../utils/customTesterUtils';
-import OverheadLabel from '../../../view/thirdparty-based-components/ifc/Label/OverheadLabel';
-import ErrorBox from '../../../view/thirdparty-based-components/ifc/Label/ErrorBox';
 
 export const PasswordRenderer = (props: ControlProps) => {
   const pt = props.uischema?.options?.save_password_as === 'plaintext';

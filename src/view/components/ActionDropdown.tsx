@@ -76,20 +76,14 @@ const ActionDropdown = ({ actions, entityName }: ActionDropdownProps) => {
       <div ref={dropdownRef} className="group inline-flex flex-col">
         <div
           ref={dropdownHeaderRef}
-          onClick={
-            (e) => {
-              e.preventDefault();
-              positionDropdownElement(dropdownContentRef, dropdownHeaderRef);
-              // Disables the dropdown click if isEmpty is true.
-              setOpen(!open && !isEmpty);
-            }
-            // "inline-flex items-center justify-center border border-primary text-center gap-2.5 font-medium text-primary rounded hover:bg-greydark dark:hover:bg-danger
-            //     bg-graydark dark:bg-danger">
-          }
-          // "inline-flex border-y border-stroke py-1 px-2 font-medium text-plainfonthover:border-primary hover:bg-primary hover:text-white dark:text-white dark:hover:border-primary sm:py-3 sm:px-6"
-          // text-[#98A6AD] hover:text-reducedfont
+          onClick={(e) => {
+            e.preventDefault();
+            positionDropdownElement(dropdownContentRef, dropdownHeaderRef);
+            // Disables the dropdown click if isEmpty is true.
+            setOpen(!open && !isEmpty);
+          }}
           className={
-            'inline-flex items-center justify-center border-t border-r border-b text-center gap-2.5 font-medium bg-[#f5f5f5] dark:hover:bg-meta-4 rounded dark:bg-meta-4'
+            'inline-flex items-center justify-center border-t border-r border-b text-center gap-2.5 font-medium bg-[#f5f5f5] dark:bg-meta-4 rounded'
           }
           style={{
             position: 'relative',
@@ -143,7 +137,7 @@ const ActionDropdown = ({ actions, entityName }: ActionDropdownProps) => {
         <div
           ref={dropdownContentRef}
           className={`shadow-lg dark:shadow-2xl dark:border dark:border-grey rounded absolute ${
-            open ? 'block bg-white dark:bg-meta-4' : 'hidden'
+            open ? 'block bg-bg' : 'hidden'
           }`}
           style={{ zIndex: 10, marginTop: 40, width: dropdownHeaderRef.current?.offsetWidth }}
         >

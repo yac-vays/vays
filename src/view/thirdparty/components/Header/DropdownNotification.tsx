@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 import {
   clearWarningMessageBuffer,
   getWarningMessageBuffer,
-} from '../../../controller/global/troubleshoot';
-import troubleshootCtrlState from '../../../controller/state/TroubleShootState';
+} from '../../../../controller/global/troubleshoot';
+import troubleshootCtrlState from '../../../../controller/state/TroubleShootState';
 import SchemaWarningMessage, {
   TroubleShootMessageProps,
-} from '../../components/SchemaWarningMessage';
-import ClickOutside from '../ClickOutside';
+} from '../../../components/SchemaWarningMessage';
+import ClickOutside from '../../ClickOutside';
 
 const DropdownNotification = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);

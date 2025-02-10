@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { getDefaultURL, navigateToURL } from '../../../controller/global/url';
-import Loader from '../../thirdparty-based-components/Loader';
-import { setUserLoggedIn, userIsLoggedIn } from '../../../session/login/tokenHandling';
-import { finalizeAuthentication } from '../../../session/login/loginProcess';
-import { AppConfig } from '../../../utils/types/config';
 import { getConfig } from '../../../model/config';
+import { finalizeAuthentication } from '../../../session/login/loginProcess';
+import { setUserLoggedIn, userIsLoggedIn } from '../../../session/login/tokenHandling';
 import iSessionStorage from '../../../session/storage/SessionStorage';
+import { AppConfig } from '../../../utils/types/config';
+import Loader from '../../thirdparty/components/Loader';
 
 const RedirectView = ({ appconf }: { appconf: AppConfig }) => {
   useEffect(() => {

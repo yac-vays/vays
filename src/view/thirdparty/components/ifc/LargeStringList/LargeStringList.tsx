@@ -1,8 +1,8 @@
 import { debounce } from 'lodash';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { setIsCurrentlyEditingString } from '../../../../controller/local/EditController/StandardMode/access';
-import useOutsideClick from '../../../hooks/useOutsideClick';
+import { setIsCurrentlyEditingString } from '../../../../../controller/local/EditController/StandardMode/access';
+import useOutsideClick from '../../../../hooks/useOutsideClick';
 import DeleteButton from '../MultiSelect/DeleteButton';
 import DropdownButton from '../MultiSelect/DropdownButton';
 import InlineTextField from '../MultiSelect/InlineTextField';

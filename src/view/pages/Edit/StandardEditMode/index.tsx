@@ -20,7 +20,7 @@ import { RequestEditContext } from '../../../../utils/types/internal/request';
 import editingState from '../../../../controller/state/EditCtrlState';
 import { isValidDataObject } from '../../../../utils/schema/injectName';
 import NoDataIndicator from '../../../components/NoDataIndicator';
-import SubLoader from '../../../thirdparty-based-components/SubLoader';
+import SubLoader from '../../../thirdparty/components/SubLoader';
 import useInitializeForm from './useInitializeState';
 
 const renderers = [...materialRenderers, ...customRenderers];

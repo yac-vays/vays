@@ -17,7 +17,7 @@ import {
 import { withJsonFormsMultiEnumProps } from '@jsonforms/react';
 import { ReactNode } from 'react';
 import FormComponentTitle from '../../view/components/FormComponentTitle';
-import ErrorBox from '../../view/thirdparty-based-components/ifc/Label/ErrorBox';
+import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
 import { BooleanControl } from '../control/BooleanControlRenderer';
 import { isCustomRenderer } from '../utils/customTesterUtils';
 

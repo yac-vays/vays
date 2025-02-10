@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import UserOne from '../../../../rsc/user/user.png';
-import { navigateToURL } from '../../../controller/global/url';
-import { logOut } from '../../../session/login/loginProcess';
-import { getUserName, userIsLoggedIn } from '../../../session/login/tokenHandling';
-import ClickOutside from '../ClickOutside';
+import UserOne from '../../../../../rsc/user/user.png';
+import { navigateToURL } from '../../../../controller/global/url';
+import { logOut } from '../../../../session/login/loginProcess';
+import { getUserName, userIsLoggedIn } from '../../../../session/login/tokenHandling';
+import ClickOutside from '../../ClickOutside';
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);

@@ -2,7 +2,7 @@ import { RequestEditContext } from '../../../../utils/types/internal/request';
 // import Editor from ;
 
 import { lazy, Suspense } from 'react';
-import SubLoader from '../../../thirdparty-based-components/SubLoader';
+import SubLoader from '../../../thirdparty/components/SubLoader';
 
 const Editor = lazy(() => import('./Editor'));
 

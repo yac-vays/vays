@@ -3,7 +3,7 @@ import { registerTableScrollContainer, reload } from '../../../controller/local/
 import { registerEntityListInvalidationHook } from '../../../model/entityList';
 import { invalidateLogCache } from '../../../model/logs';
 import { RequestContext } from '../../../utils/types/internal/request';
-import SubLoader from '../../thirdparty-based-components/SubLoader';
+import SubLoader from '../../thirdparty/components/SubLoader';
 import NoDataIndicator from '../NoDataIndicator';
 import TableBody from './Body/TableBody';
 import './entity-list-styles.css';

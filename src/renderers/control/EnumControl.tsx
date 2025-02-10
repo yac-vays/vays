@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   ControlProps,
   isEnumControl,
@@ -7,11 +6,12 @@ import {
   rankWith,
 } from '@jsonforms/core';
 import { TranslateProps, withJsonFormsEnumProps, withTranslateProps } from '@jsonforms/react';
+import React from 'react';
 // import merge from 'lodash/merge';
-import SelectStatic from '../../view/thirdparty-based-components/ifc/Selector/SelectStatic';
 import { WithOptionLabel } from '@jsonforms/material-renderers';
-import OverheadLabel from '../../view/thirdparty-based-components/ifc/Label/OverheadLabel';
-import ErrorBox from '../../view/thirdparty-based-components/ifc/Label/ErrorBox';
+import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
+import OverheadLabel from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
+import SelectStatic from '../../view/thirdparty/components/ifc/Selector/SelectStatic';
 
 export const EnumControl = (
   props: ControlProps & OwnPropsOfEnum & WithOptionLabel & TranslateProps,

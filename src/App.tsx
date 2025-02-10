@@ -1,19 +1,19 @@
-import { lazy, Suspense, LazyExoticComponent, useEffect, useState } from 'react';
+import { lazy, LazyExoticComponent, Suspense, useEffect, useState } from 'react';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
-import DefaultLayout from './view/thirdparty-based-components/Layout';
-import Loader from './view/thirdparty-based-components/Loader';
-import PageTitle from './view/thirdparty-based-components/PageTitle/PageTitle';
 import LoginView from './view/pages/Login/LoginView';
+import DefaultLayout from './view/thirdparty/components/Layout';
+import Loader from './view/thirdparty/components/Loader';
+import PageTitle from './view/thirdparty/components/PageTitle/PageTitle';
 
-import { getConfig } from './model/config';
-import { YACBackend } from './utils/types/config';
-import { AppConfig } from './utils/types/config';
 import { registerNavigationHook } from './controller/global/url';
-import { ToastContextProvider } from './view/components/ToastNotification/ToastContext';
-import { ModalContextProvider } from './view/components/Modal/ModalContext';
-import { generateCSP } from './session/csp';
+import { getConfig } from './model/config';
 import { setColors } from './session/color';
+import { generateCSP } from './session/csp';
+import { AppConfig, YACBackend } from './utils/types/config';
+import { ModalContextProvider } from './view/components/Modal/ModalContext';
+import { ToastContextProvider } from './view/components/ToastNotification/ToastContext';
+import DevInfo from './view/pages/DevInfo';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let EditView: React.FC<any>;
@@ -37,7 +37,6 @@ const RedirectView = lazy(() =>
 );
 
 const ErrorPage = lazy(() => import('./view/pages/Error/ErrorPage'));
-import DevInfo from './view/pages/DevInfo';
 
 /**
  * The main application component that sets up the routing and context providers.

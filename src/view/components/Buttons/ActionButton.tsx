@@ -61,7 +61,7 @@ const ActionButton = ({ actArgs, isLeft }: ActionButtonProps) => {
             https://codepen.io/sosuke/pen/Pjoqqp 
           */}
             <div
-              className={`rounded duration-300 dark:hover:bg-meta-4 hover:border-black hover:bg-transparent ${
+              className={`rounded duration-300 hover:border-black hover:bg-transparent ${
                 actArgs.isAllowed ? 'hover:scale-150' : ''
               }`}
               style={{ width: '100%' }}

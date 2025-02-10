@@ -38,6 +38,8 @@ module.exports = {
         'plainfont-inv': 'var(--color-plainfont-inv)', 
         reducedfont:  'var(--color-reducedfont)', 
         stroke:       'var(--color-stroke)', 
+        'bg': 'var(--color-dyn-bg)',
+        
         
 
         /**

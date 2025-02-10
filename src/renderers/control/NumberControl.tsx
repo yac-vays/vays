@@ -7,11 +7,11 @@ import {
   rankWith,
 } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import NumberInput from '../../view/thirdparty-based-components/ifc/NumberInput/NumberInput';
-import OverheadLabel from '../../view/thirdparty-based-components/ifc/Label/OverheadLabel';
-import ErrorBox from '../../view/thirdparty-based-components/ifc/Label/ErrorBox';
-import { useCallback } from 'react';
 import { debounce } from 'lodash';
+import { useCallback } from 'react';
+import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
+import OverheadLabel from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
+import NumberInput from '../../view/thirdparty/components/ifc/NumberInput/NumberInput';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const eventToValue = (ev: any) =>

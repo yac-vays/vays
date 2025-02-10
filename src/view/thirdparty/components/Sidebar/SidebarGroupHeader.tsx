@@ -1,4 +1,4 @@
-import { YACBackend } from '../../../utils/types/config';
+import { YACBackend } from '../../../../utils/types/config';
 
 const SidebarGroupHeader = ({
   open,

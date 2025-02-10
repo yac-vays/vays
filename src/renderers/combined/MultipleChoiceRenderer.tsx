@@ -15,8 +15,8 @@ import {
 
 import { withJsonFormsMultiEnumProps } from '@jsonforms/react';
 import FormComponentTitle from '../../view/components/FormComponentTitle';
-import ErrorBox from '../../view/thirdparty-based-components/ifc/Label/ErrorBox';
-import MultiSelect from '../../view/thirdparty-based-components/ifc/MultiSelect/MultiSelect';
+import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
+import MultiSelect from '../../view/thirdparty/components/ifc/MultiSelect/MultiSelect';
 
 export const MultipleChoiceRenderer = ({
   // config,

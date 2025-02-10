@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import Logo from '../../../../rsc/logo/eth_logo.svg';
-import { YACBackend } from '../../../utils/types/config';
-import NoticeFooter from '../../components/NoticeFooter';
+import Logo from '../../../../../rsc/logo/eth_logo.svg';
+import { YACBackend } from '../../../../utils/types/config';
+import NoticeFooter from '../../../components/NoticeFooter';
 import SidebarGroup from './SidebarGroup';
 
 interface SidebarProps {

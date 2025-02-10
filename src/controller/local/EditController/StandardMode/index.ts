@@ -1,17 +1,7 @@
-import { showModalMessage } from '../../../global/modal';
-import { navigateToURL } from '../../../global/url';
-import { showError } from '../../notification';
-import editingState from '../../../state/EditCtrlState';
-import {
-  editViewNavigateToNewName,
-  getInitialEntityYAML,
-  setYACValidateResponse,
-  setYACValidStatus,
-} from '../shared';
-import { invalidateEntityListCache } from '../../../../model/entityList';
-import { validate } from '../../../../model/validate';
-import { patchEntity } from '../../../../model/patch';
 import { createNewEntity } from '../../../../model/create';
+import { invalidateEntityListCache } from '../../../../model/entityList';
+import { patchEntity } from '../../../../model/patch';
+import { validate } from '../../../../model/validate';
 import { extractPatch, removeOldData } from '../../../../utils/schema/dataUtils';
 import { mergeDefaults, updateDefaults } from '../../../../utils/schema/defaultsHandling';
 import { injectAction, insertActionData, popActions } from '../../../../utils/schema/injectActions';
@@ -21,9 +11,19 @@ import {
   popSettableName,
 } from '../../../../utils/schema/injectName';
 import { NameGeneratedCond } from '../../../../utils/types/api';
-import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import { RequestContext, RequestEditContext } from '../../../../utils/types/internal/request';
+import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import { Nullable } from '../../../../utils/types/typeUtils';
+import { showModalMessage } from '../../../global/modal';
+import { navigateToURL } from '../../../global/url';
+import editingState from '../../../state/EditCtrlState';
+import { showError } from '../../notification';
+import {
+  editViewNavigateToNewName,
+  getInitialEntityYAML,
+  setYACValidateResponse,
+  setYACValidStatus,
+} from '../shared';
 
 export async function updateSchema(
   frontData: { [key: string]: any },

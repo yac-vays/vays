@@ -29,10 +29,15 @@ function _refreshDefaults(
     if (!(key in newDefault)) {
       remSym = true;
       mod = true;
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete oldObject[key];
     } else if (!(key in oldObject)) {
       continue;
-    } else if (typeof oldObject[key] === 'object' && oldObject[key] != null) {
+    } else if (
+      typeof oldObject[key] === 'object' &&
+      oldObject[key] != null &&
+      !Array.isArray(oldObject[key])
+    ) {
       const ret = _refreshDefaults(newDefault[key], oldDefault[key], oldObject[key]);
       remSym ||= ret.removedData;
       mod ||= ret.modified;

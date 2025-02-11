@@ -17,7 +17,7 @@ import { showError } from '../../../../controller/local/notification';
 import { customRenderers } from '../../../../renderers';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 // import { Nullable } from '../../../../utils/typeUtils';
-import editingState from '../../../../controller/state/EditCtrlState';
+import { getAJV } from '../../../../controller/local/EditController/shared';
 import { isValidDataObject } from '../../../../utils/schema/injectName';
 import NoDataIndicator from '../../../components/NoDataIndicator';
 import SubLoader from '../../../thirdparty/components/SubLoader';
@@ -146,7 +146,7 @@ const StandardEditMode = memo(
                       renderers={renderers}
                       cells={materialCells}
                       onChange={onChangeCallback}
-                      ajv={editingState.ajv}
+                      ajv={getAJV()}
                     />
                   </FormsErrorBoundary>
                 </div>

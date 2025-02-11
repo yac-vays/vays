@@ -1,10 +1,9 @@
-import _ from 'lodash';
+import { parse } from 'yaml';
 import { showModalMessage } from '../controller/global/modal';
-import { RequestEditContext } from './types/internal/request';
+import { retreiveSchema } from '../controller/local/EditController/shared';
 import { getEntityData } from '../model/entityData';
 import { getObjectDiff, transformObjectUsingTitle } from './objectdiff';
-import { parse } from 'yaml';
-import { retreiveSchema } from '../controller/local/EditController/shared';
+import { RequestEditContext } from './types/internal/request';
 
 export async function handleCollision(
   name: string,
@@ -12,9 +11,8 @@ export async function handleCollision(
   requestEditContext: RequestEditContext,
   oldYaml?: string,
 ) {
-  window.blur();
   const newEntityData = await getEntityData(name, requestEditContext.rc);
-  const schema = await retreiveSchema(requestEditContext, true, true);
+  const schema = await retreiveSchema(requestEditContext, false, false);
 
   setTimeout(
     () =>

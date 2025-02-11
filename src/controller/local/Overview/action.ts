@@ -12,6 +12,12 @@ import {
 } from '../../../utils/types/internal/actions';
 import { RequestContext } from '../../../utils/types/internal/request';
 
+/**
+ * Get the actions for some entitiy.
+ * @param requestContext
+ * @param entity
+ * @returns
+ */
 export function getActions(
   requestContext: RequestContext,
   entity: EntityObject,
@@ -43,6 +49,16 @@ export function getActions(
 
   return res;
 }
+
+/**
+ * Get fav actions.
+ * @param favorites
+ * @param actions
+ * @param yacURL
+ * @param entity
+ * @param requestContext
+ * @returns
+ */
 function _getFavActs(
   favorites: FavOpObject[],
   actions: { [key: string]: ActionDecl },
@@ -96,18 +112,28 @@ function _getFavActs(
   }
   return favActs;
 }
+
+/**
+ * Check whether some action is marked as favorite.
+ * @param actionName
+ * @param isAction
+ * @param favorites
+ * @returns
+ */
 function __isFav(actionName: string, isAction: boolean, favorites: FavOpObject[]): boolean {
   for (const fav of favorites) {
     if (isAction === fav.action && actionName === fav.name) return true;
   }
   return false;
 }
+
 /**
+ * Get the actions which are not marked as favorite.
  * @param favorites
  * @param actions
- * @param yacURL
  * @param entity
  * @param requestContext
+ * @returns
  */
 function _getDropdownActs(
   favorites: FavOpObject[],

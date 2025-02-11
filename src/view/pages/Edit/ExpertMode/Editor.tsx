@@ -31,6 +31,7 @@ import getEditorSettings, { setupMonacoYAMLPlugin } from './utils';
 
 import { updateYAMLschema } from '../../../../controller/local/EditController/ExpertMode/index.js';
 import {
+  clearYACStatus,
   editViewNavigateToNewName,
   getYACValidateResponse,
 } from '../../../../controller/local/EditController/shared';
@@ -62,12 +63,12 @@ export const Editor = ({
 
     setEntityYAML(value);
     setIsValidating(true);
-    const rep = await updateYAMLschema(getEntityName(), value, requestEditContext); //await retreiveSchema(requestEditContext, true, true);
+    const rep = await updateYAMLschema(getEntityName(), value, requestEditContext);
     setEditErrorMsg(getYACValidateResponse());
     setIsValidating(false);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (rep == null) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (window as any).monacoYaml.update({
       schemas: [
         {
@@ -84,6 +85,7 @@ export const Editor = ({
 
   useEffect(() => {
     setCurrentContext(requestEditContext);
+    clearYACStatus();
     if (requestEditContext.mode == 'modify') setEntityName(requestEditContext.entityName ?? null);
     else setEntityName(null);
 

@@ -9,7 +9,7 @@ import {
   navigateToURL,
 } from '../../../controller/global/url';
 import iSessionStorage from '../../../session/storage/SessionStorage';
-import { NameGeneratedCond } from '../../../utils/types/api';
+import { isNameGeneratedByYAC } from '../../../utils/nameUtils';
 import { YACBackend } from '../../../utils/types/config';
 import { EditViewMode, RequestEditContext } from '../../../utils/types/internal/request';
 import PageHeaderTitle from '../../thirdparty/components/PageTitle/PageHeaderTitle';
@@ -88,10 +88,7 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
           );
         }
 
-        if (
-          mode === 'create' &&
-          requestEditContext.rc.accessedEntityType?.name_generated === NameGeneratedCond.enforced
-        )
+        if (mode === 'create' && isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType))
           requestEditContext.entityName = undefined;
 
         if (mode === 'create') {

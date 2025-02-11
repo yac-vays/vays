@@ -1,7 +1,8 @@
-import { RequestContext, RequestEditContext } from '../types/internal/request';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { isTriggable } from '../actionUtils';
 import { ActionDecl } from '../types/api';
+import { RequestContext, RequestEditContext } from '../types/internal/request';
 import { ValidateResponse } from '../types/internal/validation';
-import { actions2URLQuery, isTriggable } from '../actionUtils';
 import { injectControls, injectGeneralUICategory } from './injectName';
 
 const INJECTED_ACTION_BASENAME = 'action39242yiwqj3enionsoiufn3i4d2q';
@@ -27,7 +28,7 @@ export function injectAction(valResp: ValidateResponse, requestContext: RequestE
   valResp = structuredClone(valResp);
   injectGeneralUICategory(valResp);
 
-  let uielts = actions.map((act, idx) => uiActionControl(act.name, idx));
+  const uielts = actions.map((act, idx) => uiActionControl(act.name, idx));
   injectControls(valResp, uielts);
 
   if (valResp.json_schema.properties == undefined) {
@@ -35,7 +36,8 @@ export function injectAction(valResp: ValidateResponse, requestContext: RequestE
   }
 
   actions.forEach((act, idx) => {
-    (valResp.json_schema.properties as any)[getActionName(act.name, idx)] = {
+    //@ts-expect-error For some reason, the linter does not understand the line above and says, properties may be undefined.
+    valResp.json_schema.properties[getActionName(act.name, idx)] = {
       title: act.title,
       type: 'boolean',
     };
@@ -47,17 +49,19 @@ export function injectAction(valResp: ValidateResponse, requestContext: RequestE
 export type EditActionSnapshot = { [key: string]: { action: ActionDecl; dataEntryValue: boolean } };
 
 export function popActions(data: any, requestContext: RequestContext): EditActionSnapshot {
-  let values: EditActionSnapshot = {};
+  const values: EditActionSnapshot = {};
 
   for (const key of Object.keys(data)) {
     if (key.startsWith(INJECTED_ACTION_BASENAME)) {
       const actionName = key.split(SEP)[2];
       const act = requestContext.accessedEntityType?.actions.find((v) => v.name === actionName);
       if (!act) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete data[key];
         continue;
       }
       values[key] = { action: act, dataEntryValue: data[key] };
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete data[key];
     }
   }

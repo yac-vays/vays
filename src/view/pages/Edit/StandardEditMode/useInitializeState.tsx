@@ -1,9 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
-import { setCurrentTab } from '../../../../controller/local/EditController/StandardMode/access';
+import { useEffect, useRef, useState } from 'react';
 import { setCurrentContext } from '../../../../controller/local/EditController/ExpertMode/access';
-import { retreiveSchema } from '../../../../controller/local/EditController/shared';
+import {
+  clearYACStatus,
+  getAJV,
+  retreiveSchema,
+} from '../../../../controller/local/EditController/shared';
+import { setCurrentTab } from '../../../../controller/local/EditController/StandardMode/access';
 import { showError } from '../../../../controller/local/notification';
-import editingState from '../../../../controller/state/EditCtrlState';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import { Nullable } from '../../../../utils/types/typeUtils';
@@ -61,6 +64,7 @@ const useInitializeForm = (
       setLoading(true);
       setCurrentContext(requestEditContext);
       const resp: Nullable<ValidateResponse> = await retreiveSchema(requestEditContext);
+      clearYACStatus();
       if (!isMounted) return;
 
       if (resp == null) {
@@ -70,7 +74,7 @@ const useInitializeForm = (
       }
 
       if (requestEditContext.mode === 'modify') {
-        const validate = editingState.ajv.compile(resp.json_schema);
+        const validate = getAJV().compile(resp.json_schema);
         validate(structuredClone(resp.data));
         if (validate.errors) {
           showError(

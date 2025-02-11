@@ -1,16 +1,23 @@
-import { setYACValidateResponse, setYACValidStatus } from '../shared';
-import { showError } from '../../notification';
-import { invalidateEntityListCache } from '../../../../model/entityList';
-import { validateYAML } from '../../../../model/validate';
-import { putYAMLEntity } from '../../../../model/put';
 import { createNewEntity } from '../../../../model/create';
+import { invalidateEntityListCache } from '../../../../model/entityList';
+import { putYAMLEntity } from '../../../../model/put';
+import { validateYAML } from '../../../../model/validate';
+import { RequestContext, RequestEditContext } from '../../../../utils/types/internal/request';
 import { Nullable } from '../../../../utils/types/typeUtils';
 import { showModalMessage } from '../../../global/modal';
 import { navigateToURL } from '../../../global/url';
-import { RequestContext, RequestEditContext } from '../../../../utils/types/internal/request';
 import editingState from '../../../state/EditCtrlState';
+import { showError } from '../../notification';
+import { setYACStatus } from '../shared';
 import { getEntityName, getEntityYAML, getOldYAML, setEntityName } from './access';
 
+/**
+ * Send validation for the yaml.
+ * @param name
+ * @param yaml
+ * @param requestEditContext
+ * @returns
+ */
 export async function updateYAMLschema(
   name: Nullable<string>,
   yaml: string,
@@ -18,12 +25,16 @@ export async function updateYAMLschema(
 ) {
   const valResp = await validateYAML(requestEditContext, name, yaml, editingState.initialYAML);
   if (valResp == null) return;
-  setYACValidateResponse(valResp.detail);
-  setYACValidStatus(valResp.valid);
+  setYACStatus(valResp.valid, valResp.detail);
 
   return valResp;
 }
 
+/**
+ * Callback for the edit view.
+ * @param requestContext
+ * @returns
+ */
 export function sendYAMLData(requestContext: RequestEditContext) {
   if (!editingState.isValidYAC) {
     showModalMessage(
@@ -61,20 +72,32 @@ export function sendYAMLData(requestContext: RequestEditContext) {
   );
 }
 
+/**
+ * Helper function which tells the model to send a new entity request.
+ * @param yaml
+ * @param requestContext
+ * @returns
+ */
 async function sendCreateNewEntity(
   yaml: string | undefined,
   requestContext: RequestContext,
 ): Promise<boolean> {
-  let name: Nullable<string> = getEntityName();
+  const name: Nullable<string> = getEntityName();
   setEntityName(null);
   return await createNewEntity(name, {}, requestContext, yaml);
 }
 
+/**
+ * Helper function which tells the model to send a put API call.
+ * @param yaml
+ * @param requestEditContext
+ * @returns
+ */
 async function sendPutEntity(
   yaml: string,
   requestEditContext: RequestEditContext,
 ): Promise<boolean> {
-  let name: string | undefined = getEntityName() ?? requestEditContext.entityName;
+  const name: string | undefined = getEntityName() ?? requestEditContext.entityName;
   if (name == undefined) {
     showError('Could not send the update!', '');
     return false;

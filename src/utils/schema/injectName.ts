@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { GLOBAL_YAC_REGEX } from '../constants';
+import { isNameRequiredByYAC } from '../nameUtils';
 import { RequestContext } from '../types/internal/request';
-import { NameGeneratedCond } from '../types/api';
 import { ValidateResponse } from '../types/internal/validation';
 import { Nullable } from '../types/typeUtils';
-import { GLOBAL_YAC_REGEX } from '../constants';
 
 const INJECTED_LABEL = 'General';
 
@@ -24,19 +25,14 @@ const uiNameControl = {
 };
 
 export function injectGeneralUICategory(valResp: ValidateResponse) {
-  // let insert = false;
   if (valResp.ui_schema.elements != undefined) {
-    for (let elt of valResp.ui_schema.elements) {
+    for (const elt of valResp.ui_schema.elements) {
       if (elt.label === INJECTED_LABEL) {
-        // elt.elements.unshift(uielt.elements[0]);
-        // insert = true;
-        // break;
         return;
       }
     }
   }
 
-  // if (!insert) {
   if (valResp.ui_schema.elements != null) {
     valResp.ui_schema.elements.unshift(structuredClone(uielt));
   } else {
@@ -44,11 +40,10 @@ export function injectGeneralUICategory(valResp: ValidateResponse) {
     valResp.ui_schema.type = 'Categorization';
     valResp.ui_schema.elements.unshift(structuredClone(uielt));
   }
-  // }
 }
 
 export function injectControls(valResp: ValidateResponse, elts: any[]) {
-  for (let elt of valResp.ui_schema.elements) {
+  for (const elt of valResp.ui_schema.elements) {
     if (elt.label === INJECTED_LABEL) {
       if (elt.elements.length > 0 && elt.elements[0].options?.renderer === 'info_box') {
         for (const inelt of elts.reverse()) elt.elements.splice(1, 0, inelt);
@@ -77,7 +72,7 @@ export function injectSettableName(
   injectGeneralUICategory(valResp);
   injectControls(valResp, [structuredClone(uiNameControl)]);
 
-  if (requestContext.accessedEntityType?.name_generated == NameGeneratedCond.never) {
+  if (isNameRequiredByYAC(requestContext.accessedEntityType)) {
     valResp.json_schema.required?.push(INJECTED_NAME_PROPETRY);
   }
 
@@ -92,6 +87,7 @@ export function popSettableName(data: any): Nullable<string> {
   let name = null;
   if (INJECTED_NAME_PROPETRY in data) {
     name = data[INJECTED_NAME_PROPETRY] as string;
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete data[INJECTED_NAME_PROPETRY];
   }
 

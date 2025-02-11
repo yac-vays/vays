@@ -20,7 +20,7 @@ export default async function editorSchemaHandler(
   // });
   console.log('Calling schema handler');
   requestEditContext = getCurrentContext() ?? requestEditContext;
-  const v = await retreiveSchema(requestEditContext, true, true);
+  const v = await retreiveSchema(requestEditContext, false, false);
   const defaultStr = "---\n\n# Please enter here... (btw couldn't fetch the data in time, sorry)";
   console.log('Retreiving the schema');
   console.log(requestEditContext);

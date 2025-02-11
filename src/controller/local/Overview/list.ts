@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Controller element for the EntityList in the Overview page.
  */
@@ -132,7 +133,7 @@ export function getHeaderEntries(requestContext: RequestContext): string[] {
     const optName: string = (option as any).title as string;
     header.push(optName);
   }
-  header.push('Logs'); // TODO: Need to check whether logs is empty in entity type def
+  header.push('Logs');
   header.push('Actions');
   return header;
 }

@@ -7,7 +7,6 @@ import { RequestEditContext } from '../utils/types/internal/request';
 import { joinUrl } from '../utils/urlUtils';
 
 /**
- * TODO: DO MORE TESTING FOR THOSE WITH ACTIONS.
  * @param name
  * @param patch
  * @param requestEditContext

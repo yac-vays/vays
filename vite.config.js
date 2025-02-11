@@ -1,7 +1,7 @@
-import { defineConfig} from 'vite'
-import react from '@vitejs/plugin-react'
-import basicSsl from '@vitejs/plugin-basic-ssl'
-import { readFileSync, existsSync } from 'fs'
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+//import basicSsl from '@vitejs/plugin-basic-ssl'
+import { existsSync, readFileSync } from 'fs';
 // https://vitejs.dev/config/
 // https://stackoverflow.com/questions/69417788/vite-https-on-localhost
 // https://nodejs.org/api/https.html#https_https_createserver_options_requestlistener

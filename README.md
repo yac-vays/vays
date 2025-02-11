@@ -26,6 +26,8 @@ mkdir cert
 cd cert
 
 openssl req -x509 -newkey rsa:3072 -nodes -sha256 -subj '/CN=127.0.0.1' -keyout private-key.pem -out certificate.pem
+
+cd ..
 ```
 
 Then, start the development server. Currently, the development server in use is `vite`. To use it, run
@@ -59,7 +61,16 @@ used when deploying.
 The files of interest are all in the `/dist` folder. You can run ngnix or whatever you like on this folder.
 You may consider allowing compressed transmittion by enabling gzip (ngnix: `gzip on`).
 
+## Running with Docker
 
+You can do the following to run the docker image locally:
+
+```sh
+docker build --memory=2g -t vaysapp .
+docker run -p 127.0.0.1:5173:80 --mount type=bind,source="$(pwd)"/config2.json,target=/usr/share/nginx/html/config.json,readonly vaysapp
+```
+
+Note that this does not use the selfsigned certificate created above. Depending on your settings at the OAuth provider, you'll likely can't use it for development. (As typically, redirect URLS are required to have the https protocol.)
 
 ## Misc notes
 

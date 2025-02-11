@@ -23,6 +23,5 @@ The documentation contains the following folders:
 
 - Renderers: This contains information about JSON forms renderer that are being used to display new input forms in the edit view (standard mode).
 
-- TBD
 
 

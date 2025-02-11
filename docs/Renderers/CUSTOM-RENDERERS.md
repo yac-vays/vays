@@ -14,11 +14,9 @@ There are numerous and they are divided into two to three categories:
 
 - Control: These typically render primitive types such as strings, booleans, dropdowns, etc. but also ssh keys. What they have in common is that *their invocation does not cause other renderers to be invoked*. So typically, these are the 'simpler' ones.
 
-- Complex: These are renderers whose invocation causes other renderers to be invoked as well. Examples are all arrays, multiple choice renderers, etc. These have a more intricate interaction with JSON forms. By the way, the complex is read like in 'building complex', meaning *pieced together*, not as in 'complicated'. The naming comes from JSON forms.
+- Combined (also: complex in JSON Form lingo): These are renderers whose invocation causes other renderers to be invoked as well. Examples are all arrays, multiple choice renderers, etc. These have a more intricate interaction with JSON forms. By the way, the complex is read like in 'building complex', meaning *pieced together*, not as in 'complicated'. The naming comes from JSON forms.
 
 - Layout Give the structure of the form.
-
-Ennumeration TBD.
 
 
 ## Explicit Custom Renderers

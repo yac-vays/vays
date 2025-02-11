@@ -12,7 +12,10 @@ The following guidelines exist:
 
 - Favorite Actions: No more than 4 favorite actions should be displayed. 5 is in the grey zone. If possible, try to move less important (less used) actions out of the favorites.
 
--
+- Number of columns in the table: Here, it is advised to no more than 8 columns in total.
+
+
+
 
 
 

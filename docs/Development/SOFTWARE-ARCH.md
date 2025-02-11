@@ -26,6 +26,10 @@ This seperates the software into three main components.
     That is, every major component has its own control module. This module then calls the model for data and when sending,
     it also hands over this data. The model will then take care of making the correct API calls.
 
+
+    The controller also has a state. The guideline is that this state is only ever directly accessed in the corresponding module of the controller.
+    If access is needed outside the module, then use getters and setters which are provided in the controller as well.
+
 3) The View: The view is concerned with displaying the data it receives from the user. The controller tells *what* to display,
     the view is concerned with *how*.
 

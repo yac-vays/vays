@@ -1,5 +1,5 @@
-import VAYS_CACHE from '../model/caching';
 import { showError } from '../controller/local/notification';
+import VAYS_CACHE from '../model/caching';
 import { getTokenFromStorage } from '../session/login/tokenHandling';
 import { Nullable } from './types/typeUtils';
 
@@ -47,20 +47,11 @@ async function accessResource(
   catchAccessError: (response: Response) => Response,
 ) {
   if (requestBody != null) {
-    return await fetch(url, {
-      mode: 'cors',
-      method,
-      headers,
-      body: requestBody,
-    })
+    return await fetch(url, { mode: 'cors', method, headers, body: requestBody })
       .then((resp) => resp)
       .catch(catchAccessError);
   } else {
-    return await fetch(url, {
-      mode: 'cors',
-      method,
-      headers,
-    })
+    return await fetch(url, { mode: 'cors', method, headers })
       .then((resp) => resp)
       .catch(catchAccessError);
   }
@@ -79,7 +70,9 @@ async function accessResource(
  * @param requestBody the body as string
  * @param cacheContext null to not get from cache/save to cache. Else string, being the context.
  * @returns The body. May be an empty object in the event of an error.
- */
+ *
+ * @note ONLY USE FOR YAC REQUESTS.
+ **/
 export async function sendRequest(
   url: string,
   method: string = 'GET',

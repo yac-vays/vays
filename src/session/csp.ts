@@ -12,14 +12,14 @@ export function generateCSP(config: AppConfig) {
   const cspMetaTag = document.createElement('meta');
   cspMetaTag.httpEquiv = 'Content-Security-Policy';
 
-  const urls = config.backends.map((v) => v.url).join(' ');
-  const urlsAndOIDC = urls + ' ' + new URL(config.oidcConf.server).hostname;
+  const yacURLs = config.backends.map((v) => v.url).join(' ');
+  const yacURLSandOIDC = yacURLs + ' ' + new URL(config.oidcConf.server).hostname;
 
   cspMetaTag.content = `default-src 'self'; 
     script-src 'self' 'unsafe-eval'; 
     style-src 'self' 'unsafe-inline'; 
-    img-src 'self' ${urls} data:;
-    connect-src 'self' ${urlsAndOIDC};
+    img-src 'self' ${yacURLs} data:;
+    connect-src 'self' ${yacURLSandOIDC};
     font-src 'self';
     object-src 'none';
     frame-src 'none';

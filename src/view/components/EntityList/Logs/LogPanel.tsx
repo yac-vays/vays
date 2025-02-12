@@ -23,7 +23,7 @@ const LogPanel = ({ logList, title }: { logList: EntityLog[]; title: string }) =
                         : 'No time available'}
                     </span>
                   </div>
-                  <div className="bg-gray-100 p-2 pt-0 rounded-md text-gray-800 flex-1">
+                  <div className="p-2 pt-0 rounded-md text-gray-800 flex-1">
                     <p>{logEntry.message}</p>
                   </div>
                 </div>,

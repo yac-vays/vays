@@ -7,16 +7,10 @@ For VAYS to know when to apply a custom renderer is typically done using pattern
 In most cases, the structure of the json schema itself is enough data to decide what renderer needs to be picked when. In some cases however, the YAC admin explicitly needs to specify what type of renderer needs to be used. This may be needed e.g. because by default a different renderer would be used to render the parameter, for example.
 
 
+
 ## Implicit Custom Renderers
 
 Implicit custom renderers inspect the logic inside the json schema to decide whether they may be applied.
-There are numerous and they are divided into two to three categories:
-
-- Control: These typically render primitive types such as strings, booleans, dropdowns, etc. but also ssh keys. What they have in common is that *their invocation does not cause other renderers to be invoked*. So typically, these are the 'simpler' ones.
-
-- Combined (also: complex in JSON Form lingo): These are renderers whose invocation causes other renderers to be invoked as well. Examples are all arrays, multiple choice renderers, etc. These have a more intricate interaction with JSON forms. By the way, the complex is read like in 'building complex', meaning *pieced together*, not as in 'complicated'. The naming comes from JSON forms.
-
-- Layout Give the structure of the form.
 
 
 ## Explicit Custom Renderers

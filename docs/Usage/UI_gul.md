@@ -1,7 +1,5 @@
 # Guarantees and Limitations
 
-## Overview
-
 VAYS itself needs very little configuration. Most of it is done automatically on the
 clientside using the data that is provided by YAC - and its configuration.
 However, the frontend does have some limitations with how much it can actually display.

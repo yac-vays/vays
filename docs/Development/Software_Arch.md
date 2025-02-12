@@ -4,12 +4,11 @@
 # Software Architecture
 
 
-Software architecture allows us to structure code in a way that makes it easier to understand, more expandable and modular. 
-
-
 ## Software Architecture
 
-VAYS is *similarly* to an architecture which is commonly used in frontend design: The MVC architecture.
+VAYS is structured for the most part along an architecture which is commonly used in frontend design: The MVC architecture.
+
+![Software Structure](./vays.png)
 
 
 This seperates the software into three main components.
@@ -32,10 +31,6 @@ This seperates the software into three main components.
 
 3) The View: The view is concerned with displaying the data it receives from the user. The controller tells *what* to display,
     the view is concerned with *how*.
-
-
-Some parts, like interfacing with the local/session storage are seperated. While they could have been merged into the model part,
-(regarding the storage as a data 'source/sink') seperating seemed the better choice.
 
 
 

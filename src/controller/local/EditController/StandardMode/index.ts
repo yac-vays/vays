@@ -188,7 +188,6 @@ export function sendFormData(requestContext: RequestEditContext) {
         success = await sendCreateNewEntity(editingState.entityDataObject, requestContext.rc);
       } else {
         success = await sendPatchEntity(editingState.entityDataObject, requestContext);
-        console.error(success);
       }
 
       if (success) {
@@ -232,6 +231,7 @@ async function sendPatchEntity(
   requestEditContext: RequestEditContext,
 ): Promise<boolean> {
   let name = '';
+  data = structuredClone(data); // may be changed and patch may not succeed (collision)
   if (hasSettableName(data)) {
     name = popSettableName(data) ?? name;
   } else if (isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType)) {

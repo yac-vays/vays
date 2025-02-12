@@ -3,7 +3,7 @@ import VAYS_VERSION from '../../../rsc/version';
 
 const NoticeFooter = () => {
   return (
-    <div className="text-sm p-2 text-white">
+    <div className="text-sm p-2 text-white overflow-hidden pb-3">
       VAYS {VAYS_VERSION}
       <br />
       <div className="flex flex-row hover:translate-x-[10px] duration-500">

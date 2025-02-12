@@ -16,8 +16,7 @@ import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
 import OverheadLabel from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import TextInput from '../../view/thirdparty/components/ifc/TextInput/TextInput';
 
-const eventToValue = (ev: React.ChangeEvent<HTMLInputElement>) =>
-  ev.target.value === '' ? undefined : ev.target.value;
+const eventToValue = (ev: React.ChangeEvent<HTMLInputElement>) => ev.target.value;
 
 export const TextControl = (props: ControlProps) => {
   doTroubleShootCheck(props);

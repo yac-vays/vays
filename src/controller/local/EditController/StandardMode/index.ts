@@ -167,7 +167,7 @@ function updateURL(
  * @param requestContext
  * @returns
  */
-export function sendFormData(requestContext: RequestEditContext) {
+export function sendFormData(requestEditContext: RequestEditContext) {
   if (!editingState.isValidYAC) {
     showModalMessage(
       'Data not valid',
@@ -184,22 +184,30 @@ export function sendFormData(requestContext: RequestEditContext) {
     '',
     async () => {
       let success = false;
-      if (requestContext.mode === 'create') {
-        success = await sendCreateNewEntity(editingState.entityDataObject, requestContext.rc);
+      if (requestEditContext.mode === 'create') {
+        success = await sendCreateNewEntity(editingState.entityDataObject, requestEditContext.rc);
       } else {
-        success = await sendPatchEntity(editingState.entityDataObject, requestContext);
+        success = await sendPatchEntity(editingState.entityDataObject, requestEditContext);
       }
 
       if (success) {
-        invalidateEntityListCache(requestContext.rc.yacURL, requestContext.rc.entityTypeName);
-        navigateToURL(
-          `${requestContext.rc.backendObject?.name}/${requestContext.rc.entityTypeName}`,
-        );
+        onSuccessfullPatch(requestEditContext);
       }
     },
     async () => {},
     'Confirm',
     false,
+  );
+}
+
+/**
+ * Execute after successfully executing a patch call.
+ * @param requestEditContext
+ */
+export function onSuccessfullPatch(requestEditContext: RequestEditContext) {
+  invalidateEntityListCache(requestEditContext.rc.yacURL, requestEditContext.rc.entityTypeName);
+  navigateToURL(
+    `${requestEditContext.rc.backendObject?.name}/${requestEditContext.rc.entityTypeName}`,
   );
 }
 
@@ -231,7 +239,7 @@ async function sendPatchEntity(
   requestEditContext: RequestEditContext,
 ): Promise<boolean> {
   let name = '';
-  data = structuredClone(data); // may be changed and patch may not succeed (collision)
+  data = structuredClone(data); // will be changed and patch may not succeed (collision)
   if (hasSettableName(data)) {
     name = popSettableName(data) ?? name;
   } else if (isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType)) {

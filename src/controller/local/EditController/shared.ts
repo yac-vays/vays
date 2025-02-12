@@ -31,12 +31,16 @@ export function setYACStatus(valid: boolean, detail: string) {
  * @param requestEditContext
  * @param preventInjectName
  * @param preventInjectActions
+ * @param [startEditingSession=true] Whether to start an editing session. If true, this will set the
+ *    state for the initial data and yaml received, which may be needed when finishing the session (e.g.
+ *    to calculate the patch or to handle a concurrency collision.)
  * @returns
  */
 export async function retreiveSchema(
   requestEditContext: RequestEditContext,
   insertName: boolean = true,
   insertAction: boolean = false,
+  startEditingSession: boolean = true,
 ): Promise<ValidateResponse | null> {
   if (requestEditContext.rc.yacURL == null) return null;
 
@@ -44,7 +48,12 @@ export async function retreiveSchema(
     return await retreiveNewCreateSchema(requestEditContext);
   }
 
-  return await retreiveEditSchema(requestEditContext, insertName, insertAction);
+  return await retreiveEditSchema(
+    requestEditContext,
+    insertName,
+    insertAction,
+    startEditingSession,
+  );
 }
 
 /**
@@ -62,6 +71,7 @@ async function retreiveEditSchema(
   requestEditContext: RequestEditContext,
   insertName: boolean = true,
   insertAction: boolean = true,
+  startEditingSession: boolean = true,
 ): Promise<ValidateResponse | null> {
   if (requestEditContext.entityName == null) return null;
 
@@ -81,8 +91,10 @@ async function retreiveEditSchema(
   valResp.yaml = entityData.yaml;
   valResp.data = entityData?.data;
 
-  setInitialEntityYAML(entityData.yaml);
-  editingState.initialData = structuredClone(valResp.data);
+  if (startEditingSession) {
+    setInitialEntityYAML(entityData.yaml);
+    editingState.initialData = structuredClone(valResp.data);
+  }
 
   mergeDefaults(valResp);
   if (!insertName || isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType)) {

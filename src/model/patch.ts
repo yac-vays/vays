@@ -1,7 +1,7 @@
+import { handleCollision } from '../controller/local/EditController/StandardMode/concurrency';
 import { showError, showSuccess } from '../controller/local/notification';
 import { actionNames2URLQuery } from '../utils/actionUtils';
 import { hasAuthFailed, sendRequest } from '../utils/authRequest';
-import { handleCollision } from '../utils/concurrency';
 import { dumpEditActions, popActions } from '../utils/schema/injectActions';
 import { RequestEditContext } from '../utils/types/internal/request';
 import { joinUrl } from '../utils/urlUtils';

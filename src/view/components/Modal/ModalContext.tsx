@@ -2,6 +2,7 @@ import { createContext, useContext, useRef } from 'react';
 import ConfirmAlert from '.';
 import { ActionDecl } from '../../../utils/types/api';
 import { CallbackSuccessType } from '../../../utils/types/internal/modal';
+import { ConcurrencyReportProps } from '../ConcurrencyReport';
 
 /**
  * Mode is either
@@ -14,10 +15,12 @@ export type ModalCallback = (
   confirmVerb: string,
   enableTextInput: boolean,
   actions?: ActionDecl[],
+  crep?: ConcurrencyReportProps,
 ) => void;
 
 // create context
 // type should be { showModal:ModalCallback|undefined } vut this is very ugly, as it is always assuming that it can be undefined.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ModalContext: React.Context<any> = createContext<any>({ showModal: undefined });
 
 // wrap context provider to add functionality
@@ -32,6 +35,7 @@ export const ModalContextProvider = ({ children }: { children: React.ReactNode }
     confirmVerb,
     enableTextInput,
     actions,
+    crep,
   ) => {
     if (!modalRef.current) return;
     modalRef.current.show(
@@ -42,6 +46,7 @@ export const ModalContextProvider = ({ children }: { children: React.ReactNode }
       confirmVerb,
       enableTextInput, // TODO: Allow setting this so you can do ... And put input into success.
       actions,
+      crep,
     );
   };
 

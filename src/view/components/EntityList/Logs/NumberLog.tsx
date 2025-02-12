@@ -30,7 +30,7 @@ const NumberLog = ({
         }}
       >
         <div
-          className="h-full w-full animate-spin rounded-full border-4 border-solid border-darkgrey border-t-transparent opacity-20"
+          className="h-full w-full animate-spin rounded-full border-4 border-solid border-darkgrey border-t-transparent"
           style={{ zIndex: -10 }}
         ></div>
       </CircularProgressbarWithChildren>

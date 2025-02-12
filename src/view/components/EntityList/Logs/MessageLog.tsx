@@ -30,7 +30,7 @@ const MessageLog = ({ loading, hasLogs }: { loading: boolean; hasLogs: boolean }
           <path d="M480-680q-33 0-56.5-23.5T400-760q0-33 23.5-56.5T480-840q33 0 56.5 23.5T560-760q0 33-23.5 56.5T480-680Zm-60 560v-480h120v480H420Z" />
         </svg>
         <div
-          className="absolute h-full w-full animate-spin rounded-full border-4 border-solid border-darkgrey border-t-transparent opacity-20"
+          className="absolute h-full w-full animate-spin rounded-full border-4 border-solid border-darkgrey border-t-transparent"
           style={{ zIndex: -10 }}
         ></div>
       </CircularProgressbarWithChildren>

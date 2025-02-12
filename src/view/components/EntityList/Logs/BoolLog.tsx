@@ -28,7 +28,7 @@ const BoolLog = ({ problem, loading }: { problem: Nullable<boolean>; loading: bo
           <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z" />
         </svg>
         <div
-          className="absolute h-full w-full animate-spin rounded-full border-4 border-solid border-darkgrey border-t-transparent opacity-20"
+          className="absolute h-full w-full animate-spin rounded-full border-4 border-solid border-darkgrey border-t-transparent"
           style={{ zIndex: -10 }}
         ></div>
       </CircularProgressbarWithChildren>

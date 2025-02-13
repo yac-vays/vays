@@ -39,7 +39,7 @@ export function setYACStatus(valid: boolean, detail: string) {
 export async function retreiveSchema(
   requestEditContext: RequestEditContext,
   insertName: boolean = true,
-  insertAction: boolean = false,
+  insertAction: boolean = true,
   startEditingSession: boolean = true,
 ): Promise<ValidateResponse | null> {
   if (requestEditContext.rc.yacURL == null) return null;
@@ -114,13 +114,13 @@ async function retreiveNewCreateSchema(
 ): Promise<ValidateResponse | null> {
   const editActions = popActions({}, requestEditContext.rc);
 
-  const valResp: Nullable<ValidateResponse> = await getSchema(requestEditContext, editActions);
+  let valResp: Nullable<ValidateResponse> = await getSchema(requestEditContext, editActions);
   if (valResp == null) {
     return null;
   }
 
   // if (!preventInjectActions) {
-  //   valResp = insertActionData(injectAction(valResp, requestEditContext), editActions);
+  valResp = insertActionData(injectAction(valResp, requestEditContext), editActions);
   // }
 
   insertDefaults(valResp);

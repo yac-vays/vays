@@ -20,12 +20,14 @@ Please check out [the Json Forms info](/docs/Development/Onboading/Json-Forms.md
 
 ## Implicit Custom Renderers
 
-Implicit custom renderers inspect the logic inside the json schema to decide whether they may be applied.
+Implicit custom renderers inspect the logic inside the json schema and ui schema to decide whether they may be applied. For these, the writer of the YAC config does not need to specify which renderer is used.
 
 
 ## Explicit Custom Renderers
 
+There are a number of renderers that need to be named explicitly in the YAC configuration to make sure that they are used. Explicit custom renderers use the utility function `isCustomRenderer` in their tester instance. Which explicit custom renderers exist is written down in the [user manual here](https://yac-vays.github.io/vays/Usage/Renderers/). In the code, they are all in [this directory](/src/renderers/control/special/).
 
-There are a number of renderers that need to be named explicitly in the YAC configuration to make sure that they are used. Explicit custom renderers use the utility function `isCustomRenderer`.
+
+
 
 

@@ -9,10 +9,10 @@ in the parent directory.
 ## For New Maintainers
 
 If you are new to developing React or JSON Forms and need some references and tips, have a look at [`./Development/Onboarding`](/docs/Development/Onboarding).
-If you are new to developing and maintaining VAYS, please start by reading [`./Development/Software_Arch.md`](/docs/Development/Software_Arch.md).
+If you are new to developing and maintaining VAYS, please start by reading [`./Development/Software_Arch.md`](/docs/Development/software_arch.md).
 
 ## For YAC Configurators
 
-If you are currently writing the yac.yml config file, have a look at the [usage directory](/docs/Usage/).
+If you are currently writing the yac.yml config file, have a look at the [usage documentation](https://yac-vays.github.io/vays/). The contents in `/Usage` will be removed in the future.
 
 

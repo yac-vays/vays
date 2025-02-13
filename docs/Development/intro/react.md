@@ -37,7 +37,7 @@ const Component = () => {
 }
 ```
 
-Also, make sure to use hooks only inside of components, not inside  of other javascript/typescriüpt functions.
+Also, make sure to use hooks only inside of components, not inside  of other javascript/typescript functions.
 
 #### Functional vs. Class components
 You may stuble on code where a component is defined as a class, rather than a function.

@@ -8,9 +8,6 @@
 
 VAYS is structured for the most part along an architecture which is commonly used in frontend design: The MVC architecture.
 
-![Software Structure](./vays.png)
-
-
 This seperates the software into three main components.
 
 
@@ -24,6 +21,13 @@ The controller also has a state. The guideline is that this state is only ever d
 If access is needed outside the module, then use getters and setters which are provided in the controller as well.
 
 3) The View: The view is concerned with displaying the data it receives from the user. The controller tells *what* to display, the view is concerned with *how*. This is where the react code and the renderers live.
+
+
+
+## Illustration
+![Software Structure](./vays.png)
+Solid lines indicate subfolder relation (except renderers, session, see label above arrow). Dotted lines indicate importing relation.
+
 
 
 

@@ -9,35 +9,29 @@ import '../../../../workerInit';
 //import 'monaco-editor/esm/vs/editor/editor.all.js';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
-import { debounce } from 'lodash';
 import { memo, useEffect, useRef, useState } from 'react';
 
 import {
-  getCurrentContext,
-  getEntityName,
   getMonacoYaml,
   setCurrentContext,
   setEntityName,
-  setEntityYAML,
   setMonacoYaml,
-} from '../../../../controller/local/EditController/ExpertMode/access.js';
-import { RequestEditContext } from '../../../../utils/types/internal/request.js';
-import Accordion from '../../../components/Accordion.js';
-import TextInput from '../../../thirdparty/components/ifc/TextInput/TextInput.js';
-import SubLoader from '../../../thirdparty/components/SubLoader/index.js';
+} from '../../../../controller/local/EditController/ExpertMode/access';
+import { RequestEditContext } from '../../../../utils/types/internal/request';
+import Accordion from '../../../components/Accordion';
+import TextInput from '../../../thirdparty/components/ifc/TextInput/TextInput';
+import SubLoader from '../../../thirdparty/components/SubLoader';
 import editorPlugins, { editorSetupPlugins } from './EditorPlugins';
-import { registerInputCallback } from './EditorPlugins/SchemaHandler';
-import getEditorSettings, { setupMonacoYAMLPlugin } from './utils';
+import { getUpdateCallback, setupMonacoYAMLPlugin } from './utils/setup.js';
 
-import { updateYAMLschema } from '../../../../controller/local/EditController/ExpertMode/index.js';
 import {
   clearYACStatus,
   editViewNavigateToNewName,
-  getYACValidateResponse,
 } from '../../../../controller/local/EditController/shared';
-import ErrorBox from '../../../thirdparty/components/ifc/Label/ErrorBox.js';
-import OverheadLabel from '../../../thirdparty/components/ifc/Label/OverheadLabel.js';
+import ErrorBox from '../../../thirdparty/components/ifc/Label/ErrorBox';
+import OverheadLabel from '../../../thirdparty/components/ifc/Label/OverheadLabel';
 import './glyph.css';
+import { getEditor, getModel } from './utils/factory.js';
 
 export const Editor = ({
   requestEditContext,
@@ -53,35 +47,7 @@ export const Editor = ({
   const monacoEl = useRef<HTMLDivElement>(null);
   const [isSettingUp, setIsSettingUp] = useState<boolean>(true);
 
-  // TODO: Probably move this over to the editor state?
-  // (window as any).setEditErrorMsg = setEditErrorMsg;
-  // (window as any).setIsValidating = setIsValidating;
-
-  async function handleChange(value: string) {
-    const requestEditContext = getCurrentContext();
-    if (requestEditContext == null) return;
-
-    setEntityYAML(value);
-    setIsValidating(true);
-    const rep = await updateYAMLschema(getEntityName(), value, requestEditContext);
-    setEditErrorMsg(getYACValidateResponse());
-    setIsValidating(false);
-
-    if (rep == null) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (window as any).monacoYaml.update({
-      schemas: [
-        {
-          uri: 'inmemory://schema.json',
-          schema: rep.json_schema,
-          fileMatch: ['*'],
-        },
-      ],
-    });
-  }
-  const update = debounce((value: string) => {
-    handleChange(value);
-  }, 1500);
+  const update = getUpdateCallback(setIsValidating, setEditErrorMsg);
 
   useEffect(() => {
     setCurrentContext(requestEditContext);
@@ -98,37 +64,10 @@ export const Editor = ({
         setMonacoYaml(monacoYaml);
       }
 
-      let model = null;
-
-      if (monaco.editor.getModels().length != 0) {
-        model = monaco.editor.getModel(monaco.Uri.parse('inmemory://schema.json'));
-      } else {
-        model = monaco.editor.createModel('', 'yaml', monaco.Uri.parse('inmemory://schema.json'));
-        registerInputCallback(model, handleChange);
-      }
-
+      const model = getModel(update);
       for (const plugin of editorSetupPlugins) plugin();
-
-      let ed: monaco.editor.IStandaloneCodeEditor | null = null;
-      let newEditor: boolean = false;
-
-      if (
-        monacoEl?.current != null &&
-        monacoEl.current.attributes.getNamedItem('data-keybinding-context') == null
-      ) {
-        //editors.length == 0) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        ed = monaco.editor.create(monacoEl.current!, getEditorSettings(model!));
-        newEditor = true;
-      } else {
-        ed = monaco.editor.getEditors()[0] as monaco.editor.IStandaloneCodeEditor;
-        ed.setModel(model);
-      }
-
+      const [ed, newEditor] = getEditor(model, monacoEl);
       setEditor(ed);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any).monacoYaml = monacoYaml;
 
       (async () => {
         for (const plugin of editorPlugins) {
@@ -137,8 +76,6 @@ export const Editor = ({
       })().finally(() => {
         setIsSettingUp(false);
       });
-
-      //return ed;
     }
   }, [
     requestEditContext.mode === 'modify' ? requestEditContext.entityName : '',

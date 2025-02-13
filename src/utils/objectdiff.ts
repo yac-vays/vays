@@ -10,17 +10,21 @@ import _ from 'lodash';
 export const getObjectDiff = (obj1: any, obj2: any) => {
   const diff: any = {};
 
-  // Iterate over all keys in the first object
+  // Iterate over all keys in the first object and point out changes
   _.forOwn(obj1, (value, key) => {
     if (!_.isEqual(value, obj2[key])) {
       diff[key] = `${value} -> ${obj2[key]}`;
+    }
+
+    if (!_.has(obj2, key)) {
+      diff[key] = `${value} -> <deleted> `;
     }
   });
 
   // Check for keys in the second object that are not in the first
   _.forOwn(obj2, (value, key) => {
     if (!_.has(obj1, key)) {
-      diff[key] = ` -> removed (previously ${value})`;
+      diff[key] = `${value}  (newly added)`;
       //{ oldValue: undefined, newValue: value };
     }
   });

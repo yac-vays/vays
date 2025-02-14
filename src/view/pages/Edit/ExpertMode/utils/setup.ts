@@ -3,10 +3,13 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { configureMonacoYaml, type SchemasSettings } from 'monaco-yaml';
 import { updateYAMLschema } from '../../../../../controller/local/EditController/ExpertMode';
 import {
+  getActivatedActions,
   getCurrentContext,
   getEntityName,
   getMonacoYaml,
   setEntityYAML,
+  setErrorMessage,
+  setIsValidating,
 } from '../../../../../controller/local/EditController/ExpertMode/access';
 import { getYACValidateResponse } from '../../../../../controller/local/EditController/shared';
 
@@ -50,18 +53,20 @@ export default function getEditorSettings(
   };
 }
 
-export function getUpdateCallback(
-  setIsValidating: (v: boolean) => void,
-  setEditErrorMsg: (v: string) => void,
-): DebouncedFunc<(value: string) => Promise<void>> {
+export function getUpdateCallback(): DebouncedFunc<(value: string) => Promise<void>> {
   return debounce(async (value: string) => {
     const requestEditContext = getCurrentContext();
     if (requestEditContext == null) return;
 
     setEntityYAML(value);
     setIsValidating(true);
-    const rep = await updateYAMLschema(getEntityName(), value, requestEditContext);
-    setEditErrorMsg(getYACValidateResponse());
+    const rep = await updateYAMLschema(
+      getEntityName(),
+      value,
+      requestEditContext,
+      getActivatedActions(),
+    );
+    setErrorMessage(getYACValidateResponse());
     setIsValidating(false);
 
     if (rep == null) return;

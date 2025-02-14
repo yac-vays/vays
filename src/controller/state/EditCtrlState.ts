@@ -2,18 +2,18 @@
 import Ajv from 'ajv';
 
 /**
- * Editing controll state.
+ * Editing control state.
  */
-class EditControllState {
-  /**
-   * The data of the entity as object.
-   */
-  public entityDataObject: any = {};
+class EditControlState {
+  // /**
+  //  * The data of the entity as object.
+  //  */
+  // public entityDataObject: any = {};
 
-  /**
-   * YAML of the entity that is to be edited.
-   */
-  public entityYAML: string | undefined = undefined;
+  // /**
+  //  * YAML of the entity that is to be edited.
+  //  */
+  // public entityYAML: string | undefined = undefined;
 
   /**
    * Whether the most recent validation has returned, that the data is valid.
@@ -50,19 +50,19 @@ class EditControllState {
    */
   public initialYAML: string = '';
 
-  /**
-   * Whether the user is currently editing a string. Needed to adjust the loading indicator.
-   */
-  public userIsEditingString: boolean = false;
+  // /**
+  //  * Whether the user is currently editing a string. Needed to adjust the loading indicator.
+  //  */
+  // public userIsEditingString: boolean = false;
 
-  /**
-   * The current tab index which is required to make the setting persistent over several
-   * schema rerenders.
-   */
-  public currentTab: number = 0;
+  // /**
+  //  * The current tab index which is required to make the setting persistent over several
+  //  * schema rerenders.
+  //  */
+  // public currentTab: number = 0;
 
-  public entityName: string | null = null;
+  // public entityName: string | null = null;
 }
 
-const editingState = new EditControllState();
+const editingState = new EditControlState();
 export default editingState;

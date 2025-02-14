@@ -2,14 +2,25 @@ import { createNewEntity } from '../../../../model/create';
 import { invalidateEntityListCache } from '../../../../model/entityList';
 import { putYAMLEntity } from '../../../../model/put';
 import { validateYAML } from '../../../../model/validate';
+import { getActionNames } from '../../../../utils/actionUtils';
+import { ActionDecl } from '../../../../utils/types/api';
 import { RequestContext, RequestEditContext } from '../../../../utils/types/internal/request';
 import { Nullable } from '../../../../utils/types/typeUtils';
 import { showModalMessage } from '../../../global/modal';
+import { showError } from '../../../global/notification';
 import { navigateToURL } from '../../../global/url';
 import editingState from '../../../state/EditCtrlState';
-import { showError } from '../../notification';
-import { setYACStatus } from '../shared';
-import { getEntityName, getEntityYAML, getOldYAML, setEntityName } from './access';
+import { clearYACStatus, getInitialEntityYAML, setYACStatus } from '../shared';
+import {
+  getActivatedActions,
+  getEntityName,
+  getEntityYAML,
+  setActivatedActions,
+  setCurrentContext,
+  setEntityName,
+  setErrorMessageCallback,
+  setIsValidatingCallback,
+} from './access';
 
 /**
  * Send validation for the yaml.
@@ -22,8 +33,9 @@ export async function updateYAMLschema(
   name: Nullable<string>,
   yaml: string,
   requestEditContext: RequestEditContext,
+  acts: ActionDecl[],
 ) {
-  const valResp = await validateYAML(requestEditContext, name, yaml, editingState.initialYAML);
+  const valResp = await validateYAML(requestEditContext, name, yaml, getInitialEntityYAML(), acts);
   if (valResp == null) return;
   setYACStatus(valResp.valid, valResp.detail);
 
@@ -56,7 +68,7 @@ export function sendYAMLData(requestContext: RequestEditContext) {
       if (requestContext.mode === 'create') {
         success = await sendCreateNewEntity(getEntityYAML() ?? '', requestContext.rc);
       } else {
-        success = await sendPutEntity(getEntityYAML() ?? getOldYAML(), requestContext);
+        success = await sendPutEntity(getEntityYAML() ?? getInitialEntityYAML(), requestContext);
       }
 
       if (success) {
@@ -84,7 +96,13 @@ async function sendCreateNewEntity(
 ): Promise<boolean> {
   const name: Nullable<string> = getEntityName();
   setEntityName(null);
-  return await createNewEntity(name, {}, requestContext, yaml);
+  return await createNewEntity(
+    name,
+    {},
+    requestContext,
+    yaml,
+    getActionNames(getActivatedActions()),
+  );
 }
 
 /**
@@ -102,5 +120,33 @@ async function sendPutEntity(
     showError('Could not send the update!', '');
     return false;
   }
-  return await putYAMLEntity(name, yaml, getOldYAML(), requestEditContext);
+  return await putYAMLEntity(
+    name,
+    yaml,
+    getInitialEntityYAML(),
+    requestEditContext,
+    getActionNames(getActivatedActions()),
+  );
+}
+
+/**
+ * Initializes the internal state for a new expert mode editing session.
+ * @param requestEditContext
+ * @param setIsValidating
+ * @param setEditErrorMsg
+ */
+export function startExpertModeSession(
+  requestEditContext: RequestEditContext,
+  setIsValidating: (v: boolean) => void,
+  setEditErrorMsg: (v: string) => void,
+) {
+  clearYACStatus();
+  setActivatedActions([]);
+  if (requestEditContext.mode == 'change') setEntityName(requestEditContext.entityName ?? null);
+  else setEntityName(null);
+  setCurrentContext(requestEditContext);
+  setIsValidatingCallback(setIsValidating);
+  setErrorMessageCallback(setEditErrorMsg);
+
+  setEditErrorMsg(''); // Start with no error message, please
 }

@@ -1,44 +1,61 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Nullable } from '../../../../utils/types/typeUtils';
+import { ActionDecl } from '../../../../utils/types/api';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
-import editingState from '../../../state/EditCtrlState';
-
-export let currentEditContext: RequestEditContext | null = null;
-
-export let monacoyaml: any = null;
+import { Nullable } from '../../../../utils/types/typeUtils';
+import expertModeState from '../../../state/ExpertCtrlState';
 
 export function setMonacoYaml(e: any) {
-  monacoyaml = e;
+  expertModeState.monacoyaml = e;
 }
 
 export function getMonacoYaml() {
-  return monacoyaml;
+  return expertModeState.monacoyaml;
 }
 
 export function setCurrentContext(e: RequestEditContext) {
-  currentEditContext = e;
+  expertModeState.currentEditContext = e;
 }
 
 export function getCurrentContext() {
-  return currentEditContext;
+  return expertModeState.currentEditContext;
 }
 
 export function setEntityYAML(yaml: string) {
-  editingState.entityYAML = yaml;
+  expertModeState.entityYAML = yaml;
 }
 
 export function getEntityYAML() {
-  return editingState.entityYAML;
-}
-
-export function getOldYAML() {
-  return editingState.initialYAML;
+  return expertModeState.entityYAML;
 }
 
 export function getEntityName() {
-  return editingState.entityName;
+  return expertModeState.entityName;
 }
 
 export function setEntityName(v: Nullable<string>) {
-  editingState.entityName = v;
+  expertModeState.entityName = v;
+}
+
+export function setActivatedActions(v: ActionDecl[]) {
+  expertModeState.activatedActions = v;
+}
+
+export function getActivatedActions() {
+  return expertModeState.activatedActions;
+}
+
+export function setIsValidatingCallback(cb: (v: boolean) => void) {
+  expertModeState._setIsValidating = cb;
+}
+
+export function setIsValidating(v: boolean) {
+  return expertModeState._setIsValidating(v);
+}
+
+export function setErrorMessageCallback(cb: (v: string) => void) {
+  expertModeState._setErrorMessage = cb;
+}
+
+export function setErrorMessage(v: string) {
+  return expertModeState._setErrorMessage(v);
 }

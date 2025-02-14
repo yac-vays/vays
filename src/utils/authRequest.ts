@@ -1,4 +1,4 @@
-import { showError } from '../controller/local/notification';
+import { showError } from '../controller/global/notification';
 import VAYS_CACHE from '../model/caching';
 import { getTokenFromStorage } from '../session/login/tokenHandling';
 import { Nullable } from './types/typeUtils';

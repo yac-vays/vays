@@ -1,4 +1,5 @@
-import { showError, showSuccess } from '../controller/local/notification';
+import { showError, showSuccess } from '../controller/global/notification';
+import { actionNames2URLQuery } from '../utils/actionUtils';
 import { hasAuthFailed, sendRequest } from '../utils/authRequest';
 import { RequestEditContext } from '../utils/types/internal/request';
 import { joinUrl } from '../utils/urlUtils';
@@ -15,6 +16,7 @@ export async function putYAMLEntity(
   yaml: string,
   yaml_old: string,
   requestEditContext: RequestEditContext,
+  acts: string[],
 ): Promise<boolean> {
   if (requestEditContext.entityName == null) {
     showError('Frontend error', 'Name of entity is null. Please file a bug report!');
@@ -27,7 +29,7 @@ export async function putYAMLEntity(
   const resp = await sendRequest(
     joinUrl(
       url,
-      `/entity/${requestEditContext.rc.entityTypeName}/${requestEditContext.entityName}`,
+      `/entity/${requestEditContext.rc.entityTypeName}/${requestEditContext.entityName}${actionNames2URLQuery(acts)}`,
     ),
     'PUT',
     JSON.stringify({ name: name, yaml_old: yaml_old, yaml_new: yaml }),

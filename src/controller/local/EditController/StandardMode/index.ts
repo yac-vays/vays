@@ -6,7 +6,12 @@ import { validate } from '../../../../model/validate';
 import { isNameGeneratedByYAC } from '../../../../utils/nameUtils';
 import { extractPatch, removeOldData } from '../../../../utils/schema/dataUtils';
 import { mergeDefaults, updateDefaults } from '../../../../utils/schema/defaultsHandling';
-import { injectAction, insertActionData, popActions } from '../../../../utils/schema/injectActions';
+import {
+  dumpEditActions,
+  injectAction,
+  insertActionData,
+  popActions,
+} from '../../../../utils/schema/injectActions';
 import {
   hasSettableName,
   injectSettableName,
@@ -17,10 +22,11 @@ import { RequestContext, RequestEditContext } from '../../../../utils/types/inte
 import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import { Nullable } from '../../../../utils/types/typeUtils';
 import { showModalMessage } from '../../../global/modal';
+import { showError } from '../../../global/notification';
 import { navigateToURL } from '../../../global/url';
 import editingState from '../../../state/EditCtrlState';
-import { showError } from '../../notification';
 import { editViewNavigateToNewName, getAJV, getInitialEntityYAML, setYACStatus } from '../shared';
+import { getLocalEntityData } from './access';
 
 export async function updateSchema(
   frontData: { [key: string]: any },
@@ -185,9 +191,9 @@ export function sendFormData(requestEditContext: RequestEditContext) {
     async () => {
       let success = false;
       if (requestEditContext.mode === 'create') {
-        success = await sendCreateNewEntity(editingState.entityDataObject, requestEditContext.rc);
+        success = await sendCreateNewEntity(getLocalEntityData(), requestEditContext.rc);
       } else {
-        success = await sendPatchEntity(editingState.entityDataObject, requestEditContext);
+        success = await sendPatchEntity(getLocalEntityData(), requestEditContext);
       }
 
       if (success) {
@@ -225,7 +231,8 @@ async function sendCreateNewEntity(newData: any, requestContext: RequestContext)
   } else {
     name = null;
   }
-  return await createNewEntity(name, data, requestContext);
+  const editActions = dumpEditActions(popActions(data, requestContext));
+  return await createNewEntity(name, data, requestContext, undefined, editActions);
 }
 
 /**

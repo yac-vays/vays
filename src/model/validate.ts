@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { showError } from '../controller/global/notification';
 import { navigateToURL } from '../controller/global/url';
-import { showError } from '../controller/local/notification';
+import { getActionNames } from '../utils/actionUtils';
 import { hasAuthFailed, sendRequest } from '../utils/authRequest';
 import { dumpEditActions, EditActionSnapshot } from '../utils/schema/injectActions';
-import { APIValidateResponse } from '../utils/types/api';
+import { ActionDecl, APIValidateResponse } from '../utils/types/api';
 import { RequestEditContext } from '../utils/types/internal/request';
 import { ValidateResponse } from '../utils/types/internal/validation';
 import { Nullable } from '../utils/types/typeUtils';
@@ -29,12 +30,20 @@ export async function validateYAML(
   requestEditContext: RequestEditContext,
   name: Nullable<string>,
   yaml_new: string,
-  yaml_old?: string,
+  yaml_old: string,
+  acts: ActionDecl[],
 ): Promise<ValidateResponse | null> {
   const url: string | null | undefined = requestEditContext.rc.yacURL;
 
   if (url == undefined || url == null) return null;
-  const obj = getEntityObject(requestEditContext, undefined, name, [], yaml_new, yaml_old);
+  const obj = getEntityObject(
+    requestEditContext,
+    undefined,
+    name,
+    getActionNames(acts),
+    yaml_new,
+    yaml_old,
+  );
 
   const resp: Nullable<Response> = await sendRequest(joinUrl(url, `/validate`), 'POST', obj);
 

@@ -130,6 +130,7 @@ async function retreiveNewCreateSchema(
 
 /**
  * Update URL to include the new name.
+ * Should only be called for the create mode. (will not do anything for editing.)
  * @param name
  * @param requestEditContext
  */

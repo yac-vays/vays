@@ -1,4 +1,4 @@
-import { showError } from '../controller/local/notification';
+import { showError } from '../controller/global/notification';
 import { actions2URLQuery } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
 import { ActionDecl } from '../utils/types/api';

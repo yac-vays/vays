@@ -3,13 +3,13 @@ import _ from 'lodash';
 import { stringify } from 'yaml';
 
 import { JsonSchema } from '@jsonforms/core';
+import { showError } from '../../controller/global/notification';
 import { navigateToURL } from '../../controller/global/url';
 import {
   getAJV,
   getPreviousDefaultsObject,
   setPreviousDefaultsObject,
 } from '../../controller/local/EditController/shared';
-import { showError } from '../../controller/local/notification';
 import { logError } from '../logger';
 import { ValidateResponse } from '../types/internal/validation';
 

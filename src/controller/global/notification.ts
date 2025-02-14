@@ -7,7 +7,7 @@ import notifyCtrlState from '../state/NotifyCtrlState';
  */
 export function registerErrorNotifyCallback(callback: ToastCallback) {
   notifyCtrlState.notifyCallback = callback;
-  for (let oldMsg of notifyCtrlState.callbackBuffer) {
+  for (const oldMsg of notifyCtrlState.callbackBuffer) {
     notifyCtrlState.notifyCallback(ToastMode.ERROR, oldMsg[0], oldMsg[1]);
   }
 }

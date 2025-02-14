@@ -1,4 +1,4 @@
-import { showError } from '../controller/local/notification';
+import { showError } from '../controller/global/notification';
 import { sendRequest } from '../utils/authRequest';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';

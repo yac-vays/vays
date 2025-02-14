@@ -1,5 +1,5 @@
 import React, { ErrorInfo } from 'react';
-import { showError } from '../../../../controller/local/notification';
+import { showError } from '../../../../controller/global/notification';
 
 interface FormsErrorBoundaryState {
   hasError: boolean;

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { showError } from '../../../controller/global/notification';
 import {
   getDefaultRequestOverviewContext,
   getDefaultURL,
@@ -7,7 +8,6 @@ import {
   isValidQueryOverview,
   navigateToURL,
 } from '../../../controller/global/url';
-import { showError } from '../../../controller/local/notification';
 import { invalidateEntityListCache } from '../../../model/entityList';
 import { YACBackend } from '../../../utils/types/config';
 import { RequestOverviewContext } from '../../../utils/types/internal/request';

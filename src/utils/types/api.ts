@@ -1,6 +1,7 @@
-import { JsonSchema } from "@jsonforms/core";
-import { Nullable } from "./typeUtils";
+import { JsonSchema } from '@jsonforms/core';
+import { Nullable } from './typeUtils';
 
+export type APIOperation = 'create' | 'change' | 'delete';
 
 export interface APIValidateResponse {
   schemas: {
@@ -14,7 +15,7 @@ export interface APIValidateResponse {
       }[];
     };
 
-    data: { [key: string]: any; };
+    data: { [key: string]: any };
     valid: boolean;
     message?: string;
     // which component has failed (format, required, ...)
@@ -27,24 +28,27 @@ export interface APIValidateResponse {
     valid: boolean;
     message?: string;
   };
-}export interface EntityData {
+}
+
+export interface EntityData {
   name: string;
   link: string;
   options: any;
   perms: string[];
-  logs: any[];
-  data: any;
+  logs: EntityLog[];
+  data: { [key: string]: any };
   yaml: string;
 }
+
 export enum NameGeneratedCond {
   never = 'never',
   optional = 'optional',
-  enforced = 'enforced'
+  enforced = 'enforced',
 }
+
 /**
  * Entity Type definition, as it is returned by the YAC backend.
  */
-
 export interface EntityTypeDecl {
   name: string;
   title: string;
@@ -77,17 +81,18 @@ export interface ActionDecl {
   hooks: string[];
 }
 
-export type Permission = 'see' |
-  'add' |
-  'rnm' |
-  'cpy' |
-  'lnk' |
-  'edt' |
-  'mod' |
-  'cln' |
-  'del' |
-  'act' |
-  'adm';
+export type Permission =
+  | 'see'
+  | 'add'
+  | 'rnm'
+  | 'cpy'
+  | 'lnk'
+  | 'edt'
+  | 'mod'
+  | 'cln'
+  | 'del'
+  | 'act'
+  | 'adm';
 
 export interface EntityObject {
   name: string;
@@ -107,4 +112,3 @@ export type EntityLog = {
   progress: Nullable<number>;
   problem: Nullable<boolean>;
 };
-

@@ -1,4 +1,4 @@
-import { showError } from '../controller/local/notification';
+import { showError } from '../controller/global/notification';
 import { hasAuthFailed, sendRequest } from '../utils/authRequest';
 import { EntityData } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';

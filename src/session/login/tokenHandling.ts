@@ -1,6 +1,6 @@
 import { jwtDecode } from 'jwt-decode';
+import { showError } from '../../controller/global/notification';
 import { navigateToURL } from '../../controller/global/url';
-import { showError } from '../../controller/local/notification';
 import { Nullable } from '../../utils/types/typeUtils';
 import iLocalStorage from '../persistent/LocalStorage';
 import iSessionStorage from '../storage/SessionStorage';

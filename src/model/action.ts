@@ -1,6 +1,6 @@
 import { showModalMessage } from '../controller/global/modal';
+import { showError, showSuccess } from '../controller/global/notification';
 import { navigateToURL } from '../controller/global/url';
-import { showError, showSuccess } from '../controller/local/notification';
 import { isTriggable } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
 import { ActionDecl } from '../utils/types/api';

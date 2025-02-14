@@ -3,7 +3,7 @@
  * The configuration is of type AppConfig.
  */
 
-import { showError } from '../controller/local/notification';
+import { showError } from '../controller/global/notification';
 import { AppConfig } from '../utils/types/config';
 import { Nullable } from '../utils/types/typeUtils';
 

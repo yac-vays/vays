@@ -6,6 +6,7 @@ import { memo } from 'react';
 
 import FormsErrorBoundary from './ErrorBoundary';
 
+import { showError } from '../../../../controller/global/notification';
 import { setCurrentContext } from '../../../../controller/local/EditController/ExpertMode/access';
 import { updateSchema } from '../../../../controller/local/EditController/StandardMode';
 import {
@@ -13,7 +14,6 @@ import {
   setFormData,
   setIsCurrentlyEditingString,
 } from '../../../../controller/local/EditController/StandardMode/access';
-import { showError } from '../../../../controller/local/notification';
 import { customRenderers } from '../../../../renderers';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 // import { Nullable } from '../../../../utils/typeUtils';

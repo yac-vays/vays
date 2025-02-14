@@ -1,4 +1,4 @@
-import { showError } from '../controller/local/notification';
+import { showError } from '../controller/global/notification';
 import { handleAuthFailed } from '../session/login/tokenHandling';
 import { hasAuthFailed, sendRequest } from '../utils/authRequest';
 import { logError } from '../utils/logger';

@@ -1,5 +1,5 @@
+import { showError, showSuccess } from '../controller/global/notification';
 import { handleCollision } from '../controller/local/EditController/StandardMode/concurrency';
-import { showError, showSuccess } from '../controller/local/notification';
 import { actionNames2URLQuery } from '../utils/actionUtils';
 import { hasAuthFailed, sendRequest } from '../utils/authRequest';
 import { dumpEditActions, popActions } from '../utils/schema/injectActions';

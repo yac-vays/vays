@@ -168,7 +168,7 @@ function App(): JSX.Element {
                   element={
                     <>
                       <PageTitle title="Edit Entity" />
-                      <EditView backends={backendsList} mode={'modify'} />
+                      <EditView backends={backendsList} mode={'change'} />
                     </>
                   }
                 />

@@ -40,7 +40,7 @@ export async function updateSchema(
   else name = popSettableName(data) ?? name;
 
   // Send patch only in the modification mode.
-  if (requestEditContext.mode === 'modify') {
+  if (requestEditContext.mode === 'change') {
     frontDataNoName = data;
     data = extractPatch(editingState.initialData, data);
   }
@@ -92,8 +92,8 @@ function handleDefaults(
 ) {
   let didChange = false;
 
-  if (requestEditContext.mode === 'modify') {
-    console.log('Edit controller: Going into branch modify.');
+  if (requestEditContext.mode === 'change') {
+    console.log('Edit controller: Going into branch change.');
     valResp.data = previousData; //frontData;
     didChange = mergeDefaults(valResp);
   } else {

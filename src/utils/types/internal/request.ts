@@ -1,7 +1,7 @@
 import { EntityTypeDecl } from '../api';
 import { YACBackend } from '../config';
 
-export type EditViewMode = 'create' | 'modify';
+export type EditViewMode = 'create' | 'change';
 
 export interface RequestOverviewContext {
   searchQueries?: { [key: string]: string };

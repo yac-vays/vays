@@ -73,7 +73,7 @@ const useInitializeForm = (
         return;
       }
 
-      if (requestEditContext.mode === 'modify') {
+      if (requestEditContext.mode === 'change') {
         const validate = getAJV().compile(resp.json_schema);
         validate(structuredClone(resp.data));
         if (validate.errors) {

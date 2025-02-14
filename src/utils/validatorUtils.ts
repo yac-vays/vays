@@ -21,7 +21,7 @@ export function getEntityObject(
   }
   if (requestEditContext.viewMode === 'expert') {
     // YAML editor (Expert mode)
-    if (requestEditContext.mode === 'modify') {
+    if (requestEditContext.mode === 'change') {
       return JSON.stringify({
         operation: 'change',
         type: requestEditContext.rc.entityTypeName,
@@ -57,7 +57,7 @@ export function getEntityObject(
         yaml: JSON.stringify(data),
       },
     });
-  } else if (requestEditContext.mode === 'modify') {
+  } else if (requestEditContext.mode === 'change') {
     return JSON.stringify({
       operation: 'change',
       type: requestEditContext.rc.entityTypeName,

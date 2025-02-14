@@ -1,14 +1,14 @@
 import { getEntityTypes } from '../../model/entityType';
+import { userIsLoggedIn } from '../../session/login/tokenHandling';
 import { EntityTypeDecl } from '../../utils/types/api';
 import { YACBackend } from '../../utils/types/config';
-import { Nullable } from '../../utils/types/typeUtils';
 import {
-  RequestContext,
-  RequestOverviewContext,
-  RequestEditContext,
   EditViewMode,
+  RequestContext,
+  RequestEditContext,
+  RequestOverviewContext,
 } from '../../utils/types/internal/request';
-import { userIsLoggedIn } from '../../session/login/tokenHandling';
+import { Nullable } from '../../utils/types/typeUtils';
 
 /**
  * Get the default request context, returned when no verifiable contexts is yet available,
@@ -183,7 +183,7 @@ export async function isValidQueryEdit(
     return false;
   }
 
-  if (mode === 'modify' && entityName == undefined) return false;
+  if (mode === 'change' && entityName == undefined) return false;
 
   return await isValidQueryOverview(backendName, entityTypeName, backends);
 }

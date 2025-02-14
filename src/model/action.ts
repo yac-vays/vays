@@ -132,10 +132,7 @@ export const OPERATIONS_META: OperationsMetaInfo = {
             return;
           }
           if (success == null) return;
-          showError(
-            'Deletion error',
-            `Could not delete entity ${entityName}. (TODO: Add more information.)`,
-          );
+          showError('Deletion error', `Could not delete entity ${entityName}.`);
         };
         showModalMessage(
           `Are you sure to delete \n'${entityName}'?`,

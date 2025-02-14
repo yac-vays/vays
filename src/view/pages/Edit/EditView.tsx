@@ -35,7 +35,7 @@ const setIsExpertMode = (
  * and setting the appropriate title and mode setting and passes all settings to the frame.
  *
  * @param {Backend[]} props.backends - The list of backends available.
- * @param {EditViewMode} props.mode - The mode of the edit view, either 'create' or 'modify'.
+ * @param {EditViewMode} props.mode - The mode of the edit view, either 'create' or 'change'.
  *
  * @returns {JSX.Element} The rendered EditView component.
  *
@@ -58,9 +58,8 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
         mode,
       );
       if (!isValid) {
-        // TODO: Really have to be a bit faster here!
         navigateToURL(await getDefaultURL(backends));
-        // TODO: What here?
+        return;
       } else {
         const requestEditContext = await getRequestContextEdit(
           backendName as string,

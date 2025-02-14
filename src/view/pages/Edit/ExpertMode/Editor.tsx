@@ -52,7 +52,7 @@ export const Editor = ({
   useEffect(() => {
     setCurrentContext(requestEditContext);
     clearYACStatus();
-    if (requestEditContext.mode == 'modify') setEntityName(requestEditContext.entityName ?? null);
+    if (requestEditContext.mode == 'change') setEntityName(requestEditContext.entityName ?? null);
     else setEntityName(null);
 
     if (monacoEl && requestEditContext.rc.yacURL != null) {
@@ -78,7 +78,7 @@ export const Editor = ({
       });
     }
   }, [
-    requestEditContext.mode === 'modify' ? requestEditContext.entityName : '',
+    requestEditContext.mode === 'change' ? requestEditContext.entityName : '',
     requestEditContext.mode,
     requestEditContext.rc.entityTypeName,
     requestEditContext.rc.yacURL,

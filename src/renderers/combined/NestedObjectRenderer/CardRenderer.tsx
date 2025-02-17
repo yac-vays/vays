@@ -15,6 +15,7 @@ interface CardRendererProps extends LayoutProps, DispatchPropsOfCardRenderer {
 export const CardRenderer = (props: CardRendererProps) => {
   const { schema, path, renderers, cells, onRemove } = props;
   const elements = [{ type: 'Control', scope: `#` }];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const itemsToRender = elements.map((element: any, index: number) => {
     return (
       <JsonFormsDispatch
@@ -30,8 +31,6 @@ export const CardRenderer = (props: CardRendererProps) => {
   });
   return (
     <Accordion title={(props.index + 1).toString()}>
-      {/* TODO: Do required star, refactor the title into its own component so it can
-    be reused in the nested case. */}
       <div className="group flex flex-row w-full">
         <div className="grow">{itemsToRender}</div>
 
@@ -65,7 +64,8 @@ export const CardRenderer = (props: CardRendererProps) => {
 
 const withContextToCardRender =
   (Component: ComponentType<CardRendererProps>): ComponentType<CardRendererProps> =>
-  ({ ctx, props }: JsonFormsStateContext & CardRendererProps) => {
+  ({ props }: JsonFormsStateContext & CardRendererProps) => {
+    // ^ ctx also exists there
     return <Component {...props} />;
   };
 

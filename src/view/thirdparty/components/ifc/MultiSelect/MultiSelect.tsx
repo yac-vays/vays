@@ -45,7 +45,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
    */
   useEffect(() => {
     setSelected(data ?? []);
-  }, [id]);
+  }, [data]);
 
   const open = () => {
     setShow(true);
@@ -79,6 +79,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
   useEffect(() => {
     const clickHandler = ({ target }: MouseEvent) => {
       if (!dropdownRef.current) return;
+      //@ts-expect-error ignore the type warnings.
       if (!show || dropdownRef.current.contains(target) || trigger.current.contains(target)) return;
       setShow(false);
     };
@@ -88,7 +89,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
 
   return (
     <div
-      className="relative p-1"
+      className={`relative p-1 ${data == undefined ? 'opacity-70' : ''}`}
       onClick={() =>
         setTimeout(() => {
           inputRef.current?.focus();
@@ -147,7 +148,11 @@ const MultiSelect: React.FC<DropdownProps> = ({
                           }
                         }
                       }}
-                      placeHolder={selected.length == 0 ? 'Type or Select' : 'Type...'}
+                      placeHolder={
+                        selected.length == 0
+                          ? `Type or Select (${data == undefined ? 'undefined' : 'empty list'})`
+                          : 'Type...'
+                      }
                     />
                   </div>
                   <DeleteButton

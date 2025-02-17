@@ -12,30 +12,43 @@ import { WithOptionLabel } from '@jsonforms/material-renderers';
 import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
 import OverheadLabel from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import SelectStatic from '../../view/thirdparty/components/ifc/Selector/SelectStatic';
+import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
 
-export const EnumControl = (
-  props: ControlProps & OwnPropsOfEnum & WithOptionLabel & TranslateProps,
-) => {
-  const { errors, required, description } = props;
+export const EnumControl = ({
+  errors,
+  required,
+  label,
+  handleChange,
+  path,
+  data,
+  description,
+  options,
+  schema,
+}: ControlProps & OwnPropsOfEnum & WithOptionLabel & TranslateProps) => {
   // const appliedUiSchemaOptions = merge({}, config, uischema.options);
-  const optionsList: string[] = [];
-  if (props.options !== undefined) {
-    props.options.forEach((v) => optionsList.push(v.label));
+  const optionsValueList: (string | undefined)[] = [undefined];
+  if (options !== undefined) {
+    options.forEach((v) => {
+      optionsValueList.push(v.value);
+    });
+  }
+
+  //// bad data check
+  // using short circuiting here for type safety
+  if (!isOfTypeWeak(data, schema.type) || optionsValueList.indexOf(data) === -1) {
+    errors = reportBadData(data);
+    data = undefined;
   }
 
   return (
     <>
       <div className="p-1 mb-4.5">
-        <OverheadLabel
-          title={props.schema.title}
-          required={required || false}
-          description={description}
-        />
+        <OverheadLabel title={label} required={required || false} description={description} />
 
         <SelectStatic
-          options={props.options || []}
-          onChange={(v: string) => props.handleChange(props.path, v)}
-          initValue={props.data}
+          options={options || []}
+          onChange={(v: string) => handleChange(path, v)}
+          initValue={data}
         />
         <ErrorBox displayError={errors} />
       </div>

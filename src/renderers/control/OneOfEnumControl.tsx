@@ -11,24 +11,41 @@ import React from 'react';
 import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
 import OverheadLabel from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import SelectStatic from '../../view/thirdparty/components/ifc/Selector/SelectStatic';
+import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
 
-export const OneOfEnumControl = (
-  props: ControlProps & OwnPropsOfEnum & WithOptionLabel & TranslateProps,
-) => {
-  const { errors, required, description, data } = props;
+export const OneOfEnumControl = ({
+  errors,
+  required,
+  description,
+  data,
+  label,
+  options,
+  handleChange,
+  schema,
+  path,
+}: ControlProps & OwnPropsOfEnum & WithOptionLabel & TranslateProps) => {
+  const optionsValueList: (string | undefined)[] = [undefined];
+  if (options !== undefined) {
+    options.forEach((v) => {
+      optionsValueList.push(v.value);
+    });
+  }
+
+  //// bad data check
+  // using short circuiting here for type safety
+  if (!isOfTypeWeak(data, schema.type) || optionsValueList.indexOf(data) === -1) {
+    errors = reportBadData(data);
+    data = undefined;
+  }
 
   return (
     <>
       <div className="p-1 mb-4.5">
-        <OverheadLabel
-          title={props.schema.title}
-          required={required || false}
-          description={description}
-        />
+        <OverheadLabel title={label} required={required || false} description={description} />
 
         <SelectStatic
-          options={props.options || []}
-          onChange={(v: string) => props.handleChange(props.path, v)}
+          options={options || []}
+          onChange={(v: string) => handleChange(path, v)}
           initValue={data}
         />
         <ErrorBox displayError={errors} />

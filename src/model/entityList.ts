@@ -9,12 +9,16 @@ import { joinUrl } from '../utils/urlUtils';
 import VAYS_CACHE from './caching';
 import { ENTITY_LIST_CACHE_KEY } from './caching/cachekeys';
 
+function getListURL(yacURL: string, entityTypeName: string) {
+  return joinUrl(yacURL, `/entity/${entityTypeName}?limit=10000`);
+}
+
 export function invalidateEntityListCache(
   yacURL: string | null | undefined,
   entityTypeName: string | null,
 ) {
   if (!yacURL || !entityTypeName) return;
-  const cacheKey: string = yacURL + `/entity/${entityTypeName}`;
+  const cacheKey: string = getListURL(yacURL, entityTypeName);
   VAYS_CACHE.invalidate(ENTITY_LIST_CACHE_KEY, cacheKey);
 }
 
@@ -24,12 +28,12 @@ export function registerEntityListInvalidationHook(
   hook: () => void,
 ) {
   if (!yacURL || !entityTypeName) return;
-  const cacheKey: string = yacURL + `/entity/${entityTypeName}`;
+  const cacheKey: string = getListURL(yacURL, entityTypeName);
   VAYS_CACHE.registerInvHook(ENTITY_LIST_CACHE_KEY, cacheKey, hook);
 }
 
 export async function getEntityList(requestContext: RequestContext): Promise<EntityObject[]> {
-  if (requestContext.backendObject?.url === undefined) {
+  if (requestContext.backendObject?.url === undefined || requestContext.entityTypeName == null) {
     logError(
       `Backend Name ${requestContext.backendObject?.url} was undefined...`,
       'getEntityTypes',
@@ -40,7 +44,7 @@ export async function getEntityList(requestContext: RequestContext): Promise<Ent
   const url = requestContext.backendObject?.url;
 
   const resp: Nullable<Response> = await sendRequest(
-    joinUrl(url, `/entity/${requestContext.entityTypeName}`),
+    getListURL(url, requestContext.entityTypeName),
     'GET',
     null,
     ENTITY_LIST_CACHE_KEY,

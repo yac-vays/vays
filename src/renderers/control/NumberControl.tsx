@@ -12,46 +12,52 @@ import { useCallback } from 'react';
 import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
 import OverheadLabel from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import NumberInput from '../../view/thirdparty/components/ifc/NumberInput/NumberInput';
+import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const eventToValue = (ev: any) =>
   Number.isNaN(ev.target.valueAsNumber) ? undefined : ev.target.valueAsNumber;
 
-export const NumberControl = (props: ControlProps) => {
-  if (!props.visible) return <></>;
+export const NumberControl = ({
+  visible,
+  data,
+  path,
+  handleChange,
+  label,
+  required,
+  id,
+  schema,
+  description,
+  enabled,
+  uischema,
+  errors,
+}: ControlProps) => {
+  if (!visible) return <></>;
   const onChange = useCallback(
-    debounce(
-      (e: React.ChangeEvent<HTMLInputElement>) => props.handleChange(props.path, eventToValue(e)),
-      800,
-    ),
-    [props.path],
+    debounce((e: React.ChangeEvent<HTMLInputElement>) => handleChange(path, eventToValue(e)), 800),
+    [path],
   );
-  // const [_, onChange, _] = useDebouncedChange(
-  //   props.handleChange,
-  //   0,
-  //   props.data,
-  //   props.path,
-  //   eventToValue,
-  //   800,
-  // );
+
+  ///// data check
+  if (!isOfTypeWeak(data, 'number')) {
+    errors = reportBadData(data);
+    data = undefined;
+  }
+  //////
 
   return (
     <div className="p-1">
-      <OverheadLabel
-        title={props.schema.title}
-        required={props.required || false}
-        description={props.description}
-      />
+      <OverheadLabel title={label} required={required || false} description={description} />
       <NumberInput
-        id={props.id}
-        data={props.data}
-        defaultv={props.schema.default}
-        placeholder={props.uischema.options?.initial}
-        placeholderEditable={props.uischema.options?.initial_editable}
-        enabled={props.enabled}
+        id={id}
+        data={data}
+        defaultv={schema.default}
+        placeholder={uischema.options?.initial}
+        placeholderEditable={uischema.options?.initial_editable}
+        enabled={enabled}
         onChange={onChange}
       />
-      <ErrorBox displayError={props.errors} />
+      <ErrorBox displayError={errors} />
     </div>
   );
 };

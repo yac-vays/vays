@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
 import _ from 'lodash';
+import React, { useEffect, useState } from 'react';
 
 type DropDownOptions = { label: string; value: string }[];
 
@@ -23,12 +23,16 @@ const SelectStatic: React.FC<DropdownProps> = ({ options, onChange, initValue }:
   if (!isValidOption(initValue, options)) {
     initValue = undefined;
   }
-  const [selectedOption, setSelectedOption] = useState<string>(initValue || '');
+  const [selectedOption, setSelectedOption] = useState<string>(initValue ?? '');
   const [isOptionSelected, setIsOptionSelected] = useState<boolean>(initValue != undefined);
 
   const changeTextColor = () => {
     setIsOptionSelected(true);
   };
+
+  useEffect(() => {
+    setSelectedOption(initValue ?? '');
+  }, [initValue]);
 
   return (
     <div className="relative z-20 bg-transparent dark:bg-form-input">

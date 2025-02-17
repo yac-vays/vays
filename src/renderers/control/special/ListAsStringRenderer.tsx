@@ -1,20 +1,19 @@
-import {
-  and,
-  ControlProps,
-  isStringControl,
-  or,
-  RankedTester,
-  rankWith,
-  resolveSchema,
-  TesterContext,
-} from '@jsonforms/core';
+import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
 import ErrorBox from '../../../view/thirdparty/components/ifc/Label/ErrorBox';
 import LargeStringList from '../../../view/thirdparty/components/ifc/LargeStringList/LargeStringList';
-import { isCustomRenderer } from '../../utils/customTesterUtils';
+import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
+import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
 
 export const ListAsStringRenderer = (props: ControlProps) => {
+  /// data check
+  if (!isOfTypeWeak(props.data, 'string')) {
+    props.errors = reportBadData(props.data);
+    props.data = undefined;
+  }
+  ///
+
   const sep = props.uischema.options?.separator ?? ',';
   let list: string[];
   if (props.data) list = (props.data as string).split(sep);
@@ -33,6 +32,7 @@ export const ListAsStringRenderer = (props: ControlProps) => {
           onClick={() => {}}
           description={props.description ?? ''}
           required={props.required}
+          errors={props.errors}
         />
         {list.length > 0 ? (
           <p>
@@ -50,16 +50,6 @@ export const ListAsStringRenderer = (props: ControlProps) => {
 
 export const ListAsStringTester: RankedTester = rankWith(
   23,
-  and(
-    or(isStringControl, (uischema, schema, context: TesterContext) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if ((uischema as any).scope == undefined) return false;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const subschema = resolveSchema(schema, (uischema as any).scope, context?.rootSchema);
-
-      return subschema.type === undefined && subschema.pattern != undefined;
-    }),
-    isCustomRenderer('list_as_string'),
-  ),
+  and(or(isStringControl, isUntypedStringInput), isCustomRenderer('list_as_string')),
 );
 export default withJsonFormsControlProps(ListAsStringRenderer);

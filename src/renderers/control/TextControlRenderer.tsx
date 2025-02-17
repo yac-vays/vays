@@ -1,12 +1,4 @@
-import {
-  ControlProps,
-  isStringControl,
-  or,
-  RankedTester,
-  rankWith,
-  resolveSchema,
-  TesterContext,
-} from '@jsonforms/core';
+import { ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { debounce } from 'lodash';
 import { useCallback } from 'react';
@@ -15,11 +7,25 @@ import { getCurrentContext } from '../../controller/local/EditController/ExpertM
 import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
 import OverheadLabel from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import TextInput from '../../view/thirdparty/components/ifc/TextInput/TextInput';
+import { isUntypedStringInput } from '../utils/customTesterUtils';
+import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
 
 const eventToValue = (ev: React.ChangeEvent<HTMLInputElement>) => ev.target.value;
 
 export const TextControl = (props: ControlProps) => {
   doTroubleShootCheck(props);
+
+  if (!props.visible) return <></>;
+
+  let data = props.data;
+  let errors = props.errors;
+
+  /// data check
+  if (!isOfTypeWeak(data, 'string')) {
+    errors = reportBadData(data);
+    data = undefined;
+  }
+  ///
 
   const onChange = useCallback(
     debounce(
@@ -38,13 +44,13 @@ export const TextControl = (props: ControlProps) => {
       />
       <TextInput
         onChange={onChange}
-        data={props.data}
+        data={data}
         enabled={props.enabled}
         defaultv={props.schema.default}
         placeholder={props.uischema.options?.initial}
         placeholderEditable={props.uischema.options?.initial_editable}
       />
-      <ErrorBox displayError={props.errors} />
+      <ErrorBox displayError={errors} />
     </div>
   );
 };
@@ -118,13 +124,6 @@ function doTroubleShootCheck(props: ControlProps) {
 
 export const TextControlTester: RankedTester = rankWith(
   21,
-  or(isStringControl, (uischema, schema, context: TesterContext) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((uischema as any).scope == undefined) return false;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const subschema = resolveSchema(schema, (uischema as any).scope, context?.rootSchema);
-
-    return subschema.type === undefined && subschema.pattern != undefined;
-  }),
+  or(isStringControl, isUntypedStringInput),
 );
 export default withJsonFormsControlProps(TextControl);

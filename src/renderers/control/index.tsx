@@ -1,11 +1,12 @@
-import TextControl, { TextControlTester } from './TextControlRenderer';
 import BooleanControlRenderer, { BooleanControlTester } from './BooleanControlRenderer';
-import OneOfEnumControl, { OneOfEnumControlTester } from './OneOfEnumControl';
-import EnumControl, { EnumControlTester } from './EnumControl';
 import DateControl, { DateControlTester } from './DateControl';
+import EnumControl, { EnumControlTester } from './EnumControl';
+import MultipleChoiceRenderer, { MultipleChoiceTester } from './MultipleChoiceRenderer';
 import NumberControl, { NumberControlTester } from './NumberControl';
-import { VoidControl, VoidTester } from './VoidSchemaControl';
+import OneOfEnumControl, { OneOfEnumControlTester } from './OneOfEnumControl';
 import { specialRenderers } from './special';
+import TextControl, { TextControlTester } from './TextControlRenderer';
+import { VoidControl, VoidTester } from './VoidSchemaControl';
 
 export const controlRenderers = [
   { tester: TextControlTester, renderer: TextControl },
@@ -15,5 +16,6 @@ export const controlRenderers = [
   { tester: DateControlTester, renderer: DateControl },
   { tester: NumberControlTester, renderer: NumberControl },
   { tester: VoidTester, renderer: VoidControl },
+  { tester: MultipleChoiceTester, renderer: MultipleChoiceRenderer },
   ...specialRenderers,
 ];

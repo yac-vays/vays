@@ -17,9 +17,9 @@ import {
 import { withJsonFormsMultiEnumProps } from '@jsonforms/react';
 import { ReactNode } from 'react';
 import FormComponentTitle from '../../view/components/FormComponentTitle';
-import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
 import { BooleanControl } from '../control/BooleanControlRenderer';
 import { isCustomRenderer } from '../utils/customTesterUtils';
+import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
 
 interface Option {
   label: string;
@@ -47,6 +47,11 @@ export const MultiCheckboxRenderer = ({
     return null;
   }
 
+  if (!isOfTypeWeak(data, schema.type, true)) {
+    errors = reportBadData(data);
+    data = undefined;
+  }
+
   return (
     <div>
       <FormComponentTitle
@@ -54,9 +59,9 @@ export const MultiCheckboxRenderer = ({
         description={description}
         onClick={() => {}}
         required={required}
+        errors={errors}
         hideAddButton
       />
-      <ErrorBox displayError={errors} />
 
       <div className="flex flex-row flex-wrap">
         {options.map((option: Option, index: number) => {

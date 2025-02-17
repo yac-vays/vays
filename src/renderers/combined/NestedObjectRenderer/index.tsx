@@ -31,7 +31,7 @@ export const NestedObjectRenderer = ({
   cells,
   data,
   path,
-  //errors,
+  errors,
   //uischemas,
   required,
   addItem,
@@ -39,6 +39,10 @@ export const NestedObjectRenderer = ({
   removeItems,
 }: ArrayLayoutProps & { translations: ArrayTranslations }) => {
   if (!visible) return <></>;
+
+  // No type checking since the data is only the lenght of the array.
+  // But yea, it does give you a heads up if the type is not correct.
+
   const addItemCb = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (p: string, value: any) => {
@@ -88,6 +92,7 @@ export const NestedObjectRenderer = ({
         }}
         description={description}
         required={required}
+        errors={errors}
       />
       {toRender}
     </>

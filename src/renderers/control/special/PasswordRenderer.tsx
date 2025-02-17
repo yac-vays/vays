@@ -1,13 +1,4 @@
-import {
-  and,
-  ControlProps,
-  isStringControl,
-  or,
-  RankedTester,
-  rankWith,
-  resolveSchema,
-  TesterContext,
-} from '@jsonforms/core';
+import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { debounce } from 'lodash';
 import { ChangeEvent, useCallback, useState } from 'react';
@@ -16,11 +7,19 @@ import TextInput from '../../../view/thirdparty/components/ifc/TextInput/TextInp
 
 import ErrorBox from '../../../view/thirdparty/components/ifc/Label/ErrorBox';
 import OverheadLabel from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
-import { isCustomRenderer } from '../../utils/customTesterUtils';
+import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
+import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
 
 export const PasswordRenderer = (props: ControlProps) => {
   const pt = props.uischema?.options?.save_password_as === 'plaintext';
   const [pw, setPW] = useState<string>('');
+
+  /// data check
+  if (!isOfTypeWeak(props.data, 'string')) {
+    props.errors = reportBadData(props.data);
+    props.data = undefined;
+  }
+  ///
 
   if (!props.uischema.options) {
     props.uischema.options = {};
@@ -81,16 +80,6 @@ export const PasswordRenderer = (props: ControlProps) => {
 
 export const PasswordRendererTester: RankedTester = rankWith(
   22,
-  and(
-    or(isStringControl, (uischema, schema, context: TesterContext) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if ((uischema as any).scope == undefined) return false;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const subschema = resolveSchema(schema, (uischema as any).scope, context?.rootSchema);
-
-      return subschema.type === undefined && subschema.pattern != undefined;
-    }),
-    isCustomRenderer('password'),
-  ),
+  and(or(isStringControl, isUntypedStringInput), isCustomRenderer('password')),
 );
 export default withJsonFormsControlProps(PasswordRenderer);

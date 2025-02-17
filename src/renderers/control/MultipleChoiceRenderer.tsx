@@ -17,6 +17,7 @@ import { withJsonFormsMultiEnumProps } from '@jsonforms/react';
 import FormComponentTitle from '../../view/components/FormComponentTitle';
 import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
 import MultiSelect from '../../view/thirdparty/components/ifc/MultiSelect/MultiSelect';
+import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
 
 export const MultipleChoiceRenderer = ({
   // config,
@@ -35,6 +36,11 @@ export const MultipleChoiceRenderer = ({
 }: ControlProps & OwnPropsOfEnum & DispatchPropsOfMultiEnumControl) => {
   if (!visible || !options || !removeItem) {
     return null;
+  }
+
+  if (!isOfTypeWeak(data, schema.type, true)) {
+    errors = reportBadData(data);
+    data = undefined;
   }
 
   return (

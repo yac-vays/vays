@@ -13,12 +13,18 @@ import FormComponentTitle from '../../../view/components/FormComponentTitle';
 import ErrorBox from '../../../view/thirdparty/components/ifc/Label/ErrorBox';
 import LargeStringList from '../../../view/thirdparty/components/ifc/LargeStringList/LargeStringList';
 import { isCustomRenderer } from '../../utils/customTesterUtils';
+import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
 
 export const BigStringArray = (props: ControlProps) => {
   const { visible } = props;
 
   if (!visible) {
     return null;
+  }
+
+  if (!isOfTypeWeak(props.data, props.schema.type, true)) {
+    props.errors = reportBadData(props.data);
+    props.data = undefined;
   }
 
   const hasItems = props.data ? props.data.length > 0 : false;
@@ -32,6 +38,7 @@ export const BigStringArray = (props: ControlProps) => {
           onClick={() => {}}
           description={props.description ?? ''}
           required={props.required}
+          errors={props.errors}
         />
         {hasItems ? (
           <p>

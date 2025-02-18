@@ -1,8 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { JsonSchema } from '@jsonforms/core';
+import Ajv, { ErrorObject } from 'ajv';
 import _ from 'lodash';
+import { Nullable } from '../types/typeUtils';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function removeOldData(data: any, errors: any[] | undefined): boolean {
-  if (errors == undefined) return false;
+export function removeOldData(
+  data: any,
+  errors: ErrorObject<string, Record<string, any>, unknown>[] | null,
+): boolean {
+  if (errors == null) return false;
   let hasAltered = false;
   for (const error of errors) {
     if (error.keyword === 'additionalProperties') {
@@ -13,8 +19,8 @@ export function removeOldData(data: any, errors: any[] | undefined): boolean {
         delete data[key];
       } else if (error.instancePath !== '') {
         const l = (error.instancePath as string).split('/');
-        l.reverse().pop();
-        deepDelete(data, l.reverse(), key);
+        l.shift();
+        deepDelete(data, l, key);
       }
     }
   }
@@ -24,22 +30,34 @@ export function removeOldData(data: any, errors: any[] | undefined): boolean {
 /**
  * Delete key in the data object, which can be found in instancePath.
  * You typically get this instance path from errors by Ajv.
- * @param data
- * @param instancePath
- * @param key
+ * @param data The data object. Will be modified in place.
+ * @param instancePath A list of subkeys to access, to get at the target.
+ * @param key The target name. Can be null, in this case, the key is extracted from the instancePath.
  * @returns
  */
-function deepDelete(data: any, instancePath: string[], key: string) {
+export function deepDelete(data: any, instancePath: string[], key: Nullable<string>) {
+  if (key == null) {
+    if (instancePath.length > 0) key = instancePath.pop() as string;
+    else return;
+  }
   let subdata = data;
+  let elt: string | number;
 
-  for (const elt of instancePath) {
-    if (!(elt in data)) {
+  for (const pth of instancePath) {
+    elt = pth;
+    //@ts-expect-error isNaN can indeed be used with nonnumber arguments
+    if (!isNaN(pth) && Array.isArray(subdata)) {
+      elt = Number.parseInt(elt);
+    } else if (!(elt in data)) {
       return;
     }
+
     subdata = data[elt];
   }
-
-  if (key in subdata) {
+  //@ts-expect-error isNaN can indeed be used with nonnumber arguments
+  if (Array.isArray(subdata) && !isNaN(key)) {
+    if (subdata.length >= Number.parseInt(key)) subdata.splice(Number.parseInt(key), 1);
+  } else if (key in subdata) {
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete subdata[key];
   }
@@ -78,4 +96,33 @@ export function extractPatch(oldData: any, newData: any) {
     }
   }
   return patch;
+}
+
+/**
+ *
+ * @param data
+ * @param jsonSchema
+ * @param ajv
+ * @param badSchemaCallback the callback for the case that the schema is bad (e.g. bad regex).
+ * Is a function that receives an error object with the corresponding error raised by Ajv.
+ *
+ * @assumes the ajv object was initialized using allErrors: true.
+ *
+ * @returns Null, if the schema cannot be compiled (e.g. due to bad regex patterns).
+ * Else it will return a list of all errors in the data object accoring to the json schema.
+ */
+export function getAllErrors(
+  data: any,
+  jsonSchema: JsonSchema,
+  ajv: Ajv,
+  badSchemaCallback: (e: any) => void = () => {},
+): Nullable<ErrorObject<string, Record<string, any>, unknown>[]> {
+  const validate = ajv.compile(jsonSchema);
+  try {
+    validate(data);
+    return validate.errors ?? null;
+  } catch (e: any) {
+    badSchemaCallback(e);
+    return null;
+  }
 }

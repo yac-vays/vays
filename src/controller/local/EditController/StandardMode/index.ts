@@ -4,7 +4,7 @@ import { invalidateEntityListCache } from '../../../../model/entityList';
 import { patchEntity } from '../../../../model/patch';
 import { validate } from '../../../../model/validate';
 import { isNameGeneratedByYAC } from '../../../../utils/nameUtils';
-import { extractPatch, removeOldData } from '../../../../utils/schema/dataUtils';
+import { extractPatch, getAllErrors, removeOldData } from '../../../../utils/schema/dataUtils';
 import { mergeDefaults, updateDefaults } from '../../../../utils/schema/defaultsHandling';
 import {
   dumpEditActions,
@@ -116,18 +116,16 @@ function handleDefaults(
  * Removes the data which is no longer allowed by the new schema.
  * This is necessary due to `yac_if`.
  * @param valResp
- * @returns
+ * @returns Whether the data object has been altered.
  */
-function cleanData(valResp: ValidateResponse) {
-  try {
-    const validate = getAJV().compile(valResp.json_schema);
-    validate(valResp.data);
-    return removeOldData(valResp.data, validate.errors ?? []);
-  } catch (e: any) {
-    showError('Faulty YAC Config: Schema Error', e.toString());
-    navigateToURL('/');
-  }
-  return false;
+function cleanData(valResp: ValidateResponse): boolean {
+  return removeOldData(
+    valResp.data,
+    getAllErrors(valResp.data, valResp.json_schema, getAJV(), (e: any) => {
+      showError('Faulty YAC Config: Schema Error', e.toString());
+      navigateToURL('/');
+    }),
+  );
 }
 
 /**

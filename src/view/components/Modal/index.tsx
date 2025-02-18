@@ -165,7 +165,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
                 </p>
               </div>
               <div className="mr-2 pt-2 fill-danger" style={{ right: 0 }}>
-                <span className="mx-auto inline-block">
+                <span className="mx-auto inline-block p-1">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     height="48px"

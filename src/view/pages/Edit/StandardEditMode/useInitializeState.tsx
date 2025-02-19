@@ -7,7 +7,10 @@ import {
   retreiveSchema,
 } from '../../../../controller/local/EditController/shared';
 import { setCurrentTab } from '../../../../controller/local/EditController/StandardMode/access';
-import { updateTabsErrorNotification } from '../../../../controller/local/EditController/StandardMode/tabs';
+import {
+  resetCategoryErrs,
+  updateTabsErrorNotification,
+} from '../../../../controller/local/EditController/StandardMode/tabs';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import { Nullable } from '../../../../utils/types/typeUtils';
@@ -64,8 +67,9 @@ const useInitializeForm = (
       setIsEmpty(false);
       setLoading(true);
       setCurrentContext(requestEditContext);
-      const resp: Nullable<ValidateResponse> = await retreiveSchema(requestEditContext);
       clearYACStatus();
+      resetCategoryErrs();
+      const resp: Nullable<ValidateResponse> = await retreiveSchema(requestEditContext);
       if (!isMounted) return;
 
       if (resp == null) {

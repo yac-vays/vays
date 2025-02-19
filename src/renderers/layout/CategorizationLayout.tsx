@@ -46,13 +46,14 @@ import {
 } from '@jsonforms/material-renderers';
 import { TranslateProps, withJsonFormsLayoutProps, withTranslateProps } from '@jsonforms/react';
 import { useMemo, useState } from 'react';
-import { tsAddWarningMessage } from '../../controller/global/troubleshoot';
-import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/access';
 import {
   getCurrentTab,
   setCurrentTab,
 } from '../../controller/local/EditController/StandardMode/access';
-import { registerOnUpdateCategoryErrors } from '../../controller/local/EditController/StandardMode/tabs';
+import {
+  getCategoryErrs,
+  registerOnUpdateCategoryErrors,
+} from '../../controller/local/EditController/StandardMode/tabs';
 import ControlBar from '../../view/components/Tabs/ControlBar';
 import Tab from '../../view/components/Tabs/Tab';
 
@@ -99,20 +100,20 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
     t,
   } = props;
 
-  if ((props.uischema as any).elements) {
-    for (const cat of (props.uischema as any).elements) {
-      if (cat.elements.length > 20) {
-        tsAddWarningMessage(
-          2,
-          'Potentially big category',
-          'It looks like there are more than 20 elements in this category. You may want to consider adding new ones. ' +
-            '(Adding them conditionally.)',
-          cat.label ?? 'Category',
-          getCurrentContext()?.rc.backendObject?.title ?? 'Unknown',
-        );
-      }
-    }
-  }
+  // if ((props.uischema as any).elements) {
+  //   for (const cat of (props.uischema as any).elements) {
+  //     if (cat.elements.length > 20) {
+  //       tsAddWarningMessage(
+  //         2,
+  //         'Potentially big category',
+  //         'It looks like there are more than 20 elements in this category. You may want to consider adding new ones. ' +
+  //           '(Adding them conditionally.)',
+  //         cat.label ?? 'Category',
+  //         getCurrentContext()?.rc.backendObject?.title ?? 'Unknown',
+  //       );
+  //     }
+  //   }
+  // }
   const categorization = uischema as Categorization;
   const [previousCategorization, setPreviousCategorization] = useState<Categorization>(
     uischema as Categorization,
@@ -126,9 +127,11 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
       ),
     [categorization, data, ajv],
   );
-  const [catErrs, setCatErrs] = useState<boolean[]>(categories.map(() => false));
+  const [catErrs, setCatErrs] = useState<boolean[]>(
+    getCategoryErrs() ?? categories.map(() => false),
+  );
   registerOnUpdateCategoryErrors((v: boolean[]) => {
-    setCatErrs(v);
+    setCatErrs([...v]);
   });
 
   if (categorization !== previousCategorization) {
@@ -170,15 +173,17 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
       <div className="h-full flex flex-col">
         <div className="static w-full" style={{ top: 0 }}>
           <ControlBar>
-            {categories.map((_, idx: number) => (
-              <Tab
-                index={idx}
-                label={tabLabels[idx]}
-                currentTab={safeCategory}
-                onClick={onTabChange}
-                hasError={catErrs[idx]}
-              />
-            ))}
+            {(() => {
+              return categories.map((_, idx: number) => (
+                <Tab
+                  index={idx}
+                  label={tabLabels[idx]}
+                  currentTab={safeCategory}
+                  onClick={onTabChange}
+                  hasError={catErrs[idx]}
+                />
+              ));
+            })()}
           </ControlBar>
         </div>
         {/* <div className='bg-white w-full h-5 static mb-6 flex gap-4 border-b border-stroke sm:gap-10'></div> */}

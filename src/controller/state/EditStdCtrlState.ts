@@ -24,6 +24,8 @@ class EditStdControlState {
    * Boolean array, whether some category has an error.
    */
   public onUpdateCategoryErrors: (v: boolean[]) => void = () => {};
+
+  public catErrs?: boolean[] = undefined;
 }
 
 const editStdModeState = new EditStdControlState();

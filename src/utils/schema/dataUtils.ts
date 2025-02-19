@@ -120,7 +120,7 @@ export function getAllErrors(
   const validate = ajv.compile(jsonSchema);
   try {
     validate(data);
-    return validate.errors ?? null;
+    return validate.errors ?? [];
   } catch (e: any) {
     badSchemaCallback(e);
     return null;

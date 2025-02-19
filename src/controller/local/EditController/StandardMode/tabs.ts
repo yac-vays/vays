@@ -8,6 +8,18 @@ export function registerOnUpdateCategoryErrors(f: (v: boolean[]) => void) {
   editStdModeState.onUpdateCategoryErrors = f;
 }
 
+export function getCategoryErrs(): boolean[] | undefined {
+  return editStdModeState.catErrs;
+}
+
+export function setCategoryErrs(catErrs: boolean[] | undefined) {
+  editStdModeState.catErrs = catErrs;
+}
+
+export function resetCategoryErrs() {
+  setCategoryErrs(undefined);
+}
+
 export function updateTabsErrorNotification(
   data: any,
   jsonSchema: JsonSchema,
@@ -22,19 +34,41 @@ export function updateTabsErrorNotification(
     for (const cat of categories) {
       let schemaPath = structuredClone(err.schemaPath);
       if (err.keyword === 'required') {
-        schemaPath = schemaPath.replace('#/', '#/properties/');
+        if (schemaPath === '#/required') schemaPath = schemaPath.replace('#/', '#/properties/');
         schemaPath = schemaPath.replace('/required', '/' + err.params.missingProperty + '/key');
       }
-      console.error(schemaPath);
       if (isInCategory(schemaPath, cat, struct.get(cat))) {
-        console.error('YES');
         catHasErr[i] = true;
         break;
       }
       i++;
     }
   }
+  setCategoryErrs(catHasErr);
   editStdModeState.onUpdateCategoryErrors(catHasErr);
+}
+
+/**
+ * Do not use this for regular setting of the category Error!
+ *
+ * This is for special cases only where exactly a single category needs
+ * to have an error signal set - don't use in a loop over all categories.
+ * Use updateTabsErrorNotification for that instead.
+ * @param catName
+ * @param err
+ * @param uischema
+ * @returns
+ */
+export function setErrorForCategory(catName: string, err: boolean, uischema: UISchemaElement) {
+  const [categories] = assembleStructure(uischema);
+  const idx = categories.indexOf(catName);
+  if (idx === -1) return;
+
+  const v = getCategoryErrs();
+  if (!v || v.length <= idx) return; // bad internal state, return.
+  v[idx] = err;
+  setCategoryErrs(v);
+  editStdModeState.onUpdateCategoryErrors(v);
 }
 
 type CategoryName = string;
@@ -65,7 +99,6 @@ function recurse(category: string, uischema: UISchemaElement): [string[], UIStru
   for (const elt of (uischema as any).elements) {
     const label = isCat ? elt.label : category;
     if (isCat) {
-      console.log(label);
       labels.push(label);
     }
     const [lbls, ctrls] = recurse(label, elt);
@@ -81,14 +114,10 @@ function recurse(category: string, uischema: UISchemaElement): [string[], UIStru
 }
 
 function isInCategory(schemaPath: string, cat: string, catContent?: Set<ParamSchemaPath>) {
-  console.error('Search ' + schemaPath + ' in ' + cat);
-  console.error(catContent);
-
   if (catContent == undefined) return false;
 
   for (const value of catContent) {
     if (schemaPath.includes(value)) return true;
-    console.error(value);
   }
 
   return false;

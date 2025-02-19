@@ -66,10 +66,12 @@ module.exports = {
 
         /** Rear background, dark mode. (Only used there) */
         'boxdark-2':  '#1A222C',
+
         'form-strokedark': '#2E3A47',
         'form-input': '#313D4A',
         'meta-4':     '#313D4A', /** for thirdparty components */
-        danger:       '#DC3545',
+        danger:       'var(--color-danger)',
+        'danger-10':  'var(--color-danger-10)',
 
         /**
          * Misc

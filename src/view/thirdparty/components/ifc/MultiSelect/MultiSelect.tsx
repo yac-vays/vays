@@ -67,7 +67,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
   };
 
   const remove = (index: number) => {
-    const selectedIndex = selected.indexOf(options[index].value);
+    const selectedIndex = index; //selected.indexOf(options[index].value);
 
     if (selectedIndex !== -1) {
       const newS = selected.filter((_, idx) => idx !== selectedIndex);
@@ -118,7 +118,15 @@ const MultiSelect: React.FC<DropdownProps> = ({
                   <div className="flex flex-auto flex-wrap gap-3 z-10">
                     {selected.map((value, idx) => {
                       const valueIndex = optionsValues.indexOf(value);
-                      if (valueIndex == -1) return <></>;
+                      if (valueIndex == -1)
+                        return (
+                          <ListItem
+                            idx={idx}
+                            value={value.toString()}
+                            removeCallback={remove}
+                            indicateError={true}
+                          />
+                        );
 
                       return (
                         <ListItem

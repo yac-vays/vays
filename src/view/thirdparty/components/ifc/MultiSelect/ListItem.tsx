@@ -5,6 +5,7 @@ const ListItem = ({
   idx,
   value,
   removeCallback,
+  indicateError,
 
   editable,
   changeCallback,
@@ -13,6 +14,7 @@ const ListItem = ({
   idx: number;
   value: string;
   removeCallback: (idx: number) => void;
+  indicateError?: boolean;
 
   editable?: boolean;
   changeCallback?: (idx: number, value: string) => void;
@@ -43,7 +45,7 @@ const ListItem = ({
         key={idx}
         className={
           ' max-w-[calc(max(100vw_-_180px,_280px))] sm:max-w-[calc(100vw_-_220px)] lg:max-w-[calc(100vw_-_520px)] ' +
-          ' my-1.5 flex items-center justify-center rounded border-[.5px] border-stroke bg-primary-10 px-2.5 py-1.5 text-sm font-medium  dark:bg-white/30'
+          ` my-1.5 flex items-center justify-center rounded border-[.5px]  ${indicateError ? 'border-danger bg-danger-10' : 'border-stroke bg-primary-10'} px-2.5 py-1.5 text-sm font-medium  dark:bg-white/30`
         }
       >
         <div

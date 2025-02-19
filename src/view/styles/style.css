@@ -63,4 +63,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   --color-reducedfont: #64748B;
   --color-stroke: #E2E8F0;
   --color-dyn-bg: #ffffff;
+
+  --color-danger: #DC3545;
+  --color-danger-10: color-mix(in srgb, var(--color-danger) 10%, transparent);
 }

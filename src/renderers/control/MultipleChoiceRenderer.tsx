@@ -41,6 +41,15 @@ export const MultipleChoiceRenderer = ({
   if (!isOfTypeWeak(data, schema.type, true)) {
     errors = reportBadData(data);
     data = undefined;
+  } else if (data != undefined) {
+    // For some reason, json forms does not hand over errors
+    // about unavailable option in the data...
+    for (const elt of data) {
+      if (options.filter((v) => v.value === elt).length == 0) {
+        errors = 'Not allowed element: ' + elt;
+        break;
+      }
+    }
   }
 
   return (

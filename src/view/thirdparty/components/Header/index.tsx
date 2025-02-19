@@ -24,17 +24,17 @@ const Header = (props: {
             <span className="relative block h-5.5 w-5.5 cursor-pointer">
               <span className="du-block absolute right-0 h-full w-full">
                 <span
-                  className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-sm bg-plainfont-inv delay-[0] duration-200 ease-in-out ${
+                  className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-sm bg-plainfont delay-[0] duration-200 ease-in-out ${
                     !props.sidebarOpen && '!w-full delay-300'
                   }`}
                 ></span>
                 <span
-                  className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-sm bg-plainfont-inv delay-150 duration-200 ease-in-out ${
+                  className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-sm bg-plainfont delay-150 duration-200 ease-in-out ${
                     !props.sidebarOpen && 'delay-400 !w-full'
                   }`}
                 ></span>
                 <span
-                  className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-sm bg-plainfont-inv delay-200 duration-200 ease-in-out ${
+                  className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-sm bg-plainfont delay-200 duration-200 ease-in-out ${
                     !props.sidebarOpen && '!w-full delay-500'
                   }`}
                 ></span>

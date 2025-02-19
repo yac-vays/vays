@@ -9,7 +9,6 @@ import {
   navigateToURL,
 } from '../../../controller/global/url';
 import iSessionStorage from '../../../session/storage/SessionStorage';
-import { isNameGeneratedByYAC } from '../../../utils/nameUtils';
 import { YACBackend } from '../../../utils/types/config';
 import { EditViewMode, RequestEditContext } from '../../../utils/types/internal/request';
 import PageHeaderTitle from '../../thirdparty/components/PageTitle/PageHeaderTitle';
@@ -60,58 +59,55 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
       if (!isValid) {
         navigateToURL(await getDefaultURL(backends));
         return;
-      } else {
-        const requestEditContext = await getRequestContextEdit(
-          backendName as string,
-          entityTypeName as string,
-          backends,
-          mode,
-          entityName,
-          searchParams.get('mode') ??
-            (iSessionStorage.getIsExpertMode() ? 'expert' : 'standard') ??
-            'standard',
-        );
-        if (
-          (requestEditContext.viewMode === 'expert' && !isExpertMode) ||
-          (requestEditContext.viewMode === 'standard' && isExpertMode)
-        ) {
-          // Resolve conflict URL vs personal settings.
-          setIsExpertMode(requestEditContext.viewMode === 'expert', _setIsExpertMode);
-        } else {
-          // make sure that the URL has the viewMode in the URL, May not be the case
-          // just yet since some validation just took place and may have overwritten the mode there.
-          navigateToURL(
-            window.location.pathname +
-              '?mode=' +
-              (requestEditContext.viewMode === 'expert' ? 'expert' : 'standard'),
-          );
-        }
-
-        if (mode === 'create' && isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType))
-          requestEditContext.entityName = undefined;
-
-        if (mode === 'create') {
-          const entityTypeSingular = requestEditContext.rc.accessedEntityType?.title.substring(
-            0,
-            requestEditContext.rc.accessedEntityType?.title.length - 1,
-          );
-          const backendTitle = requestEditContext.rc.backendObject?.title;
-          if (requestEditContext.entityName == null)
-            setTitle(`Adding a ${entityTypeSingular} to ${backendTitle}`);
-          else
-            setTitle(
-              `Adding ${entityTypeSingular} '${requestEditContext.entityName}' to ${backendTitle}`,
-            );
-        } else {
-          setTitle(
-            `Editing ${requestEditContext.rc.accessedEntityType?.title.substring(
-              0,
-              requestEditContext.rc.accessedEntityType?.title.length - 1,
-            )} '${entityName}' on ${requestEditContext.rc.backendObject?.title}`,
-          );
-        }
-        setRequestContext(requestEditContext);
       }
+      const requestEditContext = await getRequestContextEdit(
+        backendName as string,
+        entityTypeName as string,
+        backends,
+        mode,
+        entityName,
+        searchParams.get('mode') ??
+          (iSessionStorage.getIsExpertMode() ? 'expert' : 'standard') ??
+          'standard',
+      );
+      if (
+        (requestEditContext.viewMode === 'expert' && !isExpertMode) ||
+        (requestEditContext.viewMode === 'standard' && isExpertMode)
+      ) {
+        // Resolve conflict URL vs personal settings.
+        setIsExpertMode(requestEditContext.viewMode === 'expert', _setIsExpertMode);
+      } else {
+        // make sure that the URL has the viewMode in the URL, May not be the case
+        // just yet since some validation just took place and may have overwritten the mode there.
+        navigateToURL(
+          window.location.pathname +
+            '?mode=' +
+            (requestEditContext.viewMode === 'expert' ? 'expert' : 'standard'),
+        );
+      }
+      const singularEntityTypeName = requestEditContext.rc.accessedEntityType?.title.substring(
+        0,
+        requestEditContext.rc.accessedEntityType?.title.length - 1,
+      );
+
+      if (mode === 'create') {
+        const backendTitle = requestEditContext.rc.backendObject?.title;
+        if (requestEditContext.entityName == null)
+          setTitle(`Adding a ${singularEntityTypeName} to ${backendTitle}`);
+        else
+          setTitle(
+            `Adding ${singularEntityTypeName} '${requestEditContext.entityName}' to ${backendTitle}`,
+          );
+      } else if (mode === 'change') {
+        setTitle(
+          `Editing ${singularEntityTypeName} '${entityName}' on ${requestEditContext.rc.backendObject?.title}`,
+        );
+      } else {
+        setTitle(
+          `Viewing ${singularEntityTypeName} '${entityName}' on ${requestEditContext.rc.backendObject?.title}`,
+        );
+      }
+      setRequestContext(requestEditContext);
     })();
   }, [window.location.href]);
 

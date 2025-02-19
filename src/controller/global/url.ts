@@ -1,5 +1,6 @@
 import { getEntityTypes } from '../../model/entityType';
 import { userIsLoggedIn } from '../../session/login/tokenHandling';
+import { isNameGeneratedByYAC } from '../../utils/nameUtils';
 import { EntityTypeDecl } from '../../utils/types/api';
 import { YACBackend } from '../../utils/types/config';
 import {
@@ -99,13 +100,17 @@ export async function getRequestContextEdit(
 
   const sanitizedViewMode =
     viewMode !== 'standard' && viewMode !== 'expert' ? 'standard' : viewMode;
+
+  const accessedEntityType = getEntityTypeFromEntityName(entityTypeName, entityTypeList);
+
+  if (mode === 'create' && isNameGeneratedByYAC(accessedEntityType)) entityName = undefined;
   return {
     entityName: entityName,
     mode: mode,
     rc: {
       yacURL: be?.url,
       entityTypeName: entityTypeName,
-      accessedEntityType: getEntityTypeFromEntityName(entityTypeName, entityTypeList),
+      accessedEntityType: accessedEntityType,
       backendObject: be,
       entityTypeList: entityTypeList,
     },
@@ -180,6 +185,10 @@ export async function isValidQueryEdit(
   mode: EditViewMode,
 ): Promise<boolean> {
   if (backendName == undefined || entityTypeName == undefined) {
+    return false;
+  }
+
+  if (!['create', 'change', 'read'].includes(mode)) {
     return false;
   }
 

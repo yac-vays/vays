@@ -153,6 +153,7 @@ const StandardEditMode = memo(
                       cells={materialCells}
                       onChange={onChangeCallback}
                       ajv={getAJV()}
+                      readonly={requestEditContext.mode === 'read'}
                     />
                   </FormsErrorBoundary>
                 </div>

@@ -1,6 +1,7 @@
 import {
   checkPermissions,
   getActionCallback,
+  OPERATION_VIEW,
   OPERATIONS,
   OPERATIONS_META,
 } from '../../../model/action';
@@ -33,14 +34,14 @@ export function getActions(
   }
 
   const res: ActionsColumnResults = { favActs: [], dropdownActs: [] };
-  res.favActs = _getFavActs(
+  res.favActs = getFavActions(
     requestContext.accessedEntityType.favorites,
     actions,
     requestContext.yacURL,
     entity,
     requestContext,
   );
-  res.dropdownActs = _getDropdownActs(
+  res.dropdownActs = getDropdownActions(
     requestContext.accessedEntityType.favorites,
     actions,
     entity,
@@ -59,58 +60,66 @@ export function getActions(
  * @param requestContext
  * @returns
  */
-function _getFavActs(
+function getFavActions(
   favorites: FavOpObject[],
   actions: { [key: string]: ActionDecl },
   yacURL: string | null | undefined,
   entity: EntityObject,
   requestContext: RequestContext,
 ): GUIActionButtonArg[] {
-  const entityName: string = entity.name;
   const favActs: GUIActionButtonArg[] = [];
   for (const action of favorites) {
     if (action.action) {
       // okay, this is not an operation, but a usual action
       if (!(action.name in actions)) {
         // This is a configuration error
-        console.log(`ERROR: ${action.name} is not defined in the Entity Type Definition.
-                    This is a configuration errror on the side of the YAC backend.
-                    Please contact the maintainer of the corresponding backend, 
-                    ${yacURL} in this case. Thank you very much and sorry
-                    for any inconveniences caused by this.`);
+        __alertBadAction(action.name, yacURL);
       } else {
         const entry: ActionDecl = actions[action.name] as ActionDecl;
         favActs.push({
           action: entry,
           isAllowed: checkPermissions(entity.perms, entry.perms),
-          //entity.perms.includes("act", 0),
           performAction: getActionCallback(requestContext, entity.name, entry),
         });
       }
     } else {
       if (!(action.name in OPERATIONS)) {
         // This is a configuration error
-        console.log(`ERROR: ${action.name} is not defined in the Entity Type Definition.
-                    This is a configuration errror on the side of the YAC backend.
-                    Please contact the maintainer of the corresponding backend, 
-                    ${yacURL} in this case. Thank you very much and sorry
-                    for any inconveniences caused by this.`);
+        __alertBadAction(action.name, yacURL);
       } else {
-        const entry: ActionDecl = OPERATIONS[action.name] as ActionDecl;
-
-        favActs.push({
-          action: entry,
-          isAllowed: checkPermissions(entity.perms, entry.perms),
-          //OPERATIONS_META[action.name].checkPermission(entry.perms),
-          performAction: OPERATIONS_META[action.name].getOperationCallback(
-            entityName,
-            requestContext,
-          ),
-        });
+        _addFavoriteOperation(action.name, favActs, entity, requestContext);
       }
     }
   }
   return favActs;
+}
+
+/**
+ * Adds a favorite operation. For the edit (change) operation, if it is not allowed,
+ * then it will be exchanged for the view operation.
+ * @param opName
+ * @param favActs
+ */
+function _addFavoriteOperation(
+  opName: string,
+  favActs: GUIActionButtonArg[],
+  entity: EntityObject,
+  requestContext: RequestContext,
+) {
+  const entityName: string = entity.name;
+  let entry: ActionDecl = OPERATIONS[opName] as ActionDecl;
+  let isAllowed = checkPermissions(entity.perms, entry.perms);
+  if (entry.name === 'change' && !isAllowed) {
+    entry = OPERATION_VIEW;
+    isAllowed = true;
+    opName = entry.name;
+  }
+
+  favActs.push({
+    action: entry,
+    isAllowed: isAllowed,
+    performAction: OPERATIONS_META[opName].getOperationCallback(entityName, requestContext),
+  });
 }
 
 /**
@@ -120,11 +129,23 @@ function _getFavActs(
  * @param favorites
  * @returns
  */
-function __isFav(actionName: string, isAction: boolean, favorites: FavOpObject[]): boolean {
+function isActionFavorite(
+  actionName: string,
+  isAction: boolean,
+  favorites: FavOpObject[],
+): boolean {
   for (const fav of favorites) {
     if (isAction === fav.action && actionName === fav.name) return true;
   }
   return false;
+}
+
+function __alertBadAction(name: string, yacURL: string | null | undefined) {
+  console.log(`ERROR: ${name} is not defined in the Entity Type Definition.
+    This is a configuration errror on the side of the YAC backend.
+    Please contact the maintainer of the corresponding backend, 
+    ${yacURL} in this case. Thank you very much and sorry
+    for any inconveniences caused by this.`);
 }
 
 /**
@@ -135,7 +156,7 @@ function __isFav(actionName: string, isAction: boolean, favorites: FavOpObject[]
  * @param requestContext
  * @returns
  */
-function _getDropdownActs(
+function getDropdownActions(
   favorites: FavOpObject[],
   actions: { [key: string]: ActionDecl },
   entity: EntityObject,
@@ -143,12 +164,18 @@ function _getDropdownActs(
 ): GUIActionDropdownArg[] {
   const result = [];
   for (const opName in OPERATIONS) {
-    if (__isFav(opName, false, favorites)) {
+    // Operation
+    if (isActionFavorite(opName, false, favorites)) {
       continue;
     }
 
-    const operation: ActionDecl = OPERATIONS[opName];
-    if (!checkPermissions(entity.perms, operation.perms)) continue;
+    let operation: ActionDecl = OPERATIONS[opName];
+    const isAllowed = checkPermissions(entity.perms, operation.perms);
+    if (!isAllowed && operation.name === 'change') {
+      operation = OPERATION_VIEW;
+    } else if (!isAllowed) {
+      continue;
+    }
 
     result.push({
       action: operation,
@@ -157,7 +184,7 @@ function _getDropdownActs(
   }
 
   for (const acName in actions) {
-    if (__isFav(acName, true, favorites)) continue;
+    if (isActionFavorite(acName, true, favorites)) continue;
 
     const actionObj: ActionDecl = actions[acName];
     if (!checkPermissions(entity.perms, actionObj.perms)) continue;

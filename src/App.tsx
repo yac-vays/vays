@@ -172,6 +172,15 @@ function App(): JSX.Element {
                     </>
                   }
                 />
+                <Route
+                  path="/:backendName/:entityTypeName/view/:entityName?"
+                  element={
+                    <>
+                      <PageTitle title="View Entity" />
+                      <EditView backends={backendsList} mode={'read'} />
+                    </>
+                  }
+                />
                 {/* <Route path="*" element={<Navigate to="/error/not-found" replace />} /> */}
               </Routes>
             </DefaultLayout>

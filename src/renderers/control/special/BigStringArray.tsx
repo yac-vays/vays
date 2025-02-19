@@ -1,17 +1,18 @@
 import {
-  ControlProps,
-  RankedTester,
   and,
+  ControlProps,
   isObjectArrayWithNesting,
   isPrimitiveArrayControl,
   not,
   or,
+  RankedTester,
   rankWith,
 } from '@jsonforms/core';
-import { withJsonFormsControlProps } from '@jsonforms/react';
+
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
 import ErrorBox from '../../../view/thirdparty/components/ifc/Label/ErrorBox';
 import LargeStringList from '../../../view/thirdparty/components/ifc/LargeStringList/LargeStringList';
+import { withJsonFormsControlPropsAndArrayLevelErrors } from '../../utils/customPropsHandling';
 import { isCustomRenderer } from '../../utils/customTesterUtils';
 import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
 
@@ -36,7 +37,7 @@ export const BigStringArray = (props: ControlProps) => {
           hideAddButton
           label={props.label}
           onClick={() => {}}
-          description={props.description ?? ''}
+          description={props.description}
           required={props.required}
           errors={props.errors}
         />
@@ -68,4 +69,4 @@ export const BigStringArrayTester: RankedTester = rankWith(
   ),
 );
 
-export default withJsonFormsControlProps(BigStringArray);
+export default withJsonFormsControlPropsAndArrayLevelErrors(BigStringArray);

@@ -97,6 +97,10 @@ async function retreiveEditSchema(
   }
 
   mergeDefaults(valResp);
+  // const v = await updateSchema(valResp.data, requestEditContext, false, false);
+  // if (!insertName){
+
+  // }
   if (!insertName || isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType)) {
     return valResp;
   }

@@ -35,7 +35,7 @@ export const EnumControl = ({
 
   //// bad data check
   // using short circuiting here for type safety
-  if (!isOfTypeWeak(data, schema.type) || optionsValueList.indexOf(data) === -1) {
+  if (!isOfTypeWeak(data, schema.type) || (data !== '' && optionsValueList.indexOf(data) === -1)) {
     errors = reportBadData(data);
     data = undefined;
   }

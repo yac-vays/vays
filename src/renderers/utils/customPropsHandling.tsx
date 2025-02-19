@@ -15,7 +15,9 @@ const withContextToControlProps = (
   function WithContextToControlProps({ ctx, props }: JsonFormsStateContext & ControlProps) {
     const controlProps = ctxToControlProps(ctx, props);
     const arrayLayoutProps = ctxToArrayLayoutProps(ctx, props);
-    controlProps.errors = arrayLayoutProps.errors;
+    controlProps.errors = new Set(arrayLayoutProps.errors.split('\n'))
+      .values()
+      .reduce((u, v) => u + '\n' + v);
     const dispatchProps = ctxDispatchToControlProps(ctx.dispatch);
     return <Component {...props} {...controlProps} {...dispatchProps} />;
   };

@@ -19,6 +19,11 @@ class EditStdControlState {
    * schema rerenders.
    */
   public currentTab: number = 0;
+
+  /**
+   * Boolean array, whether some category has an error.
+   */
+  public onUpdateCategoryErrors: (v: boolean[]) => void = () => {};
 }
 
 const editStdModeState = new EditStdControlState();

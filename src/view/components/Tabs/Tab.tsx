@@ -3,9 +3,10 @@ interface TabProps {
   label?: string;
   currentTab: number;
   onClick: (_event: any, value: number) => void;
+  hasError?: boolean;
 }
 
-const Tab = ({ index, label, currentTab, onClick }: TabProps) => {
+const Tab = ({ index, label, currentTab, onClick, hasError }: TabProps) => {
   return (
     <>
       <a
@@ -17,6 +18,16 @@ const Tab = ({ index, label, currentTab, onClick }: TabProps) => {
         onClick={(e) => onClick(e, index)}
       >
         {label}
+        {hasError ? (
+          <div className="relative">
+            <span
+              className="absolute ml-1 inline-flex rounded-full bg-danger translate-y-[-25px] opacity-80"
+              style={{ width: 8, height: 8, right: -10 }}
+            ></span>
+          </div>
+        ) : (
+          <></>
+        )}
       </a>
     </>
   );

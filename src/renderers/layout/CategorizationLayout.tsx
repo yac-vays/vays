@@ -52,6 +52,7 @@ import {
   getCurrentTab,
   setCurrentTab,
 } from '../../controller/local/EditController/StandardMode/access';
+import { registerOnUpdateCategoryErrors } from '../../controller/local/EditController/StandardMode/tabs';
 import ControlBar from '../../view/components/Tabs/ControlBar';
 import Tab from '../../view/components/Tabs/Tab';
 
@@ -125,6 +126,10 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
       ),
     [categorization, data, ajv],
   );
+  const [catErrs, setCatErrs] = useState<boolean[]>(categories.map(() => false));
+  registerOnUpdateCategoryErrors((v: boolean[]) => {
+    setCatErrs(v);
+  });
 
   if (categorization !== previousCategorization) {
     setActiveCategory(getCurrentTab());
@@ -171,6 +176,7 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
                 label={tabLabels[idx]}
                 currentTab={safeCategory}
                 onClick={onTabChange}
+                hasError={catErrs[idx]}
               />
             ))}
           </ControlBar>

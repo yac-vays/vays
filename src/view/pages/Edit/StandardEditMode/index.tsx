@@ -18,6 +18,11 @@ import { customRenderers } from '../../../../renderers';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 // import { Nullable } from '../../../../utils/typeUtils';
 import { getAJV } from '../../../../controller/local/EditController/shared';
+import {
+  assembleStructure,
+  updateTabsErrorNotification,
+} from '../../../../controller/local/EditController/StandardMode/tabs';
+import { getAllErrors } from '../../../../utils/schema/dataUtils';
 import { isValidDataObject } from '../../../../utils/schema/injectName';
 import NoDataIndicator from '../../../components/NoDataIndicator';
 import SubLoader from '../../../thirdparty/components/SubLoader';
@@ -106,6 +111,9 @@ const StandardEditMode = memo(
           setLocalData(resp.data);
           setIsEmpty(false);
           setFormData(resp.data, errors);
+          console.error(getAllErrors(resp.data, resp.json_schema, getAJV()));
+          assembleStructure(resp.ui_schema);
+          updateTabsErrorNotification(resp.data, resp.json_schema, resp.ui_schema);
         }
         setIsValidating(false);
         // if (IsCurrentlyEditingString()) {

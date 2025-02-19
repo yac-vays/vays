@@ -89,7 +89,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
 
   return (
     <div
-      className={`relative p-1 ${data == undefined ? 'opacity-70' : ''}`}
+      className="relative p-1"
       onClick={() =>
         setTimeout(() => {
           inputRef.current?.focus();
@@ -106,7 +106,11 @@ const MultiSelect: React.FC<DropdownProps> = ({
         <div className="flex flex-col items-center">
           <div className="relative inline-block w-full">
             <div className="relative flex flex-col items-center">
-              <div ref={trigger} onClick={open} className="relative w-full z-0">
+              <div
+                ref={trigger}
+                onClick={open}
+                className={`relative w-full z-0 ${data == undefined ? 'opacity-50' : ''}`}
+              >
                 <div
                   id="inputfieldSelect"
                   className={`relative mb-2 flex rounded border  py-2 pl-3 pr-3 outline-none transition  dark:bg-form-input ${

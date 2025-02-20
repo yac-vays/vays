@@ -17,7 +17,10 @@ export function setUserLoggedIn(v: boolean) {
   iLocalStorage.setIsLoggedIn(v);
 }
 
-export function handleAuthFailed() {
+export function handleAuthFailed(
+  title: string | undefined = undefined,
+  msg: undefined | string = undefined,
+) {
   const url = new URL(window.location.href);
   // note that pathname of window.location does not include the query string or the index...
   const localPath = window.location.href.startsWith('/')
@@ -38,6 +41,11 @@ export function handleAuthFailed() {
 
   if (tokenExpired(getTokenFromStorage() ?? null) || !userIsLoggedIn()) {
     setUserLoggedIn(false);
+    if (title) {
+      showError(title, msg ?? '');
+    } else {
+      showError('Please sign in (again).', 'There is no valid token. Please sign in.');
+    }
     navigateToURL('/');
   }
 }
@@ -45,6 +53,7 @@ export function handleAuthFailed() {
 export function getUserName(): string {
   if (!userIsLoggedIn()) return 'Not Logged In';
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { givenName, surname, name, mail } = jwtDecode(getTokenFromStorage() ?? '') as any;
 
   if (givenName && surname) {

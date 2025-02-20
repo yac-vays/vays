@@ -1,6 +1,10 @@
 import { ActionDecl } from './types/api';
 
-export function getTriggerableActions(acts: ActionDecl[], ctx: 'create' | 'change' | 'delete') {
+export function getTriggerableActions(
+  acts: ActionDecl[],
+  ctx: 'read' | 'create' | 'change' | 'delete',
+) {
+  if (ctx === 'read') return [];
   return acts.filter((v) => isTriggable(ctx, v));
 }
 

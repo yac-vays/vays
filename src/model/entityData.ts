@@ -1,6 +1,8 @@
+import { typeCheck } from 'type-check';
 import { showError } from '../controller/global/notification';
+import { handleAuthFailed } from '../session/login/tokenHandling';
 import { hasAuthFailed, sendRequest } from '../utils/authRequest';
-import { EntityData } from '../utils/types/api';
+import { EntityData, TYPE_CHECK_ENTITY_DATA } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
 import { joinUrl } from '../utils/urlUtils';
@@ -22,7 +24,7 @@ export async function getEntityData(
     return null;
   }
 
-  if (resp.status == 200) return resp.json();
+  if (resp.status == 200) return typeCheckEntityData(await resp.json());
   else if (resp.status == 422) {
     // No validation error should happen here.
     showError('Internal Error', 'Error ID-VAL-GED-01. Please file a bug report!');
@@ -36,12 +38,20 @@ export async function getEntityData(
     );
     return null;
   } else if (hasAuthFailed(resp.status)) {
-    // TODO
-
+    const ans = await resp.json();
+    handleAuthFailed(ans.detail, ans.message);
     return null;
   }
 
   const message = (await resp.json()).message;
   showError('Cannot fetch schema', `Server responded with "${message}"`);
+  return null;
+}
+
+function typeCheckEntityData(ed: unknown): Nullable<EntityData> {
+  //return ed as EntityData;
+  if (typeCheck(TYPE_CHECK_ENTITY_DATA, ed)) {
+    return ed as EntityData;
+  }
   return null;
 }

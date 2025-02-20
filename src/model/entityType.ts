@@ -1,12 +1,26 @@
+import { typeCheck } from 'type-check';
 import { showError } from '../controller/global/notification';
 import { handleAuthFailed } from '../session/login/tokenHandling';
 import { hasAuthFailed, sendRequest } from '../utils/authRequest';
 import { logError } from '../utils/logger';
-import { EntityTypeDecl } from '../utils/types/api';
+import { EntityTypeDecl, TYPE_CHECK_ENTITY_TYPE_DECL } from '../utils/types/api';
 import { YACBackend } from '../utils/types/config';
 import { Nullable } from '../utils/types/typeUtils';
 import { joinUrl } from '../utils/urlUtils';
 import { ENTITY_TYPE_CACHE_KEY } from './caching/cachekeys';
+
+/**
+ * Checks whether the received object has the right typing. Reduces damage of
+ * potential bugs induced by backend or malicious data.
+ * @param list
+ * @returns
+ */
+function typeCheckEntityTypeDecl(list: unknown): EntityTypeDecl[] {
+  if (typeCheck(`[${TYPE_CHECK_ENTITY_TYPE_DECL}]`, list)) {
+    return list as EntityTypeDecl[];
+  }
+  return [];
+}
 
 /**
  * @param yacBackend The backend in question.
@@ -40,9 +54,8 @@ export async function getEntityTypes(yacBackend: YACBackend | null): Promise<Ent
     return [];
   } else if (resp.status == 200) {
     const res = await resp.json();
-    return res;
+    return typeCheckEntityTypeDecl(res);
   } else if (hasAuthFailed(resp.status)) {
-    // TODO
     handleAuthFailed();
   } else {
     showError(

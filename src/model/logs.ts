@@ -1,6 +1,8 @@
+import { typeCheck } from 'type-check';
 import { showError } from '../controller/global/notification';
+import { handleAuthFailed } from '../session/login/tokenHandling';
 import { hasAuthFailed, sendRequest } from '../utils/authRequest';
-import { EntityLog } from '../utils/types/api';
+import { EntityLog, TYPE_CHECK_ENTITY_LOG } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
 import { joinUrl } from '../utils/urlUtils';
@@ -50,7 +52,7 @@ export async function getEntityLogs(
     return null;
   }
 
-  if (resp.status == 200) return resp.json();
+  if (resp.status == 200) return typeCheckLog(await resp.json());
   else if (resp.status == 404) {
     invalidateEntityListCache(url, requestContext.entityTypeName);
     return null;
@@ -67,12 +69,18 @@ export async function getEntityLogs(
     );
     return null;
   } else if (hasAuthFailed(resp.status)) {
-    // TODO
-
+    handleAuthFailed();
     return null;
   }
 
   const message = (await resp.json()).message;
   showError(`Cannot fetch logs (Status)`, `Server responded with "${message}"`);
+  return null;
+}
+
+function typeCheckLog(logs: unknown): Nullable<EntityLog[]> {
+  if (typeCheck(`[${TYPE_CHECK_ENTITY_LOG}]`, logs)) {
+    return logs as EntityLog[];
+  }
   return null;
 }

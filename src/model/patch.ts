@@ -1,5 +1,6 @@
 import { showError, showSuccess } from '../controller/global/notification';
 import { handleCollision } from '../controller/local/EditController/StandardMode/concurrency';
+import { handleAuthFailed } from '../session/login/tokenHandling';
 import { actionNames2URLQuery } from '../utils/actionUtils';
 import { hasAuthFailed, sendRequest } from '../utils/authRequest';
 import { dumpEditActions, popActions } from '../utils/schema/injectActions';
@@ -67,10 +68,10 @@ export async function patchEntity(
         'The data you entered is cached for now.',
     );
   } else if (hasAuthFailed(resp.status)) {
-    // TODO
+    handleAuthFailed();
   } else if (resp.status >= 400) {
     const jresp = await resp.json();
-    showError(`Client Error (Status ${resp.status})`, jresp['detail']);
+    showError(`Client Error (Status ${resp.status}) ${jresp.title}`, jresp.message);
   }
 
   return false;

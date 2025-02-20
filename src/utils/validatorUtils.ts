@@ -2,7 +2,7 @@ import { isNameGeneratedByYAC } from './nameUtils';
 import { RequestEditContext } from './types/internal/request';
 import { Nullable } from './types/typeUtils';
 
-export function getEntityObject(
+export function stringifyEntityInfoForAPI(
   requestEditContext: RequestEditContext,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any = {},
@@ -10,7 +10,7 @@ export function getEntityObject(
   actions: string[] = [],
   yaml_new?: string,
   yaml_old?: string,
-) {
+): string {
   if (
     requestEditContext.mode === 'create' &&
     isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType)
@@ -32,7 +32,7 @@ function getEntityObjectExpertMode(
   actions: string[],
   yaml_new?: string,
   yaml_old?: string,
-) {
+): string {
   // YAML editor (Expert mode)
   if (requestEditContext.mode === 'change') {
     return JSON.stringify({
@@ -66,8 +66,7 @@ function getEntityObjectStdMode(
   data: any = {},
   name: Nullable<string> = null,
   actions: string[] = [],
-) {
-  console.error(requestEditContext);
+): string {
   if (requestEditContext.mode === 'create') {
     // CreateEntity
     return JSON.stringify({

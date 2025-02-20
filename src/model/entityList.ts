@@ -2,12 +2,14 @@ import { showError } from '../controller/global/notification';
 import { handleAuthFailed } from '../session/login/tokenHandling';
 import { hasAuthFailed, sendRequest } from '../utils/authRequest';
 import { logError } from '../utils/logger';
-import { EntityObject } from '../utils/types/api';
+import { EntityObject, TYPE_CHECK_ENTITY_OBJECT } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
 import { joinUrl } from '../utils/urlUtils';
 import VAYS_CACHE from './caching';
 import { ENTITY_LIST_CACHE_KEY } from './caching/cachekeys';
+
+import { typeCheck } from 'type-check';
 
 function getListURL(yacURL: string, entityTypeName: string) {
   return joinUrl(yacURL, `/entity/${entityTypeName}?limit=10000`);
@@ -30,6 +32,19 @@ export function registerEntityListInvalidationHook(
   if (!yacURL || !entityTypeName) return;
   const cacheKey: string = getListURL(yacURL, entityTypeName);
   VAYS_CACHE.registerInvHook(ENTITY_LIST_CACHE_KEY, cacheKey, hook);
+}
+
+/**
+ * Checks whether the received object has the right typing. Reduces damage of
+ * potential bugs induced by backend or malicious data.
+ * @param list
+ * @returns
+ */
+function typeCheckEntityList(list: unknown): EntityObject[] {
+  if (typeCheck(`[${TYPE_CHECK_ENTITY_OBJECT}]`, list)) {
+    return list as EntityObject[];
+  }
+  return [];
 }
 
 export async function getEntityList(requestContext: RequestContext): Promise<EntityObject[]> {
@@ -55,7 +70,7 @@ export async function getEntityList(requestContext: RequestContext): Promise<Ent
   } else if (resp.status == 200) {
     const res = await resp.json();
     // TODO: Do not ignore the hash here
-    return res.list as EntityObject[];
+    return typeCheckEntityList(res.list);
   } else if (resp.status >= 500) {
     const ans = await resp.json();
     showError(
@@ -66,7 +81,8 @@ export async function getEntityList(requestContext: RequestContext): Promise<Ent
     );
     return [];
   } else if (hasAuthFailed(resp.status)) {
-    handleAuthFailed();
+    const ans = await resp.json();
+    handleAuthFailed(ans.detail, ans.message);
   }
 
   return [];

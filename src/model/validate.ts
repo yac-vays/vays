@@ -1,15 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { typeCheck } from 'type-check';
 import { showError } from '../controller/global/notification';
-import { navigateToURL } from '../controller/global/url';
+import { handleAuthFailed } from '../session/login/tokenHandling';
 import { getActionNames } from '../utils/actionUtils';
 import { hasAuthFailed, sendRequest } from '../utils/authRequest';
 import { dumpEditActions, EditActionSnapshot } from '../utils/schema/injectActions';
-import { ActionDecl, APIValidateResponse } from '../utils/types/api';
+import { ActionDecl, APIValidateResponse, TYPE_CHECK_VALIDATE_RESP } from '../utils/types/api';
 import { RequestEditContext } from '../utils/types/internal/request';
 import { ValidateResponse } from '../utils/types/internal/validation';
 import { Nullable } from '../utils/types/typeUtils';
 import { joinUrl } from '../utils/urlUtils';
-import { getEntityObject } from '../utils/validatorUtils';
+import { stringifyEntityInfoForAPI } from '../utils/validatorUtils';
 
 export const defaultValidationResponse: ValidateResponse = {
   json_schema: { type: 'object', required: [], properties: {} },
@@ -32,11 +33,11 @@ export async function validateYAML(
   yaml_new: string,
   yaml_old: string,
   acts: ActionDecl[],
-): Promise<ValidateResponse | null> {
+) {
   const url: string | null | undefined = requestEditContext.rc.yacURL;
 
   if (url == undefined || url == null) return null;
-  const obj = getEntityObject(
+  const obj = stringifyEntityInfoForAPI(
     requestEditContext,
     undefined,
     name,
@@ -45,6 +46,14 @@ export async function validateYAML(
     yaml_old,
   );
 
+  return await _validate(requestEditContext, url, obj);
+}
+
+async function _validate(
+  requestEditContext: RequestEditContext,
+  url: string,
+  obj: string,
+): Promise<ValidateResponse | null> {
   const resp: Nullable<Response> = await sendRequest(joinUrl(url, `/validate`), 'POST', obj);
 
   if (resp == null) {
@@ -52,7 +61,8 @@ export async function validateYAML(
   }
 
   if (resp.status == 200) {
-    const dat = await resp.json();
+    const dat = typeCheckValidationResponse(await resp.json());
+    if (!dat) return null;
 
     return {
       json_schema: dat.schemas.json_schema,
@@ -71,78 +81,49 @@ export async function validateYAML(
         (ans.title ?? `Cannot validate YAML (Status ${resp.status})`),
       ans.message ?? 'Waking up the admin, please stand by...',
     );
-    return null; //ret;
+    return null;
   } else if (hasAuthFailed(resp.status)) {
-    // TODO
-
+    const ans = await resp.json();
+    handleAuthFailed(ans.title, ans.message);
     return null;
   }
 
-  //let ret: ValidateResponse = structuredClone(defaultValidationResponse);
   return resp.json().then((body) => {
     showError('Cannot fetch schema', `Server responded with "${body.message}"`);
-    // ret.detail = body.detail;
-    return null; // ret;
+    return null;
   });
 }
 
 /**
- *
- * @param name
- * @param data
- * @param requestContext
- * @param originalName = null. Leave null when creating a new entity.
+ * Validate the data object.
+ * @param name The name of the entity. Maybe null, especially if YAC is required to generate the name.
+ * @param data some data object.
+ * @param requestEditContext the request context
+ * @param editActions
  * @returns
  */
 export async function validate(
   name: Nullable<string>,
-  data: any,
+  data: object,
   requestEditContext: RequestEditContext,
   editActions: EditActionSnapshot,
 ): Promise<ValidateResponse | null> {
   const url: string | null | undefined = requestEditContext.rc.yacURL;
 
   if (url == undefined || url == null) return null;
-  const obj = getEntityObject(requestEditContext, data, name, dumpEditActions(editActions));
+  const obj = stringifyEntityInfoForAPI(
+    requestEditContext,
+    data,
+    name,
+    dumpEditActions(editActions),
+  );
 
-  const resp: Nullable<Response> = await sendRequest(joinUrl(url, `/validate`), 'POST', obj);
+  return await _validate(requestEditContext, url, obj);
+}
 
-  if (resp == null) {
-    return null;
+function typeCheckValidationResponse(vr: unknown): Nullable<APIValidateResponse> {
+  if (typeCheck(TYPE_CHECK_VALIDATE_RESP, vr)) {
+    return vr as APIValidateResponse;
   }
-
-  if (resp.status == 200) {
-    const dat = (await resp.json()) as APIValidateResponse;
-
-    return {
-      json_schema: dat.schemas.json_schema,
-      ui_schema: dat.schemas.ui_schema,
-      data: dat.schemas.data,
-      valid: dat.request.valid && dat.schemas.valid,
-      detail: dat.request.message ?? dat.schemas.message ?? '',
-    };
-  } else if (resp.status == 422) {
-    showError('Frontend Error', 'Invalid specification used, cannot talk to YAC servers.');
-    return null;
-  } else if (resp.status >= 500) {
-    const ans = await resp.json();
-    showError(
-      `${requestEditContext.rc.backendObject?.title}: ` +
-        (ans.title ?? `Cannot validate ${name} (Status ${resp.status})`),
-      ans.message ?? 'Waking up the admin, please stand by...',
-    );
-    return null;
-  } else if (hasAuthFailed(resp.status)) {
-    // TODO
-    const ans = await resp.json();
-    showError(ans.title, ans.message);
-    navigateToURL('/');
-
-    return null;
-  }
-
-  return resp.json().then((body) => {
-    showError('Cannot fetch schema', `Server responded with "${body.message}"`);
-    return null; // ret;
-  });
+  return null;
 }

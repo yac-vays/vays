@@ -32,9 +32,9 @@ export const DateControl = ({
   }
 
   //// data check
-  if (!isOfTypeWeak(data, 'string') || !isRFC3339Date(data)) {
+  if (!isOfTypeWeak(data, 'string') || (data != undefined && !isRFC3339Date(data))) {
     errors = reportBadData(data);
-    data = undefined; // TODO: What to put here?
+    data = undefined;
   }
   //// end data check
 

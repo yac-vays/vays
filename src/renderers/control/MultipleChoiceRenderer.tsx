@@ -23,6 +23,7 @@ export const MultipleChoiceRenderer = ({
   // config,
   id,
   schema,
+  uischema,
   visible,
   errors,
   description,
@@ -36,6 +37,12 @@ export const MultipleChoiceRenderer = ({
 }: ControlProps & OwnPropsOfEnum & DispatchPropsOfMultiEnumControl) => {
   if (!visible || !options || !removeItem) {
     return null;
+  }
+
+  // placeholder is always editable for here for now
+  // TODO: revisit?
+  if (data == undefined) {
+    data = uischema.options?.initial;
   }
 
   if (!isOfTypeWeak(data, schema.type, true)) {

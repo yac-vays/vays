@@ -23,12 +23,18 @@ export const OneOfEnumControl = ({
   handleChange,
   schema,
   path,
+  uischema,
 }: ControlProps & OwnPropsOfEnum & WithOptionLabel & TranslateProps) => {
   const optionsValueList: (string | undefined)[] = [undefined];
   if (options !== undefined) {
     options.forEach((v) => {
       optionsValueList.push(v.value);
     });
+  }
+
+  // placeholder is always editable for date (makes no difference)
+  if (data == undefined) {
+    data = uischema.options?.initial;
   }
 
   //// bad data check

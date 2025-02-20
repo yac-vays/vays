@@ -10,8 +10,7 @@ export const BooleanControl = ({
   label,
   // id,
   // enabled,
-  // uischema,
-  schema,
+  uischema,
   // rootSchema,
   handleChange,
   errors,
@@ -22,14 +21,15 @@ export const BooleanControl = ({
     return null;
   }
 
-  let initValue = false;
-  if (data != undefined) initValue = data;
-  else if (schema.default != undefined) initValue = schema.default;
+  // placeholder is always editable for booleans.
+  if (data == undefined) {
+    data = uischema.options?.initial;
+  }
 
   ///////// check data
   if (!isOfTypeWeak(data, 'boolean')) {
-    errors = reportBadData(initValue);
-    initValue = false;
+    errors = reportBadData(data);
+    data = false;
   }
   /////////
 
@@ -37,7 +37,7 @@ export const BooleanControl = ({
     <>
       <div className="p-1">
         <Checkbox
-          initValue={initValue}
+          initValue={data}
           title={label}
           onChange={(value: boolean) => handleChange(path, value)}
           description={description}

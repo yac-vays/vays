@@ -7,35 +7,49 @@ import OverheadLabel from '../../../view/thirdparty/components/ifc/Label/Overhea
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
 import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
 
-export const SSHKeyRenderer = (props: ControlProps) => {
-  if (!props.visible) return <></>;
+export const SSHKeyRenderer = ({
+  visible,
+  data,
+  path,
+  label,
+  required,
+  id,
+  description,
+  uischema,
+  errors,
+  handleChange,
+  // schema,
+  // enabled,
+}: ControlProps) => {
+  if (!visible) return <></>;
+
+  if (data === undefined && uischema.options?.initial_editable && uischema?.options?.initial) {
+    data = uischema.options?.initial_editable;
+  }
+
   /// data check
-  if (!isOfTypeWeak(props.data, 'string')) {
-    props.errors = reportBadData(props.data);
-    props.data = undefined;
+  if (!isOfTypeWeak(data, 'string')) {
+    errors = reportBadData(data);
+    data = undefined;
   }
   ///
 
-  const sshlist: string[] = (props.data ?? '').split('\n');
+  const sshlist: string[] = (data ?? '').split('\n');
   return (
     <div className="p-1">
       <div className="flex flex-row">
         <div className="grow">
-          <OverheadLabel
-            title={props.label}
-            required={props.required || false}
-            description={props.description}
-          />
+          <OverheadLabel title={label} required={required || false} description={description} />
           {sshlist.map((v: string) => (
             <SSHKeyInput
               data={v}
-              id={props.id}
-              placeholder={props.uischema?.options?.initial ?? 'Click to select file...'}
+              id={id}
+              placeholder={uischema?.options?.initial ?? 'Click to select file...'}
               enabled={false}
-              onChange={(v: string) => props.handleChange(props.path, v)}
+              onChange={(v: string) => handleChange(path, v)}
             />
           ))}
-          <ErrorBox displayError={props.errors} />
+          <ErrorBox displayError={errors} />
         </div>
       </div>
     </div>

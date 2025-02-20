@@ -31,6 +31,11 @@ export const DateControl = ({
     return null;
   }
 
+  // placeholder is always editable for date (makes no difference)
+  if (data == undefined) {
+    data = uischema.options?.initial;
+  }
+
   //// data check
   if (!isOfTypeWeak(data, 'string') || (data != undefined && !isRFC3339Date(data))) {
     errors = reportBadData(data);

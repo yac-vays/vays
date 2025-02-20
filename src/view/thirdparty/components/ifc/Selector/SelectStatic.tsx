@@ -8,6 +8,7 @@ interface DropdownProps {
   options: DropDownOptions;
   onChange: (value: string) => void;
   initValue?: string;
+  disabled?: boolean;
 }
 
 function isValidOption(optValue: string | undefined, options: DropDownOptions) {
@@ -19,7 +20,12 @@ function isValidOption(optValue: string | undefined, options: DropDownOptions) {
   return false;
 }
 
-const SelectStatic: React.FC<DropdownProps> = ({ options, onChange, initValue }: DropdownProps) => {
+const SelectStatic: React.FC<DropdownProps> = ({
+  options,
+  onChange,
+  initValue,
+  disabled,
+}: DropdownProps) => {
   if (!isValidOption(initValue, options)) {
     initValue = undefined;
   }
@@ -38,6 +44,7 @@ const SelectStatic: React.FC<DropdownProps> = ({ options, onChange, initValue }:
     <div className="relative z-20 bg-transparent dark:bg-form-input">
       <select
         value={selectedOption}
+        disabled={disabled}
         onChange={(e) => {
           /*********************
            * String vs Number problem:

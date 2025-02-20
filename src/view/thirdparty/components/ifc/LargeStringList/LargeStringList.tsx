@@ -13,9 +13,16 @@ interface LargeStringProps {
   id: string;
   path: string;
   data?: string[];
+  disabled?: boolean;
 }
 
-const LargeStringList: React.FC<LargeStringProps> = ({ id, handleChange, path, data }) => {
+const LargeStringList: React.FC<LargeStringProps> = ({
+  id,
+  handleChange,
+  path,
+  data,
+  disabled,
+}) => {
   const [selected, setSelected] = useState<string[]>(data ?? []);
   const [show, setShow] = useState(false);
   const [isItemEditing, setIsItemEditing] = useState<boolean>(false);
@@ -126,13 +133,16 @@ const LargeStringList: React.FC<LargeStringProps> = ({ id, handleChange, path, d
                         }
                       }}
                       placeHolder={'Type...'}
+                      disabled={disabled}
                     />
                   </div>
                   <DeleteButton
                     removeCallback={() => {
+                      if (disabled) return;
                       setSelected([]);
                       handleChange(path, []);
                     }}
+                    disabled={disabled}
                   />
                   <DropdownButton open={open} showExpand={show} />
                 </div>

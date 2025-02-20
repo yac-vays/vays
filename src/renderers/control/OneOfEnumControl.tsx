@@ -24,6 +24,7 @@ export const OneOfEnumControl = ({
   schema,
   path,
   uischema,
+  enabled,
 }: ControlProps & OwnPropsOfEnum & WithOptionLabel & TranslateProps) => {
   const optionsValueList: (string | undefined)[] = [undefined];
   if (options !== undefined) {
@@ -53,6 +54,7 @@ export const OneOfEnumControl = ({
           options={options || []}
           onChange={(v: string) => handleChange(path, v)}
           initValue={data}
+          disabled={!enabled}
         />
         <ErrorBox displayError={errors} />
       </div>

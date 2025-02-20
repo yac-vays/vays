@@ -32,6 +32,7 @@ export const MultipleChoiceRenderer = ({
   path,
   options,
   data,
+  enabled,
   removeItem,
   handleChange: _handleChange,
 }: ControlProps & OwnPropsOfEnum & DispatchPropsOfMultiEnumControl) => {
@@ -77,6 +78,7 @@ export const MultipleChoiceRenderer = ({
         id={id}
         path={path}
         multiple={!schema.uniqueItems}
+        disabled={!enabled}
       />
     </div>
   );

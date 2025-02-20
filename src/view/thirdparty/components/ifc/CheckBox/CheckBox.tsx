@@ -7,12 +7,14 @@ const Checkbox = ({
   onChange,
   minified,
   description,
+  disabled,
 }: {
   title?: string;
   initValue: boolean;
   onChange(value: boolean): void;
   minified?: boolean;
   description?: string;
+  disabled: boolean;
 }) => {
   const [isChecked, setIsChecked] = useState<boolean>(initValue);
 
@@ -21,6 +23,7 @@ const Checkbox = ({
       | React.MouseEvent<HTMLDivElement, MouseEvent>
       | React.MouseEvent<HTMLLabelElement, MouseEvent>,
   ) => {
+    if (disabled) return;
     e.preventDefault();
     // Note that the setter function is asynchronous! Thus precompute value first.
     const value = !isChecked;

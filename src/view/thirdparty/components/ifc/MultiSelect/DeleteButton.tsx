@@ -1,8 +1,15 @@
-const DeleteButton = ({ removeCallback }: { removeCallback: () => void }) => {
+const DeleteButton = ({
+  removeCallback,
+  disabled,
+}: {
+  removeCallback: () => void;
+  disabled?: boolean;
+}) => {
   return (
-    <div className="flex w-8 items-center py-1 pl-1 pr-1">
+    <div className={`flex w-8 items-center py-1 pl-1 pr-1 ${disabled ? 'opacity-40' : ''}`}>
       <button
         type="button"
+        disabled={disabled}
         onClick={removeCallback}
         className="h-6 w-6 cursor-pointer outline-none focus:outline-none"
       >

@@ -17,8 +17,8 @@ import {
   withTranslateProps,
 } from '@jsonforms/react';
 import { showModalMessage } from '../../../controller/global/modal';
-import Table from './Table';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
+import Table from './Table';
 
 /**
  *
@@ -65,6 +65,7 @@ export const ArrayControlRenderer = (
           description={props.description}
           required={props.required}
           errors={props.errors ? [...new Set(props.errors.split('\n'))].join('\n') : ''}
+          hideAddButton={!props.enabled}
         />
 
         <Table {...props} openDeleteDialog={openDeleteDialog} translations={translations} />

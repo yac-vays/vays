@@ -1,5 +1,3 @@
-import _ from 'lodash';
-import React, { ComponentType } from 'react';
 import { ArrayLayoutProps, ArrayTranslations, LayoutProps, Paths } from '@jsonforms/core';
 import { WithDeleteDialogSupport } from '@jsonforms/material-renderers';
 import {
@@ -8,6 +6,8 @@ import {
   useJsonForms,
   withJsonFormsContext,
 } from '@jsonforms/react';
+import _ from 'lodash';
+import React, { ComponentType } from 'react';
 
 interface DispatchPropsOfItem {
   onRemove(): () => void;
@@ -65,12 +65,15 @@ const TableRow = withCustomProps((props: ItemRendererProps) => {
         <div className="w-[60px] flex items-center justify-center">
           <div>
             <button
+              disabled={!props.enabled}
               onClick={(e) => {
                 e.preventDefault();
                 e.currentTarget.blur();
                 props.openDeleteDialog(path, props.index)();
               }}
-              className="text-[#98A6AD] hover:text-plainfont grow items-center justify-center"
+              className={`text-[#98A6AD] hover:text-plainfont grow items-center justify-center ${
+                props.enabled ? '' : 'opacity-40'
+              } `}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

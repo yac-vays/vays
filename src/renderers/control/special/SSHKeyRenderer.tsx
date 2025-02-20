@@ -19,7 +19,7 @@ export const SSHKeyRenderer = ({
   errors,
   handleChange,
   // schema,
-  // enabled,
+  enabled,
 }: ControlProps) => {
   if (!visible) return <></>;
 
@@ -45,7 +45,7 @@ export const SSHKeyRenderer = ({
               data={v}
               id={id}
               placeholder={uischema?.options?.initial ?? 'Click to select file...'}
-              enabled={false}
+              enabled={enabled}
               onChange={(v: string) => handleChange(path, v)}
             />
           ))}

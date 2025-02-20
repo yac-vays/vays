@@ -9,7 +9,7 @@ export const BooleanControl = ({
   visible,
   label,
   // id,
-  // enabled,
+  enabled,
   uischema,
   // rootSchema,
   handleChange,
@@ -41,6 +41,7 @@ export const BooleanControl = ({
           title={label}
           onChange={(value: boolean) => handleChange(path, value)}
           description={description}
+          disabled={!enabled}
         />
         <ErrorBox displayError={errors} />
       </div>

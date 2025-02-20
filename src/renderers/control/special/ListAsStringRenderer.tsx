@@ -41,7 +41,13 @@ export const ListAsStringRenderer = (props: ControlProps) => {
         ) : (
           <></>
         )}
-        <LargeStringList handleChange={handleChange} path={props.path} id={props.id} data={list} />
+        <LargeStringList
+          handleChange={handleChange}
+          path={props.path}
+          id={props.id}
+          data={list}
+          disabled={!props.enabled}
+        />
         <ErrorBox displayError={props.errors} />
       </div>
     </>

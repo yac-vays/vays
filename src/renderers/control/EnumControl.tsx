@@ -25,6 +25,7 @@ export const EnumControl = ({
   options,
   schema,
   uischema,
+  enabled,
 }: ControlProps & OwnPropsOfEnum & WithOptionLabel & TranslateProps) => {
   // const appliedUiSchemaOptions = merge({}, config, uischema.options);
   const optionsValueList: (string | undefined)[] = [undefined];
@@ -55,6 +56,7 @@ export const EnumControl = ({
           options={options || []}
           onChange={(v: string) => handleChange(path, v)}
           initValue={data}
+          disabled={!enabled}
         />
         <ErrorBox displayError={errors} />
       </div>

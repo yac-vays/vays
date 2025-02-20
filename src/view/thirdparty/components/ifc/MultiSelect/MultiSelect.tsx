@@ -16,6 +16,7 @@ interface DropdownProps {
   multiple?: boolean;
   path: string;
   data?: (number | string)[];
+  disabled?: boolean;
 }
 
 function filterOptions(options: Option[], searchTerm: string) {
@@ -30,6 +31,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
   handleChange,
   path,
   data,
+  disabled,
 }) => {
   options = options ?? [];
   const optionsValues = options.map(({ value }) => value);
@@ -56,6 +58,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
   };
 
   const select = (index: number) => {
+    if (disabled) return;
     const value = options[index].value;
     if (!multiple && selected.findIndex((v) => value == v) != -1) {
       remove(index);
@@ -67,6 +70,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
   };
 
   const remove = (index: number) => {
+    if (disabled) return;
     const selectedIndex = index; //selected.indexOf(options[index].value);
 
     if (selectedIndex !== -1) {
@@ -165,13 +169,16 @@ const MultiSelect: React.FC<DropdownProps> = ({
                           ? `Type or Select (${data == undefined ? 'undefined' : 'empty list'})`
                           : 'Type...'
                       }
+                      disabled={disabled}
                     />
                   </div>
                   <DeleteButton
                     removeCallback={() => {
+                      if (disabled) return;
                       setSelected([]);
                       handleChange(path, []);
                     }}
+                    disabled={disabled}
                   />
                   <DropdownButton open={open} showExpand={show} />
                 </div>

@@ -53,6 +53,7 @@ export const BigStringArray = (props: ControlProps) => {
           path={props.path}
           id={props.id}
           data={props.data}
+          disabled={!props.enabled}
         />
         <ErrorBox displayError={props.errors} />
       </div>

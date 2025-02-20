@@ -26,7 +26,7 @@ const SSHKeyInput = ({ id, placeholder, data, enabled, onChange }: SSHKeyProps) 
   const borderRef = useRef<HTMLDivElement>(null);
   const [key, setKey] = useState<string>(data ? data.toString() : '');
   const [value, setValue] = useState<string>(getPlaceholder(key));
-  const [isEditable, setIsEditable] = useState<boolean>(enabled ?? false);
+  const [isEditable, setIsEditable] = useState<boolean>(false);
 
   const makeEditable = () => {
     setIsEditable(true);
@@ -91,13 +91,13 @@ const SSHKeyInput = ({ id, placeholder, data, enabled, onChange }: SSHKeyProps) 
           />
           <div
             className={`grow flex flex-row w-full rounded-r-md border bg-bg pl-5 pr-2 py-2.5 outline-none ${
-              isEditable ? 'focus:border-primary' : 'border-stroke'
+              isEditable && enabled ? 'focus:border-primary' : 'border-stroke'
             }`}
           >
             <input
               ref={inputRef}
               type={'text'}
-              disabled={!isEditable}
+              disabled={!isEditable || !enabled}
               className="border-none grow bg-transparent focus:border-none focus:outline-none"
               defaultValue={value}
               placeholder={placeholder}

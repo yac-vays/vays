@@ -5,6 +5,7 @@ const InlineTextField = ({
   onChange,
   onKeyDown,
   placeHolder,
+  disabled,
 }: {
   numItemsInList: number;
   inputRef: React.RefObject<HTMLInputElement>;
@@ -12,6 +13,7 @@ const InlineTextField = ({
   onChange: React.ChangeEventHandler<HTMLInputElement>;
   onKeyDown: React.KeyboardEventHandler<HTMLInputElement>;
   placeHolder: string;
+  disabled?: boolean;
 }) => {
   return (
     <div
@@ -41,6 +43,7 @@ const InlineTextField = ({
           value={currentInput}
           onChange={onChange}
           onKeyDown={onKeyDown}
+          disabled={disabled}
         />
       </label>
     </div>

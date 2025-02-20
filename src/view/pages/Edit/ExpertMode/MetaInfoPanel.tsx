@@ -34,7 +34,11 @@ const MetaInfoPanel = ({
       <div className="grow">
         <OverheadLabel title="Entity Name" required={true} description="" />
         <TextInput
-          placeholder={requestEditContext.rc.accessedEntityType?.example ?? 'Enter name...'}
+          placeholder={
+            requestEditContext.rc.accessedEntityType?.name_example
+              ? requestEditContext.rc.accessedEntityType?.name_example
+              : 'Enter name...'
+          }
           data={requestEditContext.entityName}
           enabled
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {

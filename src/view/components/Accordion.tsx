@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useCollapse } from 'react-collapsed';
 
 function Accordion(props: {
@@ -6,9 +7,13 @@ function Accordion(props: {
   reduced?: boolean;
   expanded?: boolean;
 }) {
-  const { getCollapseProps, getToggleProps, isExpanded } = useCollapse({
+  const { getCollapseProps, getToggleProps, isExpanded, setExpanded } = useCollapse({
     defaultExpanded: props.expanded ?? false,
   });
+
+  useEffect(() => {
+    setExpanded(props.expanded ?? false);
+  }, [props.expanded ?? false]);
 
   return (
     <>

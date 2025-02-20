@@ -38,6 +38,7 @@ export const Editor = ({
   const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor | null>(null);
   const monacoEl = useRef<HTMLDivElement>(null);
   const [isSettingUp, setIsSettingUp] = useState<boolean>(true);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const update = getUpdateCallback();
 
@@ -46,6 +47,7 @@ export const Editor = ({
 
     if (monacoEl && requestEditContext.rc.yacURL != null) {
       setIsSettingUp(true);
+      setIsExpanded(requestEditContext.mode === 'create');
 
       let monacoYaml = getMonacoYaml();
       if (!monacoYaml) {
@@ -84,7 +86,7 @@ export const Editor = ({
         <></>
       )}
       <div className={`flex flex-col h-full relative grow ${isSettingUp ? 'hidden' : ''}`}>
-        <Accordion title="General Settings" reduced expanded>
+        <Accordion title="General Settings" reduced expanded={isExpanded}>
           <div>
             <div className="h-4"></div>
             <MetaInfoPanel

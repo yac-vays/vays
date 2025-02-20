@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { sendYAMLData } from '../../../controller/local/EditController/ExpertMode';
+import { sendFormData } from '../../../controller/local/EditController/StandardMode';
 import { RequestEditContext } from '../../../utils/types/internal/request';
 import ExpertMode from './ExpertMode/ExpertMode';
 import StandardEditMode from './StandardEditMode';
-import { sendFormData } from '../../../controller/local/EditController/StandardMode';
-import { sendYAMLData } from '../../../controller/local/EditController/ExpertMode';
 
 /**
  * Component that renders an editing frame with expert or standard mode and feedback.
@@ -24,6 +24,7 @@ const EditFrame = ({
   const [isValidating, setIsValidating] = useState<boolean>(false);
   const [yacErrorMsg, setYACErrorMsg] = useState<string>('');
   const [isDisplayingYACError, setIsDisplayingYACError] = useState<boolean>(false);
+  const [isReadOnly, setIsReadOnly] = useState<boolean>(requestEditContext.mode === 'read');
 
   const setEditErrorMsg = (msg: string) => {
     if (msg === '') {
@@ -33,6 +34,9 @@ const EditFrame = ({
       setIsDisplayingYACError(true);
     }
   };
+  useEffect(() => {
+    setIsReadOnly(requestEditContext.mode === 'read');
+  }, [requestEditContext.mode]);
   return (
     <section className="rounded-sm border border-stroke bg-white py-4 shadow-default dark:bg-boxdark">
       <div
@@ -68,32 +72,38 @@ const EditFrame = ({
             }`}
             style={{ backgroundColor: 'rgb(200 200 200 / 0.2)' }}
           >
-            <span className="text-wrap">Server: "{yacErrorMsg}"</span>
+            <span className={`text-wrap ${isReadOnly ? 'opacity-0' : ''}`}>
+              Server: "{yacErrorMsg}"
+            </span>
           </div>
-          <div
-            className=" grid place-items-center align-middle h-full"
-            style={{ right: 0, bottom: 0 }}
-          >
+          {isReadOnly ? (
+            <></>
+          ) : (
             <div
-              onClick={() => {
-                if (requestEditContext.viewMode === 'standard') {
-                  if (!isValidating) sendFormData(requestEditContext);
-                } else {
-                  if (!isValidating) sendYAMLData(requestEditContext);
-                }
-              }}
-              className="cursor-pointer inline-flex items-center justify-center rounded border border-black dark:border-meta-4 py-1.5 px-4 m-4 text-center font-medium text-plainfont hover:bg-opacity-90 hover:bg-primary hover:text-white dark:bg-meta-4 dark:hover:bg-white dark:hover:text-black"
+              className=" grid place-items-center align-middle h-full"
+              style={{ right: 0, bottom: 0 }}
             >
-              {isValidating ? (
-                <div
-                  style={{ borderWidth: 3, right: 10 }}
-                  className=" h-4 w-4 animate-spin rounded-full border-2 border-solid border-grey border-t-transparent z-10"
-                ></div>
-              ) : (
-                'Save'
-              )}
+              <div
+                onClick={() => {
+                  if (requestEditContext.viewMode === 'standard') {
+                    if (!isValidating) sendFormData(requestEditContext);
+                  } else {
+                    if (!isValidating) sendYAMLData(requestEditContext);
+                  }
+                }}
+                className="cursor-pointer inline-flex items-center justify-center rounded border border-black dark:border-meta-4 py-1.5 px-4 m-4 text-center font-medium text-plainfont hover:bg-opacity-90 hover:bg-primary hover:text-white dark:bg-meta-4 dark:hover:bg-white dark:hover:text-black"
+              >
+                {isValidating ? (
+                  <div
+                    style={{ borderWidth: 3, right: 10 }}
+                    className=" h-4 w-4 animate-spin rounded-full border-2 border-solid border-grey border-t-transparent z-10"
+                  ></div>
+                ) : (
+                  'Save'
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </section>

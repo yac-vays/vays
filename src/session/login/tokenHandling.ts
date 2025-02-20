@@ -44,7 +44,7 @@ export function handleAuthFailed(
     if (title) {
       showError(title, msg ?? '');
     } else {
-      showError('Please sign in (again).', 'There is no valid token. Please sign in.');
+      // showError('Please sign in (again).', 'There is no valid token. Please sign in.');
     }
     navigateToURL('/');
   }

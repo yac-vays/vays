@@ -52,9 +52,10 @@ export const OneOfEnumControl = ({
 
         <SelectStatic
           options={options || []}
-          onChange={(v: string) => handleChange(path, v)}
+          onChange={(v: string | number | undefined) => handleChange(path, v)}
           initValue={data}
           disabled={!enabled}
+          canResetToUndefined={!required}
         />
         <ErrorBox displayError={errors} />
       </div>

@@ -6,9 +6,10 @@ type DropDownOptions = { label: string; value: string }[];
 interface DropdownProps {
   // Expects the first one to be the title, the second one the label.
   options: DropDownOptions;
-  onChange: (value: string) => void;
+  onChange: (value: string | number | undefined) => void;
   initValue?: string;
   disabled?: boolean;
+  canResetToUndefined?: boolean;
 }
 
 function isValidOption(optValue: string | undefined, options: DropDownOptions) {
@@ -25,11 +26,12 @@ const SelectStatic: React.FC<DropdownProps> = ({
   onChange,
   initValue,
   disabled,
+  canResetToUndefined,
 }: DropdownProps) => {
   if (!isValidOption(initValue, options)) {
     initValue = undefined;
   }
-  const [selectedOption, setSelectedOption] = useState<string>(initValue ?? '');
+  const [selectedOption, setSelectedOption] = useState<string | undefined>(initValue ?? '');
   const [isOptionSelected, setIsOptionSelected] = useState<boolean>(initValue != undefined);
 
   const changeTextColor = () => {
@@ -55,7 +57,11 @@ const SelectStatic: React.FC<DropdownProps> = ({
            * https://stackoverflow.com/questions/36531525/value-of-selectoption-coming-back-as-string
            * https://stackoverflow.com/questions/44460102/form-input-select-returned-as-number-not-string-with-javascript
            */
-          onChange(options[e.target.selectedIndex - 1].value);
+          onChange(
+            e.target.selectedIndex == 0 && canResetToUndefined
+              ? undefined
+              : options[e.target.selectedIndex - 1].value,
+          );
           setSelectedOption(e.target.value);
           changeTextColor();
         }}
@@ -63,8 +69,12 @@ const SelectStatic: React.FC<DropdownProps> = ({
           isOptionSelected ? 'text-plainfont' : ''
         }`}
       >
-        <option value="" disabled className="text-plainfont dark:text-reducedfont">
-          Select option...
+        <option
+          value=""
+          disabled={!canResetToUndefined}
+          className="text-plainfont dark:text-reducedfont"
+        >
+          {canResetToUndefined ? 'Set to Undefined' : 'Select option...'}
         </option>
         {(function enterOptions() {
           const jsx = [];

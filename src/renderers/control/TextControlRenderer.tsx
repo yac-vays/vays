@@ -11,6 +11,14 @@ import { isUntypedStringInput } from '../utils/customTesterUtils';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
 
 const eventToValue = (ev: React.ChangeEvent<HTMLInputElement>) => ev.target.value;
+/**
+ * Strict conversion - if the string is empty, then the value written down must be undefined,
+ * which will remove the key from the data.
+ * @param ev
+ * @returns
+ */
+const strictEventToValue = (ev: React.ChangeEvent<HTMLInputElement>) =>
+  ev.target.value ? ev.target.value : undefined;
 
 export const TextControl = (props: ControlProps) => {
   doTroubleShootCheck(props);
@@ -19,6 +27,7 @@ export const TextControl = (props: ControlProps) => {
 
   let data = props.data;
   let errors = props.errors;
+  const sendTrivial = props.uischema.options?.send_trivial ?? false;
 
   /// data check
   if (!isOfTypeWeak(data, 'string')) {
@@ -29,7 +38,8 @@ export const TextControl = (props: ControlProps) => {
 
   const onChange = useCallback(
     debounce(
-      (e: React.ChangeEvent<HTMLInputElement>) => props.handleChange(props.path, eventToValue(e)),
+      (e: React.ChangeEvent<HTMLInputElement>) =>
+        props.handleChange(props.path, sendTrivial ? eventToValue(e) : strictEventToValue(e)),
       1500,
     ),
     [props.path],

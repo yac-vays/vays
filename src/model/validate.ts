@@ -125,5 +125,7 @@ function typeCheckValidationResponse(vr: unknown): Nullable<APIValidateResponse>
   if (typeCheck(TYPE_CHECK_VALIDATE_RESP, vr)) {
     return vr as APIValidateResponse;
   }
+  showError('Received bad data from Backend', `Received bad data when validating.`);
+
   return null;
 }

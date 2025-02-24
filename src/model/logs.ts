@@ -52,7 +52,7 @@ export async function getEntityLogs(
     return null;
   }
 
-  if (resp.status == 200) return typeCheckLog(await resp.json());
+  if (resp.status == 200) return typeCheckLog(await resp.json(), entityName);
   else if (resp.status == 404) {
     invalidateEntityListCache(url, requestContext.entityTypeName);
     return null;
@@ -78,9 +78,14 @@ export async function getEntityLogs(
   return null;
 }
 
-function typeCheckLog(logs: unknown): Nullable<EntityLog[]> {
+function typeCheckLog(logs: unknown, entityName: string): Nullable<EntityLog[]> {
   if (typeCheck(`[${TYPE_CHECK_ENTITY_LOG}]`, logs)) {
     return logs as EntityLog[];
   }
+  showError(
+    'Received bad data from Backend',
+    `Received bad data when fetching logs from ${entityName}.`,
+  );
+
   return null;
 }

@@ -40,10 +40,14 @@ export function registerEntityListInvalidationHook(
  * @param list
  * @returns
  */
-function typeCheckEntityList(list: unknown): EntityObject[] {
+function typeCheckEntityList(list: unknown, yacName: string): EntityObject[] {
   if (typeCheck(`[${TYPE_CHECK_ENTITY_OBJECT}]`, list)) {
     return list as EntityObject[];
   }
+  showError(
+    'Received bad data from Backend',
+    `Received bad data when fetching entity list of ${yacName}.`,
+  );
   return [];
 }
 
@@ -70,7 +74,7 @@ export async function getEntityList(requestContext: RequestContext): Promise<Ent
   } else if (resp.status == 200) {
     const res = await resp.json();
     // TODO: Do not ignore the hash here
-    return typeCheckEntityList(res.list);
+    return typeCheckEntityList(res.list, requestContext.backendObject.title);
   } else if (resp.status >= 500) {
     const ans = await resp.json();
     showError(

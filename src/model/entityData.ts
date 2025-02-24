@@ -24,7 +24,7 @@ export async function getEntityData(
     return null;
   }
 
-  if (resp.status == 200) return typeCheckEntityData(await resp.json());
+  if (resp.status == 200) return typeCheckEntityData(await resp.json(), entityName);
   else if (resp.status == 422) {
     // No validation error should happen here.
     showError('Internal Error', 'Error ID-VAL-GED-01. Please file a bug report!');
@@ -48,10 +48,14 @@ export async function getEntityData(
   return null;
 }
 
-function typeCheckEntityData(ed: unknown): Nullable<EntityData> {
+function typeCheckEntityData(ed: unknown, entityName: string): Nullable<EntityData> {
   //return ed as EntityData;
   if (typeCheck(TYPE_CHECK_ENTITY_DATA, ed)) {
     return ed as EntityData;
   }
+  showError(
+    'Received bad data from Backend',
+    `Received bad data when fetching information of ${entityName}.`,
+  );
   return null;
 }

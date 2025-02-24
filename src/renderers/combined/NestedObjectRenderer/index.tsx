@@ -20,7 +20,7 @@ import CardRenderer from './CardRenderer';
 
 export const NestedObjectRenderer = ({
   visible,
-  //enabled,
+  enabled,
   //id,
   description,
   uischema,
@@ -79,6 +79,7 @@ export const NestedObjectRenderer = ({
           renderers={renderers}
           cells={cells}
           onRemove={openDeleteDialog}
+          enabled={enabled}
         />
       );
     });
@@ -93,6 +94,7 @@ export const NestedObjectRenderer = ({
         description={description}
         required={required}
         errors={errors}
+        hideAddButton={!enabled}
       />
       {toRender}
     </>

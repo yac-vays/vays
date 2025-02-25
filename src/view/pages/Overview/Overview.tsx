@@ -12,6 +12,7 @@ import { invalidateEntityListCache } from '../../../model/entityList';
 import { YACBackend } from '../../../utils/types/config';
 import { RequestOverviewContext } from '../../../utils/types/internal/request';
 import EntityList from '../../components/EntityList';
+import MarkdownRender from '../../components/Markdown';
 import PageHeaderTitle from '../../thirdparty/components/PageTitle/PageHeaderTitle';
 
 interface OverviewPageProps {
@@ -109,8 +110,7 @@ const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) 
       >
         <div className="p-2 pl-8 pr-8">
           <b>Information</b>
-          <br />
-          {requestContext.rc.accessedEntityType?.description}
+          <br /> <MarkdownRender text={requestContext.rc.accessedEntityType?.description} />
         </div>
       </section>
 

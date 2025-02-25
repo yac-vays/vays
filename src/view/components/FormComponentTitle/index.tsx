@@ -1,4 +1,5 @@
 import ErrorButton from '../Buttons/ErrorButton';
+import MarkdownRender from '../Markdown';
 
 const FormComponentTitle = ({
   label,
@@ -44,7 +45,11 @@ const FormComponentTitle = ({
         )}
       </div>
       <div className="inline flex flex-row hyphens-auto">
-        {description ?? <em className="opacity-50 text-plainfont">No description provided.</em>}
+        {description ? (
+          <MarkdownRender text={description.replaceAll('\n', ' ')} />
+        ) : (
+          <em className="opacity-50 text-plainfont">No description provided.</em>
+        )}
         {errors ? (
           <label className="inline ml-2.5 block text-plainfont flex flex-row">
             <div className="relative">

@@ -1,13 +1,16 @@
+import { Nullable } from '../typeUtils';
 import { ActionsColumnResults } from './actions';
-import { Nullable } from "../typeUtils";
 
+export interface OverviewListCellEntry {
+  value: string;
+  isMarkdown: boolean;
+}
 
 export interface QueryResult {
   entityName: string;
   isLink: Nullable<string>;
-  elt: string[];
+  elt: OverviewListCellEntry[];
   actionPair: ActionsColumnResults;
-  
 }
 
 export interface QueryResponse {

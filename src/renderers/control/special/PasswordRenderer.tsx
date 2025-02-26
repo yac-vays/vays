@@ -6,7 +6,7 @@ import { hashPassword } from '../../../utils/passwordHashes';
 import TextInput from '../../../view/thirdparty/components/ifc/TextInput/TextInput';
 
 import ErrorBox from '../../../view/thirdparty/components/ifc/Label/ErrorBox';
-import OverheadLabel from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
+import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
 import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
 
@@ -49,7 +49,7 @@ export const PasswordRenderer = (props: ControlProps) => {
   //
   return (
     <div className="p-1">
-      <OverheadLabel
+      <OverheadLabelWithMarkdownDescr
         title={props.label ?? props.schema.title}
         required={props.required || false}
         description={props.description}

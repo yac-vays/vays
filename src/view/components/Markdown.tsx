@@ -6,7 +6,7 @@ const MarkdownRender = ({ text }: { text: string | null | undefined }) => {
     <div className="whitespace-pre-wrap">
       {text.split('\n').map((v) => (
         <>
-          {'\n'}
+          {/* {hasMultiLine ? '\n' : ''} */}
           <Markdown
             components={{
               strong(props) {

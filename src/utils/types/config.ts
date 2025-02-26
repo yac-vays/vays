@@ -9,13 +9,14 @@ export interface AppConfig {
     primary: HexColor;
     primaryHighlighted: HexColor;
   };
+  production: boolean;
   oidcConf: {
     server: string;
     clientID: string;
     redirectURI: string;
   };
   backends: YACBackend[];
-}/**
+} /**
  * Object describing a YAC backend as it is described by the app config.
  */
 
@@ -25,4 +26,3 @@ export interface YACBackend {
   icon: string;
   url: string;
 }
-

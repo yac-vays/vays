@@ -15,10 +15,14 @@ import { ENTITY_TYPE_CACHE_KEY } from './caching/cachekeys';
  * @param list
  * @returns
  */
-function typeCheckEntityTypeDecl(list: unknown): EntityTypeDecl[] {
+function typeCheckEntityTypeDecl(list: unknown, yacName: string): EntityTypeDecl[] {
   if (typeCheck(`[${TYPE_CHECK_ENTITY_TYPE_DECL}]`, list)) {
     return list as EntityTypeDecl[];
   }
+  showError(
+    'Received bad data from Backend',
+    `Received bad data when fetching type declarations of ${yacName}.`,
+  );
   return [];
 }
 
@@ -54,7 +58,7 @@ export async function getEntityTypes(yacBackend: YACBackend | null): Promise<Ent
     return [];
   } else if (resp.status == 200) {
     const res = await resp.json();
-    return typeCheckEntityTypeDecl(res);
+    return typeCheckEntityTypeDecl(res, yacBackend.title);
   } else if (hasAuthFailed(resp.status)) {
     handleAuthFailed();
   } else {

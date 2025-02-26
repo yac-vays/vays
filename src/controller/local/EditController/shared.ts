@@ -86,7 +86,6 @@ async function retreiveEditSchema(
   if (insertAction) {
     valResp = insertActionData(injectAction(valResp, requestEditContext), editActions);
   }
-  valResp.yaml = entityData.yaml;
   valResp.data = entityData?.data;
 
   if (startEditingSession) {
@@ -101,10 +100,13 @@ async function retreiveEditSchema(
     false,
     false,
     requestEditContext.entityName,
+    insertName,
   );
+
   if (valResp == null) {
     return null;
   }
+  valResp.yaml = entityData.yaml;
 
   return valResp;
   // if (!insertName || isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType)) {

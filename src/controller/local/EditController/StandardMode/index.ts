@@ -44,6 +44,7 @@ export async function updateSchema(
   doRevalidate: boolean,
   doNavigate: boolean = true,
   entityName: Nullable<string> = null,
+  injectName: boolean = true,
 ) {
   // Need to clone it since it is being modified...
   let data = structuredClone(frontData);
@@ -82,12 +83,12 @@ export async function updateSchema(
     if (requestEditContext.rc.accessedEntityType?.name_generated != NameGeneratedCond.enforced) {
       valResp = injectSettableName(valResp, requestEditContext.rc, name);
     }
-    return await updateSchema(valResp.data, requestEditContext, false);
+    return await updateSchema(valResp.data, requestEditContext, true);
   }
 
   updateURL(name, doNavigate, requestEditContext);
 
-  return injectMetaData(name, valResp, requestEditContext);
+  return injectMetaData(name, valResp, requestEditContext, injectName);
 }
 
 /**
@@ -151,11 +152,11 @@ function injectMetaData(
   name: Nullable<string>,
   valResp: ValidateResponse,
   requestEditContext: RequestEditContext,
+  injectName: boolean,
 ) {
-  if (isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType)) {
+  if (isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType) || !injectName) {
     return valResp;
   }
-  console.error('HEEY');
   valResp = injectSettableName(valResp, requestEditContext.rc, name);
   return valResp;
 }

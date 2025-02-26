@@ -1,7 +1,7 @@
 {
   "name": "vays",
   "private": true,
-  "version": "0.3rc28",
+  "version": "0.3rc29",
   "type": "module",
   "scripts": {
     "dev": "sh ./scripts/run-dev.sh",

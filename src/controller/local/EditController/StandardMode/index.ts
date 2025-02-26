@@ -28,18 +28,29 @@ import editingState from '../../../state/EditCtrlState';
 import { editViewNavigateToNewName, getAJV, getInitialEntityYAML, setYACStatus } from '../shared';
 import { getLocalEntityData } from './access';
 
+/**
+ * Expects the schema to contain the actions, optionally also the name, if not entered.
+ *
+ *
+ * @param frontData
+ * @param requestEditContext
+ * @param doRevalidate
+ * @param doNavigate
+ * @returns The updated schema. It will also insert the name and the actions into the data and schema.
+ */
 export async function updateSchema(
   frontData: { [key: string]: any },
   requestEditContext: RequestEditContext,
   doRevalidate: boolean,
   doNavigate: boolean = true,
+  entityName: Nullable<string> = null,
 ) {
   // Need to clone it since it is being modified...
   let data = structuredClone(frontData);
   let frontDataNoName;
 
   const originalName = requestEditContext.entityName ?? null;
-  let name: Nullable<string> = null;
+  let name: Nullable<string> = entityName;
 
   // If enforced then the name does not change so use the original name.
   if (isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType)) name = originalName;
@@ -144,7 +155,7 @@ function injectMetaData(
   if (isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType)) {
     return valResp;
   }
-
+  console.error('HEEY');
   valResp = injectSettableName(valResp, requestEditContext.rc, name);
   return valResp;
 }

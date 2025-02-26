@@ -1,10 +1,8 @@
 import Ajv from 'ajv';
 import { getEntityData } from '../../../model/entityData';
 import { getSchema } from '../../../model/validate';
-import { isNameGeneratedByYAC } from '../../../utils/nameUtils';
 import { insertDefaults, mergeDefaults } from '../../../utils/schema/defaultsHandling';
 import { injectAction, insertActionData, popActions } from '../../../utils/schema/injectActions';
-import { injectSettableName } from '../../../utils/schema/injectName';
 import { RequestEditContext } from '../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../utils/types/internal/validation';
 import { Nullable } from '../../../utils/types/typeUtils';
@@ -97,15 +95,23 @@ async function retreiveEditSchema(
   }
 
   mergeDefaults(valResp);
-  // const v = await updateSchema(valResp.data, requestEditContext, false, false);
-  // if (!insertName){
-
-  // }
-  if (!insertName || isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType)) {
-    return valResp;
+  valResp = await updateSchema(
+    valResp.data,
+    requestEditContext,
+    false,
+    false,
+    requestEditContext.entityName,
+  );
+  if (valResp == null) {
+    return null;
   }
 
-  return injectSettableName(valResp, requestEditContext.rc, requestEditContext.entityName);
+  return valResp;
+  // if (!insertName || isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType)) {
+  //   return valResp;
+  // }
+
+  // return injectSettableName(valResp, requestEditContext.rc, requestEditContext.entityName);
 }
 
 /**

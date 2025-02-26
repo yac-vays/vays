@@ -4,7 +4,7 @@ import { showError } from '../controller/global/notification';
 import { handleAuthFailed } from '../session/login/tokenHandling';
 import { getActionNames } from '../utils/actionUtils';
 import { hasAuthFailed, sendRequest } from '../utils/authRequest';
-import { dumpEditActions, EditActionSnapshot } from '../utils/schema/injectActions';
+import { dumpEditActions, EditActionSnapshot, NO_ACTIONS } from '../utils/schema/injectActions';
 import { ActionDecl, APIValidateResponse, TYPE_CHECK_VALIDATE_RESP } from '../utils/types/api';
 import { RequestEditContext } from '../utils/types/internal/request';
 import { ValidateResponse } from '../utils/types/internal/validation';
@@ -22,9 +22,8 @@ export const defaultValidationResponse: ValidateResponse = {
 
 export async function getSchema(
   requestEditContext: RequestEditContext,
-  editActions: EditActionSnapshot,
 ): Promise<ValidateResponse | null> {
-  return validate(requestEditContext.entityName ?? null, {}, requestEditContext, editActions);
+  return validate(requestEditContext.entityName ?? null, {}, requestEditContext, NO_ACTIONS);
 }
 
 export async function validateYAML(

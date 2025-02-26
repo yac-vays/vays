@@ -1,14 +1,21 @@
 import Ajv from 'ajv';
 import { getEntityData } from '../../../model/entityData';
 import { getSchema } from '../../../model/validate';
-import { insertDefaults, mergeDefaults } from '../../../utils/schema/defaultsHandling';
-import { injectAction, insertActionData, popActions } from '../../../utils/schema/injectActions';
+import { isNameGeneratedByYAC } from '../../../utils/nameUtils';
+import { insertDefaults } from '../../../utils/schema/defaultsHandling';
+import {
+  injectAction,
+  insertActionData,
+  NO_ACTIONS,
+  popActions,
+} from '../../../utils/schema/injectActions';
+import { injectSettableName } from '../../../utils/schema/injectName';
 import { RequestEditContext } from '../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../utils/types/internal/validation';
 import { Nullable } from '../../../utils/types/typeUtils';
 import { navigateToURL } from '../../global/url';
 import editingState from '../../state/EditCtrlState';
-import { updateSchema } from './StandardMode';
+import { coreUpdate, updateSchema } from './StandardMode';
 
 /**
  * Reset internal status storing the most recent YAC response (the one
@@ -77,38 +84,30 @@ async function retreiveEditSchema(
   if (entityData == null) {
     return null;
   }
-  const editActions = popActions({}, requestEditContext.rc);
 
-  let valResp: Nullable<ValidateResponse> = await getSchema(requestEditContext, editActions);
-  if (valResp == null) {
-    return null;
-  }
-  if (insertAction) {
-    valResp = insertActionData(injectAction(valResp, requestEditContext), editActions);
-  }
-  valResp.data = entityData?.data;
-
-  if (startEditingSession) {
-    setInitialEntityYAML(entityData.yaml);
-    editingState.initialData = structuredClone(valResp.data);
-  }
-
-  mergeDefaults(valResp);
-  valResp = await updateSchema(
-    valResp.data,
+  let valResp = await coreUpdate(
+    entityData.data,
     requestEditContext,
-    false,
-    false,
+    true,
+    NO_ACTIONS,
     requestEditContext.entityName,
-    insertName,
   );
 
   if (valResp == null) {
     return null;
   }
+  if (insertAction) {
+    valResp = insertActionData(injectAction(valResp, requestEditContext), NO_ACTIONS);
+  }
+
+  if (startEditingSession) {
+    setInitialEntityYAML(entityData.yaml);
+    editingState.initialData = structuredClone(entityData.data);
+  }
+
   valResp.yaml = entityData.yaml;
 
-  return valResp;
+  return injectMetaData(requestEditContext.entityName, valResp, requestEditContext, insertName);
   // if (!insertName || isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType)) {
   //   return valResp;
   // }
@@ -126,7 +125,7 @@ async function retreiveNewCreateSchema(
 ): Promise<ValidateResponse | null> {
   const editActions = popActions({}, requestEditContext.rc);
 
-  let valResp: Nullable<ValidateResponse> = await getSchema(requestEditContext, editActions);
+  let valResp: Nullable<ValidateResponse> = await getSchema(requestEditContext);
   if (valResp == null) {
     return null;
   }
@@ -199,4 +198,25 @@ export function setPreviousDefaultsObject(data: unknown) {
 
 export function getAJV(): Ajv {
   return editingState.ajv;
+}
+
+/**
+ * Inject name if necessary.
+ *
+ * @param name
+ * @param valResp
+ * @param requestEditContext
+ * @returns
+ */
+export function injectMetaData(
+  name: Nullable<string>,
+  valResp: ValidateResponse,
+  requestEditContext: RequestEditContext,
+  injectName: boolean,
+) {
+  if (isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType) || !injectName) {
+    return valResp;
+  }
+  valResp = injectSettableName(valResp, requestEditContext.rc, name);
+  return valResp;
 }

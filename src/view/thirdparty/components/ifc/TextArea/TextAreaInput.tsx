@@ -17,7 +17,7 @@ const TextAreaInput = ({
   defaultv,
   placeholder,
   placeholderEditable,
-  rows,
+  rows = 6,
   onChange,
 }: TextAreaProps) => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);

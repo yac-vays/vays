@@ -1,4 +1,4 @@
-import { ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
+import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { debounce } from 'lodash';
 import { useCallback } from 'react';
@@ -7,17 +7,17 @@ import { getCurrentContext } from '../../controller/local/EditController/ExpertM
 import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
 import OverheadLabel from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import TextArea from '../../view/thirdparty/components/ifc/TextArea/TextAreaInput';
-import { isUntypedStringInput } from '../utils/customTesterUtils';
+import { isCustomRenderer, isUntypedStringInput } from '../utils/customTesterUtils';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
-  
+
 const eventToValue = (ev: React.ChangeEvent<HTMLTextAreaElement>) => ev.target.value;
-  
+
 export const MultiLineTextControl = (props: ControlProps) => {
   doTroubleShootCheck(props);
 
   let data = props.data;
   let errors = props.errors;
-  
+
   /// data check
   if (!isOfTypeWeak(data, 'string')) {
     errors = reportBadData(data);
@@ -27,12 +27,13 @@ export const MultiLineTextControl = (props: ControlProps) => {
 
   const onChange = useCallback(
     debounce(
-      (e: React.ChangeEvent<HTMLTextAreaElement>) => props.handleChange(props.path, eventToValue(e)),
-      1500
+      (e: React.ChangeEvent<HTMLTextAreaElement>) =>
+        props.handleChange(props.path, eventToValue(e)),
+      1500,
     ),
-    [props.path]
+    [props.path],
   );
-  
+
   return (
     <div className="p-1">
       <OverheadLabel
@@ -43,13 +44,13 @@ export const MultiLineTextControl = (props: ControlProps) => {
       <TextArea
         onChange={onChange}
         data={data}
-        rows={6}
+        rows={props.uischema.options?.rows}
         enabled={props.enabled}
         defaultv={props.schema.default}
         placeholder={props.uischema.options?.initial}
         placeholderEditable={props.uischema.options?.initial_editable}
       />
-      <ErrorBox displayError={props.errors} />
+      <ErrorBox displayError={errors} />
     </div>
   );
 };
@@ -61,7 +62,7 @@ function doTroubleShootCheck(props: ControlProps) {
       'Potentially unsafe handling of Passwords',
       'It seems that you are showing and storing a password in plaintext. Consider using the dedicated Password renderer. ' +
         'It does not show the password and stores only the hash. If you still want to store the password in plain text or in another format, please contact me. ',
-       props.path.split('/').pop() ?? 'key',
+      props.path.split('/').pop() ?? 'key',
       getCurrentContext()?.rc.backendObject?.title ?? 'Unknown',
     );
   }
@@ -85,6 +86,18 @@ function doTroubleShootCheck(props: ControlProps) {
     );
   }
   if (
+    props.uischema.options?.rows !== undefined &&
+    !Number.isInteger(props.uischema.options.rows)
+  ) {
+    tsAddWarningMessage(
+      5,
+      'Potentially incorrect type for rows option',
+      'Looks like the rows option has a type that the schema does not allow.',
+      props.path.split('/').pop() ?? 'key',
+      getCurrentContext()?.rc.backendObject?.title ?? 'Unknown',
+    );
+  }
+  if (
     props.uischema?.options?.initial &&
     props.schema.default != undefined &&
     props.uischema?.options?.initial_editable
@@ -98,7 +111,7 @@ function doTroubleShootCheck(props: ControlProps) {
       getCurrentContext()?.rc.backendObject?.title ?? 'Unknown',
     );
   }
-  
+
   if (typeof props.data === 'string' && props.data.includes(', ')) {
     tsAddWarningMessage(
       6,
@@ -109,7 +122,7 @@ function doTroubleShootCheck(props: ControlProps) {
       getCurrentContext()?.rc.backendObject?.title ?? 'Unknown',
     );
   }
-  
+
   if (!props.description) {
     tsAddWarningMessage(
       1,
@@ -123,8 +136,7 @@ function doTroubleShootCheck(props: ControlProps) {
 
 export const MultiLineTextControlTester: RankedTester = rankWith(
   30,
-  or(isStringControl, isUntypedStringInput),
+  and(or(isStringControl, isUntypedStringInput), isCustomRenderer('text_area')),
 );
-  
+
 export default withJsonFormsControlProps(MultiLineTextControl);
-  

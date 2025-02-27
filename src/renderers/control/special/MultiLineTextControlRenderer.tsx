@@ -2,17 +2,17 @@ import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { debounce } from 'lodash';
 import { useCallback } from 'react';
-import { tsAddWarningMessage } from '../../controller/global/troubleshoot';
-import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/access';
-import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
-import OverheadLabel from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
-import TextArea from '../../view/thirdparty/components/ifc/TextArea/TextAreaInput';
-import { isCustomRenderer, isUntypedStringInput } from '../utils/customTesterUtils';
-import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
+import { tsAddWarningMessage } from '../../../controller/global/troubleshoot';
+import { getCurrentContext } from '../../../controller/local/EditController/ExpertMode/access';
+import ErrorBox from '../../../view/thirdparty/components/ifc/Label/ErrorBox';
+import OverheadLabel from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
+import TextArea from '../../../view/thirdparty/components/ifc/TextArea/TextAreaInput';
+import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
+import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
 
 const eventToValue = (ev: React.ChangeEvent<HTMLTextAreaElement>) => ev.target.value;
 
-export const MultiLineTextControl = (props: ControlProps) => {
+export const MultiLineTextControlRenderer = (props: ControlProps) => {
   doTroubleShootCheck(props);
 
   let data = props.data;
@@ -139,4 +139,4 @@ export const MultiLineTextControlTester: RankedTester = rankWith(
   and(or(isStringControl, isUntypedStringInput), isCustomRenderer('text_area')),
 );
 
-export default withJsonFormsControlProps(MultiLineTextControl);
+export default withJsonFormsControlProps(MultiLineTextControlRenderer);

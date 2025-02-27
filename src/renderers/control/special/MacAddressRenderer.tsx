@@ -58,7 +58,8 @@ export const MacAddressRenderer = (props: ControlProps) => {
       <TextInput
         enabled={props.enabled}
         defaultv={props.schema.default}
-        placeholder="XX:XX:XX:XX:XX:XX"
+        placeholder={props.uischema.options?.initial}
+        placeholderEditable={props.uischema.options?.initial_editable}
         data={mac}
         onChange={onChange}
       />

@@ -8,6 +8,7 @@ const Checkbox = ({
   minified,
   description,
   disabled,
+  isMarkdownDesc = false,
 }: {
   title?: string;
   initValue: boolean;
@@ -15,6 +16,7 @@ const Checkbox = ({
   minified?: boolean;
   description?: string;
   disabled: boolean;
+  isMarkdownDesc: boolean;
 }) => {
   const [isChecked, setIsChecked] = useState<boolean>(initValue);
 
@@ -75,7 +77,7 @@ const Checkbox = ({
           {title}
         </label>
         {description && description !== '' ? (
-          <InformationButton title={title} description={description} />
+          <InformationButton title={title} description={description} isMarkdown={isMarkdownDesc} />
         ) : (
           <></>
         )}

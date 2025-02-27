@@ -111,6 +111,7 @@ export function insertDefaults(valResp: ValidateResponse) {
 
 export function mergeDefaults(valResp: ValidateResponse): boolean {
   const defaults = _extractDefaults(valResp.json_schema);
+  setPreviousDefaultsObject(structuredClone(defaults));
 
   const mergeResult = _.assign(defaults, structuredClone(valResp.data));
   const isEqual = _.isEqual(mergeResult, valResp.data);

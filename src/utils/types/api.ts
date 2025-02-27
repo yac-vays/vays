@@ -113,7 +113,12 @@ export interface EntityTypeDecl {
   description: SafeSource<string>;
   create: boolean;
   delete: boolean;
-  options: object[];
+  options: {
+    title: string;
+    name: string;
+    default?: string;
+    aliases: { [key: string]: SafeSource<string> };
+  }[];
   logs: {
     name: string;
     title: string;

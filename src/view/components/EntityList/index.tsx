@@ -91,7 +91,7 @@ const EntityList = ({ requestContext }: EntityListProps) => {
       setReloadCount(reloadCount + 1);
       setTimeout(() => {
         for (const entity of tableEntries) {
-          invalidateLogCache(entity.elt[0], requestContext);
+          invalidateLogCache(entity.elt[0].value, requestContext);
         }
       }, 1000);
     });

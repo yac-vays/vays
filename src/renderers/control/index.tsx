@@ -4,9 +4,9 @@ import EnumControl, { EnumControlTester } from './EnumControl';
 import MultipleChoiceRenderer, { MultipleChoiceTester } from './MultipleChoiceRenderer';
 import NumberControl, { NumberControlTester } from './NumberControl';
 import OneOfEnumControl, { OneOfEnumControlTester } from './OneOfEnumControl';
-import { specialRenderers } from './special';
 import TextControl, { TextControlTester } from './TextControlRenderer';
 import { VoidControl, VoidTester } from './VoidSchemaControl';
+import { specialRenderers } from './special';
 
 export const controlRenderers = [
   { tester: TextControlTester, renderer: TextControl },

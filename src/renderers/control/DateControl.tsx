@@ -23,6 +23,8 @@ export const DateControl = ({
   config,
 }: ControlProps) => {
   const appliedUiSchemaOptions = merge({}, config, uischema.options);
+  const enableRange = uischema.options?.enable_range;
+  const disableRange = uischema.options?.disable_range;
 
   const format = appliedUiSchemaOptions.dateFormat;
   //const saveFormat = appliedUiSchemaOptions.dateSaveFormat ?? defaultDateFormat;
@@ -60,6 +62,8 @@ export const DateControl = ({
         data={data}
         type={schema.format ?? 'date'}
         enabled={enabled}
+        enableRange={enableRange}
+        disableRange={disableRange}
       />
       <ErrorBox displayError={errors} />
     </div>

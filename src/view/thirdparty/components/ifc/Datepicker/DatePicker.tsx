@@ -1,5 +1,6 @@
 import flatpickr from 'flatpickr';
 import { useEffect } from 'react';
+import { DateRange } from '../../../../../utils/types/internal/date';
 
 //import Language from "flatpickr/dist/l10n/de.js";
 
@@ -10,6 +11,8 @@ interface DatePickerProps {
   type?: string;
   enabled?: boolean;
   data?: string;
+  enableRange?: DateRange;
+  disableRange?: DateRange;
 }
 
 /**
@@ -36,6 +39,8 @@ const DatePicker = ({
   enabled,
   data,
   id,
+  enableRange,
+  disableRange,
 }: DatePickerProps): JSX.Element => {
   const altFmt = format == undefined || format === '' ? 'D M j, Y' : format;
 
@@ -43,6 +48,7 @@ const DatePicker = ({
     // Init flatpickr
     flatpickr(`.form-datepicker-${id}`, {
       defaultDate: data,
+      allowInvalidPreload: true,
       mode: 'single',
       //locale: Language.de,
       static: true,
@@ -50,12 +56,14 @@ const DatePicker = ({
       dateFormat: 'Y-m-d', // What the component returns
       altInput: true,
       altFormat: altFmt, // What the user sees
+      enable: enableRange ? [enableRange] : [() => true],
+      disable: disableRange ? [disableRange] : [],
       prevArrow:
         '<svg className="fill-current" width="7" height="11" viewBox="0 0 7 11"><path d="M5.4 10.8l1.4-1.4-4-4 4-4L5.4 0 0 5.4z" /></svg>',
       nextArrow:
         '<svg className="fill-current" width="7" height="11" viewBox="0 0 7 11"><path d="M1.4 10.8L0 9.4l4-4-4-4L1.4 0l5.4 5.4z" /></svg>',
     });
-  }, []);
+  }, [enableRange, disableRange]);
 
   return (
     <>

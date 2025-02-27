@@ -3,7 +3,7 @@ import { withJsonFormsControlProps } from '@jsonforms/react';
 
 import SSHKeyInput from '../../../view/components/SSHKeyInput';
 import ErrorBox from '../../../view/thirdparty/components/ifc/Label/ErrorBox';
-import OverheadLabel from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
+import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
 import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
 
@@ -39,7 +39,11 @@ export const SSHKeyRenderer = ({
     <div className="p-1">
       <div className="flex flex-row">
         <div className="grow">
-          <OverheadLabel title={label} required={required || false} description={description} />
+          <OverheadLabelWithMarkdownDescr
+            title={label}
+            required={required || false}
+            description={description}
+          />
           {sshlist.map((v: string) => (
             <SSHKeyInput
               data={v}

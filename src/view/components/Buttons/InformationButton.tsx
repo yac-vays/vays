@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react';
-import InfoPanel from '../InfoPanel';
 import useOutsideClick from '../../hooks/useOutsideClick';
+import InfoPanel from '../InfoPanel';
 
 interface InformationButtonProps {
   title?: string;
   description?: string;
+  isMarkdown?: boolean;
 }
 
 /**
@@ -14,14 +15,19 @@ interface InformationButtonProps {
  * @param description the description to display
  * @returns
  */
-const InformationButton = ({ title, description }: InformationButtonProps) => {
+const InformationButton = ({ title, description, isMarkdown }: InformationButtonProps) => {
   const [show, setShow] = useState<boolean>(false);
   const popoutRef = useRef<HTMLDivElement>(null);
   useOutsideClick(popoutRef, () => setShow(false));
   return (
     <>
       <div ref={popoutRef} onMouseLeave={() => setShow(false)}>
-        <InfoPanel show={show} title={title} description={description}>
+        <InfoPanel
+          show={show}
+          title={title}
+          description={description}
+          isMarkdown={isMarkdown ?? false}
+        >
           <div
             onMouseEnter={() => setShow(true)}
             onClick={() => setShow(!show)}

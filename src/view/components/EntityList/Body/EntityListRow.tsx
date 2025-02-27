@@ -1,14 +1,16 @@
 import { ReactNode } from 'react';
 import 'react-circular-progressbar/dist/styles.css';
 import { ActionsColumnResults } from '../../../../utils/types/internal/actions';
+import { OverviewListCellEntry } from '../../../../utils/types/internal/entityList';
 import { RequestContext } from '../../../../utils/types/internal/request';
 import { Nullable } from '../../../../utils/types/typeUtils';
 import ActionDropdown from '../../ActionDropdown';
 import ActionButton from '../../Buttons/ActionButton';
+import MarkdownRender from '../../Markdown';
 import LogsField from '../Logs/LogsField';
 
 interface EntityListRow {
-  entryValues: string[];
+  entryValues: OverviewListCellEntry[];
   requestContext: RequestContext;
   link: Nullable<string>;
   actionPair: ActionsColumnResults;
@@ -42,12 +44,14 @@ const EntityListRow = ({
                   style={{ paddingRight: 40 }}
                   role="cell"
                 >
-                  {entry === '(None)' ? (
+                  {entry.value === '(None)' ? (
                     <>
                       <em className="opacity-50">None</em>
                     </>
+                  ) : entry.isMarkdown ? (
+                    <MarkdownRender text={entry.value} />
                   ) : (
-                    entry
+                    entry.value
                   )}
                   {i == 0 ? (
                     <svg
@@ -73,12 +77,14 @@ const EntityListRow = ({
                 style={{ paddingRight: 40 }}
                 role="cell"
               >
-                {entry === '(None)' ? (
+                {entry.value === '(None)' ? (
                   <>
                     <em className="opacity-50">None</em>
                   </>
+                ) : entry.isMarkdown ? (
+                  <MarkdownRender text={entry.value} />
                 ) : (
-                  entry
+                  entry.value
                 )}
               </td>,
             );

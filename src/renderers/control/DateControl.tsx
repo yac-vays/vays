@@ -5,7 +5,7 @@ import { isRFC3339Date } from '../../utils/dateUtils';
 import { hashCode } from '../../utils/hashUtils';
 import DatePicker from '../../view/thirdparty/components/ifc/Datepicker/DatePicker';
 import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
-import OverheadLabel from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
+import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
 
 export const DateControl = ({
@@ -45,7 +45,11 @@ export const DateControl = ({
 
   return (
     <div className="p-1">
-      <OverheadLabel title={label} required={required || false} description={description} />
+      <OverheadLabelWithMarkdownDescr
+        title={label}
+        required={required || false}
+        description={description}
+      />
 
       <DatePicker
         id={hashCode(path).toString()}

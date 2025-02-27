@@ -42,6 +42,7 @@ export const BooleanControl = ({
           onChange={(value: boolean) => handleChange(path, value)}
           description={description}
           disabled={!enabled}
+          isMarkdownDesc
         />
         <ErrorBox displayError={errors} />
       </div>

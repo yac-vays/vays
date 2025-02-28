@@ -6,7 +6,7 @@
  * stripped away at compile time, thus they cannot be used for runtime typwe checking of the IO.
  */
 import { JsonSchema } from '@jsonforms/core';
-import { Nullable } from './typeUtils';
+import { Nullable, SafeSource } from './typeUtils';
 
 export type APIOperation = 'create' | 'change' | 'delete';
 
@@ -110,10 +110,15 @@ export interface EntityTypeDecl {
   name_pattern: string; // TODO: RegExp
   name_example: string;
   name_generated: NameGeneratedCond;
-  description: string;
+  description: SafeSource<string>;
   create: boolean;
   delete: boolean;
-  options: object[];
+  options: {
+    title: string;
+    name: string;
+    default?: string;
+    aliases: { [key: string]: SafeSource<string> };
+  }[];
   logs: {
     name: string;
     title: string;

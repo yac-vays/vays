@@ -1,7 +1,7 @@
 {
   "name": "vays",
   "private": true,
-  "version": "0.3rc27",
+  "version": "0.3rc29",
   "type": "module",
   "scripts": {
     "dev": "sh ./scripts/run-dev.sh",
@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "pretty": "npx prettier --write \"**/*.tsx\"",
     "lint": "npx eslint src",
-    "clear": "rm -r public/editor"
+    "clear": "rm -r public/editor",
+    "test": "npx vitest"
   },
   "author": {
     "name": "ETH Zürich",
@@ -42,6 +43,7 @@
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.5.2",
     "react-icons": "^4.12.0",
+    "react-markdown": "^10.0.0",
     "react-router-dom": "^6.29.0",
     "react-toastify": "^10.0.6",
     "sort-by": "^0.0.2",
@@ -50,6 +52,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
     "@types/eslint-plugin-security": "^3.0.0",
     "@types/lodash": "^4.17.15",
     "@types/react": "^18.3.18",
@@ -61,6 +65,7 @@
     "css-loader": "^7.1.2",
     "eslint": "^9.20.1",
     "file-loader": "^6.2.0",
+    "jsdom": "^26.0.0",
     "postcss": "^8.5.3",
     "postcss-nested": "^7.0.2",
     "prettier": "^3.5.1",
@@ -70,12 +75,8 @@
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.1.1",
+    "vitest": "^3.0.7",
     "webpack": "^5.98.0",
     "webpack-cli": "^5.1.4"
-  },
-  "overrides": {
-    "vite": {
-      "esbuild": "^0.25.0"
-    }
   }
 }

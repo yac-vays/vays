@@ -19,6 +19,11 @@ export default defineConfig({
       key: getCertificate('cert/private-key.pem'),
       cert: getCertificate('cert/certificate.pem')
     }
-  }
+  },
+  test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: ["src/setupTest.ts"],
+  },
   
 });

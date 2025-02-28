@@ -4,6 +4,10 @@ import { YACBackend } from '../config';
 export type EditViewMode = 'create' | 'change' | 'read';
 
 export interface RequestOverviewContext {
+  // isSearch: boolean; // TODO: Currently not supplied.
+  // searchProperty: string | null; // TODO: CURRENTLY NOT SUPPLIED
+  // searchQuery: string | null; // TODO: CURRENTLY NOT SUPPLIED
+
   searchQueries?: { [key: string]: string };
   pageNumber: number;
   numPerPage: number;
@@ -24,9 +28,6 @@ export interface RequestContext {
   yacURL: string | null | undefined; // TODO: Remove undefined when also redoing the index thing.
   entityTypeName: string | null;
   accessedEntityType: EntityTypeDecl | null;
-  // isSearch: boolean; // TODO: Currently not supplied.
-  // searchProperty: string | null; // TODO: CURRENTLY NOT SUPPLIED
-  // searchQuery: string | null; // TODO: CURRENTLY NOT SUPPLIED
   backendObject: YACBackend | null;
   entityTypeList: EntityTypeDecl[] | null; // The list of entities that this particular backend defines
 }

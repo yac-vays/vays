@@ -23,7 +23,8 @@ const LogPanel = ({ logList, title }: { logList: EntityLog[]; title: string }) =
                         : 'No time available'}
                     </span>
                   </div>
-                  <div className="p-2 pt-0 rounded-md text-gray-800 flex-1">
+                  {/* Doing it the trigger way. Not gonna define a new color for this single usecase. */}
+                  <div className="p-2 pt-0 rounded-md text-gray-800 flex-1 dark:text-white">
                     <p>{logEntry.message}</p>
                   </div>
                 </div>,

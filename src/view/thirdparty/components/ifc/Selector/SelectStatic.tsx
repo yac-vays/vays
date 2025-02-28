@@ -74,7 +74,7 @@ const SelectStatic: React.FC<DropdownProps> = ({
           disabled={!canResetToUndefined}
           className="text-plainfont dark:text-reducedfont"
         >
-          {canResetToUndefined ? 'Set to Undefined' : 'Select option...'}
+          {canResetToUndefined ? 'Set To Undefined' : 'Select option...'}
         </option>
         {(function enterOptions() {
           const jsx = [];

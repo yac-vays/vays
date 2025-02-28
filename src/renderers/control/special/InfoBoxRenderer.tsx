@@ -8,7 +8,7 @@ export const InfoBoxControl = (props: ControlProps) => {
     <div className="mt-4 mb-6 pr-4 p-1">
       <FormComponentTitle
         label={props.schema.title}
-        description={''}
+        description={' '}
         onClick={() => {}}
         hideAddButton
       />

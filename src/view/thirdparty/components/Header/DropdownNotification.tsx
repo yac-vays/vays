@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   clearWarningMessageBuffer,
   getWarningMessageBuffer,
 } from '../../../../controller/global/troubleshoot';
 import troubleshootCtrlState from '../../../../controller/state/TroubleShootState';
+import { getConfig } from '../../../../model/config';
 import SchemaWarningMessage, {
   TroubleShootMessageProps,
 } from '../../../components/SchemaWarningMessage';
@@ -14,12 +15,20 @@ const DropdownNotification = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifying, setNotifying] = useState(false);
   const [content, setContent] = useState<{ prop: TroubleShootMessageProps; msgKey: string }[]>([]);
+  const [isProd, setIsProd] = useState<boolean>(true);
   troubleshootCtrlState.update = (showNotify: boolean = true) => {
     setContent(getWarningMessageBuffer());
     setNotifying(showNotify);
   };
+  useEffect(() => {
+    (async () => {
+      const a = await getConfig();
+      if (!a) return;
+      setIsProd(a?.production ?? true);
+    })();
+  }, []);
 
-  return (
+  return !isProd ? (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
       <li className="lg:hover:scale-110 duration-500">
         <Link
@@ -118,6 +127,8 @@ const DropdownNotification = () => {
         )}
       </li>
     </ClickOutside>
+  ) : (
+    <></>
   );
 };
 

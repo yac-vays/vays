@@ -9,7 +9,7 @@ import { WithOptionLabel } from '@jsonforms/material-renderers/lib/mui-controls'
 import { TranslateProps, withJsonFormsOneOfEnumProps, withTranslateProps } from '@jsonforms/react';
 import React from 'react';
 import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
-import OverheadLabel from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
+import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import SelectStatic from '../../view/thirdparty/components/ifc/Selector/SelectStatic';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
 
@@ -48,7 +48,11 @@ export const OneOfEnumControl = ({
   return (
     <>
       <div className="p-1 mb-4.5">
-        <OverheadLabel title={label} required={required || false} description={description} />
+        <OverheadLabelWithMarkdownDescr
+          title={label}
+          required={required || false}
+          description={description}
+        />
 
         <SelectStatic
           options={options || []}

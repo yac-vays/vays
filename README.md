@@ -15,7 +15,15 @@ After cloning, navigate into the directory and run
 npm ci
 ```
 
-### Run the development server
+### Run Tests
+
+Run 
+
+```sh
+npm run test
+```
+
+### Run the Development Server
 
 Note this is for (local) development **only**, so if you are more interested into a production build, see below.
 

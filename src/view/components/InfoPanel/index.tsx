@@ -1,16 +1,19 @@
 import { arrow, autoUpdate, flip, FloatingArrow, offset, useFloating } from '@floating-ui/react';
 import { useRef } from 'react';
+import MarkdownRender from '../Markdown';
 
 const InfoPanel = ({
   children,
   show,
   title,
   description,
+  isMarkdown = false,
 }: {
   children: React.ReactNode;
   show: boolean;
   title?: string;
   description?: string;
+  isMarkdown: boolean;
 }) => {
   const arrowRef = useRef(null);
   const { refs, floatingStyles, context, placement } = useFloating({
@@ -45,8 +48,8 @@ const InfoPanel = ({
                 placement.startsWith('right')
                   ? { left: 0 }
                   : placement.startsWith('top')
-                  ? {}
-                  : { top: -14 }
+                    ? {}
+                    : { top: -14 }
               }
               tipRadius={3}
               className="dark:fill-white"
@@ -59,7 +62,7 @@ const InfoPanel = ({
               </div>
               <div className="px-5 pt-1 pb-5 text-center">
                 <p className="font-medium whitespace-pre-line hyphens-auto text-reducedfont">
-                  {description}
+                  {isMarkdown ? <MarkdownRender text={description} /> : description}
                 </p>
               </div>
             </div>

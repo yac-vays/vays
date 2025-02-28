@@ -8,7 +8,7 @@ import { getTriggerableActions } from '../../../../utils/actionUtils';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 import Checkbox from '../../../thirdparty/components/ifc/CheckBox/CheckBox';
 import ErrorBox from '../../../thirdparty/components/ifc/Label/ErrorBox';
-import OverheadLabel from '../../../thirdparty/components/ifc/Label/OverheadLabel';
+import OverheadLabelWithMarkdownDescr from '../../../thirdparty/components/ifc/Label/OverheadLabel';
 import TextInput from '../../../thirdparty/components/ifc/TextInput/TextInput';
 
 const MetaInfoPanel = ({
@@ -32,7 +32,7 @@ const MetaInfoPanel = ({
   return (
     <div className="flex flex-row items-end gap-4 pb-2 border-b">
       <div className="grow">
-        <OverheadLabel title="Entity Name" required={true} description="" />
+        <OverheadLabelWithMarkdownDescr title="Entity Name" required={true} description="" />
         <TextInput
           placeholder={
             requestEditContext.rc.accessedEntityType?.name_example

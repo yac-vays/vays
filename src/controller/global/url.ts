@@ -56,7 +56,7 @@ export async function getRequestContextOverview(
   backendName: string,
   entityTypeName: string,
   backends: YACBackend[],
-) {
+): Promise<RequestOverviewContext> {
   let be: YACBackend | null = null;
   for (const backend of backends) {
     if (backendName === backend.name) {
@@ -69,13 +69,14 @@ export async function getRequestContextOverview(
     searchQueries: {},
     pageNumber: 0,
     numPerPage: 10,
+    // isSearch : false,
+    // searchProperty : null, // TODO: Search.
+    // searchQuery: null,
+
     rc: {
       yacURL: be?.url,
       entityTypeName: entityTypeName,
       accessedEntityType: getEntityTypeFromEntityName(entityTypeName, entityTypeList),
-      // isSearch : false,
-      // searchProperty : null, // TODO: Search.
-      // searchQuery: null,
       backendObject: be,
       entityTypeList: entityTypeList,
     },
@@ -166,7 +167,6 @@ export async function isValidQueryOverview(
 
   if (!found) return false;
 
-  // TODO: Maybe postpone this check?
   // 2. Check if the type exists.
   const etd: EntityTypeDecl[] = await getEntityTypes(be ?? null);
   for (const typeDef of etd) {

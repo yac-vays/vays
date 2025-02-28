@@ -10,7 +10,7 @@ import { withJsonFormsControlProps } from '@jsonforms/react';
 import { debounce } from 'lodash';
 import { useCallback } from 'react';
 import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
-import OverheadLabel from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
+import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import NumberInput from '../../view/thirdparty/components/ifc/NumberInput/NumberInput';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
 
@@ -47,7 +47,11 @@ export const NumberControl = ({
 
   return (
     <div className="p-1">
-      <OverheadLabel title={label} required={required || false} description={description} />
+      <OverheadLabelWithMarkdownDescr
+        title={label}
+        required={required || false}
+        description={description}
+      />
       <NumberInput
         id={id}
         data={data}

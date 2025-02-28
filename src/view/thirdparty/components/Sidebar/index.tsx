@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import Logo from '../../../../../rsc/logo/eth_logo.svg';
+import { getConfig } from '../../../../model/config';
 import { YACBackend } from '../../../../utils/types/config';
 import NoticeFooter from '../../../components/NoticeFooter';
 import SidebarGroup from './SidebarGroup';
@@ -22,6 +23,12 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, backendList }: SidebarProps) => 
   const [sidebarExpanded, setSidebarExpanded] = useState(
     storedSidebarExpanded === null ? false : storedSidebarExpanded === 'true',
   );
+  const [logoURL, setLogoURL] = useState<string>('/favicon.ico');
+  useEffect(() => {
+    (async () => {
+      setLogoURL((await getConfig())?.logo ?? Logo);
+    })();
+  }, []);
 
   // close on click outside
   useEffect(() => {
@@ -78,7 +85,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, backendList }: SidebarProps) => 
               justifyContent: 'center',
             }}
           >
-            <img src={Logo} alt="Logo" />
+            <img src={logoURL} alt="Logo" />
           </div>
         </NavLink>
 

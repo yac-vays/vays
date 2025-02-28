@@ -73,9 +73,12 @@ export function injectSettableName(
   injectControls(valResp, [structuredClone(uiNameControl)]);
 
   if (isNameRequiredByYAC(requestContext.accessedEntityType)) {
-    valResp.json_schema.required?.push(INJECTED_NAME_PROPETRY);
+    if (
+      valResp.json_schema.required &&
+      !valResp.json_schema.required.includes(INJECTED_NAME_PROPETRY)
+    )
+      valResp.json_schema.required?.push(INJECTED_NAME_PROPETRY);
   }
-
   if (name != null) {
     valResp.data[INJECTED_NAME_PROPETRY] = name;
   }

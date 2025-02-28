@@ -5,7 +5,11 @@
 
 import { getEntityList } from '../../../model/entityList';
 import { EntityObject } from '../../../utils/types/api';
-import { QueryResponse, QueryResult } from '../../../utils/types/internal/entityList';
+import {
+  OverviewListCellEntry,
+  QueryResponse,
+  QueryResult,
+} from '../../../utils/types/internal/entityList';
 import { RequestContext } from '../../../utils/types/internal/request';
 import { Nullable } from '../../../utils/types/typeUtils';
 import entityListCtrlState from '../../state/EntityListCtrlState';
@@ -85,23 +89,24 @@ export async function fetchEntities(
  * - Additional values such as 'Logs' and 'Actions' are added to the end
  *
  */
-function representEntity(entity: EntityObject, requestContext: RequestContext): string[] {
-  const values = [entity.name];
+function representEntity(
+  entity: EntityObject,
+  requestContext: RequestContext,
+): OverviewListCellEntry[] {
+  const values = [{ value: entity.name, isMarkdown: false }];
   for (const option of requestContext.accessedEntityType?.options ?? []) {
     // TODO: This is ugly, do better typing!
-    const value: string = (entity.options as any)[(option as any).name] as string;
-    if (value in (option as any).aliases) {
-      values.push((option as any).aliases[value]);
+    const value: string = (entity.options as any)[option.name] as string;
+    if (value in option.aliases) {
+      values.push({ value: option.aliases[value], isMarkdown: true });
     } else if (value == null) {
-      // TODO: Make this italics, rather than normal text.
-      // Can maybe leave this code and just filter for this flag.
-      values.push('(None)');
+      values.push({ value: '(None)', isMarkdown: false });
     } else {
-      values.push(value.toString().replaceAll(',', ', '));
+      values.push({ value: value.toString().replaceAll(',', ', '), isMarkdown: false });
     }
   }
-  values.push('Logs');
-  values.push('Actions');
+  values.push({ value: 'Logs', isMarkdown: false });
+  values.push({ value: 'Actions', isMarkdown: false });
 
   return values;
 }
@@ -129,8 +134,7 @@ export function getHeaderEntries(requestContext: RequestContext): string[] {
 
   const header: string[] = ['Name'];
   for (const option of requestContext.accessedEntityType?.options ?? []) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const optName: string = (option as any).title as string;
+    const optName: string = option.title as string;
     header.push(optName);
   }
   header.push('Logs');

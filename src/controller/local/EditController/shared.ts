@@ -1,9 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Ajv from 'ajv';
 import { getEntityData } from '../../../model/entityData';
-import { getSchema } from '../../../model/validate';
+import { getSchema, validate } from '../../../model/validate';
 import { isNameGeneratedByYAC } from '../../../utils/nameUtils';
-import { insertDefaults } from '../../../utils/schema/defaultsHandling';
+import { extractPatch, getAllErrors, removeOldData } from '../../../utils/schema/dataUtils';
 import {
+  insertDefaults,
+  mergeDefaults,
+  updateDefaults,
+} from '../../../utils/schema/defaultsHandling';
+import {
+  EditActionSnapshot,
   injectAction,
   insertActionData,
   NO_ACTIONS,
@@ -13,9 +20,10 @@ import { injectSettableName } from '../../../utils/schema/injectName';
 import { RequestEditContext } from '../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../utils/types/internal/validation';
 import { Nullable } from '../../../utils/types/typeUtils';
+import { showError } from '../../global/notification';
 import { navigateToURL } from '../../global/url';
 import editingState from '../../state/EditCtrlState';
-import { coreUpdate, updateSchema } from './StandardMode';
+import { updateSchema } from './StandardMode';
 
 /**
  * Reset internal status storing the most recent YAC response (the one
@@ -219,4 +227,95 @@ export function injectMetaData(
   }
   valResp = injectSettableName(valResp, requestEditContext.rc, name);
   return valResp;
+}
+
+/**
+ * Subroutine which performs as many validates as it
+ * is necessary to stabilize out the data object. That is, it validates and if new parameters
+ * with defaults appear or parameters are removed and the data needs to be cleared up.
+ * @param entityData
+ * @param requestEditContext
+ * @param doRevalidate
+ * @param editActions
+ * @param name
+ * @returns
+ *
+ * @note Internal (controller) use only.
+ */
+export async function coreUpdate(
+  entityData: { [key: string]: unknown },
+  requestEditContext: RequestEditContext,
+  doRevalidate: boolean,
+  editActions: EditActionSnapshot,
+  name: Nullable<string>,
+) {
+  let data = entityData;
+  if (requestEditContext.mode === 'change') {
+    data = extractPatch(editingState.initialData, data);
+  }
+
+  const valResp: Nullable<ValidateResponse> = await validate(
+    name,
+    data,
+    requestEditContext,
+    editActions,
+  );
+  if (valResp == null) return null;
+
+  setYACStatus(valResp.valid, valResp.detail);
+  const didChange = handleDefaults(entityData, valResp, requestEditContext);
+
+  // do revalidation here!
+  // See ephemeral property problem.
+  if (doRevalidate && didChange) {
+    return await coreUpdate(valResp.data, requestEditContext, doRevalidate, editActions, name);
+  }
+  return valResp;
+}
+
+/**
+ * Checks whether some defaults have been changed.
+ * Will save the current default object to the state.
+ *
+ *
+ * @param previousData
+ * @param valResp
+ * @param requestEditContext
+ * @returns
+ */
+function handleDefaults(
+  previousData: any,
+  valResp: ValidateResponse,
+  requestEditContext: RequestEditContext,
+) {
+  let didChange = false;
+
+  if (requestEditContext.mode === 'change') {
+    console.log('Edit controller: Going into branch change.');
+    valResp.data = previousData; //frontData;
+    didChange = mergeDefaults(valResp);
+  } else {
+    console.log('Edit controller: Going into general branch.');
+    didChange = updateDefaults(valResp);
+  }
+  // Note: seperate calculate and store here, avoiding short circuiting.
+  const didRemove = cleanData(valResp);
+  didChange ||= didRemove;
+  return didChange;
+}
+
+/**
+ * Removes the data which is no longer allowed by the new schema.
+ * This is necessary due to `yac_if`.
+ * @param valResp
+ * @returns Whether the data object has been altered.
+ */
+function cleanData(valResp: ValidateResponse): boolean {
+  return removeOldData(
+    valResp.data,
+    getAllErrors(valResp.data, valResp.json_schema, getAJV(), (e: any) => {
+      showError('Faulty YAC Config: Schema Error', e.toString());
+      navigateToURL('/');
+    }),
+  );
 }

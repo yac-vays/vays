@@ -11,7 +11,11 @@ import {
 
 global.fetch = vi.fn();
 
-const URL = 'http://unencrypted_yac_no_token.com';
+/**
+ * Note: URL validation (ensuring that the URL has https protocol) happens at the validateConfig
+ * stage.
+ */
+const URL = 'https://yac_no_token.com';
 
 test('makes a GET request to fetch todo list and returns the result', async () => {
   //@ts-expect-error The method has been injected above.

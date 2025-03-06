@@ -23,6 +23,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "src/lib.d.ts", "misc/yaml-tests/yamlMerger.js"],
+  "include": ["tests", "src", "src/lib.d.ts", "misc/yaml-tests/yamlMerger.js", "src/setupTest.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

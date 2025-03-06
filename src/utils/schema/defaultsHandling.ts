@@ -79,6 +79,11 @@ function _extractDefaults(schema: JsonSchema) {
 /**
  * Adds the new parameter defaults, modifies existing ones
  * if needed and removes no longer present ones.
+ *
+ * Note that it will only modify parameters if the defaults object has actually changed.
+ *
+ * This is used for creating a new entity, in which some settings may change the defaults throughout
+ * the object in question.
  * @param valResp
  * @returns Whether the data has been changed.
  */
@@ -99,6 +104,7 @@ export function updateDefaults(valResp: ValidateResponse): boolean {
 }
 
 /**
+ * Inserts the default at the beginning of *creating* a new entity, at the beginning.
  *
  * @param valResp The validation response which includes the JSON schema and the data.
  */
@@ -109,6 +115,16 @@ export function insertDefaults(valResp: ValidateResponse) {
   valResp.data = data;
 }
 
+/**
+ * Merge defaults. This creates a defaults object and merges it with the existing
+ * data. This has the effect that if a key does not exist in the data object but
+ * it contains a default, then it is set. Does do so also for deep keys.
+ *
+ * Used for editing in which new defaults appearing are entered but existing data
+ * is not changed.
+ * @param valResp
+ * @returns
+ */
 export function mergeDefaults(valResp: ValidateResponse): boolean {
   const defaults = _extractDefaults(valResp.json_schema);
   setPreviousDefaultsObject(structuredClone(defaults));

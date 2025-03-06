@@ -4,6 +4,7 @@ import { navigateToURL } from '../../controller/global/url';
 import { AppConfig } from '../../utils/types/config';
 import { AuthDiscConfig } from '../../utils/types/internal/request';
 import { Nullable } from '../../utils/types/typeUtils';
+import { joinUrl } from '../../utils/urlUtils';
 import iLocalStorage from '../persistent/LocalStorage';
 import { setUserLoggedIn } from './tokenHandling';
 
@@ -43,7 +44,7 @@ async function performDiscovery(appconf: AppConfig): Promise<Nullable<URL>> {
        * Value used in the authorization request as redirect_uri pre-registered at the
        * Authorization Server.
        */
-      redirect_uri: appconf.oidcConf.redirectURI,
+      redirect_uri: joinUrl(`https://${window.location.host}`, 'oauth2-redirect'), // appconf.oidcConf.redirectURI,
       scope: 'openid email',
       code_challenge,
       code_challenge_method,

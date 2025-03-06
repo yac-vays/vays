@@ -48,6 +48,8 @@ export function injectAction(valResp: ValidateResponse, requestContext: RequestE
 
 export type EditActionSnapshot = { [key: string]: { action: ActionDecl; dataEntryValue: boolean } };
 
+export const NO_ACTIONS: EditActionSnapshot = {};
+
 export function popActions(data: any, requestContext: RequestContext): EditActionSnapshot {
   const values: EditActionSnapshot = {};
 

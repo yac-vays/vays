@@ -5,6 +5,7 @@ import { validateYAML } from '../../../../model/validate';
 import { getActionNames } from '../../../../utils/actionUtils';
 import { ActionDecl } from '../../../../utils/types/api';
 import { RequestContext, RequestEditContext } from '../../../../utils/types/internal/request';
+import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import { Nullable } from '../../../../utils/types/typeUtils';
 import { showModalMessage } from '../../../global/modal';
 import { showError } from '../../../global/notification';
@@ -34,9 +35,9 @@ export async function updateYAMLschema(
   yaml: string,
   requestEditContext: RequestEditContext,
   acts: ActionDecl[],
-) {
+): Promise<Nullable<ValidateResponse>> {
   const valResp = await validateYAML(requestEditContext, name, yaml, getInitialEntityYAML(), acts);
-  if (valResp == null) return;
+  if (valResp == null) return null;
   setYACStatus(valResp.valid, valResp.detail);
 
   return valResp;

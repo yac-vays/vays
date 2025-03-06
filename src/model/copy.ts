@@ -1,6 +1,7 @@
 import { showError } from '../controller/global/notification';
 import { actions2URLQuery } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
+import { isNameGeneratedByYAC } from '../utils/nameUtils';
 import { ActionDecl } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
@@ -15,11 +16,15 @@ export async function copyEntity(
   const url: string | null | undefined = requestContext.yacURL;
 
   if (url == undefined || url == null) return false;
+  let entity: object = { name: entityName, copy: copyEntityName };
+  if (isNameGeneratedByYAC(requestContext.accessedEntityType)) {
+    entity = { copy: copyEntityName };
+  }
 
   const resp: Nullable<Response> = await sendRequest(
     joinUrl(url, `/entity/${requestContext.entityTypeName}${actions2URLQuery(actions)}`),
     'POST',
-    JSON.stringify({ name: entityName, copy: copyEntityName }),
+    JSON.stringify(entity),
   );
   if (resp == null) return false;
 

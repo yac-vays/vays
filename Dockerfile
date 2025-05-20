@@ -11,15 +11,14 @@ WORKDIR /code
 # Copy the application code to the container
 COPY ./ ./
 
-# Install dependencies
-RUN npm ci
+ARG version=v0.0
 
+RUN echo 'export default "'${version#v}'";' > /code/rsc/version.tsx && \
+    npm pkg set version=${version#v} && \
+    npm ci
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-
-
 RUN npm run build
-
 
 #
 # Final Image - Nginx server to serve the built files
@@ -39,4 +38,3 @@ EXPOSE 80
 
 # Start Nginx server
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
-

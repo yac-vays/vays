@@ -1,8 +1,10 @@
----
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $.Release.Name }}-configmap
+  name: {{ include "fullname" . }}
+  labels:
+    app: {{ include "name" . }}
+    chart: {{ include "chart" . }}
 data:
   config.json: |-
-{{ $.Files.Get $.Values.config | indent 4 }}
+{{ .Values.config | toPrettyJson | indent 4 }}

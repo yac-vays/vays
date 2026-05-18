@@ -1,4 +1,5 @@
 apiVersion: v2
 name: vays
 type: application
-version: 1
+version: 2.0.0
+description: VAYS - YAC frontend (static site served by nginx)

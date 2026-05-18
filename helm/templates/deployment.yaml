@@ -1,71 +1,99 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $.Release.Name }}
+  name: {{ include "fullname" . }}
+  labels:
+    app: {{ include "name" . }}
+    chart: {{ include "chart" . }}
 spec:
-  selector:
-    matchLabels:
-      app: {{ $.Release.Name }}
-  replicas: {{ $.Values.deploy.replicas }}
+  replicas: {{ .Values.replicaCount }}
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 0
       maxSurge: 1
+  selector:
+    matchLabels:
+      app: {{ include "name" . }}
   template:
     metadata:
       labels:
-        app: {{ $.Release.Name }}
-        role: {{ $.Release.Name }}
-        ci-commit: {{ $.Values.build.commit }}
-        ci-job: {{ $.Values.build.job }}
+        app: {{ include "name" . }}
       annotations:
-        rollme: {{ randAlphaNum 5 | quote }}
+        # Roll the pods when the served config changes
+        checksum/config: {{ .Values.config | toJson | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
+      automountServiceAccountToken: false
       containers:
-        - name: {{ $.Release.Name }}
-          image: {{ $.Values.image }}
-          imagePullPolicy: Always
+        - name: {{ include "fullname" . }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 101
+            runAsGroup: 101
+            capabilities:
+              drop: [ALL]
+          image: {{ .Values.image }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          {{- if .Values.env }}
           env:
-          {{- range $key, $val := $.Values.env.plain }}
-          - name: {{ $key }}
-            value: {{ quote $val }}
+            {{- toYaml .Values.env | nindent 12 }}
           {{- end }}
           ports:
-            - containerPort: 80
-          resources:
-            limits:
-              cpu: {{ $.Values.deploy.cpu_limit }}
-              memory: {{ $.Values.deploy.memory_limit }}
-            requests:
-              cpu: 200m
-              memory: 200Mi
+            - name: http
+              containerPort: 8080
+              protocol: TCP
           livenessProbe:
             httpGet:
               path: /config.json
-              port: 80
+              port: http
             timeoutSeconds: 5
             failureThreshold: 2
             periodSeconds: 300
           startupProbe:
             httpGet:
               path: /config.json
-              port: 80
+              port: http
             timeoutSeconds: 2
             failureThreshold: 20
-            periodSeconds: 3 
+            periodSeconds: 3
           lifecycle:
             preStop:
               exec:
                 # Give the load balancer time to remove the
                 # pod before terminating (for zero downtime)
                 command: ["/bin/sh", "-c", "sleep 20"]
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-          - name: configmap
-            subPath: config.json
-            mountPath: /usr/share/nginx/html/config.json
+            # Writable scratch dir (nginx pid/temp paths configured to /tmp)
+            - name: tmp
+              mountPath: /tmp
+            - name: config
+              subPath: config.json
+              mountPath: /usr/share/nginx/html/config.json
+              readOnly: true
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
       volumes:
-      - name: configmap
-        configMap:
-          name: {{ $.Release.Name }}-configmap
+        - name: tmp
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: {{ include "fullname" . }}
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}

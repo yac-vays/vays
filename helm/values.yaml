@@ -1,15 +1,60 @@
 ---
-hostname: ""
-path: /
-image: ""
-env:
-  plain: {}
-config: /dev/zero # path to config.json
-deploy:
-  replicas: 2
-  cpu_limit: 1
-  memory_limit: 500Mi
-  ingress_class: nginx
-build:
-  job: unknown
-  commit: unknown
+
+replicaCount: 2
+
+image: "index.docker.io/yacvays/vays:latest"
+imagePullPolicy: Always
+
+# Plain environment variables: list of {name, value}
+env: []
+
+# Runtime configuration served at /config.json (rendered as JSON).
+# See https://yac-vays.github.io/vays/config for the full reference.
+config:
+  title: "VAYS"
+  production: false
+  color:
+    primary: "#00596D"
+    primaryHighlighted: "#007894"
+  oidcConf:
+    server: "https://example.com/.well-known/openid-configuration"
+    clientID: "vays-spa"
+  backends:
+    - name: "example"
+      title: "Example Inventory"
+      url: "https://yac.example.com"
+      icon: |-
+        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="#e8eaed"><path d="M40-120v-80h880v80H40Zm120-120q-33 0-56.5-23.5T80-320v-440q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v440q0 33-23.5 56.5T800-240H160Zm0-80h640v-440H160v440Zm0 0v-440 440Z"/></svg>
+
+# Additional volumes / volume mounts.
+extraVolumes: []
+extraVolumeMounts: []
+
+# Annotations on the Pod template (e.g. for triggering restarts).
+podAnnotations: {}
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 500Mi
+  requests:
+    cpu: 200m
+    memory: 200Mi
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  annotations: {}
+  className: ""
+  hosts:
+    - host: vays.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts: [vays.example.com]
+      secretName: vays-tls

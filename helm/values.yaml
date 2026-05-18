@@ -2,7 +2,7 @@
 
 replicaCount: 2
 
-image: "index.docker.io/yacvays/vays:latest"
+image: "registry.inf.ethz.ch/public-isg/yac-vays/vays:v0"
 imagePullPolicy: Always
 
 # Plain environment variables: list of {name, value}

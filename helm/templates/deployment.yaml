@@ -81,6 +81,8 @@ spec:
             # Writable scratch dir (nginx pid/temp paths configured to /tmp)
             - name: tmp
               mountPath: /tmp
+            - name: nginx-cache
+              mountPath: /var/cache/nginx
             - name: config
               subPath: config.json
               mountPath: /usr/share/nginx/html/config.json
@@ -90,6 +92,8 @@ spec:
             {{- end }}
       volumes:
         - name: tmp
+          emptyDir: {}
+        - name: nginx-cache
           emptyDir: {}
         - name: config
           configMap:

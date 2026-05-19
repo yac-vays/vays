@@ -53,11 +53,8 @@ async function performDiscovery(appconf: AppConfig): Promise<Nullable<URL>> {
    * of PKCE is backwards compatible even if the AS doesn't support it which is
    * why we're using it regardless.
    */
-  let nonce = '';
-  if (!config.serverMetadata().supportsPKCE()) {
-    nonce = client.randomNonce();
-    parameters.nonce = nonce;
-  }
+  const nonce = client.randomNonce();
+  parameters.nonce = nonce;
   const redirURL = client.buildAuthorizationUrl(config, parameters);
   localStorage.setItem(
     LS_CONFIG_KEY,

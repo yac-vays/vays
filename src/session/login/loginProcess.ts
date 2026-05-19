@@ -36,44 +36,38 @@ async function performDiscovery(appconf: AppConfig): Promise<Nullable<URL>> {
    */
   const code_verifier = client.randomPKCECodeVerifier();
   const code_challenge = await client.calculatePKCECodeChallenge(code_verifier);
-  let nonce: string;
-  {
-    // redirect user to as.authorization_endpoint
-    const parameters = {
-      /**
-       * Value used in the authorization request as redirect_uri pre-registered at the
-       * Authorization Server.
-       */
-      redirect_uri: joinUrl(`https://${window.location.host}`, 'oauth2-redirect'), // appconf.oidcConf.redirectURI,
-      scope: 'openid email',
-      code_challenge,
-      code_challenge_method,
-      nonce: '',
-    };
-
+  // redirect user to as.authorization_endpoint
+  const parameters: Record<string, string> = {
     /**
-     * We cannot be sure the AS supports PKCE so we're going to use nonce too. Use
-     * of PKCE is backwards compatible even if the AS doesn't support it which is
-     * why we're using it regardless.
+     * Value used in the authorization request as redirect_uri pre-registered at the
+     * Authorization Server.
      */
-    if (!config.serverMetadata().supportsPKCE()) {
-      nonce = client.randomNonce();
-      parameters.nonce = nonce;
-    } else {
-      console.error('THIS SHOULD WORK - Server does not support PKCE.');
-      return null;
-    }
-    const redirURL = client.buildAuthorizationUrl(config, parameters);
-    localStorage.setItem(
-      LS_CONFIG_KEY,
-      JSON.stringify({
-        clientID: appconf.oidcConf.clientID,
-        nonce: nonce,
-        code_verifier: code_verifier,
-      }),
-    );
-    return redirURL;
+    redirect_uri: joinUrl(`https://${window.location.host}`, 'oauth2-redirect'), // appconf.oidcConf.redirectURI,
+    scope: 'openid email',
+    code_challenge,
+    code_challenge_method,
+  };
+
+  /**
+   * We cannot be sure the AS supports PKCE so we're going to use nonce too. Use
+   * of PKCE is backwards compatible even if the AS doesn't support it which is
+   * why we're using it regardless.
+   */
+  let nonce = '';
+  if (!config.serverMetadata().supportsPKCE()) {
+    nonce = client.randomNonce();
+    parameters.nonce = nonce;
   }
+  const redirURL = client.buildAuthorizationUrl(config, parameters);
+  localStorage.setItem(
+    LS_CONFIG_KEY,
+    JSON.stringify({
+      clientID: appconf.oidcConf.clientID,
+      nonce: nonce,
+      code_verifier: code_verifier,
+    }),
+  );
+  return redirURL;
 }
 
 export async function finalizeAuthentication(appconf: AppConfig): Promise<boolean> {
@@ -101,7 +95,7 @@ export async function finalizeAuthentication(appconf: AppConfig): Promise<boolea
     currentUrl,
     {
       pkceCodeVerifier: config.code_verifier,
-      expectedNonce: config.nonce,
+      ...(config.nonce ? { expectedNonce: config.nonce } : {}),
       idTokenExpected: true,
     },
   );

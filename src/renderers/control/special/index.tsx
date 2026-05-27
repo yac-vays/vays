@@ -1,3 +1,4 @@
+import AgeSecretRenderer, { AgeSecretRendererTester } from './AgeSecretRenderer';
 import BigStringArray, { BigStringArrayTester } from './BigStringArray';
 import InfoBoxRenderer, { InfoBoxTester } from './InfoBoxRenderer';
 import ListAsStringRenderer, { ListAsStringTester } from './ListAsStringRenderer';
@@ -14,4 +15,5 @@ export const specialRenderers = [
   { tester: BigStringArrayTester, renderer: BigStringArray },
   { tester: MultiLineTextControlTester, renderer: MultiLineTextControl },
   { tester: MacAddressRendererTester, renderer: MACAddressRenderer },
+  { tester: AgeSecretRendererTester, renderer: AgeSecretRenderer },
 ];

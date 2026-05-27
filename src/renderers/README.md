@@ -41,6 +41,7 @@ These can be specified explicitly in the YAC spec using `vays_renderer`.
 - **ListAsStringRenderer**: Renders a string input as list of items.
 - **PasswordRenderer**: Renders a password input field with masked characters and optionally sending it in a specified format.
 - **SSHKeyRenderer**: Renders a text area specifically for SSH key inputs.
+- **AgeSecretRenderer**: Generates a random secret in the browser and stores only the AGE-encrypted form. Shows the cleartext exactly once.
 
 ### Combined Renderers
 

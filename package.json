@@ -27,6 +27,7 @@
     "@mui/material": "^6.4.11",
     "@mui/x-date-pickers": "^7.29.2",
     "@noble/hashes": "^1.8.0",
+    "age-encryption": "^0.3.0",
     "ajv": "^8.17.1",
     "buffer": "^6.0.3",
     "flatpickr": "^4.6.13",

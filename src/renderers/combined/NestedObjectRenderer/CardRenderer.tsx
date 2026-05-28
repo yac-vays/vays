@@ -1,5 +1,10 @@
 import { LayoutProps } from '@jsonforms/core';
-import { JsonFormsDispatch, JsonFormsStateContext, withJsonFormsContext } from '@jsonforms/react';
+import {
+  JsonFormsDispatch,
+  JsonFormsStateContext,
+  useJsonForms,
+  withJsonFormsContext,
+} from '@jsonforms/react';
 import _ from 'lodash';
 import React, { ComponentType } from 'react';
 import Accordion from '../../../view/components/Accordion';
@@ -32,8 +37,16 @@ export const CardRenderer = (props: CardRendererProps) => {
       />
     );
   });
+  const labelProp = props.uischema.options?.elementLabelProp;
+  const ctx = useJsonForms();
+  let title = (props.index + 1).toString();
+  if (typeof labelProp === 'string' && ctx.core?.data) {
+    const v = _.get(ctx.core.data, path)?.[labelProp];
+    if (v != null && v !== '') title = String(v);
+  }
+
   return (
-    <Accordion title={(props.index + 1).toString()}>
+    <Accordion title={title}>
       <div className="group flex flex-row w-full">
         <div className="grow">{itemsToRender}</div>
 

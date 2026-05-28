@@ -95,7 +95,10 @@ export const MultiCheckboxRenderer = ({
 };
 
 const hasEnumItems = (schema: JsonSchema): boolean =>
-  schema.type === 'string' && schema.enum !== undefined;
+  schema.enum !== undefined &&
+  schema.enum.length > 0 &&
+  (schema.type === 'string' ||
+    (schema.type === undefined && schema.enum.every((v: unknown) => typeof v === 'string')));
 const hasOneOfItems = (schema: JsonSchema): boolean =>
   schema.oneOf !== undefined &&
   schema.oneOf.length > 0 &&

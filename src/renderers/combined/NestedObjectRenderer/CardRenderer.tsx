@@ -15,7 +15,9 @@ interface CardRendererProps extends LayoutProps, DispatchPropsOfCardRenderer {
 
 export const CardRenderer = (props: CardRendererProps) => {
   const { schema, path, renderers, cells, onRemove } = props;
-  const elements = [{ type: 'Control', scope: `#` }];
+  const elements = props.uischema.options?.details?.elements
+    ? props.uischema.options?.details?.elements
+    : [{ type: 'Control', scope: `#` }];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const itemsToRender = elements.map((element: any, index: number) => {
     return (

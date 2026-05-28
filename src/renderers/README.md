@@ -1,64 +1,36 @@
 # Renderers
 
-Renderers are responsible for handling the input provided by JSON Forms (including subschema, uischema, default value, etc.) and typically return a component with three subcomponents: a title, the input element, and the error element (displaying any errors). Input elements are found in the _ifc_ (input form components) subdirectory of the component directory.
+This directory holds the JSON-Forms renderer/tester pairs registered in
+[`./index.tsx`](./index.tsx). Each renderer is paired with a *tester*
+that returns a numeric rank when it can render a given field; the
+highest-ranking match wins.
 
-This approach aligns with the _separation of concerns principle_, where the renderer is responsible for the overall layout and behavior of the form control, while the input component focuses solely on the input element itself.
+A renderer typically returns three pieces stacked vertically: a title,
+the input element, and an error box. The input elements themselves
+live under [`../view/thirdparty/components/ifc/`](../view/thirdparty/components/ifc/)
+(input form components), so renderers can stay focused on layout and
+JSON-Forms wiring while the input components are pure UI primitives.
 
-## Types of Renderers
+## Layout of this directory
 
-### 1. Control Renderers
+  - [`control/`](./control/) — single-field renderers (text, number,
+    boolean, date, enum, ...).
+  - [`control/special/`](./control/special/) — renderers selected
+    explicitly via `vays_options.renderer: <name>` (password, ssh_key,
+    age_secret, ...).
+  - [`combined/`](./combined/) — renderers for arrays and arrays of
+    objects (flat array, nested-object array, multi-checkbox).
+  - [`layout/`](./layout/) — top-level layout renderers
+    (categorization tabs and groups).
+  - [`utils/`](./utils/) — helpers shared by the testers
+    (`isCustomRenderer`, `isUntypedStringInput`) and a few common HOC
+    wrappers.
 
-Handle individual form controls such as text inputs, number inputs, date pickers, etc. They are responsible for rendering a single input element and its associated label and error message.
+## See Also
 
-### 2. Combined Renderers
-
-Manage combinations of multiple form controls. They are used when a single form element needs to handle multiple inputs, such as an array.
-
-### 3. Layout Renderers
-
-Handle the overall layout of the form. They are responsible for arranging multiple form controls or elements in a specific layout, e.g. categories or a group of fields.
-
-### List of Control Renderers
-
-The following control renderers are available in the control subdirectory and are exported in the index file:
-
-#### Ordinary Control Renderers
-
-- **TextControl**: Renders a single-line text input field.
-- **BooleanControlRenderer**: Renders a checkbox input.
-- **OneOfEnumControl**: Renders a dropdown menu for selecting one option from a list.
-- **EnumControl**: Similar to OneOfEnumControl, but used for different enum types.
-- **DateControl**: Renders a date picker input.
-- **NumberControl**: Renders a numeric input field.
-- **VoidControl**: Renders a placeholder or empty control, handling some edge cases of the json schema spec.
-
-#### Special Control Renderers
-
-These can be specified explicitly in the YAC spec using `vays_renderer`.
-
-- **BigStringArray**: Renders string array more efficiently.
-- **InfoBoxRenderer**: Renders an informational box with text.
-- **ListAsStringRenderer**: Renders a string input as list of items.
-- **PasswordRenderer**: Renders a password input field with masked characters and optionally sending it in a specified format.
-- **SSHKeyRenderer**: Renders a text area specifically for SSH key inputs.
-- **AgeSecretRenderer**: Generates a random secret in the browser and stores only the AGE-encrypted form. Shows the cleartext exactly once.
-
-### Combined Renderers
-
-The following combined renderers are available in the combined subdirectory and are exported in the index file:
-
-- **ArrayControlRenderer**: Renders a list of items, as a list with options to add or remove items.
-- **NestedObjectRenderer**: Renders objects with their elements.
-- **MultipleChoiceRenderer**: Renders a set of options which can be selected in a renderer similar to BigStringList.
-- **MultiCheckboxRenderer**: Similar to MultipleChoiceRenderer, but it renders multiple checkboxes for a list of options.
-
-### Layout Renderers
-
-The following layout renderers are available in the layout subdirectory and are exported in the index file:
-
-- **CategorizationLayout**: Organizes form controls into categories, displayed as tabs. Each category can contain multiple form controls or groups of controls.
-- **GroupLayoutRenderer**: Arranges form controls into groups, displayed as panels. Each group can have a title and contains multiple form controls.
-
-## Reference
-
-As there is hardly any guidance on how to write custom renderers, those default renderers provided by json forms have been studied to write these custom renderers, particularly for the layout renderers. CategorizationLayout and GroupLayout are based on their react renderers and the license has been added in these files.
+  - End-user reference for every bundled renderer, its selection rules
+    and options: <https://yac-vays.github.io/vays/renderers/>.
+  - Adding a new renderer:
+    <https://yac-vays.github.io/vays/devel/#adding-a-renderer>.
+  - Background on the JSON-Forms renderer/tester model:
+    [`../../docs/Development/intro/json-forms.md`](../../docs/Development/intro/json-forms.md).

@@ -5,8 +5,8 @@ b=$(git branch --show-current)
 r=$(git config "branch.$b.remote")
 git fetch --tags "$r"
 
-[ -z "$(git status --porcelain)" ] || { echo "dirty worktree: commit & push your changes before release"; exit 1; }
-[ "$(git rev-parse HEAD)" = "$(git rev-parse @{u})" ] || { echo "HEAD != @{u}"; exit 1; }
+[ -z "$(git status --porcelain)" ] || { echo "uncomitted changes in worktree: commit your changes before release"; exit 1; }
+[ "$(git rev-parse HEAD)" = "$(git rev-parse @{u})" ] || { echo "local & remote branch differ: push your changes before release"; exit 1; }
 
 case "$b" in
   test) re='^v[0-9]+\.[0-9]+rc[0-9]+$' ;;
@@ -15,7 +15,7 @@ case "$b" in
 esac
 
 t=$(git tag --points-at HEAD | grep -E "$re" | xargs || true)
-[ -z "$t" ] || { echo "this commit already released as: $t"; exit 1; }
+[ -z "$t" ] || { echo "this commit is already released as: $t"; exit 1; }
 
 inc(){ [[ $1 =~ ^v([0-9]+)\.([0-9]+)$ ]]; echo "v${BASH_REMATCH[1]}.$((BASH_REMATCH[2]+1))"; }
 

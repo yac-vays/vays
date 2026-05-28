@@ -14,7 +14,7 @@ export const ListAsStringRenderer = (props: ControlProps) => {
   }
   ///
 
-  const sep = props.uischema.options?.separator ?? ',';
+  const sep = props.uischema.options?.renderer_options?.separator ?? ',';
   let list: string[];
   if (props.data) list = (props.data as string).split(sep);
   else list = [];

@@ -24,7 +24,7 @@ export const SSHKeyRenderer = ({
   if (!visible) return <></>;
 
   if (data === undefined && uischema.options?.initial_editable && uischema?.options?.initial) {
-    data = uischema.options?.initial_editable;
+    data = uischema.options?.initial;
   }
 
   /// data check

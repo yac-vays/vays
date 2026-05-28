@@ -44,7 +44,7 @@ export const MultiLineTextControlRenderer = (props: ControlProps) => {
       <TextArea
         onChange={onChange}
         data={data}
-        rows={props.uischema.options?.rows}
+        rows={props.uischema.options?.renderer_options?.rows}
         enabled={props.enabled}
         defaultv={props.schema.default}
         placeholder={props.uischema.options?.initial}
@@ -86,8 +86,8 @@ function doTroubleShootCheck(props: ControlProps) {
     );
   }
   if (
-    props.uischema.options?.rows !== undefined &&
-    !Number.isInteger(props.uischema.options.rows)
+    props.uischema.options?.renderer_options?.rows !== undefined &&
+    !Number.isInteger(props.uischema.options.renderer_options.rows)
   ) {
     tsAddWarningMessage(
       5,

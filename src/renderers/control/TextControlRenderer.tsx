@@ -27,7 +27,7 @@ export const TextControl = (props: ControlProps) => {
 
   let data = props.data;
   let errors = props.errors;
-  const sendTrivial = props.uischema.options?.send_trivial ?? false;
+  const sendTrivial = props.uischema.options?.renderer_options?.send_trivial ?? false;
 
   /// data check
   if (!isOfTypeWeak(data, 'string')) {

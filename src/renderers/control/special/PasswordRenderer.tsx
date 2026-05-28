@@ -11,7 +11,7 @@ import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTester
 import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
 
 export const PasswordRenderer = (props: ControlProps) => {
-  const pt = props.uischema?.options?.save_password_as === 'plaintext';
+  const pt = props.uischema?.options?.renderer_options?.save_password_as === 'plaintext';
   const [pw, setPW] = useState<string>('');
 
   /// data check
@@ -63,7 +63,7 @@ export const PasswordRenderer = (props: ControlProps) => {
         onChange={onChange}
         password
       />
-      {props.uischema?.options?.save_password_as === 'plaintext' ? (
+      {props.uischema?.options?.renderer_options?.save_password_as === 'plaintext' ? (
         <></>
       ) : (
         <em className="opacity-60">

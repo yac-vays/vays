@@ -37,7 +37,7 @@ export const CardRenderer = (props: CardRendererProps) => {
       />
     );
   });
-  const labelProp = props.uischema.options?.elementLabelProp;
+  const labelProp = props.uischema.options?.renderer_options?.item_label_prop;
   const ctx = useJsonForms();
   let title = (props.index + 1).toString();
   if (typeof labelProp === 'string' && ctx.core?.data) {

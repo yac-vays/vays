@@ -23,8 +23,9 @@ export const DateControl = ({
   config,
 }: ControlProps) => {
   const appliedUiSchemaOptions = merge({}, config, uischema.options);
-  const enableRange = uischema.options?.enable_range;
-  const disableRange = uischema.options?.disable_range;
+  const ropts = uischema.options?.renderer_options ?? {};
+  const enableRange = ropts.enable_range;
+  const disableRange = ropts.disable_range;
 
   const format = appliedUiSchemaOptions.dateFormat;
   //const saveFormat = appliedUiSchemaOptions.dateSaveFormat ?? defaultDateFormat;

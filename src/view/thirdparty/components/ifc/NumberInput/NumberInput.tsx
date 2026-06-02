@@ -30,7 +30,7 @@ const NumberInput = ({
   }
   if (data != undefined) inp = data;
 
-  let ph: string | number = 'Type...';
+  let ph: string | number = '';
   if (!placeholderEditable) {
     ph = placeholder ?? ph;
   }

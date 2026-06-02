@@ -30,7 +30,7 @@ const TextInput = ({
   let defValue = '';
   if (inp != undefined) defValue = inp.toString();
 
-  let ph = 'Type...';
+  let ph = '';
   if (!placeholderEditable) {
     ph = placeholder ?? ph;
   }

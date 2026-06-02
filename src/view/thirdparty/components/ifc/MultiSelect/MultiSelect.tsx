@@ -167,7 +167,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
                       placeHolder={
                         selected.length == 0
                           ? `Type or Select (${data == undefined ? 'undefined' : 'empty list'})`
-                          : 'Type...'
+                          : ''
                       }
                       disabled={disabled}
                     />

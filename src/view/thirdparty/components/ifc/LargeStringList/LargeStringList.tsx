@@ -132,7 +132,7 @@ const LargeStringList: React.FC<LargeStringProps> = ({
                           if (inputRef.current != null) inputRef.current.value = '';
                         }
                       }}
-                      placeHolder={'Type...'}
+                      placeHolder={''}
                       disabled={disabled}
                     />
                   </div>

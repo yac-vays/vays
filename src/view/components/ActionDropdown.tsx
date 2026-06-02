@@ -107,11 +107,12 @@ const ActionDropdown = ({ actions, entityName }: ActionDropdownProps) => {
             style={{ position: 'relative', zIndex: 1 }}
           >
             <div
-              className="group relative flex items-center justify-center p-3 border-t border-r border-b rounded-r"
+              className="group relative flex items-center justify-center border-t border-r border-b rounded-r"
               title="Other Actions"
               style={{
                 borderColor: 'rgb(0 0 0/0)',
-                height: 35,
+                height: 36,
+                width: 36,
                 whiteSpace: 'nowrap',
                 position: 'relative',
                 zIndex: 2,

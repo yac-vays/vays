@@ -27,7 +27,7 @@ export function handleCollision(
             getInitialEntityYAML(),
           );
           if (success) {
-            onSuccessfullPatch(requestEditContext);
+            onSuccessfullPatch(requestEditContext, name);
           }
         },
         async () => {},

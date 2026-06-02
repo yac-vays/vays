@@ -20,7 +20,7 @@ interface OverviewPageProps {
 }
 
 const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) => {
-  const { backendName, entityTypeName } = useParams();
+  const { backendName, entityTypeName, entityName } = useParams();
   const [showDescription, setShowDescription] = useState<boolean>(
     iLocalStorage.isOverviewDescriptionShown(),
   );
@@ -104,7 +104,7 @@ const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) 
         </div>
       )}
 
-      <EntityList requestContext={requestContext.rc} />
+      <EntityList requestContext={requestContext.rc} highlightEntityName={entityName} />
     </>
   );
 };

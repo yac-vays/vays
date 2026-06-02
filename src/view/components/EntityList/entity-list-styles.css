@@ -1,7 +1,7 @@
 
   .entity-list>thead>tr:first-child>th {
     border-color:transparent;
-    padding:1.75rem .625rem .625rem; 
+    padding:0.75rem .625rem .625rem;
     font-weight:500
   }
   .entity-list>tbody>tr>td:first-child,
@@ -27,3 +27,16 @@
     padding-bottom:1.25rem;
     font-weight:500
   }
+/**
+ * Highlight for the row referenced by the URL (.../{type}/{entity}).
+ * A brief flash draws attention, settling on a subtle persistent tint.
+ */
+@keyframes entity-row-flash {
+  from { background-color: var(--color-primary-30); }
+  to   { background-color: var(--color-primary-10); }
+}
+
+.entity-list > tbody > tr.entity-row-highlight {
+  background-color: var(--color-primary-10);
+  animation: entity-row-flash 1.2s ease-out;
+}

@@ -15,6 +15,29 @@ import { useInitializeList } from './utils/useInitializeList';
 
 interface EntityListProps {
   requestContext: RequestContext;
+  /** Entity to scroll to and highlight (from the URL), if any. */
+  highlightEntityName?: string;
+}
+
+/**
+ * Scrolls the nearest vertically-scrollable ancestor of `el` back to the top.
+ * The page content scrolls inside a layout container rather than the window,
+ * so we walk up the DOM to find and scroll that container.
+ */
+function scrollAncestorToTop(el: HTMLElement | null) {
+  let node: HTMLElement | null = el?.parentElement ?? null;
+  while (node) {
+    const overflowY = getComputedStyle(node).overflowY;
+    if (overflowY === 'auto' || overflowY === 'scroll') {
+      // Instant (not smooth): a smooth animation would be disrupted by the page
+      // content changing height (e.g. the shorter last page), leaving it
+      // scrolled down. Jumping immediately is reliable for every page.
+      node.scrollTop = 0;
+      return;
+    }
+    node = node.parentElement;
+  }
+  window.scrollTo({ top: 0 });
 }
 
 /**
@@ -23,7 +46,7 @@ interface EntityListProps {
  * @param requestContext the requestcontext.
  * @returns
  */
-const EntityList = ({ requestContext }: EntityListProps) => {
+const EntityList = ({ requestContext, highlightEntityName }: EntityListProps) => {
   const {
     reloadCount,
     setReloadCount,
@@ -41,7 +64,8 @@ const EntityList = ({ requestContext }: EntityListProps) => {
     setNumResultsPerPage,
     totalNumResults,
     setTotalNumResults,
-  } = useInitializeList(requestContext);
+    scrollTargetName,
+  } = useInitializeList(requestContext, highlightEntityName);
 
   const scrollDivRef = useRef<HTMLDivElement>(null);
   registerTableScrollContainer(scrollDivRef);
@@ -65,6 +89,9 @@ const EntityList = ({ requestContext }: EntityListProps) => {
   const pageSwitch = (targetPageNr: number) => {
     return function () {
       setCurrPage(targetPageNr);
+      // Jump to the top of the list (the page scrolls inside a layout container,
+      // not the window). Done immediately so the new page renders from the top.
+      scrollAncestorToTop(scrollDivRef.current);
       // Make sure you get the most recent number, hence prefer the value of the reference.
       let numRes: number = numResultsPerPage.valueOf();
       if (selectorRef.current != undefined) {
@@ -115,7 +142,12 @@ const EntityList = ({ requestContext }: EntityListProps) => {
                 tableHeaderEntries={tableHeaderEntries}
                 searchCallback={searchCallback}
               />
-              <TableBody tableEntries={tableEntries} requestContext={requestContext} />
+              <TableBody
+                tableEntries={tableEntries}
+                requestContext={requestContext}
+                highlightEntityName={highlightEntityName}
+                scrollTargetName={scrollTargetName}
+              />
             </table>
           </div>
         </div>

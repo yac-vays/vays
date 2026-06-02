@@ -133,7 +133,7 @@ function App(): JSX.Element {
                 />
                 <Route
                   // index
-                  path="/:backendName/:entityTypeName/"
+                  path="/:backendName/:entityTypeName/:entityName?"
                   element={
                     <>
                       <Overview backends={backendsList} />

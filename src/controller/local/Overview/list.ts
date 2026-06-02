@@ -76,6 +76,37 @@ export async function fetchEntities(
 }
 
 /**
+ * Determines the (1-based) page on which a given entity appears, respecting the
+ * current search filter and page size. Returns null if the entity is not part
+ * of the (filtered) list, so the caller can keep its current page.
+ *
+ * @param requestContext - The context of the request.
+ * @param entityName - The name of the entity to locate.
+ * @param numResultsPerPage - The page size currently in use.
+ * @param searchList - The active search filter (if any).
+ */
+export async function getEntityPage(
+  requestContext: RequestContext,
+  entityName: string,
+  numResultsPerPage: number,
+  searchList: Nullable<(string | null)[]> = null,
+): Promise<Nullable<number>> {
+  if (
+    requestContext.accessedEntityType == undefined ||
+    requestContext.accessedEntityType.options == null
+  ) {
+    return null;
+  }
+  let entities: EntityObject[] = await getEntityList(requestContext);
+  if (searchList != null) {
+    entities = performSearch(requestContext, entities, searchList);
+  }
+  const index = entities.findIndex((e) => e.name === entityName);
+  if (index < 0) return null;
+  return Math.floor(index / numResultsPerPage) + 1;
+}
+
+/**
  * Represents an entity by extracting and formatting its relevant information.
  *
  * @param entity - The entity object containing the data to be represented.

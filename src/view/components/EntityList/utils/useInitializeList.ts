@@ -1,20 +1,33 @@
-import { useEffect, useState } from 'react';
-import { fetchEntities, getHeaderEntries } from '../../../../controller/local/Overview/list';
+import { useEffect, useRef, useState } from 'react';
+import {
+  fetchEntities,
+  getEntityPage,
+  getHeaderEntries,
+} from '../../../../controller/local/Overview/list';
 import { QueryResponse, QueryResult } from '../../../../utils/types/internal/entityList';
 import { RequestContext } from '../../../../utils/types/internal/request';
 
-export function useInitializeList(requestContext: RequestContext) {
+export function useInitializeList(requestContext: RequestContext, targetEntityName?: string) {
   const [reloadCount, setReloadCount] = useState<number>(0);
   const [tableEntries, setTableEntries] = useState<QueryResult[]>([]);
   //const tableEntries = useRef<QueryResult[]>([]);
   const [tableHeaderEntries, setTableHeaderEntries] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [searchTerms, setSearchTerms] = useState<(string | null)[]>([]);
+  // The entity to scroll to. Only set when we actually (re)load/page to it, so
+  // that simply highlighting an already-visible entity does not scroll.
+  const [scrollTargetName, setScrollTargetName] = useState<string | undefined>(undefined);
 
   // Query Level information
   const [currPage, setCurrPage] = useState<number>(1);
   const [numResultsPerPage, setNumResultsPerPage] = useState<number>(50);
   const [totalNumResults, setTotalNumResults] = useState<number>(10);
+
+  // Always-current view of the entries / data identity, read inside the effect
+  // without making them dependencies (which would cause unwanted reloads).
+  const latestEntriesRef = useRef<QueryResult[]>(tableEntries);
+  latestEntriesRef.current = tableEntries;
+  const prevDataKeyRef = useRef<string>('');
 
   useEffect(() => {
     let mounted = true;
@@ -31,36 +44,74 @@ export function useInitializeList(requestContext: RequestContext) {
     (async function () {
       if (requestContext.accessedEntityType?.options == undefined) {
         setTableHeaderEntries([]);
-      } else {
-        setTableHeaderEntries([]);
-        setTableEntries([]);
-        setCurrPage(1);
-        setTotalNumResults(1);
-        setLoading(true);
+        return;
+      }
 
-        const header: string[] = getHeaderEntries(requestContext);
-        setTableHeaderEntries(header);
+      // Did the underlying data (type/backend/page size/explicit reload) change,
+      // or is this only a change of the URL target entity?
+      const dataKey = `${requestContext.entityTypeName}|${requestContext.yacURL}|${numResultsPerPage}|${reloadCount}`;
+      const dataChanged = dataKey !== prevDataKeyRef.current;
+      prevDataKeyRef.current = dataKey;
 
-        const qRes: QueryResponse = await fetchEntities(
+      // Only the URL target changed and that entity is already on the current
+      // page: just highlight it — no reload, no scroll.
+      if (
+        !dataChanged &&
+        targetEntityName &&
+        latestEntriesRef.current.some((e) => e.entityName === targetEntityName)
+      ) {
+        setScrollTargetName(undefined);
+        return;
+      }
+
+      setTableHeaderEntries([]);
+      setTableEntries([]);
+      setTotalNumResults(1);
+      setLoading(true);
+
+      const header: string[] = getHeaderEntries(requestContext);
+      setTableHeaderEntries(header);
+
+      // Jump to the page containing the targeted entity (from the URL), if any.
+      let page = 1;
+      if (targetEntityName) {
+        const targetPage = await getEntityPage(
           requestContext,
+          targetEntityName,
           numResultsPerPage.valueOf(),
-          0,
           null,
         );
-        // TODO make sure that spamming reload does not cause problem with this.
-        // It is likely beneficial to include a cooldown on the reload button.
+        if (targetPage != null) page = targetPage;
+      }
+      setCurrPage(page);
 
-        if (mounted) {
-          setLoading(false);
-          setTotalNumResults(qRes.totalNumberOfResults);
-          setTableEntries(qRes.partialResults);
-        }
+      const qRes: QueryResponse = await fetchEntities(
+        requestContext,
+        numResultsPerPage.valueOf(),
+        (page - 1) * numResultsPerPage.valueOf(),
+        null,
+      );
+      // TODO make sure that spamming reload does not cause problem with this.
+      // It is likely beneficial to include a cooldown on the reload button.
+
+      if (mounted) {
+        setLoading(false);
+        setTotalNumResults(qRes.totalNumberOfResults);
+        setTableEntries(qRes.partialResults);
+        // We (re)loaded and possibly paged: scroll to the target if there is one.
+        setScrollTargetName(targetEntityName);
       }
     })();
     return () => {
       mounted = false;
     };
-  }, [requestContext.entityTypeName, requestContext.yacURL, numResultsPerPage, reloadCount]);
+  }, [
+    requestContext.entityTypeName,
+    requestContext.yacURL,
+    numResultsPerPage,
+    reloadCount,
+    targetEntityName,
+  ]);
 
   return {
     reloadCount,
@@ -79,5 +130,6 @@ export function useInitializeList(requestContext: RequestContext) {
     setNumResultsPerPage,
     totalNumResults,
     setTotalNumResults,
+    scrollTargetName,
   };
 }

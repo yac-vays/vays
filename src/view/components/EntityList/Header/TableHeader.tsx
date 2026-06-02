@@ -9,7 +9,7 @@ const TableHeader = ({
 }) => {
   return (
     <thead id="entity-table-header" className="border-separate px-4">
-      <tr className="border-t border-stroke" role="row">
+      <tr role="row">
         {tableHeaderEntries.length == 0 ? (
           <EntityListHeaderCell
             title=""
@@ -41,10 +41,10 @@ const TableHeader = ({
           })()
         )}
       </tr>
-      <tr className="border-stroke border-b dark:border-white dark:border-opacity-60">
+      <tr>
         <td></td>
       </tr>
-      <tr className="border-stroke border-b dark:border-white dark:border-opacity-60">
+      <tr className="border-stroke border-b">
         <td></td>
       </tr>
     </thead>

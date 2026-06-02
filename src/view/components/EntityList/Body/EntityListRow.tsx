@@ -1,5 +1,6 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import 'react-circular-progressbar/dist/styles.css';
+import { navigateToURL } from '../../../../controller/global/url';
 import { hasLogsDefined } from '../../../../utils/logUtils';
 import { ActionsColumnResults } from '../../../../utils/types/internal/actions';
 import { OverviewListCellEntry } from '../../../../utils/types/internal/entityList';
@@ -16,6 +17,8 @@ interface EntityListRow {
   link: Nullable<string>;
   actionPair: ActionsColumnResults;
   entityName: string;
+  highlight?: boolean;
+  scroll?: boolean;
 }
 
 const EntityListRow = ({
@@ -24,11 +27,49 @@ const EntityListRow = ({
   link,
   actionPair,
   entityName,
+  highlight = false,
+  scroll = false,
 }: EntityListRow) => {
+  const rowRef = useRef<HTMLTableRowElement>(null);
+
+  // Scroll into view only when we actually paged to this entity (not when it
+  // was already visible). The highlight tint is handled separately below.
+  useEffect(() => {
+    if (scroll && rowRef.current) {
+      rowRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [scroll, entityName]);
+
+  const overviewBase = `/${requestContext.backendObject?.name}/${requestContext.entityTypeName}`;
+  // Navigate to the overview pointing at a given entity (highlights/scrolls to it).
+  const goToEntity = (name: string) => navigateToURL(`${overviewBase}/${encodeURIComponent(name)}`);
+
+  // Renders the content of a data cell. The first column is the entity name and
+  // is made clickable to put it in the URL (and thus highlight this row).
+  const renderCellContent = (entry: OverviewListCellEntry, i: number): ReactNode => {
+    if (i === 0) {
+      return (
+        <span
+          className="cursor-pointer hover:underline"
+          title={`Highlight ${entityName}`}
+          onClick={() => goToEntity(entityName)}
+        >
+          {entry.value}
+        </span>
+      );
+    }
+    if (entry.value === '(None)') return <em className="opacity-50">None</em>;
+    if (entry.isMarkdown) return <MarkdownRender text={entry.value} />;
+    return entry.value;
+  };
+
   return (
     <>
       <tr
-        className="border-t border-stroke hover:bg-primary-5"
+        ref={rowRef}
+        className={`border-t border-stroke hover:bg-primary-5 ${
+          highlight ? 'entity-row-highlight' : ''
+        }`}
         role="row"
         title={link ? 'Link to ' + link : undefined}
       >
@@ -50,23 +91,17 @@ const EntityListRow = ({
                   style={{ paddingRight: 40 }}
                   role="cell"
                 >
-                  {entry.value === '(None)' ? (
-                    <>
-                      <em className="opacity-50">None</em>
-                    </>
-                  ) : entry.isMarkdown ? (
-                    <MarkdownRender text={entry.value} />
-                  ) : (
-                    entry.value
-                  )}
-                  {i == 0 ? (
+                  {renderCellContent(entry, i)}
+                  {i == 0 && link ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="fill-current inline pl-2 cursor-pointer"
                       height="24px"
                       viewBox="0 -960 960 960"
                       width="24px"
+                      onClick={() => goToEntity(link)}
                     >
+                      <title>{`Jump to ${link}`}</title>
                       <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z" />
                     </svg>
                   ) : (
@@ -83,15 +118,7 @@ const EntityListRow = ({
                 style={{ paddingRight: 40 }}
                 role="cell"
               >
-                {entry.value === '(None)' ? (
-                  <>
-                    <em className="opacity-50">None</em>
-                  </>
-                ) : entry.isMarkdown ? (
-                  <MarkdownRender text={entry.value} />
-                ) : (
-                  entry.value
-                )}
+                {renderCellContent(entry, i)}
               </td>,
             );
           }

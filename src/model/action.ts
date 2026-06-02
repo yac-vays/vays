@@ -14,6 +14,18 @@ import { deleteEntity } from './delete';
 import { invalidateEntityListCache } from './entityList';
 import { linkEntity } from './link';
 
+/**
+ * After an action that creates/changes an entity from the overview, refresh the
+ * table (invalidate its cache) and point the URL at the affected entity so the
+ * table scrolls to and highlights it. If the name is unknown (e.g. generated),
+ * just return to the plain overview (the cache invalidation still reloads it).
+ */
+function reloadOverviewAtEntity(requestContext: RequestContext, entityName?: Nullable<string>) {
+  invalidateEntityListCache(requestContext.yacURL, requestContext.entityTypeName);
+  const base = `/${requestContext.backendObject?.name}/${requestContext.entityTypeName}`;
+  navigateToURL(entityName ? `${base}/${encodeURIComponent(entityName)}` : base);
+}
+
 export function getActionCallback(
   requestContext: RequestContext,
   entityName: string,
@@ -89,18 +101,19 @@ export const OPERATIONS_META: OperationsMetaInfo = {
             ? 'Please enter a name of this new copy:'
             : 'The name is generated automatically. Create a copy?',
           async (newName?: string, actionsSelected?: ActionDecl[]) => {
-            const success = await copyEntity(
+            const res = await copyEntity(
               newName,
               entityName,
               actionsSelected ?? [],
               requestContext,
             );
-            if (success) {
+            if (res.success) {
               showSuccess(
                 `Success Copying ${entityName}`,
                 'The entry is now available in the entity list.',
               );
-            } else if (success !== null) {
+              reloadOverviewAtEntity(requestContext, res.name ?? newName);
+            } else if (res.success !== null) {
               showError(`Could not copy ${entityName}`, 'Please try again.');
             }
           },
@@ -194,15 +207,16 @@ export const OPERATIONS_META: OperationsMetaInfo = {
             ? 'Please enter a name of this new link entity:'
             : 'The name is generated automatically. Create a link?',
           async (newName?: string, actionsSelected?: ActionDecl[]) => {
-            const success = await linkEntity(
+            const res = await linkEntity(
               newName,
               entityName,
               actionsSelected ?? [],
               requestContext,
             );
-            if (success) {
+            if (res.success) {
               showSuccess(`Successfully created link to ${entityName}`, '');
-            } else if (success !== null) {
+              reloadOverviewAtEntity(requestContext, res.name ?? newName);
+            } else if (res.success !== null) {
               showError(`Could not create link to ${entityName}`, 'Please try again.');
             }
           },

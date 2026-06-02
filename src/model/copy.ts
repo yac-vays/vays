@@ -11,10 +11,10 @@ export async function copyEntity(
   copyEntityName: string,
   actions: ActionDecl[],
   requestContext: RequestContext,
-) {
+): Promise<{ success: Nullable<boolean>; name: Nullable<string> }> {
   const url: string | null | undefined = requestContext.yacURL;
 
-  if (url == undefined || url == null) return false;
+  if (url == undefined || url == null) return { success: false, name: null };
 
   // Decide what to send as the "name" depending on how YAC generates names.
   // In all cases the key must be present (sending null instead of omitting it),
@@ -38,9 +38,13 @@ export async function copyEntity(
     'POST',
     JSON.stringify(entity),
   );
-  if (resp == null) return false;
+  if (resp == null) return { success: false, name: null };
 
-  if (resp?.status == 201) return true;
+  if (resp?.status == 201) {
+    // YAC returns the (possibly generated) name of the new entity.
+    const ans = await resp.json();
+    return { success: true, name: ans?.name ?? null };
+  }
   if (resp?.status >= 400) {
     const ans = await resp.json();
     showError(
@@ -48,7 +52,7 @@ export async function copyEntity(
         (ans.title ?? `Cannot Copy ${copyEntityName} (Status ${resp.status})`),
       ans.message ?? 'Waking up the admin, please stand by...',
     );
-    return null;
+    return { success: null, name: null };
   }
-  return false;
+  return { success: false, name: null };
 }

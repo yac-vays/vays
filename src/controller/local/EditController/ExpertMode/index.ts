@@ -66,17 +66,21 @@ export function sendYAMLData(requestContext: RequestEditContext) {
     '',
     async () => {
       let success = false;
+      // Remember the affected entity so we can scroll to it in the overview.
+      let entityName: Nullable<string> = null;
       if (requestContext.mode === 'create') {
-        success = await sendCreateNewEntity(getEntityYAML() ?? '', requestContext.rc);
+        const res = await sendCreateNewEntity(getEntityYAML() ?? '', requestContext.rc);
+        success = res.success;
+        entityName = res.name;
       } else {
+        entityName = requestContext.entityName ?? null;
         success = await sendPutEntity(getEntityYAML() ?? getInitialEntityYAML(), requestContext);
       }
 
       if (success) {
         invalidateEntityListCache(requestContext.rc.yacURL, requestContext.rc.entityTypeName);
-        navigateToURL(
-          `${requestContext.rc.backendObject?.name}/${requestContext.rc.entityTypeName}`,
-        );
+        const base = `/${requestContext.rc.backendObject?.name}/${requestContext.rc.entityTypeName}`;
+        navigateToURL(entityName ? `${base}/${encodeURIComponent(entityName)}` : base);
       }
     },
     async () => {},
@@ -94,7 +98,7 @@ export function sendYAMLData(requestContext: RequestEditContext) {
 async function sendCreateNewEntity(
   yaml: string | undefined,
   requestContext: RequestContext,
-): Promise<boolean> {
+): Promise<{ success: boolean; name: Nullable<string> }> {
   const name: Nullable<string> = getEntityName();
   setEntityName(null);
   return await createNewEntity(

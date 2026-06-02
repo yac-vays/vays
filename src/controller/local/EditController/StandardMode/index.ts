@@ -100,15 +100,15 @@ export function sendFormData(requestEditContext: RequestEditContext) {
     'Are You Sure You Want to Send the Data?',
     '',
     async () => {
-      let success = false;
+      let result: { success: boolean; name: Nullable<string> };
       if (requestEditContext.mode === 'create') {
-        success = await sendCreateNewEntity(getLocalEntityData(), requestEditContext.rc);
+        result = await sendCreateNewEntity(getLocalEntityData(), requestEditContext.rc);
       } else {
-        success = await sendPatchEntity(getLocalEntityData(), requestEditContext);
+        result = await sendPatchEntity(getLocalEntityData(), requestEditContext);
       }
 
-      if (success) {
-        onSuccessfullPatch(requestEditContext);
+      if (result.success) {
+        onSuccessfullPatch(requestEditContext, result.name);
       }
     },
     async () => {},
@@ -121,11 +121,16 @@ export function sendFormData(requestEditContext: RequestEditContext) {
  * Execute after successfully executing a patch call.
  * @param requestEditContext
  */
-export function onSuccessfullPatch(requestEditContext: RequestEditContext) {
+export function onSuccessfullPatch(
+  requestEditContext: RequestEditContext,
+  entityName?: Nullable<string>,
+) {
   invalidateEntityListCache(requestEditContext.rc.yacURL, requestEditContext.rc.entityTypeName);
-  navigateToURL(
-    `${requestEditContext.rc.backendObject?.name}/${requestEditContext.rc.entityTypeName}`,
-  );
+  // Navigate back to the overview, pointing at the affected entity so the table
+  // scrolls to and highlights it. The name may be unknown (e.g. generated), in
+  // which case we just return to the plain overview.
+  const base = `/${requestEditContext.rc.backendObject?.name}/${requestEditContext.rc.entityTypeName}`;
+  navigateToURL(entityName ? `${base}/${encodeURIComponent(entityName)}` : base);
 }
 
 /**
@@ -134,13 +139,17 @@ export function onSuccessfullPatch(requestEditContext: RequestEditContext) {
  * @param requestContext
  * @returns
  */
-async function sendCreateNewEntity(newData: any, requestContext: RequestContext): Promise<boolean> {
+async function sendCreateNewEntity(
+  newData: any,
+  requestContext: RequestContext,
+): Promise<{ success: boolean; name: Nullable<string> }> {
   const data = structuredClone(newData);
   let name: Nullable<string> = hasSettableName(data) ? popSettableName(data) : null;
   // An empty name (e.g. an optional name left blank) must be sent as null so YAC
   // generates one, instead of an empty string (which would be rejected with 422).
   if (!name) name = null;
   const editActions = dumpEditActions(popActions(data, requestContext));
+  // createNewEntity reports the actual (possibly generated) name of the entity.
   return await createNewEntity(name, data, requestContext, undefined, editActions);
 }
 
@@ -153,16 +162,16 @@ async function sendCreateNewEntity(newData: any, requestContext: RequestContext)
 async function sendPatchEntity(
   data: any,
   requestEditContext: RequestEditContext,
-): Promise<boolean> {
+): Promise<{ success: boolean; name: Nullable<string> }> {
   let name = '';
   data = structuredClone(data); // will be changed and patch may not succeed (collision)
   if (hasSettableName(data)) {
     name = popSettableName(data) ?? name;
   } else if (isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType)) {
-    if (requestEditContext.entityName == null) return false;
+    if (requestEditContext.entityName == null) return { success: false, name: null };
     name = requestEditContext.entityName;
   } else {
-    return false;
+    return { success: false, name: null };
   }
 
   const ret = await patchEntity(
@@ -171,5 +180,5 @@ async function sendPatchEntity(
     requestEditContext,
     getInitialEntityYAML(),
   );
-  return ret;
+  return { success: ret, name };
 }

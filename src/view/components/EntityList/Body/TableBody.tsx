@@ -5,9 +5,13 @@ import EntityListRow from './EntityListRow';
 const TableBody = ({
   tableEntries,
   requestContext,
+  highlightEntityName,
+  scrollTargetName,
 }: {
   tableEntries: QueryResult[];
   requestContext: RequestContext;
+  highlightEntityName?: string;
+  scrollTargetName?: string;
 }) => {
   return (
     <tbody role="rowgroup">
@@ -25,6 +29,8 @@ const TableBody = ({
                   requestContext={requestContext}
                   link={tableEntries[i].isLink}
                   actionPair={tableEntries[i].actionPair}
+                  highlight={tableEntries[i].entityName === highlightEntityName}
+                  scroll={tableEntries[i].entityName === scrollTargetName}
                 />,
               );
             }

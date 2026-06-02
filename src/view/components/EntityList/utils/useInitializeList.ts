@@ -13,7 +13,7 @@ export function useInitializeList(requestContext: RequestContext) {
 
   // Query Level information
   const [currPage, setCurrPage] = useState<number>(1);
-  const [numResultsPerPage, setNumResultsPerPage] = useState<number>(10);
+  const [numResultsPerPage, setNumResultsPerPage] = useState<number>(50);
   const [totalNumResults, setTotalNumResults] = useState<number>(10);
 
   useEffect(() => {

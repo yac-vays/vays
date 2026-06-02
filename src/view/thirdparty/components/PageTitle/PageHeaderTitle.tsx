@@ -14,9 +14,11 @@ const PageHeaderTitle = ({ title, subText, children }: PageHeaderTitleProps) => 
               {title}
             </h2>
           </div>
-          <p className="text-medium md:text-title-sm" style={{ whiteSpace: 'pre-wrap' }}>
-            {subText}
-          </p>
+          {subText && (
+            <p className="text-medium md:text-title-sm" style={{ whiteSpace: 'pre-wrap' }}>
+              {subText}
+            </p>
+          )}
         </div>
         <div className="relative flex">{children}</div>
       </div>

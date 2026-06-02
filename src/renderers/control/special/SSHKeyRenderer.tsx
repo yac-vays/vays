@@ -18,14 +18,10 @@ export const SSHKeyRenderer = ({
   uischema,
   errors,
   handleChange,
-  // schema,
+  schema,
   enabled,
 }: ControlProps) => {
   if (!visible) return <></>;
-
-  if (data === undefined && uischema.options?.initial_editable && uischema?.options?.initial) {
-    data = uischema.options?.initial;
-  }
 
   /// data check
   if (!isOfTypeWeak(data, 'string')) {
@@ -34,7 +30,6 @@ export const SSHKeyRenderer = ({
   }
   ///
 
-  const sshlist: string[] = (data ?? '').split('\n');
   return (
     <div className="p-1">
       <div className="flex flex-row">
@@ -44,15 +39,15 @@ export const SSHKeyRenderer = ({
             required={required || false}
             description={description}
           />
-          {sshlist.map((v: string) => (
-            <SSHKeyInput
-              data={v}
-              id={id}
-              placeholder={uischema?.options?.initial ?? 'Click to select file...'}
-              enabled={enabled}
-              onChange={(v: string) => handleChange(path, v)}
-            />
-          ))}
+          <SSHKeyInput
+            data={data as string | undefined}
+            id={id}
+            defaultv={schema.default as string | undefined}
+            placeholder={uischema?.options?.initial as string | undefined}
+            placeholderEditable={uischema?.options?.initial_editable as boolean | undefined}
+            enabled={enabled}
+            onChange={(v) => handleChange(path, v)}
+          />
           <ErrorBox displayError={errors} />
         </div>
       </div>

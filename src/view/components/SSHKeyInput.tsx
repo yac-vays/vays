@@ -2,50 +2,117 @@ import React, { useEffect, useRef, useState } from 'react';
 import useOutsideClick from '../hooks/useOutsideClick';
 
 import { showError, showSuccess } from '../../controller/global/notification';
+import ErrorBox from '../thirdparty/components/ifc/Label/ErrorBox';
 
 interface SSHKeyProps {
   id: string;
-  placeholder: string;
+  /** vays_options.initial */
+  placeholder?: string;
+  /** vays_options.initial_editable */
+  placeholderEditable?: boolean;
+  /** schema default */
+  defaultv?: string;
   data?: string;
   enabled?: boolean;
-  onChange: (v: string) => void;
+  onChange: (v: string | undefined) => void;
 }
-const getPlaceholder = (keyValue: string) => {
-  if (keyValue == '') {
-    return 'Edit or upload SSH Key...';
-  }
-  const list = keyValue.split(' ');
-  return list.length >= 2
-    ? `${list[0]} (${list.length > 2 ? list[2] : ''}): ${list[1].substring(0, 20)}...`
-    : 'Error Parsing SSH Key.';
+
+// A single OpenSSH public key line: "<type> <base64> [comment]".
+// Mirrors the YAC `ssh_key` format (ssh-rsa, ssh-ed25519, ecdsa-sha2-*).
+const SSH_KEY_REGEX =
+  /^(ssh-rsa|ssh-ed25519|ecdsa-sha2-[\w-]+)\s+[A-Za-z0-9+/]+={0,3}(\s+\S.*)?$/;
+
+/** True iff `value` is exactly one well-formed OpenSSH public key. */
+export const isSingleSSHKey = (value: string): boolean => {
+  const trimmed = value.trim();
+  if (trimmed === '' || /[\r\n]/.test(trimmed)) return false;
+  return SSH_KEY_REGEX.test(trimmed);
 };
 
-const SSHKeyInput = ({ id, placeholder, data, enabled, onChange }: SSHKeyProps) => {
+/** Why a value cannot be loaded, or '' if it is a valid single key (or empty). */
+const validationError = (value: string): string => {
+  const trimmed = value.trim();
+  if (trimmed === '' || isSingleSSHKey(trimmed)) return '';
+  return /[\r\n]/.test(trimmed)
+    ? 'Multiple keys are not allowed — provide a single OpenSSH public key.'
+    : 'This is not a valid OpenSSH public key.';
+};
+
+/** Compact, human-readable summary of a (valid) key, or '' for an empty value. */
+const compactDisplay = (keyValue: string): string => {
+  const trimmed = keyValue.trim();
+  if (trimmed === '') return '';
+  if (!isSingleSSHKey(trimmed)) return trimmed;
+  const list = trimmed.split(' ');
+  return `${list[0]} (${list.length > 2 ? list[2] : ''}): ${list[1].substring(0, 20)}...`;
+};
+
+const SSHKeyInput = ({
+  id,
+  placeholder,
+  placeholderEditable,
+  defaultv,
+  data,
+  enabled,
+  onChange,
+}: SSHKeyProps) => {
   // Do not use handleChange, this is the version that is not debounced.
   const inputRef = useRef<HTMLInputElement>(null);
-  const borderRef = useRef<HTMLDivElement>(null);
-  const [key, setKey] = useState<string>(data ? data.toString() : '');
-  const [value, setValue] = useState<string>(getPlaceholder(key));
+
+  // Resolve the effective value exactly like the plain text renderer:
+  // default < editable-initial < data.
+  let resolved = defaultv;
+  if (placeholderEditable) resolved = placeholder ?? '';
+  if (data != undefined) resolved = data;
+  const resolvedKey = resolved != undefined ? resolved.toString() : '';
+
+  // Greyed-out placeholder shown while the field is empty (non-editable
+  // `initial` is surfaced here, just like in the text renderer).
+  let ph = 'Edit or upload SSH Key...';
+  if (!placeholderEditable) ph = placeholder ?? ph;
+
+  const [key, setKey] = useState<string>(resolvedKey);
+  const [value, setValue] = useState<string>(compactDisplay(resolvedKey));
   const [isEditable, setIsEditable] = useState<boolean>(false);
+  const [error, setError] = useState<string>(validationError(resolvedKey));
 
   const makeEditable = () => {
+    if (!enabled) return;
     setIsEditable(true);
     setValue(key);
   };
 
   const freezeInput = (keyValue: string, setChange: boolean = true) => {
-    setKey(keyValue);
-    if (setChange) onChange(keyValue);
-    setValue(getPlaceholder(keyValue));
+    const trimmed = keyValue.trim();
+    const err = validationError(trimmed);
+    setKey(trimmed);
+    setError(err);
+    if (setChange) onChange(trimmed === '' ? undefined : trimmed);
+    // Show the compact summary for valid keys; keep raw text visible otherwise
+    // so the user can see (and fix) what is wrong.
+    setValue(err === '' ? compactDisplay(trimmed) : trimmed);
     setIsEditable(false);
   };
 
   const loadFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = (event.target.files as FileList)[0];
+    // Reset so selecting the same file again still triggers onChange.
+    event.target.value = '';
+    if (!file) return;
+
     const fr = new FileReader();
     fr.onload = function () {
-      freezeInput((fr.result as string).trim());
+      const content = (fr.result as string).trim();
+      const err = validationError(content);
+      if (err !== '') {
+        // Malformed or multi-key file: do not load it, just report the error.
+        setError(err);
+        showError('Could not load SSH key', err);
+        return;
+      }
+      freezeInput(content);
     };
-    fr.readAsText((event.target.files as FileList)[0]);
+    fr.readAsText(file);
   };
 
   useOutsideClick(inputRef, () => {
@@ -55,12 +122,12 @@ const SSHKeyInput = ({ id, placeholder, data, enabled, onChange }: SSHKeyProps) 
   });
 
   /**
-   * caching fix
+   * caching fix: re-sync when the resolved value changes (e.g. external data
+   * updates, or initial/default resolution).
    */
   useEffect(() => {
-    const keyData = data ? data.toString() : '';
-    freezeInput(keyData, false);
-  }, [data]);
+    freezeInput(resolvedKey, false);
+  }, [resolvedKey]);
 
   useEffect(() => {
     if (!inputRef.current) return;
@@ -100,7 +167,7 @@ const SSHKeyInput = ({ id, placeholder, data, enabled, onChange }: SSHKeyProps) 
               disabled={!isEditable || !enabled}
               className="border-none grow bg-transparent focus:border-none focus:outline-none"
               defaultValue={value}
-              placeholder={placeholder}
+              placeholder={ph}
               onChange={(e) => {
                 if (isEditable) {
                   setKey(e.target.value);
@@ -118,7 +185,6 @@ const SSHKeyInput = ({ id, placeholder, data, enabled, onChange }: SSHKeyProps) 
                 makeEditable();
                 setTimeout(() => {
                   inputRef.current?.focus();
-                  borderRef.current?.focus();
                 }, 10);
               }}
             >
@@ -177,6 +243,7 @@ const SSHKeyInput = ({ id, placeholder, data, enabled, onChange }: SSHKeyProps) 
             </svg>
           </label>
         </div>
+        <ErrorBox displayError={error} />
       </div>
     </>
   );

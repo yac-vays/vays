@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import 'react-circular-progressbar/dist/styles.css';
+import { hasLogsDefined } from '../../../../controller/local/Overview/list';
 import { ActionsColumnResults } from '../../../../utils/types/internal/actions';
 import { OverviewListCellEntry } from '../../../../utils/types/internal/entityList';
 import { RequestContext } from '../../../../utils/types/internal/request';
@@ -34,7 +35,12 @@ const EntityListRow = ({
         {(function fillRow() {
           const jsx = [];
 
-          for (let i = 0; i < entryValues.length - 2; i++) {
+          // The trailing placeholder entries are 'Actions' and, only when the
+          // entity type defines logs, 'Logs'. Skip them in the data-column loop.
+          const showLogs = hasLogsDefined(requestContext);
+          const numTrailingCols = showLogs ? 2 : 1;
+
+          for (let i = 0; i < entryValues.length - numTrailingCols; i++) {
             const entry = entryValues[i];
             if (link) {
               jsx.push(
@@ -89,11 +95,17 @@ const EntityListRow = ({
               </td>,
             );
           }
-          jsx.push(
-            <td className="pl-8:first-child border-stroke" style={{ paddingRight: 40 }} role="cell">
-              <LogsField requestContext={requestContext} entityName={entityName} />
-            </td>,
-          );
+          if (showLogs) {
+            jsx.push(
+              <td
+                className="pl-8:first-child border-stroke"
+                style={{ paddingRight: 40 }}
+                role="cell"
+              >
+                <LogsField requestContext={requestContext} entityName={entityName} />
+              </td>,
+            );
+          }
           jsx.push(
             <td className="border-stroke" style={{ overflowClipMargin: 100 }}>
               {/* overflow:"hidden" */}

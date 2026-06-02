@@ -22,13 +22,16 @@ const TableHeader = ({
             const jsx = [];
             let i = 0;
             const len = tableHeaderEntries.length;
+            // Trailing meta columns are never searchable: always 'Actions', plus
+            // 'Logs' when the entity type defines logs (otherwise the column is omitted).
+            const numTrailingCols = tableHeaderEntries.includes('Logs') ? 2 : 1;
             // TODO: Searchable should be exited by the controller.
             for (const value of tableHeaderEntries) {
               jsx.push(
                 <EntityListHeaderCell
                   searchCallback={searchCallback(i++)}
                   title={value}
-                  searchable={i <= len - 2}
+                  searchable={i <= len - numTrailingCols}
                   firstField={i === 1}
                 />,
               );

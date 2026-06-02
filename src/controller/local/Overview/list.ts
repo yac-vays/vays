@@ -75,6 +75,19 @@ export async function fetchEntities(
 }
 
 /**
+ * Determines whether the accessed entity type defines any logs.
+ *
+ * Used to decide whether the 'Logs' column should be shown in the overview
+ * table at all: if no logs are defined, the column is omitted entirely.
+ *
+ * @param requestContext - The context of the request, including accessed entity type.
+ * @returns true if at least one log is defined, false otherwise.
+ */
+export function hasLogsDefined(requestContext: RequestContext): boolean {
+  return (requestContext.accessedEntityType?.logs?.length ?? 0) > 0;
+}
+
+/**
  * Represents an entity by extracting and formatting its relevant information.
  *
  * @param entity - The entity object containing the data to be represented.
@@ -105,7 +118,9 @@ function representEntity(
       values.push({ value: value.toString().replaceAll(',', ', '), isMarkdown: false });
     }
   }
-  values.push({ value: 'Logs', isMarkdown: false });
+  if (hasLogsDefined(requestContext)) {
+    values.push({ value: 'Logs', isMarkdown: false });
+  }
   values.push({ value: 'Actions', isMarkdown: false });
 
   return values;
@@ -137,7 +152,9 @@ export function getHeaderEntries(requestContext: RequestContext): string[] {
     const optName: string = option.title as string;
     header.push(optName);
   }
-  header.push('Logs');
+  if (hasLogsDefined(requestContext)) {
+    header.push('Logs');
+  }
   header.push('Actions');
   return header;
 }

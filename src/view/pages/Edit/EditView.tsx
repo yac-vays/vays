@@ -85,18 +85,20 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
             (requestEditContext.viewMode === 'expert' ? 'expert' : 'standard'),
         );
       }
-      const entityTypeName = requestEditContext.rc.accessedEntityType?.title;
+      const entityTypeTitle = requestEditContext.rc.accessedEntityType?.title;
+      const backendTitle = requestEditContext.rc.backendObject?.title;
 
       if (mode === 'create') {
-        const backendTitle = requestEditContext.rc.backendObject?.title;
         if (requestEditContext.entityName == null)
-          setTitle(`${backendTitle} / ${entityTypeName} / Create: <i>New</i>`);
+          setTitle(`${backendTitle} / ${entityTypeTitle} / Create: <i>New</i>`);
         else
-          setTitle(`${backendTitle} / ${entityTypeName} / Create: '${requestEditContext.entityName}'`);
+          setTitle(
+            `${backendTitle} / ${entityTypeTitle} / Create: '${requestEditContext.entityName}'`,
+          );
       } else if (mode === 'change') {
-          setTitle(`${backendTitle} / ${entityTypeName} / Edit: '${requestEditContext.entityName}'`);
+        setTitle(`${backendTitle} / ${entityTypeTitle} / Edit: '${requestEditContext.entityName}'`);
       } else {
-          setTitle(`${backendTitle} / ${entityTypeName} / View: '${requestEditContext.entityName}'`);
+        setTitle(`${backendTitle} / ${entityTypeTitle} / View: '${requestEditContext.entityName}'`);
       }
       setRequestContext(requestEditContext);
     })();

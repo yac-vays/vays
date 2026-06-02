@@ -31,6 +31,6 @@ JSON-Forms wiring while the input components are pure UI primitives.
   - End-user reference for every bundled renderer, its selection rules
     and options: <https://yac-vays.github.io/vays/renderers/>.
   - Adding a new renderer:
-    <https://yac-vays.github.io/vays/devel/#adding-a-renderer>.
+    <https://yac-vays.github.io/vays/devel/add-renderer/>.
   - Background on the JSON-Forms renderer/tester model:
-    [`../../docs/Development/intro/json-forms.md`](../../docs/Development/intro/json-forms.md).
+    <https://yac-vays.github.io/vays/devel/json-forms/>.

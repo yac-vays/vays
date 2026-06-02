@@ -50,7 +50,7 @@ const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) 
   let subText =
     'This is required for understanding the backend responses and verifying your request.';
   if (requestContext.rc.accessedEntityType) {
-    title = `Displaying ${requestContext.rc.accessedEntityType.title} of '${requestContext.rc.backendObject?.title}'`;
+    title = `${requestContext.rc.backendObject?.title} / ${requestContext.rc.accessedEntityType.title}`;
     subText = 'Click on any property to search for it.';
   }
 

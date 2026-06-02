@@ -85,27 +85,18 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
             (requestEditContext.viewMode === 'expert' ? 'expert' : 'standard'),
         );
       }
-      const singularEntityTypeName = requestEditContext.rc.accessedEntityType?.title.substring(
-        0,
-        requestEditContext.rc.accessedEntityType?.title.length - 1,
-      );
+      const entityTypeName = requestEditContext.rc.accessedEntityType?.title;
 
       if (mode === 'create') {
         const backendTitle = requestEditContext.rc.backendObject?.title;
         if (requestEditContext.entityName == null)
-          setTitle(`Adding a ${singularEntityTypeName} to ${backendTitle}`);
+          setTitle(`${backendTitle} / ${entityTypeName} / Create: <i>New</i>`);
         else
-          setTitle(
-            `Adding ${singularEntityTypeName} '${requestEditContext.entityName}' to ${backendTitle}`,
-          );
+          setTitle(`${backendTitle} / ${entityTypeName} / Create: '${requestEditContext.entityName}'`);
       } else if (mode === 'change') {
-        setTitle(
-          `Editing ${singularEntityTypeName} '${entityName}' on ${requestEditContext.rc.backendObject?.title}`,
-        );
+          setTitle(`${backendTitle} / ${entityTypeName} / Edit: '${requestEditContext.entityName}'`);
       } else {
-        setTitle(
-          `Viewing ${singularEntityTypeName} '${entityName}' on ${requestEditContext.rc.backendObject?.title}`,
-        );
+          setTitle(`${backendTitle} / ${entityTypeName} / View: '${requestEditContext.entityName}'`);
       }
       setRequestContext(requestEditContext);
     })();

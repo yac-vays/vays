@@ -1,0 +1,57 @@
+/**
+ * Styling for rendered markdown content (see Markdown.tsx).
+ * Colors use the theme CSS variables so light/dark mode is handled automatically.
+ */
+
+.markdown-body {
+  font-size: 1.1rem;
+}
+
+/* Tables: lines, padding, header background and a subtle zebra. */
+.markdown-body table {
+  border-collapse: collapse;
+  margin: 0.5rem 0;
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  font-size: 0.8em;
+}
+
+.markdown-body th,
+.markdown-body td {
+  border-bottom: 1px solid var(--color-stroke);
+  padding: 0.1rem 0.75rem;
+  text-align: left;
+}
+
+.markdown-body th {
+  font-weight: 600;
+}
+
+/* Inline code: a small chip with a background. */
+.markdown-body code {
+  background-color: var(--color-primary-10);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+/* Code blocks: a padded, scrollable box with a background and border. */
+.markdown-body pre {
+  background-color: var(--color-primary-10);
+  border: 1px solid var(--color-stroke);
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  margin: 0.5rem 0;
+  overflow-x: auto;
+}
+
+/* Reset the inline-code chip styling for code inside a block. */
+.markdown-body pre code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.875rem;
+}

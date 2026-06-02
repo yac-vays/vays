@@ -8,6 +8,7 @@ import {
   navigateToURL,
 } from '../../../controller/global/url';
 import { invalidateEntityListCache } from '../../../model/entityList';
+import iLocalStorage from '../../../session/persistent/LocalStorage';
 import { YACBackend } from '../../../utils/types/config';
 import { RequestOverviewContext } from '../../../utils/types/internal/request';
 import EntityList from '../../components/EntityList';
@@ -20,14 +21,23 @@ interface OverviewPageProps {
 
 const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) => {
   const { backendName, entityTypeName } = useParams();
-  const [showDescription, setShowDescription] = useState<boolean>(true);
+  const [showDescription, setShowDescription] = useState<boolean>(
+    iLocalStorage.isOverviewDescriptionShown(),
+  );
+
+  // Persist the user's choice so the description stays hidden/shown across
+  // navigations and sessions (until browser data is cleared).
+  const toggleDescription = () => {
+    const next = !showDescription;
+    setShowDescription(next);
+    iLocalStorage.setIsOverviewDescriptionShown(next);
+  };
   const [requestContext, setRequestContext] = useState<RequestOverviewContext>(
     getDefaultRequestOverviewContext(),
   );
 
   useEffect(() => {
     (async function () {
-      setShowDescription(true);
       const isValid: boolean = await isValidQueryOverview(backendName, entityTypeName, backends);
       if (!isValid) {
         // TODO: Really have to be a bit faster here!
@@ -87,7 +97,7 @@ const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) 
           )}
           <a
             className="cursor-pointer text-sm text-[#98A6AD] hover:text-plainfont"
-            onClick={() => setShowDescription(!showDescription)}
+            onClick={toggleDescription}
           >
             {showDescription ? 'Hide Description' : 'Show Description'}
           </a>

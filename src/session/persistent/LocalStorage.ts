@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 class ILocalStorage {
-  public KEYS: readonly string[] = ['isSidebarGroupExpanded.*', 'isLoggedIn', 'token'];
+  public KEYS: readonly string[] = [
+    'isSidebarGroupExpanded.*',
+    'isLoggedIn',
+    'token',
+    'isOverviewDescriptionShown',
+  ];
 
   public setIsSidebarGroupExpanded(backendName: string, v: boolean): void {
     this.set(`ìsSidebarGroupExpanded.${backendName}`, v);
@@ -34,6 +39,14 @@ class ILocalStorage {
 
   public getToken(): string | undefined {
     return this.get('token');
+  }
+
+  public setIsOverviewDescriptionShown(v: boolean) {
+    this.set('isOverviewDescriptionShown', v);
+  }
+
+  public isOverviewDescriptionShown(): boolean {
+    return this.get('isOverviewDescriptionShown') ?? true;
   }
 }
 

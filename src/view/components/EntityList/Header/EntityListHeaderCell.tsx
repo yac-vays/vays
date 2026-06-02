@@ -8,6 +8,11 @@ interface ELHeaderCellProps {
   firstField: boolean;
   searchable: boolean;
   searchCallback: undefined | ((a: string) => void);
+  /**
+   * If true, the column shrinks to its content width (used for the Actions
+   * column) instead of claiming a minimum width and trailing padding.
+   */
+  shrink?: boolean;
 }
 
 /**
@@ -22,6 +27,7 @@ const EntityListHeaderCell = ({
   firstField,
   searchable,
   searchCallback,
+  shrink = false,
 }: ELHeaderCellProps) => {
   const [openSearch, setOpenSearch] = useState(false);
   const headerEntryRef = useRef<HTMLTableCellElement>(null);
@@ -68,22 +74,21 @@ const EntityListHeaderCell = ({
         onClick={toggleOpenSearch}
         role="columnheader"
         title="Toggle Search"
-        className="py-0 pr-20"
+        className={`py-0 ${shrink ? '' : 'pr-20'}`}
         // display: "flex", justifyContent: "center", alignItems: "center",
         style={
-          firstField
-            ? { cursor: 'pointer', marginRight: 10, minWidth: MINWIDTH_COLUMN }
-            : { paddingLeft: 0, cursor: 'pointer', minWidth: MINWIDTH_COLUMN }
+          shrink
+            ? { paddingLeft: 0, width: '1px', whiteSpace: 'nowrap' }
+            : firstField
+              ? { cursor: 'pointer', marginRight: 10, minWidth: MINWIDTH_COLUMN }
+              : { paddingLeft: 0, cursor: 'pointer', minWidth: MINWIDTH_COLUMN }
         }
       >
         <div className={`flex items-center ${openSearch ? 'hidden' : 'block'}`}>
-          <span className=" py-1 text-plainfont grow text-left"> {title}</span>
+          <span className="py-1 text-plainfont text-left">{title}</span>
           {/* TODO:_Need to decide whether alphanumerical sorting is a sought for feature. */}
           {searchable ? (
-            <div
-              className="ml-2 inline-flex flex-col space-y-[2px]"
-              style={{ position: 'revert', right: 0 }}
-            >
+            <div className="ml-1 inline-flex flex-col space-y-[2px]">
               <svg
                 className="fill-current opacity-50"
                 xmlns="http://www.w3.org/2000/svg"

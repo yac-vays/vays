@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useRef, useState } from 'react';
+import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   positionDropdownElement,
   registerTableScrollContainerEvent,
@@ -7,7 +7,14 @@ import { hashCode } from '../../utils/hashUtils';
 import { GUIActionDropdownArg } from '../../utils/types/internal/actions';
 import { Nullable } from '../../utils/types/typeUtils';
 import useOutsideClick from '../hooks/useOutsideClick';
-import { MINWIDTH_COLUMN } from './EntityList/Header/EntityListHeaderCell';
+
+// Color transform turning any (black) SVG icon into the same grey used for the
+// action buttons (see ActionButton.tsx).
+const GREY_ICON_FILTER =
+  'brightness(0) saturate(100%) invert(42%) sepia(24%) saturate(434%) hue-rotate(176deg) brightness(99%) contrast(85%)';
+
+// Minimum width of the opened dropdown menu (the trigger itself is just an icon).
+const MINWIDTH_DROPDOWN = 180; // px
 
 interface ActionDropdownProps {
   actions: GUIActionDropdownArg[];
@@ -40,14 +47,6 @@ const ActionDropdown = ({ actions, entityName }: ActionDropdownProps) => {
   const dropdownContentRef = useRef<HTMLDivElement>(null);
 
   const isEmpty = actions.length == 0;
-  const dropdownWidth: number = MINWIDTH_COLUMN;
-  if (!isEmpty) {
-    // TODO: Get more examples and check if this is necessary
-    // const maxString: string = (actions.reduce((a, b) =>
-    //   a.action.title > b.action.title ? a : b
-    // )).action.title;
-    // dropdownWidth = Math.min(getWidthOfText(maxString, {}) + 36, 150)
-  }
 
   useOutsideClick(dropdownRef, () => {
     setOpen(false);
@@ -66,6 +65,14 @@ const ActionDropdown = ({ actions, entityName }: ActionDropdownProps) => {
     window.requestAnimationFrame(update);
     registerTableScrollContainerEvent(() => setOpen(false));
   }, []);
+
+  // Reposition once the menu is actually visible: while hidden its width is 0,
+  // and the position is right-aligned to the trigger, so it needs the real width.
+  useLayoutEffect(() => {
+    if (open) {
+      positionDropdownElement(dropdownContentRef, dropdownHeaderRef);
+    }
+  }, [open]);
 
   window.addEventListener('resize', () =>
     positionDropdownElement(dropdownContentRef, dropdownHeaderRef),
@@ -101,22 +108,17 @@ const ActionDropdown = ({ actions, entityName }: ActionDropdownProps) => {
           >
             <div
               className="group relative flex items-center justify-center p-3 border-t border-r border-b rounded-r"
-              style={(function () {
-                return {
-                  borderColor: 'rgb(0 0 0/0)',
-                  height: 35,
-                  whiteSpace: 'nowrap',
-                  position: 'relative',
-                  zIndex: 2,
-                  minWidth:
-                    // TODO: Revisit scaling of the dropdown.
-                    dropdownWidth,
-                };
-              })()}
+              title="Other Actions"
+              style={{
+                borderColor: 'rgb(0 0 0/0)',
+                height: 35,
+                whiteSpace: 'nowrap',
+                position: 'relative',
+                zIndex: 2,
+              }}
             >
-              <span>Other Actions</span>
               <svg
-                className={`right-4 ml-2 -translate-y-1/6 fill-current ${open && 'rotate-180'}`}
+                className={`-translate-y-1/6 fill-current ${open && 'rotate-180'}`}
                 width="20"
                 height="20"
                 viewBox="0 0 20 20"
@@ -139,7 +141,7 @@ const ActionDropdown = ({ actions, entityName }: ActionDropdownProps) => {
           className={`shadow-lg dark:shadow-2xl dark:border dark:border-grey rounded absolute ${
             open ? 'block bg-bg' : 'hidden'
           }`}
-          style={{ zIndex: 10, marginTop: 40, width: dropdownHeaderRef.current?.offsetWidth }}
+          style={{ zIndex: 10, marginTop: 40, width: 'max-content', minWidth: MINWIDTH_DROPDOWN }}
         >
           <ul className="flex flex-col p-2">
             {(function () {
@@ -181,7 +183,15 @@ const ActionDropdown = ({ actions, entityName }: ActionDropdownProps) => {
                         }
                       }}
                     >
-                      {act.action.title}
+                      {act.action.icon ? (
+                        <img
+                          style={{ height: 20, width: 20, filter: GREY_ICON_FILTER }}
+                          src={`data:image/svg+xml;utf8,${encodeURIComponent(act.action.icon)}`}
+                        />
+                      ) : (
+                        <></>
+                      )}
+                      <span>{act.action.title}</span>
                     </div>
                     <div
                       id={idLoader}

@@ -46,7 +46,7 @@ const EntityListRow = ({
               jsx.push(
                 // TODO: Make this a bit more elegant, avoid such hard coded flags.
                 <td
-                  className={`pl-8:first-child border-stroke ${i != 0 ? 'opacity-40' : ''}`}
+                  className="pl-8:first-child border-stroke opacity-40"
                   style={{ paddingRight: 40 }}
                   role="cell"
                 >
@@ -62,7 +62,7 @@ const EntityListRow = ({
                   {i == 0 ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="fill-current opacity-40 inline pl-2 cursor-pointer"
+                      className="fill-current inline pl-2 cursor-pointer"
                       height="24px"
                       viewBox="0 -960 960 960"
                       width="24px"
@@ -107,26 +107,28 @@ const EntityListRow = ({
             );
           }
           jsx.push(
-            <td className="border-stroke" style={{ overflowClipMargin: 100 }}>
+            <td className="border-stroke" style={{ width: '1px', whiteSpace: 'nowrap' }}>
               {/* overflow:"hidden" */}
               {/* The buttons stacking up version...*/}
               {/* <div className="flex flex-col items-center" style={{width:"100%"}}>
                                 <div className="group relative items-center" style={{width:"100%"}}> */}
-              {/* Buttons staying together version. */}
-              <div className="flex flex-col items-center" style={{}}>
-                <div className="items-center flex flex-row">
-                  {(function () {
-                    const jsx: ReactNode[] = [];
-                    let isLeft = true;
-                    for (const act of actionPair.favActs) {
-                      jsx.push(<ActionButton actArgs={act} isLeft={isLeft} />);
-                      isLeft = false;
-                      // TODO: using pseudoclass?
-                    }
-                    return jsx;
-                  })()}
-                </div>
-                <ActionDropdown entityName={entityName} actions={actionPair.dropdownActs} />
+              {/* Buttons and the dropdown trigger staying together on one line. */}
+              <div className="items-center flex flex-row">
+                {(function () {
+                  const jsx: ReactNode[] = [];
+                  let isLeft = true;
+                  for (const act of actionPair.favActs) {
+                    jsx.push(<ActionButton actArgs={act} isLeft={isLeft} />);
+                    isLeft = false;
+                    // TODO: using pseudoclass?
+                  }
+                  return jsx;
+                })()}
+                {actionPair.dropdownActs.length > 0 ? (
+                  <ActionDropdown entityName={entityName} actions={actionPair.dropdownActs} />
+                ) : (
+                  <></>
+                )}
               </div>
             </td>,
           );

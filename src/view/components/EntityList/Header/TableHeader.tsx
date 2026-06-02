@@ -33,6 +33,7 @@ const TableHeader = ({
                   title={value}
                   searchable={i <= len - numTrailingCols}
                   firstField={i === 1}
+                  shrink={i === len}
                 />,
               );
             }

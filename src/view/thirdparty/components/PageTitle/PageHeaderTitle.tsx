@@ -1,5 +1,5 @@
 interface PageHeaderTitleProps {
-  title: string;
+  title: React.ReactNode;
   subText: string;
   children?: React.ReactNode;
 }

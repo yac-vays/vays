@@ -102,12 +102,13 @@ function App(): JSX.Element {
         ) : (
           <ModalContextProvider>
             <DefaultLayout backendList={backendsList}>
+              {/* The browser tab title is always the title configured in config.json. */}
+              <PageTitle title={config.title} />
               <Routes>
                 <Route
                   index
                   element={
                     <>
-                      <PageTitle title="Landing Page" />
                       <LoginView config={config} />
                     </>
                   }
@@ -116,7 +117,6 @@ function App(): JSX.Element {
                   path="/oauth2-redirect"
                   element={
                     <>
-                      <PageTitle title="Finishing Authentication" />
                       <RedirectView appconf={config} />
                     </>
                   }
@@ -125,7 +125,6 @@ function App(): JSX.Element {
                   path="/error-page"
                   element={
                     <>
-                      <PageTitle title="Error" />
                       <Suspense fallback={<Loader bgTransparent />}>
                         <ErrorPage />
                       </Suspense>
@@ -137,7 +136,6 @@ function App(): JSX.Element {
                   path="/:backendName/:entityTypeName/"
                   element={
                     <>
-                      <PageTitle title="List entities" />
                       <Overview backends={backendsList} />
                     </>
                   }
@@ -147,7 +145,6 @@ function App(): JSX.Element {
                   path="/dev-info"
                   element={
                     <>
-                      <PageTitle title="Developer Information" />
                       <Suspense fallback={<Loader bgTransparent />}>
                         <DevInfo />
                       </Suspense>
@@ -158,7 +155,6 @@ function App(): JSX.Element {
                   path="/:backendName/:entityTypeName/create/:entityName?"
                   element={
                     <>
-                      <PageTitle title="Create Entity" />
                       <EditView backends={backendsList} mode={'create'} />
                     </>
                   }
@@ -167,7 +163,6 @@ function App(): JSX.Element {
                   path="/:backendName/:entityTypeName/modify/:entityName?"
                   element={
                     <>
-                      <PageTitle title="Edit Entity" />
                       <EditView backends={backendsList} mode={'change'} />
                     </>
                   }
@@ -176,7 +171,6 @@ function App(): JSX.Element {
                   path="/:backendName/:entityTypeName/view/:entityName?"
                   element={
                     <>
-                      <PageTitle title="View Entity" />
                       <EditView backends={backendsList} mode={'read'} />
                     </>
                   }

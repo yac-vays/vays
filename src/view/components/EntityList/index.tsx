@@ -108,7 +108,7 @@ const EntityList = ({ requestContext }: EntityListProps) => {
             {/* md:table-fixed                                                                                           xl or xl2?       md:table-fixed md:overflow-auto md:px-8  */}
             <table
               role="table"
-              className="entity-list w-full table-auto border-collapse  break-words px-4 xl:table-fixed xl:overflow-x-auto overflow-y-block xl:px-8"
+              className="entity-list w-full table-auto border-collapse  break-words px-4 xl:overflow-x-auto overflow-y-block xl:px-8"
               style={{ width: '100%' }}
             >
               <TableHeader

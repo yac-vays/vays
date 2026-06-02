@@ -209,13 +209,14 @@ export function positionDropdownElement(
     return;
   }
   const rect = dropdownHeaderElt.current?.getBoundingClientRect();
-  let delta = 0; // default
-  if (window.outerWidth >= 1024) {
-    // md
-    delta = -290;
-  }
-
-  dropDownElt.current.style.left = `${rect.x + delta}px`; // Align it to the left}
+  // The trigger sits at the right edge of the screen, so open the menu leftward:
+  // align its right edge with the trigger's right edge.
+  //
+  // `style.left` is relative to the offset parent, while `rect` is in viewport
+  // coordinates, so we subtract the offset parent's left edge to convert.
+  const menuWidth = dropDownElt.current.offsetWidth;
+  const parentLeft = dropDownElt.current.offsetParent?.getBoundingClientRect().left ?? 0;
+  dropDownElt.current.style.left = `${rect.right - menuWidth - parentLeft}px`;
 }
 
 export function registerTableScrollContainerEvent(callback: () => void) {

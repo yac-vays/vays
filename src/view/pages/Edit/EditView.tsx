@@ -45,7 +45,7 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
   const [isExpertMode, _setIsExpertMode] = useState<boolean>(iSessionStorage.getIsExpertMode());
   const searchParams = useSearchParams()[0];
   const [requestContext, setRequestContext] = useState<RequestEditContext>(getDefaultEditContext());
-  const [title, setTitle] = useState<string>('Loading...');
+  const [title, setTitle] = useState<React.ReactNode>('Loading...');
 
   useEffect(() => {
     (async function () {
@@ -90,7 +90,11 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
 
       if (mode === 'create') {
         if (requestEditContext.entityName == null)
-          setTitle(`${backendTitle} / ${entityTypeTitle} / Create: <i>New</i>`);
+          setTitle(
+            <>
+              {backendTitle} / {entityTypeTitle} / Create: <i>New</i>
+            </>,
+          );
         else
           setTitle(
             `${backendTitle} / ${entityTypeTitle} / Create: '${requestEditContext.entityName}'`,

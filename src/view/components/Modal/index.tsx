@@ -13,6 +13,7 @@ interface ConfirmationModalState {
   text: string;
   isSending: boolean;
   textInputEnabled: boolean;
+  textInputPlaceholder: string;
   actions: ActionDecl[];
   actionsChoice: boolean[];
   crep?: ConcurrencyReportProps;
@@ -36,6 +37,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
       show: false,
       isSending: false,
       textInputEnabled: false,
+      textInputPlaceholder: 'Enter Name...',
       actions: [],
       actionsChoice: [],
       crep: undefined,
@@ -86,14 +88,10 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
       this._setSending(false);
       this.hide();
     };
-    if (!this.state.textInputEnabled) this.state.callbackSuccess().then(finish);
-    else
-      this.state
-        .callbackSuccess(
-          this.textInputRef.current?.value,
-          this.state.actions.filter((_v, i) => this.state.actionsChoice[i]),
-        )
-        .then(finish);
+    const selectedActions = this.state.actions.filter((_v, i) => this.state.actionsChoice[i]);
+    if (!this.state.textInputEnabled)
+      this.state.callbackSuccess(undefined, selectedActions).then(finish);
+    else this.state.callbackSuccess(this.textInputRef.current?.value, selectedActions).then(finish);
   }
 
   _cancel() {
@@ -111,6 +109,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
     enableTextInput: boolean,
     actions?: ActionDecl[],
     crep?: ConcurrencyReportProps,
+    textInputPlaceholder: string = 'Enter Name...',
   ): void {
     this.blockConfirm = false;
     if (actions == undefined) actions = [];
@@ -123,6 +122,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
       show: true,
       isSending: false,
       textInputEnabled: enableTextInput,
+      textInputPlaceholder: textInputPlaceholder,
       actions: actions,
       actionsChoice: actions.map(() => false),
       crep,
@@ -184,7 +184,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
                     ref={this.textInputRef}
                     type="text"
                     className="w-full rounded-md border border-stroke bg-bg px-5 py-2.5 outline-none focus:border-primary dark:focus:border-primary text-plainfont"
-                    placeholder="Enter Name..."
+                    placeholder={this.state.textInputPlaceholder}
                   />
                 </div>
               ) : (

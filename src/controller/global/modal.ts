@@ -17,6 +17,7 @@ export function showModalMessage(
   enableTextInput: boolean = false,
   actions?: ActionDecl[],
   crep?: ConcurrencyReportProps,
+  textInputPlaceholder?: string,
 ) {
   if (modalCtrlState.modalCallback != null) {
     modalCtrlState.modalCallback(
@@ -28,6 +29,7 @@ export function showModalMessage(
       enableTextInput,
       actions,
       crep,
+      textInputPlaceholder,
     );
   }
 }

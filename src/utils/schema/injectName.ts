@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { GLOBAL_YAC_REGEX } from '../constants';
-import { isNameRequiredByYAC } from '../nameUtils';
+import { isNameOptionalByYAC, isNameRequiredByYAC } from '../nameUtils';
 import { RequestContext } from '../types/internal/request';
 import { ValidateResponse } from '../types/internal/validation';
 import { Nullable } from '../types/typeUtils';
@@ -70,7 +70,15 @@ export function injectSettableName(
   };
 
   injectGeneralUICategory(valResp);
-  injectControls(valResp, [structuredClone(uiNameControl)]);
+  // When the name is optional, YAC generates one if left empty. Hint this with a
+  // greyed-out placeholder (a non-editable `initial`); when the name is required
+  // ('never'), no placeholder is shown.
+  const nameControl: typeof uiNameControl & { options?: { initial: string } } =
+    structuredClone(uiNameControl);
+  if (isNameOptionalByYAC(requestContext.accessedEntityType)) {
+    nameControl.options = { initial: 'Generate Automatically' };
+  }
+  injectControls(valResp, [nameControl]);
 
   if (isNameRequiredByYAC(requestContext.accessedEntityType)) {
     if (

@@ -136,12 +136,10 @@ export function onSuccessfullPatch(requestEditContext: RequestEditContext) {
  */
 async function sendCreateNewEntity(newData: any, requestContext: RequestContext): Promise<boolean> {
   const data = structuredClone(newData);
-  let name: Nullable<string> = '';
-  if (hasSettableName(data)) {
-    name = popSettableName(data) ?? name;
-  } else {
-    name = null;
-  }
+  let name: Nullable<string> = hasSettableName(data) ? popSettableName(data) : null;
+  // An empty name (e.g. an optional name left blank) must be sent as null so YAC
+  // generates one, instead of an empty string (which would be rejected with 422).
+  if (!name) name = null;
   const editActions = dumpEditActions(popActions(data, requestContext));
   return await createNewEntity(name, data, requestContext, undefined, editActions);
 }

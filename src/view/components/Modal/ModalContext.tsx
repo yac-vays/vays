@@ -16,6 +16,7 @@ export type ModalCallback = (
   enableTextInput: boolean,
   actions?: ActionDecl[],
   crep?: ConcurrencyReportProps,
+  textInputPlaceholder?: string,
 ) => void;
 
 // create context
@@ -36,6 +37,7 @@ export const ModalContextProvider = ({ children }: { children: React.ReactNode }
     enableTextInput,
     actions,
     crep,
+    textInputPlaceholder,
   ) => {
     if (!modalRef.current) return;
     modalRef.current.show(
@@ -47,6 +49,7 @@ export const ModalContextProvider = ({ children }: { children: React.ReactNode }
       enableTextInput, // TODO: Allow setting this so you can do ... And put input into success.
       actions,
       crep,
+      textInputPlaceholder,
     );
   };
 

@@ -854,7 +854,7 @@ export const VALIDATE_02_EXPECTED = {
       },
       name753984327583297515507489734124497987457185454894315: {
         pattern: '.*',
-        title: 'Entity Name',
+        title: 'Name',
         type: 'string',
       },
       pam_mount_volumes: {

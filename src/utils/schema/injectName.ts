@@ -64,7 +64,7 @@ export function injectSettableName(
   if (valResp.json_schema.properties == undefined) valResp.json_schema.properties = {};
   // valResp = structuredClone(valResp);
   valResp.json_schema.properties[INJECTED_NAME_PROPETRY] = {
-    title: 'Entity Name',
+    title: 'Name',
     type: 'string',
     pattern: requestContext.accessedEntityType?.name_pattern,
   };

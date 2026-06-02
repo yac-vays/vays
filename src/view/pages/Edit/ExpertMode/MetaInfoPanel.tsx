@@ -32,7 +32,7 @@ const MetaInfoPanel = ({
   return (
     <div className="flex flex-row items-end gap-4 pb-2 border-b">
       <div className="grow">
-        <OverheadLabelWithMarkdownDescr title="Entity Name" required={true} description="" />
+        <OverheadLabelWithMarkdownDescr title="Name" required={true} description="" />
         <TextInput
           placeholder={
             requestEditContext.rc.accessedEntityType?.name_example

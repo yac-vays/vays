@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import 'react-circular-progressbar/dist/styles.css';
-import { hasLogsDefined } from '../../../../controller/local/Overview/list';
+import { hasLogsDefined } from '../../../../utils/logUtils';
 import { ActionsColumnResults } from '../../../../utils/types/internal/actions';
 import { OverviewListCellEntry } from '../../../../utils/types/internal/entityList';
 import { RequestContext } from '../../../../utils/types/internal/request';

@@ -10,6 +10,7 @@ import {
   QueryResponse,
   QueryResult,
 } from '../../../utils/types/internal/entityList';
+import { hasLogsDefined } from '../../../utils/logUtils';
 import { RequestContext } from '../../../utils/types/internal/request';
 import { Nullable } from '../../../utils/types/typeUtils';
 import entityListCtrlState from '../../state/EntityListCtrlState';
@@ -72,19 +73,6 @@ export async function fetchEntities(
     partialResults: entityList,
     totalNumberOfResults: entities.length,
   };
-}
-
-/**
- * Determines whether the accessed entity type defines any logs.
- *
- * Used to decide whether the 'Logs' column should be shown in the overview
- * table at all: if no logs are defined, the column is omitted entirely.
- *
- * @param requestContext - The context of the request, including accessed entity type.
- * @returns true if at least one log is defined, false otherwise.
- */
-export function hasLogsDefined(requestContext: RequestContext): boolean {
-  return (requestContext.accessedEntityType?.logs?.length ?? 0) > 0;
 }
 
 /**

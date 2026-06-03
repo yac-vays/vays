@@ -16,11 +16,10 @@ export type APIOperation = 'create' | 'change' | 'delete';
  * entity being created/changed (see the YAC `limits` docs).
  */
 export const TYPE_CHECK_LIMIT_USAGE =
-  '{title: String, aggregate: String, used: Number, max: Number, ok: Boolean}';
+  '{title: String, used: Number, max: Number, ok: Boolean}';
 
 export interface LimitUsage {
   title: string;
-  aggregate: 'count' | 'sum';
   used: number;
   max: number;
   ok: boolean;

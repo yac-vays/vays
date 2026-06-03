@@ -10,6 +10,22 @@ import { Nullable, SafeSource } from './typeUtils';
 
 export type APIOperation = 'create' | 'change' | 'delete';
 
+/**
+ * One `limits` rule's computed usage for the current operation, as returned
+ * by the backend in the `/validate` response. `used` already includes the
+ * entity being created/changed (see the YAC `limits` docs).
+ */
+export const TYPE_CHECK_LIMIT_USAGE =
+  '{title: String, aggregate: String, used: Number, max: Number, ok: Boolean}';
+
+export interface LimitUsage {
+  title: string;
+  aggregate: 'count' | 'sum';
+  used: number;
+  max: number;
+  ok: boolean;
+}
+
 export const TYPE_CHECK_VALIDATE_RESP = `{
   schemas: {
     json_schema: Object,
@@ -27,7 +43,8 @@ export const TYPE_CHECK_VALIDATE_RESP = `{
   request: {
     valid: Boolean,
     message: Maybe String
-  }
+  },
+  usages: Maybe [${TYPE_CHECK_LIMIT_USAGE}]
 }`;
 
 export interface APIValidateResponse {
@@ -55,6 +72,8 @@ export interface APIValidateResponse {
     valid: boolean;
     message?: string;
   };
+
+  usages?: LimitUsage[];
 }
 
 export enum NameGeneratedCond {

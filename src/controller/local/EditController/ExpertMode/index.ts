@@ -38,7 +38,7 @@ export async function updateYAMLschema(
 ): Promise<Nullable<ValidateResponse>> {
   const valResp = await validateYAML(requestEditContext, name, yaml, getInitialEntityYAML(), acts);
   if (valResp == null) return null;
-  setYACStatus(valResp.valid, valResp.detail);
+  setYACStatus(valResp.valid, valResp.detail, valResp.usages);
 
   return valResp;
 }

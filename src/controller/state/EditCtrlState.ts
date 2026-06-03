@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Ajv from 'ajv';
+import { LimitUsage } from '../../utils/types/api';
 
 /**
  * Editing control state.
@@ -24,6 +25,12 @@ class EditControlState {
    * The most recent YAC response.
    */
   public yacResponse: string = '';
+
+  /**
+   * The `limits` usages from the most recent validation (for the UI usage
+   * indicator). Empty for read/delete and types without limits.
+   */
+  public yacUsages: LimitUsage[] = [];
 
   /**
    * Whether the most recent local validation has worked out.

@@ -17,6 +17,7 @@ import {
   popActions,
 } from '../../../utils/schema/injectActions';
 import { injectSettableName } from '../../../utils/schema/injectName';
+import { LimitUsage } from '../../../utils/types/api';
 import { RequestEditContext } from '../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../utils/types/internal/validation';
 import { Nullable } from '../../../utils/types/typeUtils';
@@ -32,11 +33,29 @@ import { updateSchema } from './StandardMode';
 export function clearYACStatus() {
   setYACValidateResponse('');
   setYACValidStatus(true);
+  setYACUsages([]);
 }
 
-export function setYACStatus(valid: boolean, detail: string) {
+export function setYACStatus(valid: boolean, detail: string, usages: LimitUsage[] = []) {
   setYACValidateResponse(detail);
   setYACValidStatus(valid);
+  setYACUsages(usages);
+}
+
+/**
+ * Reactive bridge for the `limits` usage indicator. Both edit modes funnel
+ * their validation results through `setYACStatus`, so a single listener
+ * registered by the edit view (`EditFrame`) receives every update for free.
+ */
+let usagesListener: ((usages: LimitUsage[]) => void) | null = null;
+
+export function setUsagesListener(cb: ((usages: LimitUsage[]) => void) | null) {
+  usagesListener = cb;
+}
+
+export function setYACUsages(usages: LimitUsage[]) {
+  editingState.yacUsages = usages;
+  usagesListener?.(usages);
 }
 
 /**
@@ -262,7 +281,7 @@ export async function coreUpdate(
   );
   if (valResp == null) return null;
 
-  setYACStatus(valResp.valid, valResp.detail);
+  setYACStatus(valResp.valid, valResp.detail, valResp.usages);
   const didChange = handleDefaults(entityData, valResp, requestEditContext);
 
   // do revalidation here!

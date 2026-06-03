@@ -18,6 +18,7 @@ export const defaultValidationResponse: ValidateResponse = {
   data: {},
   valid: false,
   detail: 'Sorry, there is no form to display (yet)...',
+  usages: [],
 };
 
 export async function getSchema(
@@ -69,6 +70,7 @@ async function _validate(
       data: dat.schemas.data,
       valid: dat.request.valid && dat.schemas.valid,
       detail: dat.request.message ?? dat.schemas.message ?? '',
+      usages: dat.usages ?? [],
     };
   } else if (resp.status == 422) {
     showError('Frontend Error', 'Invalid specification used, cannot talk to YAC servers.');

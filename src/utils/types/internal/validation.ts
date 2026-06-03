@@ -1,4 +1,5 @@
 import { JsonSchema } from "@jsonforms/core";
+import { LimitUsage } from "../api";
 
 
 export type ValidateResponse = {
@@ -20,5 +21,6 @@ export type ValidateResponse = {
   data: { [key: string]: any; };
   valid: boolean;
   detail: string;
+  usages?: LimitUsage[];
   yaml?: string;
 };

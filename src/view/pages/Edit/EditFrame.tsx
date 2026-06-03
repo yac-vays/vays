@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import { sendYAMLData } from '../../../controller/local/EditController/ExpertMode';
+import { setUsagesListener } from '../../../controller/local/EditController/shared';
 import { sendFormData } from '../../../controller/local/EditController/StandardMode';
+import { LimitUsage } from '../../../utils/types/api';
 import { RequestEditContext } from '../../../utils/types/internal/request';
 import ExpertMode from './ExpertMode/ExpertMode';
 import StandardEditMode from './StandardEditMode';
+import UsageIndicator from './UsageIndicator';
 
 /**
  * Component that renders an editing frame with expert or standard mode and feedback.
@@ -25,6 +28,14 @@ const EditFrame = ({
   const [yacErrorMsg, setYACErrorMsg] = useState<string>('');
   const [isDisplayingYACError, setIsDisplayingYACError] = useState<boolean>(false);
   const [isReadOnly, setIsReadOnly] = useState<boolean>(requestEditContext.mode === 'read');
+  const [usages, setUsages] = useState<LimitUsage[]>([]);
+
+  // Both edit modes funnel validation results through the controller's
+  // `setYACStatus`, which notifies this listener with the latest limit usages.
+  useEffect(() => {
+    setUsagesListener(setUsages);
+    return () => setUsagesListener(null);
+  }, []);
 
   const setEditErrorMsg = (msg: string) => {
     if (msg === '') {
@@ -76,6 +87,13 @@ const EditFrame = ({
               Server: "{yacErrorMsg}"
             </span>
           </div>
+          {isReadOnly ? (
+            <></>
+          ) : (
+            <div className="flex items-center px-2">
+              <UsageIndicator usages={usages} />
+            </div>
+          )}
           {isReadOnly ? (
             <></>
           ) : (

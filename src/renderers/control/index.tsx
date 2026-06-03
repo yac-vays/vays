@@ -5,6 +5,7 @@ import MultipleChoiceRenderer, { MultipleChoiceTester } from './MultipleChoiceRe
 import NumberControl, { NumberControlTester } from './NumberControl';
 import OneOfEnumControl, { OneOfEnumControlTester } from './OneOfEnumControl';
 import TextControl, { TextControlTester } from './TextControlRenderer';
+import UnavailableControl, { UnavailableTester } from './UnavailableControl';
 import { VoidControl, VoidTester } from './VoidSchemaControl';
 import { specialRenderers } from './special';
 
@@ -16,6 +17,7 @@ export const controlRenderers = [
   { tester: DateControlTester, renderer: DateControl },
   { tester: NumberControlTester, renderer: NumberControl },
   { tester: VoidTester, renderer: VoidControl },
+  { tester: UnavailableTester, renderer: UnavailableControl },
   { tester: MultipleChoiceTester, renderer: MultipleChoiceRenderer },
   ...specialRenderers,
 ];

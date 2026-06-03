@@ -7,6 +7,26 @@
   font-size: 1.1rem;
 }
 
+/*
+ * Preserve soft line breaks (single newlines) only within text-bearing blocks.
+ * Applying `pre-wrap` to the whole container instead would also render the
+ * whitespace text nodes that the markdown pipeline emits *between* block
+ * elements (e.g. a paragraph followed by a GFM table), producing a large empty
+ * gap. Scoping it to the blocks themselves keeps newlines inside paragraphs
+ * while letting inter-block whitespace collapse normally.
+ */
+.markdown-body p,
+.markdown-body li,
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6,
+.markdown-body blockquote {
+  white-space: pre-wrap;
+}
+
 /* Tables: lines, padding, header background and a subtle zebra. */
 .markdown-body table {
   border-collapse: collapse;

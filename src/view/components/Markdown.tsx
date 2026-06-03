@@ -33,7 +33,7 @@ const svgSchema = {
 const MarkdownRender = ({ text }: { text: string | null | undefined }) => {
   if (!text) return <></>;
   return (
-    <div className="markdown-body whitespace-pre-wrap">
+    <div className="markdown-body">
       <Markdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw, [rehypeSanitize, svgSchema]]}

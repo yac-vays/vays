@@ -105,7 +105,9 @@ export const MultipleChoiceTester: RankedTester = rankWith(
         const resolvedSchema = schema.$ref
           ? resolveSchema(rootSchema, schema.$ref, rootSchema)
           : schema;
-        return hasOneOfItems(resolvedSchema) || hasEnumItems(resolvedSchema);
+        return (
+          !!resolvedSchema && (hasOneOfItems(resolvedSchema) || hasEnumItems(resolvedSchema))
+        );
       }),
     ),
   ),

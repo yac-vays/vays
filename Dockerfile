@@ -1,10 +1,4 @@
-#
-# Build: docker build --memory=2g -t myapp .
-# Run: docker run -p 127.0.0.1:5173:8080 --mount type=bind,source="$(pwd)"/config2.json,target=/usr/share/nginx/html/config.json,readonly myapp
-# Base Image - Build the TypeScript web app
-#
-
-FROM node:22.12.0-alpine AS build
+FROM node:22.22.3-alpine3.22 AS build
 
 WORKDIR /code
 

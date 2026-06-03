@@ -784,6 +784,7 @@ export const VALIDATE_02_RESPONSE2 = {
 };
 
 export const VALIDATE_02_EXPECTED = {
+  usages: [],
   data: {
     active_directory_conf: false,
     gnome_default_favorite_apps: [],

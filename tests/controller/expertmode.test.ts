@@ -50,5 +50,6 @@ test('tests the validation of the expert mode', async () => {
       VALIDATE_01_RESPONSE_VALID.request.message ??
       VALIDATE_01_RESPONSE_VALID.schemas.message ??
       '',
+    usages: [],
   });
 });

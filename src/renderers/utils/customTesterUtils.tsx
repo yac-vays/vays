@@ -16,5 +16,5 @@ export function isUntypedStringInput(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const subschema = resolveSchema(schema, (uischema as any).scope, context?.rootSchema);
 
-  return subschema.type === undefined && subschema.pattern != undefined;
+  return subschema?.type === undefined && subschema?.pattern != undefined;
 }

@@ -5,6 +5,7 @@ import {
 } from '../../../../controller/local/EditController/ExpertMode/access';
 import { editViewNavigateToNewName } from '../../../../controller/local/EditController/shared';
 import { getTriggerableActions } from '../../../../utils/actionUtils';
+import { isNameGeneratedByYAC, isNameOptionalByYAC } from '../../../../utils/nameUtils';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 import Checkbox from '../../../thirdparty/components/ifc/CheckBox/CheckBox';
 import ErrorBox from '../../../thirdparty/components/ifc/Label/ErrorBox';
@@ -19,6 +20,16 @@ const MetaInfoPanel = ({
   updateCallback: () => void;
 }) => {
   const [nameError, setNameError] = useState<string>('');
+  // The name field mirrors the logic used everywhere else (see model/action.ts,
+  // utils/schema/injectName.ts): when YAC generates the name ('enforced') there
+  // must be no name input at all; when the name is 'optional' it is generated if
+  // left empty (hint this in the placeholder and do not mark it required).
+  const accessedEntityType = requestEditContext.rc.accessedEntityType;
+  const showNameField = !isNameGeneratedByYAC(accessedEntityType);
+  const nameOptional = isNameOptionalByYAC(accessedEntityType);
+  const namePlaceholder = nameOptional
+    ? 'Generate Automatically'
+    : (accessedEntityType?.name_example ?? 'Enter name...');
   const acts = getTriggerableActions(
     requestEditContext.rc.accessedEntityType?.actions ?? [],
     requestEditContext.mode,
@@ -32,37 +43,39 @@ const MetaInfoPanel = ({
   return (
     <div className="flex flex-row items-end gap-4 pb-2 border-b">
       <div className="grow">
-        <OverheadLabelWithMarkdownDescr title="Name" required={true} description="" />
-        <TextInput
-          placeholder={
-            requestEditContext.rc.accessedEntityType?.name_example
-              ? requestEditContext.rc.accessedEntityType?.name_example
-              : 'Enter name...'
-          }
-          data={requestEditContext.entityName}
-          enabled
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-            const name = e.target.value === '' ? null : e.target.value;
-            if (name == null) return;
-            setEntityName(name);
-            editViewNavigateToNewName(name, requestEditContext);
-            try {
-              if (
-                !RegExp(requestEditContext.rc.accessedEntityType?.name_pattern ?? '.*').test(name)
-              ) {
-                setNameError(
-                  'Does not match pattern ' +
-                    requestEditContext.rc.accessedEntityType?.name_pattern,
-                );
-                return;
-              } else setNameError('');
-            } catch {
-              return;
-            }
-            updateCallback();
-          }}
-        />
-        <ErrorBox displayError={nameError} />
+        {showNameField && (
+          <>
+            <OverheadLabelWithMarkdownDescr title="Name" required={!nameOptional} description="" />
+            <TextInput
+              placeholder={namePlaceholder}
+              data={requestEditContext.entityName}
+              enabled
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const name = e.target.value === '' ? null : e.target.value;
+                if (name == null) return;
+                setEntityName(name);
+                editViewNavigateToNewName(name, requestEditContext);
+                try {
+                  if (
+                    !RegExp(requestEditContext.rc.accessedEntityType?.name_pattern ?? '.*').test(
+                      name,
+                    )
+                  ) {
+                    setNameError(
+                      'Does not match pattern ' +
+                        requestEditContext.rc.accessedEntityType?.name_pattern,
+                    );
+                    return;
+                  } else setNameError('');
+                } catch {
+                  return;
+                }
+                updateCallback();
+              }}
+            />
+            <ErrorBox displayError={nameError} />
+          </>
+        )}
         <div className="flex flex-col">
           {(function () {
             const jsx = acts.map((v, idx) => {

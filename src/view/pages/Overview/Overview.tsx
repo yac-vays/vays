@@ -104,7 +104,15 @@ const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) 
         </div>
       )}
 
-      <EntityList requestContext={requestContext.rc} highlightEntityName={entityName} />
+      {/* Key on backend+type so switching either fully remounts the list: this
+          resets the (uncontrolled) per-column search inputs, the open-search
+          toggle, the search terms and pagination, which would otherwise
+          persist across backends and show stale, ineffective search text. */}
+      <EntityList
+        key={`${requestContext.rc.yacURL}/${requestContext.rc.entityTypeName}`}
+        requestContext={requestContext.rc}
+        highlightEntityName={entityName}
+      />
     </>
   );
 };

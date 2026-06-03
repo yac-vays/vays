@@ -47,7 +47,11 @@ export const Editor = ({
 
     if (monacoEl && requestEditContext.rc.yacURL != null) {
       setIsSettingUp(true);
-      setIsExpanded(requestEditContext.mode === 'create');
+      // Expand the "General Settings" panel (name field + triggerable action
+      // checkboxes) for both create and change. Previously only create expanded
+      // it, so when editing the name/actions appeared to be missing until the
+      // user manually expanded the collapsed accordion.
+      setIsExpanded(true);
 
       let monacoYaml = getMonacoYaml();
       if (!monacoYaml) {

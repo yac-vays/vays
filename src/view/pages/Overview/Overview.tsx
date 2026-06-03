@@ -89,7 +89,7 @@ const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) 
         </button>
       </PageHeaderTitle>
       {hasDescription && (
-        <div className="-mt-3 mb-5" style={{ whiteSpace: 'pre-wrap' }}>
+        <div className="-mt-3 mb-5">
           {showDescription && (
             <div className="text-medium md:text-title-sm">
               <MarkdownRender text={description} />

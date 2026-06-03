@@ -6,27 +6,52 @@ import './markdown-styles.css';
 
 // The default schema is GitHub-safe (no <script>, no on* handlers, etc.).
 // We extend it with inline-SVG tags/attributes so aliases sent via YAC type
-// specs can render symbols. Everything else stays restricted to the safe
-// default allowlist.
+// specs can render symbols (incl. multi-colour brand logos with gradients).
+// Everything else stays restricted to the safe default allowlist.
+//
+// NOTE: rehype-sanitize matches against hast *property* names, which are
+// camelCased (e.g. `stroke-width` -> `strokeWidth`, `stop-color` -> `stopColor`,
+// `aria-label` -> `ariaLabel`). Use those forms here or the attribute is dropped.
+//
+// <style> is deliberately NOT allowed: it is page-global and unscoped, so a
+// single bad alias could restyle the whole UI. Flatten logos with SVGO
+// (`inlineStyles` + `convertStyleToAttrs`) so colours become presentation
+// attributes instead of class/style rules.
+const SVG_PRESENTATION = [
+  'id', 'fill', 'fillOpacity', 'fillRule', 'clipRule', 'stroke', 'strokeWidth',
+  'strokeLinecap', 'strokeLinejoin', 'strokeMiterlimit', 'strokeOpacity',
+  'strokeDasharray', 'opacity', 'transform',
+];
 const svgSchema = {
   ...defaultSchema,
+  // Don't prefix ids with "user-content-": that rewrites <g id> / <linearGradient id>
+  // but NOT the matching url(#id) / xlink:href="#id" references, which silently
+  // breaks <use> and gradient fills. SVGO gives each logo a unique id prefix, so
+  // dropping the clobber guard is safe for these trusted, self-contained SVGs.
+  clobberPrefix: '',
   tagNames: [
     ...(defaultSchema.tagNames ?? []),
-    'svg', 'path', 'g', 'circle', 'rect', 'line',
-    'polyline', 'polygon', 'ellipse', 'defs', 'use', 'symbol', 'title',
+    'svg', 'path', 'g', 'circle', 'rect', 'line', 'polyline', 'polygon',
+    'ellipse', 'defs', 'use', 'symbol', 'title',
+    'linearGradient', 'radialGradient', 'stop',
   ],
   attributes: {
     ...defaultSchema.attributes,
-    svg: ['viewBox', 'xmlns', 'width', 'height', 'fill', 'stroke', 'class', 'role', 'aria-hidden', 'aria-label'],
-    path: ['d', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'fill-rule', 'clip-rule'],
-    g: ['fill', 'stroke', 'transform'],
-    circle: ['cx', 'cy', 'r', 'fill', 'stroke', 'stroke-width'],
-    rect: ['x', 'y', 'width', 'height', 'rx', 'ry', 'fill', 'stroke', 'stroke-width'],
-    line: ['x1', 'y1', 'x2', 'y2', 'stroke', 'stroke-width'],
-    polyline: ['points', 'fill', 'stroke', 'stroke-width'],
-    polygon: ['points', 'fill', 'stroke', 'stroke-width'],
-    ellipse: ['cx', 'cy', 'rx', 'ry', 'fill', 'stroke', 'stroke-width'],
-    use: ['href'],
+    svg: ['viewBox', 'xmlns', 'width', 'height', 'preserveAspectRatio', 'role', 'ariaLabel', 'ariaHidden', ...SVG_PRESENTATION],
+    g: ['transform', ...SVG_PRESENTATION],
+    path: ['d', ...SVG_PRESENTATION],
+    circle: ['cx', 'cy', 'r', ...SVG_PRESENTATION],
+    rect: ['x', 'y', 'width', 'height', 'rx', 'ry', ...SVG_PRESENTATION],
+    line: ['x1', 'y1', 'x2', 'y2', ...SVG_PRESENTATION],
+    polyline: ['points', ...SVG_PRESENTATION],
+    polygon: ['points', ...SVG_PRESENTATION],
+    ellipse: ['cx', 'cy', 'rx', 'ry', ...SVG_PRESENTATION],
+    use: ['href', 'xLinkHref', 'x', 'y', 'width', 'height', ...SVG_PRESENTATION],
+    symbol: ['id', 'viewBox', 'preserveAspectRatio'],
+    defs: ['id'],
+    linearGradient: ['id', 'x1', 'y1', 'x2', 'y2', 'gradientUnits', 'gradientTransform', 'spreadMethod', 'href', 'xLinkHref'],
+    radialGradient: ['id', 'cx', 'cy', 'r', 'fx', 'fy', 'fr', 'gradientUnits', 'gradientTransform', 'spreadMethod', 'href', 'xLinkHref'],
+    stop: ['offset', 'stopColor', 'stopOpacity'],
   },
 };
 

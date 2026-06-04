@@ -9,7 +9,7 @@ import { TranslateProps, withJsonFormsEnumProps, withTranslateProps } from '@jso
 import React from 'react';
 // import merge from 'lodash/merge';
 import { WithOptionLabel } from '@jsonforms/material-renderers';
-import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
+import ErrorRing from '../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import SelectStatic from '../../view/thirdparty/components/ifc/Selector/SelectStatic';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
@@ -54,16 +54,18 @@ export const EnumControl = ({
           title={label}
           required={required || false}
           description={description}
+          errors={errors}
         />
 
-        <SelectStatic
-          options={options || []}
-          onChange={(v: string | number | undefined) => handleChange(path, v)}
-          initValue={data}
-          disabled={!enabled}
-          canResetToUndefined={!required}
-        />
-        <ErrorBox displayError={errors} />
+        <ErrorRing errors={errors}>
+          <SelectStatic
+            options={options || []}
+            onChange={(v: string | number | undefined) => handleChange(path, v)}
+            initValue={data}
+            disabled={!enabled}
+            canResetToUndefined={!required}
+          />
+        </ErrorRing>
       </div>
     </>
   );

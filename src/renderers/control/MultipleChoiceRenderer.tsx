@@ -14,8 +14,8 @@ import {
 } from '@jsonforms/core';
 
 import { withJsonFormsMultiEnumProps } from '@jsonforms/react';
+import ErrorRing from '../../view/components/Form/ErrorRing';
 import FormComponentTitle from '../../view/components/FormComponentTitle';
-import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
 import MultiSelect from '../../view/thirdparty/components/ifc/MultiSelect/MultiSelect';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
 
@@ -68,18 +68,20 @@ export const MultipleChoiceRenderer = ({
         onClick={() => {}}
         required={required}
         hideAddButton
+        errors={errors}
       />
-      <ErrorBox displayError={errors} />
 
-      <MultiSelect
-        options={options}
-        data={data}
-        handleChange={_handleChange}
-        id={id}
-        path={path}
-        multiple={!schema.uniqueItems}
-        disabled={!enabled}
-      />
+      <ErrorRing errors={errors}>
+        <MultiSelect
+          options={options}
+          data={data}
+          handleChange={_handleChange}
+          id={id}
+          path={path}
+          multiple={!schema.uniqueItems}
+          disabled={!enabled}
+        />
+      </ErrorRing>
     </div>
   );
 };

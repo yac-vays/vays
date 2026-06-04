@@ -4,7 +4,7 @@ import { debounce } from 'lodash';
 import { useCallback } from 'react';
 import { tsAddWarningMessage } from '../../controller/global/troubleshoot';
 import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/access';
-import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
+import ErrorRing from '../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import TextInput from '../../view/thirdparty/components/ifc/TextInput/TextInput';
 import { isUntypedStringInput } from '../utils/customTesterUtils';
@@ -51,16 +51,18 @@ export const TextControl = (props: ControlProps) => {
         title={props.label ?? props.schema.title}
         required={props.required || false}
         description={props.description}
+        errors={errors}
       />
-      <TextInput
-        onChange={onChange}
-        data={data}
-        enabled={props.enabled}
-        defaultv={props.schema.default}
-        placeholder={props.uischema.options?.initial}
-        placeholderEditable={props.uischema.options?.initial_editable}
-      />
-      <ErrorBox displayError={errors} />
+      <ErrorRing errors={errors}>
+        <TextInput
+          onChange={onChange}
+          data={data}
+          enabled={props.enabled}
+          defaultv={props.schema.default}
+          placeholder={props.uischema.options?.initial}
+          placeholderEditable={props.uischema.options?.initial_editable}
+        />
+      </ErrorRing>
     </div>
   );
 };

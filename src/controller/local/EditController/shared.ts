@@ -33,13 +33,43 @@ import { updateSchema } from './StandardMode';
 export function clearYACStatus() {
   setYACValidateResponse('');
   setYACValidStatus(true);
+  setLocalValidity(true);
   setYACUsages([]);
+  emitValidity();
 }
 
 export function setYACStatus(valid: boolean, detail: string, usages: LimitUsage[] = []) {
   setYACValidateResponse(detail);
   setYACValidStatus(valid);
   setYACUsages(usages);
+  emitValidity();
+}
+
+/**
+ * Reactive bridge for overall form validity, mirroring `usagesListener`. The
+ * edit view (`EditFrame`) registers a listener to enable/disable the Save
+ * button. Validity combines the backend verdict (`isValidYAC`, from every
+ * `setYACStatus`) with the form's own JSON Forms error count (`isValidLocal`,
+ * pushed from the standard-mode `onChange`).
+ */
+let validityListener: ((valid: boolean) => void) | null = null;
+
+export function setValidityListener(cb: ((valid: boolean) => void) | null) {
+  validityListener = cb;
+}
+
+/** True when both the backend and the live form report no errors. */
+export function isFormValid(): boolean {
+  return editingState.isValidYAC && editingState.isValidLocal;
+}
+
+/** Record whether the form's own (JSON Forms) validation currently has errors. */
+export function setLocalValidity(valid: boolean) {
+  editingState.isValidLocal = valid;
+}
+
+export function emitValidity() {
+  validityListener?.(isFormValid());
 }
 
 /**

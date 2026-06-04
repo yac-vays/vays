@@ -9,8 +9,8 @@ import {
   rankWith,
 } from '@jsonforms/core';
 
+import ErrorRing from '../../../view/components/Form/ErrorRing';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
-import ErrorBox from '../../../view/thirdparty/components/ifc/Label/ErrorBox';
 import LargeStringList from '../../../view/thirdparty/components/ifc/LargeStringList/LargeStringList';
 import { withJsonFormsControlPropsAndArrayLevelErrors } from '../../utils/customPropsHandling';
 import { isCustomRenderer } from '../../utils/customTesterUtils';
@@ -48,14 +48,15 @@ export const BigStringArray = (props: ControlProps) => {
         ) : (
           <></>
         )}
-        <LargeStringList
-          handleChange={props.handleChange}
-          path={props.path}
-          id={props.id}
-          data={props.data}
-          disabled={!props.enabled}
-        />
-        <ErrorBox displayError={props.errors} />
+        <ErrorRing errors={props.errors}>
+          <LargeStringList
+            handleChange={props.handleChange}
+            path={props.path}
+            id={props.id}
+            data={props.data}
+            disabled={!props.enabled}
+          />
+        </ErrorRing>
       </div>
     </>
   );

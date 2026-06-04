@@ -85,15 +85,10 @@ function updateURL(
  * @returns
  */
 export function sendFormData(requestEditContext: RequestEditContext) {
-  if (!editingState.isValidYAC) {
-    showModalMessage(
-      'Data not valid',
-      `The data is not yet valid. YAC server response is \n"${editingState.yacResponse}"`,
-      async () => {},
-      async () => {},
-      'Return',
-      false,
-    );
+  // Defensive: the Save button is disabled while the form is invalid, and the
+  // error is shown inline (field rings / tab dots) + in the footer status bar,
+  // so no modal is needed here.
+  if (!editingState.isValidYAC || !editingState.isValidLocal) {
     return;
   }
   showModalMessage(

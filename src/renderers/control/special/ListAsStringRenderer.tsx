@@ -1,7 +1,7 @@
 import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
+import ErrorRing from '../../../view/components/Form/ErrorRing';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
-import ErrorBox from '../../../view/thirdparty/components/ifc/Label/ErrorBox';
 import LargeStringList from '../../../view/thirdparty/components/ifc/LargeStringList/LargeStringList';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
 import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
@@ -41,14 +41,15 @@ export const ListAsStringRenderer = (props: ControlProps) => {
         ) : (
           <></>
         )}
-        <LargeStringList
-          handleChange={handleChange}
-          path={props.path}
-          id={props.id}
-          data={list}
-          disabled={!props.enabled}
-        />
-        <ErrorBox displayError={props.errors} />
+        <ErrorRing errors={props.errors}>
+          <LargeStringList
+            handleChange={handleChange}
+            path={props.path}
+            id={props.id}
+            data={list}
+            disabled={!props.enabled}
+          />
+        </ErrorRing>
       </div>
     </>
   );

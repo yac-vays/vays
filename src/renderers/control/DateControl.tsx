@@ -3,8 +3,8 @@ import { withJsonFormsControlProps } from '@jsonforms/react';
 import merge from 'lodash/merge';
 import { isRFC3339Date } from '../../utils/dateUtils';
 import { hashCode } from '../../utils/hashUtils';
+import ErrorRing from '../../view/components/Form/ErrorRing';
 import DatePicker from '../../view/thirdparty/components/ifc/Datepicker/DatePicker';
-import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
 import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
 
@@ -52,21 +52,23 @@ export const DateControl = ({
         title={label}
         required={required || false}
         description={description}
+        errors={errors}
       />
 
-      <DatePicker
-        id={hashCode(path).toString()}
-        onChange={(v: string) => {
-          handleChange(path, v);
-        }}
-        format={format}
-        data={data}
-        type={schema.format ?? 'date'}
-        enabled={enabled}
-        enableRange={enableRange}
-        disableRange={disableRange}
-      />
-      <ErrorBox displayError={errors} />
+      <ErrorRing errors={errors}>
+        <DatePicker
+          id={hashCode(path).toString()}
+          onChange={(v: string) => {
+            handleChange(path, v);
+          }}
+          format={format}
+          data={data}
+          type={schema.format ?? 'date'}
+          enabled={enabled}
+          enableRange={enableRange}
+          disableRange={disableRange}
+        />
+      </ErrorRing>
     </div>
   );
 };

@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { tsAddWarningMessage } from '../../../controller/global/troubleshoot';
 import { getCurrentContext } from '../../../controller/local/EditController/ExpertMode/access';
 import { ageEncrypt, looksLikeAgeArmor, randomSecret, SecretCharset } from '../../../utils/ageEncrypt';
+import ErrorRing from '../../../view/components/Form/ErrorRing';
 import { useModalContext } from '../../../view/components/Modal/ModalContext';
-import ErrorBox from '../../../view/thirdparty/components/ifc/Label/ErrorBox';
 import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
 import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
@@ -135,9 +135,7 @@ export const AgeSecretRenderer = (props: ControlProps) => {
 
   const inputClasses =
     'w-full rounded-md border bg-transparent px-5 py-2.5 outline-none ' +
-    (invalidValueError
-      ? 'border-[#d32f2f] focus:border-[#d32f2f] '
-      : 'border-stroke focus:border-primary ') +
+    'border-stroke focus:border-primary ' +
     'dark:bg-meta-4 dark:focus:border-primary font-mono text-sm';
 
   return (
@@ -146,42 +144,44 @@ export const AgeSecretRenderer = (props: ControlProps) => {
         title={props.label ?? props.schema.title}
         required={props.required || false}
         description={props.description}
+        errors={errorMsg}
       />
-      <div className="flex flex-row gap-2 items-stretch">
-        <input
-          type="text"
-          readOnly
-          disabled={!props.enabled || !!specError}
-          value={pending ? 'Generating…' : displayValue}
-          className={inputClasses}
-          onFocus={(e) => e.target.select()}
-        />
-        {plaintext !== null && (
-          <button
-            type="button"
-            onClick={onCopy}
-            className="rounded-md border border-stroke px-3 py-2 text-sm hover:bg-meta-4 hover:text-white whitespace-nowrap"
-          >
-            {copied ? 'Copied' : 'Copy'}
-          </button>
-        )}
-        {showRegenerate && (
-          <button
-            type="button"
-            onClick={onRegenerateClick}
-            disabled={pending}
-            className="rounded-md border border-stroke px-3 py-2 text-sm hover:bg-meta-4 hover:text-white whitespace-nowrap disabled:opacity-50"
-          >
-            Generate new
-          </button>
-        )}
-      </div>
+      <ErrorRing errors={errorMsg}>
+        <div className="flex flex-row gap-2 items-stretch">
+          <input
+            type="text"
+            readOnly
+            disabled={!props.enabled || !!specError}
+            value={pending ? 'Generating…' : displayValue}
+            className={inputClasses}
+            onFocus={(e) => e.target.select()}
+          />
+          {plaintext !== null && (
+            <button
+              type="button"
+              onClick={onCopy}
+              className="rounded-md border border-stroke px-3 py-2 text-sm hover:bg-meta-4 hover:text-white whitespace-nowrap"
+            >
+              {copied ? 'Copied' : 'Copy'}
+            </button>
+          )}
+          {showRegenerate && (
+            <button
+              type="button"
+              onClick={onRegenerateClick}
+              disabled={pending}
+              className="rounded-md border border-stroke px-3 py-2 text-sm hover:bg-meta-4 hover:text-white whitespace-nowrap disabled:opacity-50"
+            >
+              Generate new
+            </button>
+          )}
+        </div>
+      </ErrorRing>
       {plaintext !== null && (
         <em className="opacity-70 block mt-1 text-sm">
           ⚠ Copy this secret now! Once you save the form, it will be encrypted and not readable anymore.
         </em>
       )}
-      <ErrorBox displayError={errorMsg} />
     </div>
   );
 };

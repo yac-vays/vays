@@ -6,7 +6,6 @@ import { memo } from 'react';
 
 import FormsErrorBoundary from './ErrorBoundary';
 
-import { showError } from '../../../../controller/global/notification';
 import { setCurrentContext } from '../../../../controller/local/EditController/ExpertMode/access';
 import { updateSchema } from '../../../../controller/local/EditController/StandardMode';
 import {
@@ -17,12 +16,17 @@ import {
 import { customRenderers } from '../../../../renderers';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 // import { Nullable } from '../../../../utils/typeUtils';
-import { getAJV } from '../../../../controller/local/EditController/shared';
+import {
+  emitValidity,
+  getAJV,
+  setLocalValidity,
+} from '../../../../controller/local/EditController/shared';
 import {
   setErrorForCategory,
   updateTabsErrorNotification,
 } from '../../../../controller/local/EditController/StandardMode/tabs';
 import { isValidDataObject } from '../../../../utils/schema/injectName';
+import { locateBackendError } from '../../../../utils/schema/locatedErrors';
 import NoDataIndicator from '../../../components/NoDataIndicator';
 import SubLoader from '../../../thirdparty/components/SubLoader';
 import useInitializeForm from './useInitializeState';
@@ -62,6 +66,8 @@ const StandardEditMode = memo(
       uiSchema,
       setUISchema,
       setupDone,
+      additionalErrors,
+      setAdditionalErrors,
       formContainer,
     } = useInitializeForm(requestEditContext, setEditErrorMsg);
 
@@ -92,13 +98,21 @@ const StandardEditMode = memo(
 
       if (!isValidDataObject(data)) {
         if (!IsCurrentlyEditingString()) toggleBlurForm(false);
-        showError(
-          'Invalid Name',
-          'This name is not valid: Characters such as whitespaces and slashes are not allowed.',
+        // Surfaced in the footer status bar (red) + the General tab dot, rather
+        // than as a transient toast that the user cannot locate.
+        setEditErrorMsg(
+          'Invalid name: characters such as whitespaces and slashes are not allowed.',
         );
         setErrorForCategory('General', true, uiSchema);
+        setLocalValidity(false);
+        emitValidity();
         return;
       }
+
+      // Reflect the form's own (JSON Forms) validation immediately for snappy
+      // Save-button feedback; the backend round-trip below confirms it.
+      setLocalValidity((errors ?? []).length === 0);
+      emitValidity();
 
       setIsValidating(true);
       updateSchema(data, requestEditContext, true).then((resp) => {
@@ -107,11 +121,20 @@ const StandardEditMode = memo(
         } else {
           setJsonSchema(resp.json_schema);
           setUISchema(resp.ui_schema);
-          setEditErrorMsg(resp.detail);
+          // Route a located schema error to its control; only use the footer
+          // status bar when no form element can display it.
+          const located = locateBackendError(resp);
+          setAdditionalErrors(located.additionalErrors);
+          setEditErrorMsg(located.shownInForm ? '' : resp.detail);
           setLocalData(resp.data);
           setIsEmpty(false);
           setFormData(resp.data, errors);
-          updateTabsErrorNotification(resp.data, resp.json_schema, resp.ui_schema);
+          updateTabsErrorNotification(
+            resp.data,
+            resp.json_schema,
+            resp.ui_schema,
+            located.additionalErrors,
+          );
         }
         setIsValidating(false);
         // if (IsCurrentlyEditingString()) {
@@ -153,6 +176,7 @@ const StandardEditMode = memo(
                       cells={materialCells}
                       onChange={onChangeCallback}
                       ajv={getAJV()}
+                      additionalErrors={additionalErrors}
                       readonly={requestEditContext.mode === 'read'}
                     />
                   </FormsErrorBoundary>

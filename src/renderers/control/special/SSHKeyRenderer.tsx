@@ -1,8 +1,8 @@
 import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 
+import ErrorRing from '../../../view/components/Form/ErrorRing';
 import SSHKeyInput from '../../../view/components/SSHKeyInput';
-import ErrorBox from '../../../view/thirdparty/components/ifc/Label/ErrorBox';
 import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
 import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
@@ -38,17 +38,19 @@ export const SSHKeyRenderer = ({
             title={label}
             required={required || false}
             description={description}
+            errors={errors}
           />
-          <SSHKeyInput
-            data={data as string | undefined}
-            id={id}
-            defaultv={schema.default as string | undefined}
-            placeholder={uischema?.options?.initial as string | undefined}
-            placeholderEditable={uischema?.options?.initial_editable as boolean | undefined}
-            enabled={enabled}
-            onChange={(v) => handleChange(path, v)}
-          />
-          <ErrorBox displayError={errors} />
+          <ErrorRing errors={errors}>
+            <SSHKeyInput
+              data={data as string | undefined}
+              id={id}
+              defaultv={schema.default as string | undefined}
+              placeholder={uischema?.options?.initial as string | undefined}
+              placeholderEditable={uischema?.options?.initial_editable as boolean | undefined}
+              enabled={enabled}
+              onChange={(v) => handleChange(path, v)}
+            />
+          </ErrorRing>
         </div>
       </div>
     </div>

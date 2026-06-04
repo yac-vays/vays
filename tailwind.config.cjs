@@ -15,7 +15,14 @@ module.exports = {
     './src/**/**/*.{js,ts,jsx,tsx}',
     './src/**/**/**/*.{js,ts,jsx,tsx}',
   ],
-  safelist: ['border-lime-300', 'border-red-500', 'border-orange-500', 'border-yellow-300'],
+  safelist: [
+    'border-lime-300',
+    'border-red-500',
+    'border-orange-500',
+    'border-yellow-300',
+    'ring-2',
+    'ring-[#d32f2f]',
+  ],
   darkMode: 'class',
   theme: {
     fontFamily: {

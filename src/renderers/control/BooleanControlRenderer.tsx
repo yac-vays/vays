@@ -1,7 +1,8 @@
 import { ControlProps, isBooleanControl, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
+import ErrorButton from '../../view/components/Buttons/ErrorButton';
+import ErrorRing from '../../view/components/Form/ErrorRing';
 import Checkbox from '../../view/thirdparty/components/ifc/CheckBox/CheckBox';
-import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
 
 export const BooleanControl = ({
@@ -36,15 +37,25 @@ export const BooleanControl = ({
   return (
     <>
       <div className="p-1">
-        <Checkbox
-          initValue={data}
-          title={label}
-          onChange={(value: boolean) => handleChange(path, value)}
-          description={description}
-          disabled={!enabled}
-          isMarkdownDesc
-        />
-        <ErrorBox displayError={errors} />
+        <div className="flex flex-row items-center">
+          <ErrorRing errors={errors}>
+            <Checkbox
+              initValue={data}
+              title={label}
+              onChange={(value: boolean) => handleChange(path, value)}
+              description={description}
+              disabled={!enabled}
+              isMarkdownDesc
+            />
+          </ErrorRing>
+          {errors ? (
+            <div className="relative ml-2">
+              <ErrorButton content={errors} />
+            </div>
+          ) : (
+            <></>
+          )}
+        </div>
       </div>
     </>
   );

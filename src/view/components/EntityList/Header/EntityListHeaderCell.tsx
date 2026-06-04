@@ -73,7 +73,7 @@ const EntityListHeaderCell = ({
         colSpan={1}
         onClick={toggleOpenSearch}
         role="columnheader"
-        title="Toggle Search"
+        title="Search"
         className={`py-0 ${shrink ? '' : 'pr-20'}`}
         // display: "flex", justifyContent: "center", alignItems: "center",
         style={

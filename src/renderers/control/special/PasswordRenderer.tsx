@@ -5,7 +5,7 @@ import { ChangeEvent, useCallback, useState } from 'react';
 import { hashPassword } from '../../../utils/passwordHashes';
 import TextInput from '../../../view/thirdparty/components/ifc/TextInput/TextInput';
 
-import ErrorBox from '../../../view/thirdparty/components/ifc/Label/ErrorBox';
+import ErrorRing from '../../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
 import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
@@ -53,16 +53,19 @@ export const PasswordRenderer = (props: ControlProps) => {
         title={props.label ?? props.schema.title}
         required={props.required || false}
         description={props.description}
+        errors={props.errors}
       />
-      <TextInput
-        enabled={props.enabled}
-        defaultv={props.schema.default}
-        placeholder={props.uischema.options?.initial}
-        placeholderEditable={props.uischema.options?.initial_editable}
-        data={data}
-        onChange={onChange}
-        password
-      />
+      <ErrorRing errors={props.errors}>
+        <TextInput
+          enabled={props.enabled}
+          defaultv={props.schema.default}
+          placeholder={props.uischema.options?.initial}
+          placeholderEditable={props.uischema.options?.initial_editable}
+          data={data}
+          onChange={onChange}
+          password
+        />
+      </ErrorRing>
       {props.uischema?.options?.renderer_options?.save_password_as === 'plaintext' ? (
         <></>
       ) : (
@@ -73,7 +76,6 @@ export const PasswordRenderer = (props: ControlProps) => {
           </a>
         </em>
       )}
-      <ErrorBox displayError={props.errors} />
     </div>
   );
 };

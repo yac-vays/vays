@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { showError } from '../../../../controller/global/notification';
 import { setCurrentContext } from '../../../../controller/local/EditController/ExpertMode/access';
 import {
   clearYACStatus,
+  emitValidity,
   getAJV,
   retreiveSchema,
+  setLocalValidity,
 } from '../../../../controller/local/EditController/shared';
 import { setCurrentTab } from '../../../../controller/local/EditController/StandardMode/access';
 import {
@@ -14,6 +15,8 @@ import {
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import { Nullable } from '../../../../utils/types/typeUtils';
+import { ErrorObject } from 'ajv';
+import { locateBackendError } from '../../../../utils/schema/locatedErrors';
 
 /**
  * Custom hook to initialize the form state for the edit page.
@@ -52,6 +55,7 @@ const useInitializeForm = (
   }); // ui_schema
   const [isFirst, setIsFirst] = useState<boolean>(true);
   const [setupDone, setSetupDone] = useState<boolean>(false);
+  const [additionalErrors, setAdditionalErrors] = useState<ErrorObject[]>([]);
   const formContainer = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -78,23 +82,42 @@ const useInitializeForm = (
         return;
       }
 
+      // Detect a "migration" situation: an existing entity whose stored data no
+      // longer validates against the current schema (e.g. the spec changed).
+      let migrationError = false;
       if (requestEditContext.mode === 'change') {
         const validate = getAJV().compile(resp.json_schema);
         validate(structuredClone(resp.data));
-        if (validate.errors) {
-          showError(
-            'Migration Warning',
-            'There are errors in this file. This may be because ' +
-              'you are migrating or your Admin changed the specification. ',
-          );
-        }
+        migrationError = (validate.errors?.length ?? 0) > 0;
       }
+
       setSetupDone(true);
       setJsonSchema(resp.json_schema);
       setUISchema(resp.ui_schema);
       setLocalData(resp.data);
-      onYacError(resp.detail);
-      updateTabsErrorNotification(resp.data, resp.json_schema, resp.ui_schema);
+      // Show a located schema error on its control; the offending fields/tabs
+      // are highlighted by `updateTabsErrorNotification` + JSON Forms inline.
+      // The footer status bar (red) carries the explanatory/global message:
+      // a migration note when applicable, else the backend detail when it has
+      // no in-form location.
+      const located = locateBackendError(resp);
+      setAdditionalErrors(located.additionalErrors);
+      if (migrationError) {
+        onYacError(
+          'This entity has validation errors — possibly because the specification changed ' +
+            '(migration). Please fix the highlighted fields before saving.',
+        );
+      } else {
+        onYacError(located.shownInForm ? '' : resp.detail);
+      }
+      setLocalValidity(!migrationError);
+      emitValidity();
+      updateTabsErrorNotification(
+        resp.data,
+        resp.json_schema,
+        resp.ui_schema,
+        located.additionalErrors,
+      );
 
       setLoading(false);
     };
@@ -125,6 +148,8 @@ const useInitializeForm = (
     setIsFirst,
     setupDone,
     setSetupDone,
+    additionalErrors,
+    setAdditionalErrors,
     formContainer,
   };
 };

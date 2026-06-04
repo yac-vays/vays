@@ -9,7 +9,7 @@ import {
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { debounce } from 'lodash';
 import { useCallback } from 'react';
-import ErrorBox from '../../view/thirdparty/components/ifc/Label/ErrorBox';
+import ErrorRing from '../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import NumberInput from '../../view/thirdparty/components/ifc/NumberInput/NumberInput';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
@@ -51,17 +51,19 @@ export const NumberControl = ({
         title={label}
         required={required || false}
         description={description}
+        errors={errors}
       />
-      <NumberInput
-        id={id}
-        data={data}
-        defaultv={schema.default}
-        placeholder={uischema.options?.initial}
-        placeholderEditable={uischema.options?.initial_editable}
-        enabled={enabled}
-        onChange={onChange}
-      />
-      <ErrorBox displayError={errors} />
+      <ErrorRing errors={errors}>
+        <NumberInput
+          id={id}
+          data={data}
+          defaultv={schema.default}
+          placeholder={uischema.options?.initial}
+          placeholderEditable={uischema.options?.initial_editable}
+          enabled={enabled}
+          onChange={onChange}
+        />
+      </ErrorRing>
     </div>
   );
 };

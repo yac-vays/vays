@@ -2,7 +2,7 @@ import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { debounce } from 'lodash';
 import { ChangeEvent, useCallback, useState } from 'react';
-import ErrorBox from '../../../view/thirdparty/components/ifc/Label/ErrorBox';
+import ErrorRing from '../../../view/components/Form/ErrorRing';
 import OverheadLabel from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import TextInput from '../../../view/thirdparty/components/ifc/TextInput/TextInput';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
@@ -42,7 +42,7 @@ export const MacAddressRenderer = (props: ControlProps) => {
   );
 
   const onChange = (ev: ChangeEvent<HTMLInputElement>) => {
-    let value = ev.target.value;
+    const value = ev.target.value;
     const formattedValue = formatMacAddress(value);
     setMac(formattedValue);
     update(formattedValue);
@@ -54,19 +54,21 @@ export const MacAddressRenderer = (props: ControlProps) => {
         title={props.label ?? props.schema.title}
         required={props.required || false}
         description={props.description}
+        errors={props.errors}
       />
-      <TextInput
-        enabled={props.enabled}
-        defaultv={props.schema.default}
-        placeholder={props.uischema.options?.initial}
-        placeholderEditable={props.uischema.options?.initial_editable}
-        data={mac}
-        onChange={onChange}
-      />
+      <ErrorRing errors={props.errors || (!MAC_ADDRESS_REGEX.test(mac) && mac.length > 0 ? ' ' : '')}>
+        <TextInput
+          enabled={props.enabled}
+          defaultv={props.schema.default}
+          placeholder={props.uischema.options?.initial}
+          placeholderEditable={props.uischema.options?.initial_editable}
+          data={mac}
+          onChange={onChange}
+        />
+      </ErrorRing>
       {!MAC_ADDRESS_REGEX.test(mac) && mac.length > 0 && (
-        <em className="text-red-500">Invalid MAC address format</em>
+        <em className="text-[#d32f2f]">Invalid MAC address format</em>
       )}
-      <ErrorBox displayError={props.errors} />
     </div>
   );
 };

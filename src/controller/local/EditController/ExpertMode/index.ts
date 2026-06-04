@@ -49,15 +49,9 @@ export async function updateYAMLschema(
  * @returns
  */
 export function sendYAMLData(requestContext: RequestEditContext) {
+  // Defensive: the Save button is disabled while invalid and the error is shown
+  // in the editor + footer status bar, so no modal is needed here.
   if (!editingState.isValidYAC) {
-    showModalMessage(
-      'Data not valid',
-      `The data is not yet valid. YAC server response is \n"${editingState.yacResponse}"`,
-      async () => {},
-      async () => {},
-      'Return',
-      false,
-    );
     return;
   }
   // JSON.stringify(editingState.data).replaceAll(",", ",\n")

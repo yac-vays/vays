@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { sendYAMLData } from '../../../controller/local/EditController/ExpertMode';
-import { setUsagesListener } from '../../../controller/local/EditController/shared';
+import {
+  isFormValid,
+  setUsagesListener,
+  setValidityListener,
+} from '../../../controller/local/EditController/shared';
 import { sendFormData } from '../../../controller/local/EditController/StandardMode';
 import { LimitUsage } from '../../../utils/types/api';
 import { RequestEditContext } from '../../../utils/types/internal/request';
@@ -29,13 +33,21 @@ const EditFrame = ({
   const [isDisplayingYACError, setIsDisplayingYACError] = useState<boolean>(false);
   const [isReadOnly, setIsReadOnly] = useState<boolean>(requestEditContext.mode === 'read');
   const [usages, setUsages] = useState<LimitUsage[]>([]);
+  const [isValid, setIsValid] = useState<boolean>(isFormValid());
 
   // Both edit modes funnel validation results through the controller's
-  // `setYACStatus`, which notifies this listener with the latest limit usages.
+  // `setYACStatus`, which notifies these listeners with the latest limit usages
+  // and overall validity (used to enable/disable the Save button).
   useEffect(() => {
     setUsagesListener(setUsages);
-    return () => setUsagesListener(null);
+    setValidityListener(setIsValid);
+    return () => {
+      setUsagesListener(null);
+      setValidityListener(null);
+    };
   }, []);
+
+  const saveDisabled = isValidating || !isValid;
 
   const setEditErrorMsg = (msg: string) => {
     if (msg === '') {
@@ -78,13 +90,16 @@ const EditFrame = ({
           style={{ height: 55, borderColor: '#ddddddaa' }}
         >
           <div
-            className={`relative flex flex-col grow  mt-4 p-1.5 rounded duration-1000 opacity-0 overflow-x-hidden ${
+            className={`relative flex flex-col grow  mt-4 p-1.5 rounded duration-1000 opacity-0 overflow-x-hidden border-l-4 ${
               isDisplayingYACError && 'opacity-100'
             }`}
-            style={{ backgroundColor: 'rgb(200 200 200 / 0.2)' }}
+            style={{
+              backgroundColor: 'rgb(211 47 47 / 0.08)',
+              borderColor: '#d32f2f',
+            }}
           >
-            <span className={`text-wrap ${isReadOnly ? 'opacity-0' : ''}`}>
-              Server: "{yacErrorMsg}"
+            <span className={`text-wrap text-[#d32f2f] ${isReadOnly ? 'opacity-0' : ''}`}>
+              {yacErrorMsg}
             </span>
           </div>
           {isReadOnly ? (
@@ -102,14 +117,24 @@ const EditFrame = ({
               style={{ right: 0, bottom: 0 }}
             >
               <div
+                title={
+                  !isValid && !isValidating
+                    ? 'Resolve the highlighted errors before saving.'
+                    : undefined
+                }
                 onClick={() => {
+                  if (saveDisabled) return;
                   if (requestEditContext.viewMode === 'standard') {
-                    if (!isValidating) sendFormData(requestEditContext);
+                    sendFormData(requestEditContext);
                   } else {
-                    if (!isValidating) sendYAMLData(requestEditContext);
+                    sendYAMLData(requestEditContext);
                   }
                 }}
-                className="cursor-pointer inline-flex items-center justify-center rounded border border-black dark:border-meta-4 py-1.5 px-4 m-4 text-center font-medium text-plainfont hover:bg-opacity-90 hover:bg-primary hover:text-white dark:bg-meta-4 dark:hover:bg-white dark:hover:text-black"
+                className={`inline-flex items-center justify-center rounded border py-1.5 px-4 m-4 text-center font-medium ${
+                  saveDisabled
+                    ? 'cursor-not-allowed border-stroke text-reducedfont opacity-50'
+                    : 'cursor-pointer border-black dark:border-meta-4 text-plainfont hover:bg-opacity-90 hover:bg-primary hover:text-white dark:bg-meta-4 dark:hover:bg-white dark:hover:text-black'
+                }`}
               >
                 {isValidating ? (
                   <div

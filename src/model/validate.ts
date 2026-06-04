@@ -64,6 +64,11 @@ async function _validate(
     const dat = typeCheckValidationResponse(await resp.json());
     if (!dat) return null;
 
+    // A located error only makes sense for a *schema* failure (the displayed
+    // `detail` is then the schema message). Request-level failures (perms,
+    // conflicts, limits) have no location and stay in the footer status bar.
+    const isSchemaError = dat.request.valid && !dat.schemas.valid;
+
     return {
       json_schema: dat.schemas.json_schema,
       ui_schema: dat.schemas.ui_schema,
@@ -71,6 +76,12 @@ async function _validate(
       valid: dat.request.valid && dat.schemas.valid,
       detail: dat.request.message ?? dat.schemas.message ?? '',
       usages: dat.usages ?? [],
+      // Only carry a location for an actual schema error, so other responses
+      // keep their existing shape (and the footer stays the fallback).
+      ...(isSchemaError && {
+        data_loc: dat.schemas.data_loc,
+        json_schema_loc: dat.schemas.json_schema_loc,
+      }),
     };
   } else if (resp.status == 422) {
     showError('Frontend Error', 'Invalid specification used, cannot talk to YAC servers.');

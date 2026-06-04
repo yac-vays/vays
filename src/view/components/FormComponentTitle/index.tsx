@@ -48,7 +48,7 @@ const FormComponentTitle = ({
         {description ? (
           <MarkdownRender text={description.replaceAll('\n', ' ')} />
         ) : (
-          <em className="opacity-50 text-plainfont">No description provided.</em>
+          <></>
         )}
         {errors ? (
           <label className="inline ml-2.5 block text-plainfont flex flex-row">

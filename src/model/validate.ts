@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { typeCheck } from 'type-check';
 import { showError } from '../controller/global/notification';
 import { handleAuthFailed } from '../session/login/tokenHandling';
@@ -124,6 +123,9 @@ export async function validate(
   data: object,
   requestEditContext: RequestEditContext,
   editActions: EditActionSnapshot,
+  // The YAML the user is editing; the backend merges `data` into it (preserving
+  // comments) instead of regenerating from data. Omit for initial loads.
+  yamlBase?: string,
 ): Promise<ValidateResponse | null> {
   const url: string | null | undefined = requestEditContext.rc.yacURL;
 
@@ -133,6 +135,9 @@ export async function validate(
     data,
     name,
     dumpEditActions(editActions),
+    undefined,
+    undefined,
+    yamlBase,
   );
 
   return await _validate(requestEditContext, url, obj);

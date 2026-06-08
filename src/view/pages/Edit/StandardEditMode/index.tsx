@@ -6,7 +6,10 @@ import { memo, useEffect } from 'react';
 
 import FormsErrorBoundary from './ErrorBoundary';
 
-import { setCurrentContext } from '../../../../controller/local/EditController/ExpertMode/access';
+import {
+  getEntityYAML,
+  setCurrentContext,
+} from '../../../../controller/local/EditController/ExpertMode/access';
 import { updateSchema } from '../../../../controller/local/EditController/StandardMode';
 import {
   IsCurrentlyEditingString,
@@ -151,7 +154,9 @@ const StandardEditMode = memo(
 
       setIsValidating(true);
       const seq = nextValidationSeq();
-      updateSchema(data, requestEditContext, true).then((resp) => {
+      // Merge this form change into the YAML the user currently has in the editor
+      // (preserving its comments/formatting) rather than regenerating from data.
+      updateSchema(data, requestEditContext, true, true, null, getEntityYAML()).then((resp) => {
         // A newer edit (in either pane) has since been dispatched; drop this
         // stale response so it cannot clobber the latest state.
         if (isStaleValidation(seq)) {

@@ -234,6 +234,9 @@ export async function coreUpdate(
   doRevalidate: boolean,
   editActions: EditActionSnapshot,
   name: Nullable<string>,
+  // The YAML the form patch should be merged into (comment-preserving). Passed
+  // for user form edits; omitted on initial loads (then the stored YAML is used).
+  yamlBase?: string,
 ) {
   let data = entityData;
   if (requestEditContext.mode === 'change') {
@@ -245,6 +248,7 @@ export async function coreUpdate(
     data,
     requestEditContext,
     editActions,
+    yamlBase,
   );
   if (valResp == null) return null;
 
@@ -254,7 +258,14 @@ export async function coreUpdate(
   // do revalidation here!
   // See ephemeral property problem.
   if (doRevalidate && didChange) {
-    return await coreUpdate(valResp.data, requestEditContext, doRevalidate, editActions, name);
+    return await coreUpdate(
+      valResp.data,
+      requestEditContext,
+      doRevalidate,
+      editActions,
+      name,
+      yamlBase,
+    );
   }
   return valResp;
 }

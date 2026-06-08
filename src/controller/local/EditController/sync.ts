@@ -2,7 +2,7 @@
 import { RequestEditContext } from '../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../utils/types/internal/validation';
 import editingState from '../../state/EditCtrlState';
-import { setEntityYAML } from './ExpertMode/access';
+import { getEntityYAML, setEntityYAML } from './ExpertMode/access';
 import { updateSchema } from './StandardMode';
 
 /**
@@ -64,6 +64,9 @@ export function getActivePane(): Pane | null {
 export function seedCanonical(data: any, yaml: string) {
   editingState.canonicalData = data;
   editingState.canonicalYAML = yaml;
+  // Also the live editor-YAML string, so the very first form edit has the
+  // initial document (e.g. the create defaults template) as its merge base.
+  setEntityYAML(yaml);
 }
 
 export function getCanonicalYAML(): string {
@@ -162,7 +165,15 @@ function writeBothPanes(resp: ValidateResponse) {
  */
 export async function revalidateMeta(requestEditContext: RequestEditContext) {
   const seq = nextValidationSeq();
-  const resp = await updateSchema(getCanonicalData(), requestEditContext, true);
+  // Keep the editor's comments/formatting when an action toggle re-validates.
+  const resp = await updateSchema(
+    getCanonicalData(),
+    requestEditContext,
+    true,
+    true,
+    null,
+    getEntityYAML(),
+  );
   if (resp == null || isStaleValidation(seq)) return;
   writeBothPanes(resp);
 }

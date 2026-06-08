@@ -39,6 +39,9 @@ export async function updateSchema(
   doRevalidate: boolean,
   doNavigate: boolean = true,
   entityName: Nullable<string> = null,
+  // The YAML the user is editing; merged with the form patch so comments survive
+  // (see `validate`). Omit on initial loads.
+  yamlBase?: string,
 ) {
   // Need to clone it since it is being modified...
   const data = structuredClone(frontData);
@@ -48,7 +51,14 @@ export async function updateSchema(
     : (getEntityName() ?? entityName);
   const editActions = actionsToSnapshot(getActivatedActions());
 
-  const valResp = await coreUpdate(data, requestEditContext, doRevalidate, editActions, name);
+  const valResp = await coreUpdate(
+    data,
+    requestEditContext,
+    doRevalidate,
+    editActions,
+    name,
+    yamlBase,
+  );
   if (valResp == null) return null;
 
   updateURL(name, doNavigate, requestEditContext);

@@ -1,4 +1,3 @@
-import { stringify } from 'yaml';
 import { isNameGeneratedByYAC } from './nameUtils';
 import { RequestEditContext } from './types/internal/request';
 import { Nullable } from './types/typeUtils';
@@ -11,6 +10,10 @@ export function stringifyEntityInfoForAPI(
   actions: string[] = [],
   yaml_new?: string,
   yaml_old?: string,
+  // The YAML the form's `data` patch should be merged into (the content the user
+  // is currently editing). Lets the backend preserve its comments / formatting
+  // instead of regenerating the YAML from the data. Only used by the form path.
+  yamlBase?: string,
 ): string {
   if (
     requestEditContext.mode === 'create' &&
@@ -26,7 +29,7 @@ export function stringifyEntityInfoForAPI(
   if (yaml_new !== undefined) {
     return getEntityObjectExpertMode(requestEditContext, name, actions, yaml_new, yaml_old);
   } else {
-    return getEntityObjectStdMode(requestEditContext, data, name, actions);
+    return getEntityObjectStdMode(requestEditContext, data, name, actions, yamlBase);
   }
 }
 
@@ -70,20 +73,20 @@ function getEntityObjectStdMode(
   data: any = {},
   name: Nullable<string> = null,
   actions: string[] = [],
+  yamlBase?: string,
 ): string {
+  // Both create and change send an `UpdateEntity` (data patch). `yaml_base`, when
+  // present, is the YAML the patch is merged into so the backend preserves the
+  // editor's comments/formatting (see `UpdateEntity.yaml_base` on the backend).
+  const base = yamlBase !== undefined ? { yaml_base: yamlBase } : {};
+
   if (requestEditContext.mode === 'create') {
-    // CreateEntity. Send real YAML (not a JSON string): the backend echoes a
-    // canonical YAML back, and feeding it JSON produced an unreadable flow-style
-    // blob in the YAML editor.
     return JSON.stringify({
       operation: 'create',
       type: requestEditContext.rc.entityTypeName,
       actions: actions,
       name: null,
-      entity: {
-        name: name,
-        yaml: stringify(data),
-      },
+      entity: { name: name, data: data, ...base },
     });
   } else if (requestEditContext.mode === 'change') {
     return JSON.stringify({
@@ -91,10 +94,7 @@ function getEntityObjectStdMode(
       type: requestEditContext.rc.entityTypeName,
       actions: actions,
       name: requestEditContext.entityName ?? null,
-      entity: {
-        name: name,
-        data: data,
-      },
+      entity: { name: name, data: data, ...base },
     });
   }
 

@@ -146,4 +146,75 @@ describe('Check whether the actions are filtered properly', async () => {
       }),
     ).toEqual(true);
   });
+
+  it('Removes copy/link/delete entirely when create/delete are disabled for the type', async () => {
+    const ctx = getTestEditRequestContext(
+      URL,
+      'test',
+      VALIDATE_01_NAME,
+      'testType',
+      VALIDATE_01_OPERATION,
+    );
+    // Disable both at the entity-type level; the user still has the per-entity
+    // permissions, which on their own would show (greyed) buttons.
+    if (ctx.rc.accessedEntityType) {
+      ctx.rc.accessedEntityType.create = false;
+      ctx.rc.accessedEntityType.delete = false;
+    }
+
+    const res = getActions(ctx.rc, {
+      name: 'blub',
+      link: null,
+      options: {},
+      perms: ['cpy', 'lnk', 'del', 'edt', 'see', 'act'],
+    });
+    const names = [...res.favActs, ...res.dropdownActs].map((a) => a.action.name);
+
+    expect(names).not.toContain('create_copy');
+    expect(names).not.toContain('create_link');
+    expect(names).not.toContain('delete');
+  });
+
+  it('Keeps copy/link/delete (per permissions) when enabled for the type', async () => {
+    const ctx = getTestEditRequestContext(
+      URL,
+      'test',
+      VALIDATE_01_NAME,
+      'testType',
+      VALIDATE_01_OPERATION,
+    );
+    const res = getActions(ctx.rc, {
+      name: 'blub',
+      link: null,
+      options: {},
+      perms: ['cpy', 'lnk', 'del', 'edt', 'see', 'act'],
+    });
+    const names = [...res.favActs, ...res.dropdownActs].map((a) => a.action.name);
+
+    expect(names).toContain('create_copy');
+    expect(names).toContain('create_link');
+    expect(names).toContain('delete');
+  });
+
+  it('Degrades Edit to View when change is disabled for the type, even with edit permission', async () => {
+    const ctx = getTestEditRequestContext(
+      URL,
+      'test',
+      VALIDATE_01_NAME,
+      'testType',
+      VALIDATE_01_OPERATION,
+    );
+    if (ctx.rc.accessedEntityType) ctx.rc.accessedEntityType.change = false;
+
+    const res = getActions(ctx.rc, {
+      name: 'blub',
+      link: null,
+      options: {},
+      perms: ['edt', 'see', 'act'],
+    });
+    const favNames = res.favActs.map((a) => a.action.name);
+
+    expect(favNames).toContain('view');
+    expect(favNames).not.toContain('change');
+  });
 });

@@ -133,6 +133,7 @@ export interface EntityTypeDecl {
   name_generated: NameGeneratedCond;
   description: SafeSource<string>;
   create: boolean;
+  change: boolean;
   delete: boolean;
   options: {
     title: string;

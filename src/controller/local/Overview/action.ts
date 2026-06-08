@@ -52,6 +52,20 @@ export function getActions(
 }
 
 /**
+ * Whether a built-in operation is enabled at the entity-type level. Copy and
+ * link are "create" operations, so they require the type's `create` flag; delete
+ * requires the type's `delete` flag. When disabled, the button is removed
+ * entirely (as opposed to per-entity permissions, which only disable it).
+ */
+function isOperationGloballyEnabled(opName: string, requestContext: RequestContext): boolean {
+  const type = requestContext.accessedEntityType;
+  if (!type) return true;
+  if (opName === 'create_copy' || opName === 'create_link') return type.create;
+  if (opName === 'delete') return type.delete;
+  return true;
+}
+
+/**
  * Get fav actions.
  * @param favorites
  * @param actions
@@ -86,7 +100,7 @@ function getFavActions(
       if (!(action.name in OPERATIONS)) {
         // This is a configuration error
         __alertBadAction(action.name, yacURL);
-      } else {
+      } else if (isOperationGloballyEnabled(action.name, requestContext)) {
         _addFavoriteOperation(action.name, favActs, entity, requestContext);
       }
     }
@@ -109,6 +123,11 @@ function _addFavoriteOperation(
   const entityName: string = entity.name;
   let entry: ActionDecl = OPERATIONS[opName] as ActionDecl;
   let isAllowed = checkPermissions(entity.perms, entry.perms);
+  // A read-only type (`change` disabled) degrades Edit to the View operation,
+  // exactly like lacking the per-entity edit permission does.
+  if (entry.name === 'change' && requestContext.accessedEntityType?.change === false) {
+    isAllowed = false;
+  }
   if (entry.name === 'change' && !isAllowed) {
     entry = OPERATION_VIEW;
     isAllowed = true;
@@ -169,8 +188,17 @@ function getDropdownActions(
       continue;
     }
 
+    // Remove copy/link/delete entirely when disabled at the entity-type level.
+    if (!isOperationGloballyEnabled(opName, requestContext)) {
+      continue;
+    }
+
     let operation: ActionDecl = OPERATIONS[opName];
-    const isAllowed = checkPermissions(entity.perms, operation.perms);
+    let isAllowed = checkPermissions(entity.perms, operation.perms);
+    // A read-only type (`change` disabled) degrades Edit to the View operation.
+    if (opName === 'change' && requestContext.accessedEntityType?.change === false) {
+      isAllowed = false;
+    }
     if (!isAllowed && operation.name === 'change') {
       operation = OPERATION_VIEW;
     } else if (!isAllowed) {

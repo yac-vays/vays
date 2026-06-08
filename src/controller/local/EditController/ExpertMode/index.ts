@@ -11,7 +11,7 @@ import { showModalMessage } from '../../../global/modal';
 import { showError } from '../../../global/notification';
 import { navigateToURL } from '../../../global/url';
 import editingState from '../../../state/EditCtrlState';
-import { clearYACStatus, getInitialEntityYAML, setYACStatus } from '../shared';
+import { clearEditDirty, clearYACStatus, getInitialEntityYAML, setYACStatus } from '../shared';
 import {
   getActivatedActions,
   getEntityName,
@@ -72,6 +72,9 @@ export function sendYAMLData(requestContext: RequestEditContext) {
       }
 
       if (success) {
+        // Saved: the session is no longer dirty, so leaving the page (the
+        // navigation below) must not trigger the unsaved-changes warning.
+        clearEditDirty();
         invalidateEntityListCache(requestContext.rc.yacURL, requestContext.rc.entityTypeName);
         const base = `/${requestContext.rc.backendObject?.name}/${requestContext.rc.entityTypeName}`;
         navigateToURL(entityName ? `${base}/${encodeURIComponent(entityName)}` : base);

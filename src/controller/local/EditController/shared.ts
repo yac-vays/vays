@@ -28,6 +28,23 @@ export function clearYACStatus() {
   setLocalValidity(true);
   setYACUsages([]);
   emitValidity();
+  // A fresh editing session starts clean (called on both panes' init).
+  clearEditDirty();
+}
+
+/** Mark the editing session as having unsaved user edits. */
+export function setEditDirty() {
+  editingState.isDirty = true;
+}
+
+/** Clear the unsaved-edits flag (on session init and after a successful save). */
+export function clearEditDirty() {
+  editingState.isDirty = false;
+}
+
+/** Whether the editor currently holds unsaved user edits. */
+export function isEditDirty(): boolean {
+  return editingState.isDirty;
 }
 
 export function setYACStatus(valid: boolean, detail: string, usages: LimitUsage[] = []) {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface NumberProps {
   id: string;
@@ -24,23 +24,38 @@ const NumberInput = ({
   enabled,
   onChange,
 }: NumberProps) => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   let inp = defaultv;
   if (placeholderEditable) {
     inp = placeholder ?? '';
   }
   if (data != undefined) inp = data;
+  const defValue = inp == undefined ? '' : inp.toString();
 
   let ph: string | number = '';
   if (!placeholderEditable) {
     ph = placeholder ?? ph;
   }
 
+  // Keep the (uncontrolled) input in sync when the value changes externally —
+  // e.g. when the YAML editor updates the form data. Without this the input
+  // keeps its initial `defaultValue` and ignores later prop changes. Mirrors
+  // TextInput's "caching fix". Guarded so it never disrupts the user's own
+  // typing (the value already matches, so nothing is written).
+  useEffect(() => {
+    if (inputRef.current && inputRef.current.value !== defValue) {
+      inputRef.current.value = defValue;
+    }
+  }, [defValue]);
+
   return (
     <div id={id}>
       <input
+        ref={inputRef}
         type="number"
         disabled={!enabled}
-        defaultValue={inp}
+        defaultValue={defValue}
         className="w-full rounded-md border border-stroke bg-transparent px-5 py-2.5 mb-2 outline-none focus:border-primary  dark:bg-meta-4 dark:focus:border-primary"
         placeholder={ph.toString()}
         onChange={onChange}

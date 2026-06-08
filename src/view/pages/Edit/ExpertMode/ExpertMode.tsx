@@ -9,12 +9,14 @@ const ExpertMode = ({
   setEditErrorMsg,
   setIsValidating,
   setLoading,
+  setFocused,
   visible = true,
 }: {
   requestContext: RequestEditContext;
   setEditErrorMsg: (v: string) => void;
   setIsValidating: (b: boolean) => void;
   setLoading: (b: boolean) => void;
+  setFocused: (b: boolean) => void;
   visible?: boolean;
 }) => {
   return (
@@ -27,6 +29,7 @@ const ExpertMode = ({
           setEditErrorMsg={setEditErrorMsg}
           setIsValidating={setIsValidating}
           setLoading={setLoading}
+          setFocused={setFocused}
           visible={visible}
         />
       </Suspense>

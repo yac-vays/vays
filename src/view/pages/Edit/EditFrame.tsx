@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { FaChevronLeft, FaChevronRight, FaGripLinesVertical } from 'react-icons/fa';
+import { useBlocker } from 'react-router-dom';
+import { showModalMessage } from '../../../controller/global/modal';
 import { getActivatedActions } from '../../../controller/local/EditController/ExpertMode/access';
 import { sendYAMLData } from '../../../controller/local/EditController/ExpertMode';
 import {
+  clearEditDirty,
+  isEditDirty,
   isFormValid,
   setUsagesListener,
   setValidityListener,
@@ -63,6 +67,10 @@ const EditFrame = ({
   const [actionTitles, setActionTitles] = useState<string[]>([]);
   const refreshActionTitles = () =>
     setActionTitles(getActivatedActions().map((a) => a.title || a.name));
+  // Whether the YAML editor currently has focus. Used to dim the inactive pane:
+  // YAML focused -> dim the form; otherwise (form focused or nothing -> default)
+  // -> dim the YAML editor.
+  const [yamlFocused, setYamlFocused] = useState<boolean>(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const panesRef = useRef<HTMLDivElement>(null);
@@ -92,7 +100,14 @@ const EditFrame = ({
   const effLayout: EditorLayout = isNarrow && layout === 'both' ? 'form' : layout;
   const formVisible = effLayout !== 'yaml';
   const yamlVisible = effLayout !== 'form';
+  const bothVisible = formVisible && yamlVisible;
   const formFrac = effLayout === 'form' ? 1 : effLayout === 'yaml' ? 0 : ratio;
+  // Dim the inactive pane (only meaningful when both are shown). The overlay
+  // whitens in light mode and darkens in dark mode; pointer-events stay off so a
+  // click reaches the pane and focuses it (which removes the dim).
+  const dimOverlay =
+    'pointer-events-none absolute inset-0 z-10 bg-white/50 transition-opacity ' +
+    'duration-200 dark:bg-black/40';
 
   // Chevrons: on wide screens step form-only <-> both <-> yaml-only; on narrow
   // screens switch directly between the two single-pane views.
@@ -150,6 +165,42 @@ const EditFrame = ({
     setIsReadOnly(requestEditContext.mode === 'read');
   }, [requestEditContext.mode]);
 
+  // Warn before leaving the editor with unsaved changes. The base path of the
+  // current edit session is allowed (e.g. the URL gaining the new name while
+  // creating); navigating anywhere else while dirty prompts a confirmation.
+  const editBase = `/${requestEditContext.rc.backendObject?.name}/${requestEditContext.rc.entityTypeName}/${requestEditContext.mode}`;
+  const blocker = useBlocker(
+    ({ nextLocation }) => isEditDirty() && !nextLocation.pathname.startsWith(editBase),
+  );
+  useEffect(() => {
+    if (blocker.state !== 'blocked') return;
+    showModalMessage(
+      'Discard unsaved changes?',
+      'You have unsaved changes in this editor. If you leave now, they will be lost.',
+      async () => {
+        clearEditDirty();
+        blocker.proceed();
+      },
+      async () => {
+        blocker.reset();
+      },
+      'Leave',
+    );
+  }, [blocker]);
+
+  // Cover full-page navigations (refresh, tab close, external URL) with the
+  // browser's native prompt while there are unsaved changes.
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isEditDirty()) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, []);
+
   // Reset the selected-action labels when switching to another entity.
   useEffect(() => {
     setActionTitles([]);
@@ -202,7 +253,7 @@ const EditFrame = ({
           {dragging && <div className="fixed inset-0 z-40 cursor-col-resize" />}
 
           <div
-            className={`${formVisible ? 'flex' : 'hidden'} flex-col min-w-0 overflow-hidden`}
+            className={`${formVisible ? 'flex' : 'hidden'} relative flex-col min-w-0 overflow-hidden`}
             style={{ width: `calc((100% - ${DIVIDER_W}) * ${formFrac})` }}
           >
             <StandardEditMode
@@ -211,6 +262,9 @@ const EditFrame = ({
               setIsValidating={setIsValidating}
               setLoading={setFormLoading}
             />
+            {bothVisible && (
+              <div className={`${dimOverlay} ${yamlFocused ? 'opacity-100' : 'opacity-0'}`} />
+            )}
           </div>
 
           {/* Divider: always present (between the panes, or at the edge when one
@@ -261,8 +315,12 @@ const EditFrame = ({
               setEditErrorMsg={setEditErrorMsg}
               setIsValidating={setIsValidating}
               setLoading={setYamlLoading}
+              setFocused={setYamlFocused}
               visible={yamlVisible}
             />
+            {bothVisible && (
+              <div className={`${dimOverlay} ${!yamlFocused ? 'opacity-100' : 'opacity-0'}`} />
+            )}
           </div>
         </div>
 

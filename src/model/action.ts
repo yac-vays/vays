@@ -96,7 +96,7 @@ export const OPERATIONS_META: OperationsMetaInfo = {
           ? 'Generate Automatically'
           : '';
         showModalMessage(
-          `Creating a Copy of ${entityName}`,
+          `Creating a copy of ${entityName}`,
           showNameField
             ? 'Please enter a name of this new copy:'
             : 'The name is generated automatically. Create a copy?',
@@ -166,14 +166,14 @@ export const OPERATIONS_META: OperationsMetaInfo = {
           if (success) {
             // TODO: Need to change the cachin structure...
             invalidateEntityListCache(requestContext.yacURL, requestContext.entityTypeName);
-            showSuccess(`Deleted ${entityName}`, 'The entity was successfully deleted.');
+            showSuccess(`Deleted ${entityName}`, `Deletion of ${entityName} was successful.`);
             return;
           }
           if (success == null) return;
-          showError('Deletion error', `Could not delete entity ${entityName}.`);
+          showError('Deletion error', `Could not delete ${entityName}.`);
         };
         showModalMessage(
-          `Are you sure to delete \n'${entityName}'?`,
+          `Are you sure to delete ${entityName}?`,
           OPERATIONS['delete'].description,
           del,
           async () => {},
@@ -201,9 +201,9 @@ export const OPERATIONS_META: OperationsMetaInfo = {
           ? 'Generate Automatically'
           : '';
         showModalMessage(
-          `Creating a Link to ${entityName}`,
+          `Creating a link to ${entityName}`,
           showNameField
-            ? 'Please enter a name of this new link entity:'
+            ? 'Please enter a name of this new link:'
             : 'The name is generated automatically. Create a link?',
           async (newName?: string, actionsSelected?: ActionDecl[]) => {
             const res = await linkEntity(
@@ -280,7 +280,7 @@ export const OPERATIONS: { [key: string]: ActionDecl } = {
     dangerous: true,
     force: true,
     hooks: [],
-    description: `Deleting the entity will remove it from the index. This action cannot be undone without direct admin support.`,
+    description: `This action cannot be undone without admin support.`,
   },
   create_link: {
     name: 'create_link',
@@ -290,7 +290,7 @@ export const OPERATIONS: { [key: string]: ActionDecl } = {
     dangerous: false,
     force: true,
     hooks: [],
-    description: `Creating a link of an entity will create a new 'shallow' entity which takes all values from this entity.`,
+    description: `A link is a new 'shallow' copy which takes all values from its source (also when they change later on).`,
   },
 };
 

@@ -11,7 +11,10 @@ import {
   setErrorMessage,
   setIsValidating,
 } from '../../../../../controller/local/EditController/ExpertMode/access';
-import { getYACValidateResponse } from '../../../../../controller/local/EditController/shared';
+import {
+  getYACValidateResponse,
+  setEditDirty,
+} from '../../../../../controller/local/EditController/shared';
 import {
   applyCanonical,
   isStaleValidation,
@@ -67,8 +70,11 @@ export function getUpdateCallback(): DebouncedFunc<(value: string) => Promise<vo
     const requestEditContext = getCurrentContext();
     if (requestEditContext == null) return;
 
-    // The YAML editor is the active pane while the user types in it.
+    // The YAML editor is the active pane while the user types in it, and the
+    // session is now dirty (genuine edit — suppressed/no-op writes are filtered
+    // out before `update` is called, see factory.ts).
     setActivePane('yaml');
+    setEditDirty();
     setEntityYAML(value);
     setIsValidating(true);
     const seq = nextValidationSeq();

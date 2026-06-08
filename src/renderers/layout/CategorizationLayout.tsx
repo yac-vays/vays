@@ -133,27 +133,37 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
     return categories.map((e: Category | Categorization) => e.label);
   }, [categories]);
 
+  // With a single category the tabs carry no information, so the tab bar is
+  // hidden and the category's content is shown on its own.
+  const showTabs = categories.length > 1;
+
   return (
     <>
       <div className="h-full flex flex-col">
-        <div className="static w-full" style={{ top: 0 }}>
-          <ControlBar>
-            {(() => {
-              return categories.map((_, idx: number) => (
-                <Tab
-                  index={idx}
-                  label={tabLabels[idx]}
-                  currentTab={safeCategory}
-                  onClick={onTabChange}
-                  hasError={catErrs[idx]}
-                />
-              ));
-            })()}
-          </ControlBar>
-        </div>
+        {showTabs && (
+          <div className="static w-full" style={{ top: 0 }}>
+            <ControlBar>
+              {(() => {
+                return categories.map((_, idx: number) => (
+                  <Tab
+                    index={idx}
+                    label={tabLabels[idx]}
+                    currentTab={safeCategory}
+                    onClick={onTabChange}
+                    hasError={catErrs[idx]}
+                  />
+                ));
+              })()}
+            </ControlBar>
+          </div>
+        )}
         {/* <div className='bg-white w-full h-5 static mb-6 flex gap-4 border-b border-stroke sm:gap-10'></div> */}
         {/* 0.5em */}
-        <div className="flex flex-col rounded grow overflow-auto pb-12 h-full mt-4">
+        <div
+          className={`flex flex-col rounded grow overflow-auto pb-12 h-full ${
+            showTabs ? 'mt-4' : ''
+          }`}
+        >
           {/* TODO: Check option of going multicolumn? */}
           {/* <div className='' style={{ height:"100%", flexGrow: 0, flexShrink: 0, flexBasis: 100, flexDirection:"row", flex:0 }}> */}
           <MaterialLayoutRenderer

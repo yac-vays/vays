@@ -110,7 +110,10 @@ const useInitializeForm = (
             '(migration). Please fix the highlighted fields before saving.',
         );
       } else {
-        onYacError(located.shownInForm ? '' : resp.detail);
+        // Schema (field-level) errors carry a `data_loc` and are shown inside the
+        // form, so the footer is reserved for request-level errors (see the
+        // matching comment in StandardEditMode).
+        onYacError(resp.data_loc != undefined ? '' : resp.detail);
       }
       setLocalValidity(!migrationError);
       emitValidity();

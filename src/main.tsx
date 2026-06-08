@@ -7,15 +7,19 @@
 
 import 'flatpickr/dist/flatpickr.min.css';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import App from './App';
 import './view/styles/style.css';
 import './view/thirdparty/styles/satoshi.css';
 
+// A data router (single catch-all rendering <App/>, whose descendant <Routes>
+// keep working as before) so navigation blocking (`useBlocker`, used by the edit
+// page to warn about unsaved changes) is available. All navigation here uses
+// absolute paths, so the descendant routing is unaffected.
+const router = createBrowserRouter([{ path: '*', element: <App /> }]);
+
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   // <React.StrictMode>
-  <Router>
-    <App />
-  </Router>,
+  <RouterProvider router={router} />,
   // </React.StrictMode>,
 );

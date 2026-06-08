@@ -22,6 +22,7 @@ import { RequestEditContext } from '../../../../utils/types/internal/request';
 import {
   emitValidity,
   getAJV,
+  setEditDirty,
   setLocalValidity,
 } from '../../../../controller/local/EditController/shared';
 import { updateTabsErrorNotification } from '../../../../controller/local/EditController/StandardMode/tabs';
@@ -99,7 +100,12 @@ const StandardEditMode = memo(
       setUISchema(resp.ui_schema);
       const located = locateBackendError(resp);
       setAdditionalErrors(located.additionalErrors);
-      setEditErrorMsg(located.shownInForm ? '' : resp.detail);
+      // A schema (field-level) error carries a `data_loc` and is already shown
+      // inside the form — inline on its control when locatable, otherwise by
+      // JSON Forms' own validation — so it is not repeated in the footer. The
+      // footer is reserved for request-level errors (permissions, limits,
+      // conflicts), which have no form location.
+      setEditErrorMsg(resp.data_loc != undefined ? '' : resp.detail);
       setLocalData(resp.data);
       setIsEmpty(false);
       setFormData(resp.data, errors);
@@ -135,8 +141,10 @@ const StandardEditMode = memo(
       if (!setupDone || _.isEqual(data, localData)) {
         return;
       }
-      // A genuine user edit in the form: it is now the active pane.
+      // A genuine user edit in the form: it is now the active pane and the
+      // session is dirty (used to warn before navigating away).
       setActivePane('form');
+      setEditDirty();
 
       if (!IsCurrentlyEditingString()) {
         toggleBlurForm(true);

@@ -64,7 +64,7 @@ const RESPONSE = {
             action: {
               dangerous: true,
               description:
-                'Deleting the entity will remove it from the index. This action cannot be undone without direct admin support.',
+                'This action cannot be undone without admin support.',
               force: true,
               hooks: [],
               icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="grey"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>',
@@ -78,7 +78,7 @@ const RESPONSE = {
             action: {
               dangerous: false,
               description:
-                "Creating a link of an entity will create a new 'shallow' entity which takes all values from this entity.",
+                "A link is a new 'shallow' copy which takes all values from its source (also when they change later on).",
               force: true,
               hooks: [],
               icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="grey"><path d="M680-160v-120H560v-80h120v-120h80v120h120v80H760v120h-80ZM440-280H280q-83 0-141.5-58.5T80-480q0-83 58.5-141.5T280-680h160v80H280q-50 0-85 35t-35 85q0 50 35 85t85 35h160v80ZM320-440v-80h320v80H320Zm560-40h-80q0-50-35-85t-85-35H520v-80h160q83 0 141.5 58.5T880-480Z"/></svg>',
@@ -153,7 +153,7 @@ const RESPONSE = {
             action: {
               dangerous: true,
               description:
-                'Deleting the entity will remove it from the index. This action cannot be undone without direct admin support.',
+                'This action cannot be undone without admin support.',
               force: true,
               hooks: [],
               icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="grey"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>',
@@ -167,7 +167,7 @@ const RESPONSE = {
             action: {
               dangerous: false,
               description:
-                "Creating a link of an entity will create a new 'shallow' entity which takes all values from this entity.",
+                "A link is a new 'shallow' copy which takes all values from its source (also when they change later on).",
               force: true,
               hooks: [],
               icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="grey"><path d="M680-160v-120H560v-80h120v-120h80v120h120v80H760v120h-80ZM440-280H280q-83 0-141.5-58.5T80-480q0-83 58.5-141.5T280-680h160v80H280q-50 0-85 35t-35 85q0 50 35 85t85 35h160v80ZM320-440v-80h320v80H320Zm560-40h-80q0-50-35-85t-85-35H520v-80h160q83 0 141.5 58.5T880-480Z"/></svg>',

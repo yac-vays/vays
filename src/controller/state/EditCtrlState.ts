@@ -50,6 +50,12 @@ class EditControlState {
    */
   public initialYAML: string = '';
 
+  /**
+   * Whether the user has made unsaved edits in the current editing session.
+   * Used to warn before navigating away (see `EditFrame`'s navigation blocker).
+   */
+  public isDirty: boolean = false;
+
   //
   // Side-by-side (form + YAML) synchronization.
   //

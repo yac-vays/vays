@@ -36,6 +36,7 @@ export const Editor = ({
   setEditErrorMsg,
   setIsValidating,
   setLoading,
+  setFocused,
   visible = true,
 }: {
   requestEditContext: RequestEditContext;
@@ -43,6 +44,8 @@ export const Editor = ({
   setIsValidating: (b: boolean) => void;
   // Reports the initial setup state to the frame's unified loader.
   setLoading: (b: boolean) => void;
+  // Reports whether the editor text is focused (the frame dims the inactive pane).
+  setFocused: (b: boolean) => void;
   // The YAML pane can be hidden (resized to zero width); Monaco needs an
   // explicit relayout when it becomes visible again.
   visible?: boolean;
@@ -90,7 +93,13 @@ export const Editor = ({
   // is ever rewritten, so the user's cursor in the focused pane is preserved.
   useEffect(() => {
     if (!editor) return;
-    const focusSub = editor.onDidFocusEditorText(() => setActivePane('yaml'));
+    // Widget-level focus (not just the text area) so the editor stays "active"
+    // while using its find/replace widget.
+    const focusSub = editor.onDidFocusEditorWidget(() => {
+      setActivePane('yaml');
+      setFocused(true);
+    });
+    const blurSub = editor.onDidBlurEditorWidget(() => setFocused(false));
     registerYamlWriter((resp) => {
       if (resp.yaml == null) return;
       const scrollTop = editor.getScrollTop();
@@ -102,6 +111,7 @@ export const Editor = ({
     });
     return () => {
       focusSub.dispose();
+      blurSub.dispose();
       registerYamlWriter(null);
     };
   }, [editor]);

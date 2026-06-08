@@ -54,7 +54,7 @@ const LoginView: React.FC<LoginViewProps> = ({ config }) => {
                 }
               }}
             >
-              {userIsLoggedIn() ? 'Log Out' : 'Log In'} {'>'}
+              {userIsLoggedIn() ? 'Log Out' : 'Log In'}
             </button>
           </div>
         </div>

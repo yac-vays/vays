@@ -14,6 +14,7 @@ interface LargeStringProps {
   path: string;
   data?: string[];
   disabled?: boolean;
+  error?: boolean;
 }
 
 const LargeStringList: React.FC<LargeStringProps> = ({
@@ -22,6 +23,7 @@ const LargeStringList: React.FC<LargeStringProps> = ({
   path,
   data,
   disabled,
+  error,
 }) => {
   const [selected, setSelected] = useState<string[]>(data ?? []);
   const [show, setShow] = useState(false);
@@ -92,9 +94,11 @@ const LargeStringList: React.FC<LargeStringProps> = ({
               <div ref={trigger} onClick={open} className="w-full">
                 <div
                   className={`mb-2 flex rounded border  py-2 pl-3 pr-3 outline-none transition  dark:bg-form-input ${
-                    isOpen()
-                      ? 'border-primary border-primary'
-                      : 'border-stroke dark:border-form-strokedark'
+                    error
+                      ? 'border-[#d32f2f]'
+                      : isOpen()
+                        ? 'border-primary border-primary'
+                        : 'border-stroke dark:border-form-strokedark'
                   }`}
                 >
                   <div

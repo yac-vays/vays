@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   setActivatedActions,
   setEntityName,
@@ -7,8 +7,8 @@ import { editViewNavigateToNewName } from '../../../../controller/local/EditCont
 import { getTriggerableActions } from '../../../../utils/actionUtils';
 import { isNameGeneratedByYAC, isNameOptionalByYAC } from '../../../../utils/nameUtils';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
+import ErrorRing from '../../../components/Form/ErrorRing';
 import Checkbox from '../../../thirdparty/components/ifc/CheckBox/CheckBox';
-import ErrorBox from '../../../thirdparty/components/ifc/Label/ErrorBox';
 import OverheadLabelWithMarkdownDescr from '../../../thirdparty/components/ifc/Label/OverheadLabel';
 import TextInput from '../../../thirdparty/components/ifc/TextInput/TextInput';
 
@@ -40,40 +40,59 @@ const MetaInfoPanel = ({
     _setActionActive(v);
   };
 
+  // Track the current name so we can surface a "missing / invalid" error the same
+  // way the form does for its fields (a red ring). Kept in sync if the context's
+  // name changes (e.g. once an existing entity finishes loading).
+  const [nameValue, setNameValue] = useState<string>(requestEditContext.entityName ?? '');
+  useEffect(() => {
+    setNameValue(requestEditContext.entityName ?? '');
+  }, [requestEditContext.entityName]);
+
+  const nameMissing = showNameField && !nameOptional && nameValue.trim() === '';
+  const nameErrorMessage = nameMissing ? 'A name is required.' : nameError;
+
   return (
     <div className="flex flex-row items-end gap-4 pb-2 border-b">
       <div className="grow">
         {showNameField && (
           <>
-            <OverheadLabelWithMarkdownDescr title="Name" required={!nameOptional} description="" />
-            <TextInput
-              placeholder={namePlaceholder}
-              data={requestEditContext.entityName}
-              enabled
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                const name = e.target.value === '' ? null : e.target.value;
-                if (name == null) return;
-                setEntityName(name);
-                editViewNavigateToNewName(name, requestEditContext);
-                try {
-                  if (
-                    !RegExp(requestEditContext.rc.accessedEntityType?.name_pattern ?? '.*').test(
-                      name,
-                    )
-                  ) {
-                    setNameError(
-                      'Does not match pattern ' +
-                        requestEditContext.rc.accessedEntityType?.name_pattern,
-                    );
-                    return;
-                  } else setNameError('');
-                } catch {
-                  return;
-                }
-                updateCallback();
-              }}
+            <OverheadLabelWithMarkdownDescr
+              title="Name"
+              required={!nameOptional}
+              description=""
+              errors={nameErrorMessage || undefined}
             />
-            <ErrorBox displayError={nameError} />
+            <ErrorRing errors={nameErrorMessage || undefined}>
+              <TextInput
+                placeholder={namePlaceholder}
+                data={requestEditContext.entityName}
+                enabled
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const value = e.target.value;
+                  setNameValue(value);
+                  const name = value === '' ? null : value;
+                  setEntityName(name);
+                  editViewNavigateToNewName(name, requestEditContext);
+                  try {
+                    if (
+                      value !== '' &&
+                      !RegExp(requestEditContext.rc.accessedEntityType?.name_pattern ?? '.*').test(
+                        value,
+                      )
+                    ) {
+                      setNameError(
+                        'Does not match pattern ' +
+                          requestEditContext.rc.accessedEntityType?.name_pattern,
+                      );
+                      return;
+                    } else setNameError('');
+                  } catch {
+                    return;
+                  }
+                  updateCallback();
+                }}
+              />
+            </ErrorRing>
           </>
         )}
         <div className="flex flex-col">

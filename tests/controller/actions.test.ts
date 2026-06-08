@@ -98,7 +98,6 @@ describe('Check whether the actions are filtered properly', async () => {
         VALIDATE_01_NAME,
         'testType',
         VALIDATE_01_OPERATION,
-        'expert',
       ).rc,
       { name: 'blub', link: null, options: {}, perms: ['act'] },
     );
@@ -118,7 +117,6 @@ describe('Check whether the actions are filtered properly', async () => {
         VALIDATE_01_NAME,
         'testType',
         VALIDATE_01_OPERATION,
-        'expert',
       ).rc,
       { name: 'blub', link: null, options: {}, perms: [] },
     );
@@ -138,7 +136,6 @@ describe('Check whether the actions are filtered properly', async () => {
         VALIDATE_01_NAME,
         'testType',
         VALIDATE_01_OPERATION,
-        'expert',
       ).rc,
       { name: 'blub', link: null, options: {}, perms: ['mod'] },
     );

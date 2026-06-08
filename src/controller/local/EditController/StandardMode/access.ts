@@ -1,20 +1,19 @@
 import editingState from '../../../state/EditCtrlState';
-import editStdModeState from '../../../state/EditStdCtrlState';
 
 export function setIsCurrentlyEditingString(v: boolean): void {
-  editStdModeState.userIsEditingString = v;
+  editingState.userIsEditingString = v;
 }
 
 export function IsCurrentlyEditingString(): boolean {
-  return editStdModeState.userIsEditingString;
+  return editingState.userIsEditingString;
 }
 
 export function setCurrentTab(v: number) {
-  editStdModeState.currentTab = v;
+  editingState.currentTab = v;
 }
 
 export function getCurrentTab() {
-  return editStdModeState.currentTab;
+  return editingState.currentTab;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,9 +23,9 @@ export function setFormData(data: any, errors?: any[]) {
   } else {
     editingState.isValidLocal = true;
   }
-  editStdModeState.entityDataObject = data;
+  editingState.entityDataObject = data;
 }
 
 export function getLocalEntityData() {
-  return editStdModeState.entityDataObject;
+  return editingState.entityDataObject;
 }

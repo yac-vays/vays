@@ -12,6 +12,12 @@ import {
   setIsValidating,
 } from '../../../../../controller/local/EditController/ExpertMode/access';
 import { getYACValidateResponse } from '../../../../../controller/local/EditController/shared';
+import {
+  applyCanonical,
+  isStaleValidation,
+  nextValidationSeq,
+  setActivePane,
+} from '../../../../../controller/local/EditController/sync';
 
 export function setupMonacoYAMLPlugin() {
   const defaultSchema: SchemasSettings = {
@@ -45,6 +51,9 @@ export default function getEditorSettings(
     fontSize: 18,
     fixedOverflowWidgets: true,
     glyphMargin: true,
+    // No code minimap / side overview pane — the documents are short and the
+    // side-by-side layout is tight on width.
+    minimap: { enabled: false },
     stickyScroll: {
       enabled: false, //TODO: REENABLE AFTER COLOR STUFF
     },
@@ -58,14 +67,20 @@ export function getUpdateCallback(): DebouncedFunc<(value: string) => Promise<vo
     const requestEditContext = getCurrentContext();
     if (requestEditContext == null) return;
 
+    // The YAML editor is the active pane while the user types in it.
+    setActivePane('yaml');
     setEntityYAML(value);
     setIsValidating(true);
+    const seq = nextValidationSeq();
     const rep = await updateYAMLschema(
       getEntityName(),
       value,
       requestEditContext,
       getActivatedActions(),
     );
+    // A newer edit (in either pane) has since been dispatched; drop this stale
+    // response so it cannot overwrite the latest state.
+    if (isStaleValidation(seq)) return;
     setErrorMessage(getYACValidateResponse());
     setIsValidating(false);
 
@@ -79,5 +94,7 @@ export function getUpdateCallback(): DebouncedFunc<(value: string) => Promise<vo
         },
       ],
     });
+    // Project the canonical data into the (inactive) form pane.
+    applyCanonical('yaml', rep);
   }, 1500);
 }

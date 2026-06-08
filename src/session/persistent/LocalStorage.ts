@@ -1,10 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { EditorLayout } from '../../utils/types/config';
+
 class ILocalStorage {
   public KEYS: readonly string[] = [
     'isSidebarGroupExpanded.*',
     'isLoggedIn',
     'token',
     'isOverviewDescriptionShown',
+    'editorLayout',
+    'editorSplitRatio',
   ];
 
   public setIsSidebarGroupExpanded(backendName: string, v: boolean): void {
@@ -47,6 +51,28 @@ class ILocalStorage {
 
   public isOverviewDescriptionShown(): boolean {
     return this.get('isOverviewDescriptionShown') ?? true;
+  }
+
+  /** The user's chosen editor pane layout (once they change it from default). */
+  public setEditorLayout(v: EditorLayout) {
+    this.set('editorLayout', v);
+  }
+
+  /**
+   * The persisted editor layout, or `fallback` (the config default) when the
+   * user has not chosen one yet.
+   */
+  public getEditorLayout(fallback: EditorLayout = 'form'): EditorLayout {
+    return this.get('editorLayout') ?? fallback;
+  }
+
+  /** The form's width fraction in the split (both-panes) layout. */
+  public setEditorSplitRatio(v: number) {
+    this.set('editorSplitRatio', v);
+  }
+
+  public getEditorSplitRatio(): number {
+    return this.get('editorSplitRatio') ?? 0.5;
   }
 }
 

@@ -853,11 +853,6 @@ export const VALIDATE_02_EXPECTED = {
         title: 'MAC Address',
         type: 'string',
       },
-      name753984327583297515507489734124497987457185454894315: {
-        pattern: '.*',
-        title: 'Name',
-        type: 'string',
-      },
       pam_mount_volumes: {
         default: [
           {
@@ -991,7 +986,6 @@ export const VALIDATE_02_EXPECTED = {
       'ufw_eth_default_rules',
       'ufw_eth_default_zabbix',
       'active_directory_conf',
-      'name753984327583297515507489734124497987457185454894315',
     ],
     type: 'object',
   },
@@ -999,10 +993,6 @@ export const VALIDATE_02_EXPECTED = {
     elements: [
       {
         elements: [
-          {
-            scope: '#/properties/name753984327583297515507489734124497987457185454894315',
-            type: 'Control',
-          },
           {
             options: {},
             scope: '#/properties/system_type',

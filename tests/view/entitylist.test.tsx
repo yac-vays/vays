@@ -21,7 +21,6 @@ describe('Renders list', async () => {
             null,
             'testType',
             'create',
-            'standard',
           ).rc
         }
       />,

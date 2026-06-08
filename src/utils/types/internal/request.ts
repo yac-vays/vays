@@ -18,7 +18,6 @@ export interface RequestEditContext {
   entityName?: string;
   mode: EditViewMode;
   rc: RequestContext;
-  viewMode: 'standard' | 'expert';
 }
 /**
  * Stores the context of the request as per URL.

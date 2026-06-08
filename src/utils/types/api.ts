@@ -38,6 +38,7 @@ export const TYPE_CHECK_VALIDATE_RESP = `{
     validator: Maybe String,
     json_schema_loc: Maybe String,
     data_loc: Maybe String,
+    yaml: Maybe String,
   },
   request: {
     valid: Boolean,
@@ -65,6 +66,8 @@ export interface APIValidateResponse {
     validator?: string;
     json_schema_loc?: string;
     data_loc?: string;
+    /** Canonical (ruamel-normalized) YAML for `data`, comments preserved. */
+    yaml?: string;
   };
 
   request: {

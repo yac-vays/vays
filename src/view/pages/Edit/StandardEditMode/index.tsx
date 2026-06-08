@@ -2,7 +2,7 @@ import { JsonFormsCore } from '@jsonforms/core';
 import { materialCells, materialRenderers } from '@jsonforms/material-renderers';
 import { JsonForms } from '@jsonforms/react';
 import _ from 'lodash';
-import { memo } from 'react';
+import { memo, useEffect } from 'react';
 
 import FormsErrorBoundary from './ErrorBoundary';
 
@@ -21,14 +21,18 @@ import {
   getAJV,
   setLocalValidity,
 } from '../../../../controller/local/EditController/shared';
+import { updateTabsErrorNotification } from '../../../../controller/local/EditController/StandardMode/tabs';
 import {
-  setErrorForCategory,
-  updateTabsErrorNotification,
-} from '../../../../controller/local/EditController/StandardMode/tabs';
-import { isValidDataObject } from '../../../../utils/schema/injectName';
+  applyCanonical,
+  consumeFormSuppression,
+  isStaleValidation,
+  nextValidationSeq,
+  registerFormWriter,
+  setActivePane,
+} from '../../../../controller/local/EditController/sync';
 import { locateBackendError } from '../../../../utils/schema/locatedErrors';
+import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import NoDataIndicator from '../../../components/NoDataIndicator';
-import SubLoader from '../../../thirdparty/components/SubLoader';
 import useInitializeForm from './useInitializeState';
 
 const renderers = [...materialRenderers, ...customRenderers];
@@ -37,6 +41,8 @@ interface FormProps {
   requestEditContext: RequestEditContext;
   setEditErrorMsg: (v: string) => void;
   setIsValidating: (v: boolean) => void;
+  /** Reports the initial schema-load state to the frame's unified loader. */
+  setLoading: (v: boolean) => void;
 }
 
 /**
@@ -54,7 +60,7 @@ interface FormProps {
  * The component uses `memo` to optimize rendering performance by memoizing the result.
  */
 const StandardEditMode = memo(
-  ({ requestEditContext, setEditErrorMsg, setIsValidating }: FormProps) => {
+  ({ requestEditContext, setEditErrorMsg, setIsValidating, setLoading }: FormProps) => {
     const {
       loading,
       isEmpty,
@@ -81,11 +87,53 @@ const StandardEditMode = memo(
       formContainer.current?.classList.toggle('pointer-events-none');
     };
 
+    // Render a (canonical) validation response into the form. Shared between the
+    // user's own onChange flow and the cross-pane writer that the YAML editor
+    // invokes (via `applyCanonical`) when the user edits YAML instead.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const applyRespToForm = (resp: ValidateResponse, errors?: any[]) => {
+      setJsonSchema(resp.json_schema);
+      setUISchema(resp.ui_schema);
+      const located = locateBackendError(resp);
+      setAdditionalErrors(located.additionalErrors);
+      setEditErrorMsg(located.shownInForm ? '' : resp.detail);
+      setLocalData(resp.data);
+      setIsEmpty(false);
+      setFormData(resp.data, errors);
+      updateTabsErrorNotification(
+        resp.data,
+        resp.json_schema,
+        resp.ui_schema,
+        located.additionalErrors,
+      );
+    };
+
+    // Register this form as the "form pane" so YAML edits can be projected back
+    // into it. Setters from useState are stable, so a one-time registration is
+    // safe.
+    useEffect(() => {
+      registerFormWriter((resp) => applyRespToForm(resp));
+      return () => registerFormWriter(null);
+    }, []);
+
+    // Report initial schema-load state to the frame's single loading indicator.
+    useEffect(() => {
+      setLoading(loading);
+    }, [loading, setLoading]);
+
     const onChangeCallback = async ({ errors, data }: Pick<JsonFormsCore, 'data' | 'errors'>) => {
       setCurrentContext(requestEditContext);
+      // Ignore the change event caused by our own programmatic write (YAML ->
+      // form projection); otherwise it would re-validate and bounce back — and
+      // it must NOT steal "active pane" from the YAML editor the user is in.
+      if (consumeFormSuppression()) {
+        return;
+      }
       if (!setupDone || _.isEqual(data, localData)) {
         return;
       }
+      // A genuine user edit in the form: it is now the active pane.
+      setActivePane('form');
 
       if (!IsCurrentlyEditingString()) {
         toggleBlurForm(true);
@@ -96,45 +144,28 @@ const StandardEditMode = memo(
       );
       setLocalData(data);
 
-      if (!isValidDataObject(data)) {
-        if (!IsCurrentlyEditingString()) toggleBlurForm(false);
-        // Surfaced in the footer status bar (red) + the General tab dot, rather
-        // than as a transient toast that the user cannot locate.
-        setEditErrorMsg(
-          'Invalid name: characters such as whitespaces and slashes are not allowed.',
-        );
-        setErrorForCategory('General', true, uiSchema);
-        setLocalValidity(false);
-        emitValidity();
-        return;
-      }
-
       // Reflect the form's own (JSON Forms) validation immediately for snappy
-      // Save-button feedback; the backend round-trip below confirms it.
+      // Commit-button feedback; the backend round-trip below confirms it.
       setLocalValidity((errors ?? []).length === 0);
       emitValidity();
 
       setIsValidating(true);
+      const seq = nextValidationSeq();
       updateSchema(data, requestEditContext, true).then((resp) => {
+        // A newer edit (in either pane) has since been dispatched; drop this
+        // stale response so it cannot clobber the latest state.
+        if (isStaleValidation(seq)) {
+          setIsValidating(false);
+          toggleBlurForm(false);
+          setIsCurrentlyEditingString(false);
+          return;
+        }
         if (resp == null) {
           setIsEmpty(true);
         } else {
-          setJsonSchema(resp.json_schema);
-          setUISchema(resp.ui_schema);
-          // Route a located schema error to its control; only use the footer
-          // status bar when no form element can display it.
-          const located = locateBackendError(resp);
-          setAdditionalErrors(located.additionalErrors);
-          setEditErrorMsg(located.shownInForm ? '' : resp.detail);
-          setLocalData(resp.data);
-          setIsEmpty(false);
-          setFormData(resp.data, errors);
-          updateTabsErrorNotification(
-            resp.data,
-            resp.json_schema,
-            resp.ui_schema,
-            located.additionalErrors,
-          );
+          applyRespToForm(resp, errors);
+          // Project the canonical YAML into the (inactive) YAML pane.
+          applyCanonical('form', resp);
         }
         setIsValidating(false);
         // if (IsCurrentlyEditingString()) {
@@ -163,7 +194,8 @@ const StandardEditMode = memo(
                 <NoDataIndicator />
               </div>
             ) : loading ? (
-              <SubLoader action="Loading Schema" />
+              // The frame shows a single unified loader; render nothing here.
+              <></>
             ) : (
               <>
                 <div className="relative h-full">

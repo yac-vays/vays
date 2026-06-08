@@ -2,60 +2,60 @@
 import { ActionDecl } from '../../../../utils/types/api';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 import { Nullable } from '../../../../utils/types/typeUtils';
-import expertModeState from '../../../state/ExpertCtrlState';
+import editingState from '../../../state/EditCtrlState';
 
 export function setMonacoYaml(e: any) {
-  expertModeState.monacoyaml = e;
+  editingState.monacoyaml = e;
 }
 
 export function getMonacoYaml() {
-  return expertModeState.monacoyaml;
+  return editingState.monacoyaml;
 }
 
 export function setCurrentContext(e: RequestEditContext) {
-  expertModeState.currentEditContext = e;
+  editingState.currentEditContext = e;
 }
 
 export function getCurrentContext() {
-  return expertModeState.currentEditContext;
+  return editingState.currentEditContext;
 }
 
 export function setEntityYAML(yaml: string) {
-  expertModeState.entityYAML = yaml;
+  editingState.entityYAML = yaml;
 }
 
 export function getEntityYAML() {
-  return expertModeState.entityYAML;
+  return editingState.entityYAML;
 }
 
 export function getEntityName() {
-  return expertModeState.entityName;
+  return editingState.entityName;
 }
 
 export function setEntityName(v: Nullable<string>) {
-  expertModeState.entityName = v;
+  editingState.entityName = v;
 }
 
 export function setActivatedActions(v: ActionDecl[]) {
-  expertModeState.activatedActions = v;
+  editingState.activatedActions = v;
 }
 
 export function getActivatedActions() {
-  return expertModeState.activatedActions;
+  return editingState.activatedActions;
 }
 
 export function setIsValidatingCallback(cb: (v: boolean) => void) {
-  expertModeState._setIsValidating = cb;
+  editingState._setIsValidating = cb;
 }
 
 export function setIsValidating(v: boolean) {
-  return expertModeState._setIsValidating(v);
+  return editingState._setIsValidating(v);
 }
 
 export function setErrorMessageCallback(cb: (v: string) => void) {
-  expertModeState._setErrorMessage = cb;
+  editingState._setErrorMessage = cb;
 }
 
 export function setErrorMessage(v: string) {
-  return expertModeState._setErrorMessage(v);
+  return editingState._setErrorMessage(v);
 }

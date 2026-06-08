@@ -76,6 +76,11 @@ async function _validate(
       valid: dat.request.valid && dat.schemas.valid,
       detail: dat.request.message ?? dat.schemas.message ?? '',
       usages: dat.usages ?? [],
+      // Canonical YAML the backend would write for this data (comments
+      // preserved). Lets the YAML editor mirror the form without us having to
+      // re-implement YAC's ruamel serialization. Only carried when present, so
+      // responses without it keep their existing shape.
+      ...(dat.schemas.yaml ? { yaml: dat.schemas.yaml } : {}),
       // Only carry a location for an actual schema error, so other responses
       // keep their existing shape (and the footer stays the fallback).
       ...(isSchemaError && {

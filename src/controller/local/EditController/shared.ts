@@ -2,21 +2,13 @@
 import Ajv from 'ajv';
 import { getEntityData } from '../../../model/entityData';
 import { getSchema, validate } from '../../../model/validate';
-import { isNameGeneratedByYAC } from '../../../utils/nameUtils';
 import { extractPatch, getAllErrors, removeOldData } from '../../../utils/schema/dataUtils';
 import {
   insertDefaults,
   mergeDefaults,
   updateDefaults,
 } from '../../../utils/schema/defaultsHandling';
-import {
-  EditActionSnapshot,
-  injectAction,
-  insertActionData,
-  NO_ACTIONS,
-  popActions,
-} from '../../../utils/schema/injectActions';
-import { injectSettableName } from '../../../utils/schema/injectName';
+import { EditActionSnapshot, NO_ACTIONS } from '../../../utils/schema/injectActions';
 import { LimitUsage } from '../../../utils/types/api';
 import { RequestEditContext } from '../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../utils/types/internal/validation';
@@ -47,7 +39,7 @@ export function setYACStatus(valid: boolean, detail: string, usages: LimitUsage[
 
 /**
  * Reactive bridge for overall form validity, mirroring `usagesListener`. The
- * edit view (`EditFrame`) registers a listener to enable/disable the Save
+ * edit view (`EditFrame`) registers a listener to enable/disable the Commit
  * button. Validity combines the backend verdict (`isValidYAC`, from every
  * `setYACStatus`) with the form's own JSON Forms error count (`isValidLocal`,
  * pushed from the standard-mode `onChange`).
@@ -89,19 +81,16 @@ export function setYACUsages(usages: LimitUsage[]) {
 }
 
 /**
- * Get some schema.
+ * Get the schema (and validated data) for the current entity. Name + actions are
+ * never injected into the schema/data: they live in the always-visible
+ * MetaInfoPanel (see `view/.../ExpertMode/MetaInfoPanel`).
+ *
  * @param requestEditContext
- * @param preventInjectName
- * @param preventInjectActions
- * @param [startEditingSession=true] Whether to start an editing session. If true, this will set the
- *    state for the initial data and yaml received, which may be needed when finishing the session (e.g.
- *    to calculate the patch or to handle a concurrency collision.)
- * @returns
+ * @param [startEditingSession=true] If true, records the initial data + YAML
+ *    (the baseline used for the YAML diff and concurrency detection).
  */
 export async function retreiveSchema(
   requestEditContext: RequestEditContext,
-  insertName: boolean = true,
-  insertAction: boolean = true,
   startEditingSession: boolean = true,
 ): Promise<ValidateResponse | null> {
   if (requestEditContext.rc.yacURL == null) return null;
@@ -110,29 +99,14 @@ export async function retreiveSchema(
     return await retreiveNewCreateSchema(requestEditContext);
   }
 
-  return await retreiveEditSchema(
-    requestEditContext,
-    insertName,
-    insertAction,
-    startEditingSession,
-  );
+  return await retreiveEditSchema(requestEditContext, startEditingSession);
 }
 
 /**
- * Get the editing schema.
- *
- * @param requestEditContext
- * @param insertName
- * @param insertAction
- * @returns
- *
- *
- * @satisfies - Will store the defaults object in the case of creating a new entity.
+ * Get the editing schema for an existing entity.
  */
 async function retreiveEditSchema(
   requestEditContext: RequestEditContext,
-  insertName: boolean = true,
-  insertAction: boolean = true,
   startEditingSession: boolean = true,
 ): Promise<ValidateResponse | null> {
   if (requestEditContext.entityName == null) return null;
@@ -142,7 +116,7 @@ async function retreiveEditSchema(
     return null;
   }
 
-  let valResp = await coreUpdate(
+  const valResp = await coreUpdate(
     entityData.data,
     requestEditContext,
     true,
@@ -153,9 +127,6 @@ async function retreiveEditSchema(
   if (valResp == null) {
     return null;
   }
-  if (insertAction) {
-    valResp = insertActionData(injectAction(valResp, requestEditContext), NO_ACTIONS);
-  }
 
   if (startEditingSession) {
     setInitialEntityYAML(entityData.yaml);
@@ -164,32 +135,19 @@ async function retreiveEditSchema(
 
   valResp.yaml = entityData.yaml;
 
-  return injectMetaData(requestEditContext.entityName, valResp, requestEditContext, insertName);
-  // if (!insertName || isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType)) {
-  //   return valResp;
-  // }
-
-  // return injectSettableName(valResp, requestEditContext.rc, requestEditContext.entityName);
+  return valResp;
 }
 
 /**
- * Get the create schema.
- * @param requestEditContext
- * @returns
+ * Get the create schema for a new entity.
  */
 async function retreiveNewCreateSchema(
   requestEditContext: RequestEditContext,
 ): Promise<ValidateResponse | null> {
-  const editActions = popActions({}, requestEditContext.rc);
-
-  let valResp: Nullable<ValidateResponse> = await getSchema(requestEditContext);
+  const valResp: Nullable<ValidateResponse> = await getSchema(requestEditContext);
   if (valResp == null) {
     return null;
   }
-
-  // if (!preventInjectActions) {
-  valResp = insertActionData(injectAction(valResp, requestEditContext), editActions);
-  // }
 
   insertDefaults(valResp);
 
@@ -215,11 +173,11 @@ export function editViewNavigateToNewName(
   ) {
     if (name != null) {
       navigateToURL(
-        `/${requestEditContext.rc.backendObject?.name}/${requestEditContext.rc.entityTypeName}/${requestEditContext.mode}/${name}?mode=${requestEditContext.viewMode}`,
+        `/${requestEditContext.rc.backendObject?.name}/${requestEditContext.rc.entityTypeName}/${requestEditContext.mode}/${name}`,
       );
     } else {
       navigateToURL(
-        `/${requestEditContext.rc.backendObject?.name}/${requestEditContext.rc.entityTypeName}/${requestEditContext.mode}/?mode=${requestEditContext.viewMode}`,
+        `/${requestEditContext.rc.backendObject?.name}/${requestEditContext.rc.entityTypeName}/${requestEditContext.mode}/`,
       );
     }
   }
@@ -255,27 +213,6 @@ export function setPreviousDefaultsObject(data: unknown) {
 
 export function getAJV(): Ajv {
   return editingState.ajv;
-}
-
-/**
- * Inject name if necessary.
- *
- * @param name
- * @param valResp
- * @param requestEditContext
- * @returns
- */
-export function injectMetaData(
-  name: Nullable<string>,
-  valResp: ValidateResponse,
-  requestEditContext: RequestEditContext,
-  injectName: boolean,
-) {
-  if (isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType) || !injectName) {
-    return valResp;
-  }
-  valResp = injectSettableName(valResp, requestEditContext.rc, name);
-  return valResp;
 }
 
 /**

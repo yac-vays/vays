@@ -30,7 +30,9 @@ const DefaultLayout: React.FC<{ children: ReactNode; backendList: YACBackend[] }
         <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
           <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
           <main>
-            <div className="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">{children}</div>
+            {/* No max width: the side-by-side editor (and wide tables) should be
+                free to use all available horizontal space. */}
+            <div className="p-4 md:p-6 2xl:p-10">{children}</div>
           </main>
         </div>
       </div>

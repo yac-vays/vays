@@ -40,6 +40,15 @@ export async function getConfig(): Promise<Nullable<AppConfig>> {
   return config;
 }
 
+/**
+ * The already-fetched config, synchronously. Returns `null` before the initial
+ * {@link getConfig} has resolved (the app gates rendering on that, so by the time
+ * pages mount this is populated).
+ */
+export function getCachedConfig(): Nullable<AppConfig> {
+  return config;
+}
+
 function reportBadFrontend(): null {
   showError('Config Not Available', 'Cannot fetch the config. Please contact the admin.');
   return null;
@@ -59,6 +68,14 @@ function validateConfig(config: AppConfig): Nullable<AppConfig> {
   } catch {
     showError('Registered YAC backend has bad URL', 'The URL could not be parsed.');
     return null;
+  }
+
+  // Ignore an invalid `defaultEditorLayout` rather than failing the whole config.
+  if (
+    config.defaultEditorLayout != null &&
+    !['form', 'yaml', 'both'].includes(config.defaultEditorLayout)
+  ) {
+    config.defaultEditorLayout = undefined;
   }
 
   return config;

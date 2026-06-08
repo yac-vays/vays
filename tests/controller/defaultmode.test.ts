@@ -20,13 +20,13 @@ const URL = 'https://yac_no_token.com';
 test('tests the validation of the standard mode', async () => {
   //@ts-expect-error The method has been injected above.
   global.fetch.mockResolvedValue(createFetchResponse(VALIDATE_02_RESPONSE));
-  getSchema(getTestEditRequestContext(URL, 'test', null, 'testType', 'create', 'standard'));
+  getSchema(getTestEditRequestContext(URL, 'test', null, 'testType', 'create'));
   //@ts-expect-error The method has been injected above.
   global.fetch.mockResolvedValue(createFetchResponse(VALIDATE_02_RESPONSE2));
 
   const valResp = await updateSchema(
     VALIDATE_02_DATA,
-    getTestEditRequestContext(URL, 'test', null, 'testType', 'create', 'standard'),
+    getTestEditRequestContext(URL, 'test', null, 'testType', 'create'),
     true,
     false,
     null,

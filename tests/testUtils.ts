@@ -7,7 +7,6 @@ export function getTestEditRequestContext(
   entityName: string | null,
   entityTypeName: string,
   mode: 'create' | 'change',
-  viewmode: 'standard' | 'expert',
   favorites: FavOpObject[] = [
     { name: 'change', action: false },
     { name: 'act', action: true },
@@ -59,7 +58,6 @@ export function getTestEditRequestContext(
       backendObject: { url: yacURL, name: backendName, title: 'Test', icon: '' },
       entityTypeList: [t],
     },
-    viewMode: viewmode,
   };
 }
 

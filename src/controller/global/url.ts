@@ -48,7 +48,6 @@ export function getDefaultEditContext(): RequestEditContext {
     entityName: undefined,
     mode: 'create',
     rc: getDefaultRequestContext(),
-    viewMode: 'standard',
   };
 }
 
@@ -89,7 +88,6 @@ export async function getRequestContextEdit(
   backends: YACBackend[],
   mode: EditViewMode,
   entityName: string | undefined,
-  viewMode: string,
 ): Promise<RequestEditContext> {
   let be: YACBackend | null = null;
   for (const backend of backends) {
@@ -98,9 +96,6 @@ export async function getRequestContextEdit(
     }
   }
   const entityTypeList: EntityTypeDecl[] = await getEntityTypes(be);
-
-  const sanitizedViewMode =
-    viewMode !== 'standard' && viewMode !== 'expert' ? 'standard' : viewMode;
 
   const accessedEntityType = getEntityTypeFromEntityName(entityTypeName, entityTypeList);
 
@@ -115,7 +110,6 @@ export async function getRequestContextEdit(
       backendObject: be,
       entityTypeList: entityTypeList,
     },
-    viewMode: sanitizedViewMode,
   };
 }
 

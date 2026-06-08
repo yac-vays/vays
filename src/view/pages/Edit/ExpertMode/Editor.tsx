@@ -15,30 +15,41 @@ import {
   getMonacoYaml,
   setMonacoYaml,
 } from '../../../../controller/local/EditController/ExpertMode/access';
+import {
+  getInitialEntityYAML,
+} from '../../../../controller/local/EditController/shared';
+import {
+  registerYamlWriter,
+  setActivePane,
+} from '../../../../controller/local/EditController/sync';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
-import Accordion from '../../../components/Accordion';
-import SubLoader from '../../../thirdparty/components/SubLoader';
+import { computeDiffDecorations } from './EditorPlugins/diffDecoration';
 import editorPlugins, { editorSetupPlugins } from './EditorPlugins';
 import { getUpdateCallback, setupMonacoYAMLPlugin } from './utils/setup.js';
 
 import { startExpertModeSession } from '../../../../controller/local/EditController/ExpertMode/index.js';
 import './glyph.css';
-import MetaInfoPanel from './MetaInfoPanel.js';
 import { getEditor, getModel } from './utils/factory.js';
 
 export const Editor = ({
   requestEditContext,
   setEditErrorMsg,
   setIsValidating,
+  setLoading,
+  visible = true,
 }: {
   requestEditContext: RequestEditContext;
   setEditErrorMsg: (v: string) => void;
   setIsValidating: (b: boolean) => void;
+  // Reports the initial setup state to the frame's unified loader.
+  setLoading: (b: boolean) => void;
+  // The YAML pane can be hidden (resized to zero width); Monaco needs an
+  // explicit relayout when it becomes visible again.
+  visible?: boolean;
 }) => {
   const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor | null>(null);
   const monacoEl = useRef<HTMLDivElement>(null);
   const [isSettingUp, setIsSettingUp] = useState<boolean>(true);
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const update = getUpdateCallback();
 
@@ -47,11 +58,6 @@ export const Editor = ({
 
     if (monacoEl && requestEditContext.rc.yacURL != null) {
       setIsSettingUp(true);
-      // Expand the "General Settings" panel (name field + triggerable action
-      // checkboxes) for both create and change. Previously only create expanded
-      // it, so when editing the name/actions appeared to be missing until the
-      // user manually expanded the collapsed accordion.
-      setIsExpanded(true);
 
       let monacoYaml = getMonacoYaml();
       if (!monacoYaml) {
@@ -77,35 +83,65 @@ export const Editor = ({
     requestEditContext.mode,
     requestEditContext.rc.entityTypeName,
     requestEditContext.rc.yacURL,
-    requestEditContext.viewMode,
   ]);
 
+  // Register this editor as the "YAML pane" so form edits can be projected into
+  // it (and track focus so it becomes the active pane). Only the inactive pane
+  // is ever rewritten, so the user's cursor in the focused pane is preserved.
+  useEffect(() => {
+    if (!editor) return;
+    const focusSub = editor.onDidFocusEditorText(() => setActivePane('yaml'));
+    registerYamlWriter((resp) => {
+      if (resp.yaml == null) return;
+      const scrollTop = editor.getScrollTop();
+      editor.setValue(resp.yaml);
+      editor.setScrollTop(scrollTop);
+      getMonacoYaml()?.update({
+        schemas: [{ uri: 'inmemory://schema.json', schema: resp.json_schema, fileMatch: ['*'] }],
+      });
+    });
+    return () => {
+      focusSub.dispose();
+      registerYamlWriter(null);
+    };
+  }, [editor]);
+
+  // Monaco does not render correctly while in a zero-width container; force a
+  // relayout when this pane becomes visible again.
+  useEffect(() => {
+    if (editor && visible) editor.layout();
+  }, [editor, visible]);
+
+  // Report initial setup state to the frame's single loading indicator.
+  useEffect(() => {
+    setLoading(isSettingUp);
+  }, [isSettingUp, setLoading]);
+
+  // Highlight, in green, everything that differs from the original entity YAML.
+  // Recomputed on every content change (user edits *and* form -> YAML pushes).
+  useEffect(() => {
+    if (!editor) return;
+    const collection = editor.createDecorationsCollection([]);
+    const recompute = () =>
+      collection.set(
+        computeDiffDecorations(getInitialEntityYAML(), editor.getModel()?.getValue() ?? ''),
+      );
+    const sub = editor.onDidChangeModelContent(() => recompute());
+    recompute();
+    return () => {
+      sub.dispose();
+      collection.clear();
+    };
+  }, [editor]);
+
   return (
-    <>
-      {isSettingUp ? (
-        <div className="absolute w-full h-full">
-          <SubLoader action="Fetching schema..." />
-        </div>
-      ) : (
-        <></>
-      )}
-      <div className={`flex flex-col h-full relative grow ${isSettingUp ? 'hidden' : ''}`}>
-        <Accordion title="General Settings" reduced expanded={isExpanded}>
-          <div>
-            <div className="h-4"></div>
-            <MetaInfoPanel
-              requestEditContext={requestEditContext}
-              updateCallback={() => {
-                if (editor) update(editor.getValue());
-              }}
-            />
-          </div>
-        </Accordion>
-        <div className="relative overflow-visible rounded grow">
-          <div className="absolute h-full w-full overflow-visible" ref={monacoEl}></div>
-        </div>
+    // The frame shows a single unified loader while `isSettingUp`; keep the
+    // editor container mounted (hidden) so Monaco can initialize underneath.
+    <div className={`flex flex-col h-full relative grow ${isSettingUp ? 'hidden' : ''}`}>
+      <div className="relative overflow-visible rounded grow">
+        <div className="absolute h-full w-full overflow-visible" ref={monacoEl}></div>
       </div>
-    </>
+    </div>
   );
 };
 

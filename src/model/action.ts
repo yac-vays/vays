@@ -121,7 +121,6 @@ export const OPERATIONS_META: OperationsMetaInfo = {
           'Create Copy',
           showNameField,
           requestContext.accessedEntityType?.actions.filter((v) => isTriggable('create', v)),
-          undefined,
           namePlaceholder,
         );
         return true;
@@ -224,7 +223,6 @@ export const OPERATIONS_META: OperationsMetaInfo = {
           'Create Link',
           showNameField,
           requestContext.accessedEntityType?.actions.filter((v) => isTriggable('create', v)),
-          undefined,
           namePlaceholder,
         );
 

@@ -1,5 +1,9 @@
 import { DebouncedFunc } from 'lodash';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import {
+  consumeYamlSuppression,
+  getCanonicalYAML,
+} from '../../../../../controller/local/EditController/sync';
 import getEditorSettings from './setup';
 
 export function getModel(
@@ -13,7 +17,14 @@ export function getModel(
   } else {
     model = monaco.editor.createModel('', 'yaml', monaco.Uri.parse('inmemory://schema.json'));
     model.onDidChangeContent(() => {
-      update(model.getValue());
+      // Ignore our own programmatic write (form -> YAML projection): it carries
+      // the suppression flag, and re-validating it would bounce back to the form.
+      if (consumeYamlSuppression()) return;
+      const value = model.getValue();
+      // No semantic change versus what the backend already blessed: skip the
+      // round-trip (also guards initial setValue echoes).
+      if (value === getCanonicalYAML()) return;
+      update(value);
     });
   }
   return model;

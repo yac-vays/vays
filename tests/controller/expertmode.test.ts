@@ -30,7 +30,6 @@ test('tests the validation of the expert mode', async () => {
       VALIDATE_01_NAME,
       'testType',
       VALIDATE_01_OPERATION,
-      'expert',
     ),
     VALIDATE_01_ACTIONS,
   );

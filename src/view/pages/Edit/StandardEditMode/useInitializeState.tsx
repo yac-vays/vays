@@ -73,6 +73,8 @@ const useInitializeForm = (
       setCurrentContext(requestEditContext);
       clearYACStatus();
       resetCategoryErrs();
+      // Name + actions are rendered separately in the always-visible
+      // MetaInfoPanel, not injected into the form.
       const resp: Nullable<ValidateResponse> = await retreiveSchema(requestEditContext);
       if (!isMounted) return;
 
@@ -129,7 +131,6 @@ const useInitializeForm = (
   }, [
     requestEditContext.rc.entityTypeName,
     requestEditContext.rc.yacURL,
-    requestEditContext.viewMode,
     requestEditContext.mode,
   ]);
 

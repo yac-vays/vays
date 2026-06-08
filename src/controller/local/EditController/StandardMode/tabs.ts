@@ -6,19 +6,19 @@ import {
   controlOwnsPath,
   instancePathToDotted,
 } from '../../../../utils/schema/locatedErrors';
-import editStdModeState from '../../../state/EditStdCtrlState';
+import editingState from '../../../state/EditCtrlState';
 import { getAJV } from '../shared';
 
 export function registerOnUpdateCategoryErrors(f: (v: boolean[]) => void) {
-  editStdModeState.onUpdateCategoryErrors = f;
+  editingState.onUpdateCategoryErrors = f;
 }
 
 export function getCategoryErrs(): boolean[] | undefined {
-  return editStdModeState.catErrs;
+  return editingState.catErrs;
 }
 
 export function setCategoryErrs(catErrs: boolean[] | undefined) {
-  editStdModeState.catErrs = catErrs;
+  editingState.catErrs = catErrs;
 }
 
 export function resetCategoryErrs() {
@@ -72,7 +72,7 @@ export function updateTabsErrorNotification(
     }
   }
   setCategoryErrs(catHasErr);
-  editStdModeState.onUpdateCategoryErrors(catHasErr);
+  editingState.onUpdateCategoryErrors(catHasErr);
 }
 
 /**
@@ -95,7 +95,7 @@ export function setErrorForCategory(catName: string, err: boolean, uischema: UIS
   if (!v || v.length <= idx) return; // bad internal state, return.
   v[idx] = err;
   setCategoryErrs(v);
-  editStdModeState.onUpdateCategoryErrors(v);
+  editingState.onUpdateCategoryErrors(v);
 }
 
 type CategoryName = string;

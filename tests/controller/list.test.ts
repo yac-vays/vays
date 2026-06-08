@@ -236,7 +236,7 @@ test('tests the listing of entities', async () => {
   global.fetch.mockResolvedValue(createFetchResponse(LIST_RESPONSE));
 
   const valResp = await fetchEntities(
-    getTestEditRequestContext(URL, 'test', null, 'testType', 'create', 'standard').rc,
+    getTestEditRequestContext(URL, 'test', null, 'testType', 'create').rc,
     2,
     0,
     [],

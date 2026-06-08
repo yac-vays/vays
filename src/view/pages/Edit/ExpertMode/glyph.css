@@ -14,3 +14,19 @@
     background-color: theme('colors.boxdark');
 }
 
+/* Diff-vs-original highlighting (added/changed lines green, removals flagged). */
+.diff-added-line{
+    background-color: rgb(46 160 67 / 0.16);
+}
+
+.diff-added-gutter{
+    background-color: #2ea043;
+    width: 3px !important;
+    margin-left: 3px;
+}
+
+.diff-removed-glyph{
+    background: linear-gradient(to bottom, transparent 40%, #f85149 40%, #f85149 60%, transparent 60%);
+    cursor: help;
+}
+

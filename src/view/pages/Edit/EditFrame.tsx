@@ -1,32 +1,51 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { FaChevronLeft, FaChevronRight, FaGripLinesVertical } from 'react-icons/fa';
+import { getActivatedActions } from '../../../controller/local/EditController/ExpertMode/access';
 import { sendYAMLData } from '../../../controller/local/EditController/ExpertMode';
 import {
   isFormValid,
   setUsagesListener,
   setValidityListener,
 } from '../../../controller/local/EditController/shared';
-import { sendFormData } from '../../../controller/local/EditController/StandardMode';
+import { revalidateMeta } from '../../../controller/local/EditController/sync';
+import { getCachedConfig } from '../../../model/config';
+import iLocalStorage from '../../../session/persistent/LocalStorage';
 import { LimitUsage } from '../../../utils/types/api';
+import { EditorLayout } from '../../../utils/types/config';
 import { RequestEditContext } from '../../../utils/types/internal/request';
+import SubLoader from '../../thirdparty/components/SubLoader';
+import { useContainerDimensions } from '../../hooks/useContainerDimensions';
 import ExpertMode from './ExpertMode/ExpertMode';
+import MetaInfoPanel from './ExpertMode/MetaInfoPanel';
 import StandardEditMode from './StandardEditMode';
 import UsageIndicator from './UsageIndicator';
 
+/** Below this container width the split is unavailable: only one pane at a time. */
+const SIDE_BY_SIDE_MIN_WIDTH = 900;
+/** Dragging the divider within this fraction of an edge snaps to single-pane. */
+const SNAP = 0.12;
+/** Width of the divider column (must fit the chevron buttons without clipping). */
+const DIVIDER_W = '1.75rem';
+
 /**
- * Component that renders an editing frame with expert or standard mode and feedback.
+ * Renders the entity editing frame: an always-visible Name/Actions panel on top,
+ * then a form pane (left) and a YAML pane (right) separated by a divider.
+ *
+ * The divider's chevrons step through form-only / both / yaml-only and (on wide
+ * screens) it can be dragged to resize. The chosen layout + split ratio persist
+ * in local storage. On narrow screens only one pane shows at a time and the
+ * chevrons switch directly between form-only and yaml-only.
+ *
+ * Both panes stay mounted and are kept in sync via the canonical `{data, yaml}`
+ * pair (see `sync.ts`).
  *
  * @component
- * @param {RequestEditContext} props.requestEditContext - The context object containing request data
- * @param {boolean} props.isExpertMode - Flag to determine if expert mode is enabled
- *
- * @returns {JSX.Element} A section containing either expert or standard edit mode with error handling and save functionality
+ * @param {RequestEditContext} props.requestEditContext - The request/edit context.
  */
 const EditFrame = ({
   requestEditContext,
-  isExpertMode,
 }: {
   requestEditContext: RequestEditContext;
-  isExpertMode: boolean;
 }): JSX.Element => {
   const [isValidating, setIsValidating] = useState<boolean>(false);
   const [yacErrorMsg, setYACErrorMsg] = useState<string>('');
@@ -34,10 +53,90 @@ const EditFrame = ({
   const [isReadOnly, setIsReadOnly] = useState<boolean>(requestEditContext.mode === 'read');
   const [usages, setUsages] = useState<LimitUsage[]>([]);
   const [isValid, setIsValid] = useState<boolean>(isFormValid());
+  // A single loading indicator for the whole editor: shown until both panes have
+  // finished their initial schema load.
+  const [formLoading, setFormLoading] = useState<boolean>(true);
+  const [yamlLoading, setYamlLoading] = useState<boolean>(true);
+  const isLoading = formLoading || yamlLoading;
+  // Titles of the actions the user has selected (in the MetaInfoPanel), shown on
+  // the Commit button. Refreshed whenever the panel reports a change.
+  const [actionTitles, setActionTitles] = useState<string[]>([]);
+  const refreshActionTitles = () =>
+    setActionTitles(getActivatedActions().map((a) => a.title || a.name));
 
-  // Both edit modes funnel validation results through the controller's
-  // `setYACStatus`, which notifies these listeners with the latest limit usages
-  // and overall validity (used to enable/disable the Save button).
+  const containerRef = useRef<HTMLDivElement>(null);
+  const panesRef = useRef<HTMLDivElement>(null);
+  const { width } = useContainerDimensions(containerRef);
+  const isNarrow = (width ?? SIDE_BY_SIDE_MIN_WIDTH) < SIDE_BY_SIDE_MIN_WIDTH;
+
+  // Layout + split ratio. The initial layout is the user's persisted choice, or
+  // the `defaultEditorLayout` from config (default form-only) for first-time use.
+  const [layout, setLayoutState] = useState<EditorLayout>(() =>
+    iLocalStorage.getEditorLayout(getCachedConfig()?.defaultEditorLayout),
+  );
+  const [ratio, setRatio] = useState<number>(() => iLocalStorage.getEditorSplitRatio());
+  const [dragging, setDragging] = useState<boolean>(false);
+
+  const layoutRef = useRef(layout);
+  layoutRef.current = layout;
+  const ratioRef = useRef(ratio);
+  ratioRef.current = ratio;
+  const draggingRef = useRef(false);
+
+  const setLayout = (l: EditorLayout) => {
+    setLayoutState(l);
+    iLocalStorage.setEditorLayout(l);
+  };
+
+  // Narrow screens cannot show both panes; fall back to the form side.
+  const effLayout: EditorLayout = isNarrow && layout === 'both' ? 'form' : layout;
+  const formVisible = effLayout !== 'yaml';
+  const yamlVisible = effLayout !== 'form';
+  const formFrac = effLayout === 'form' ? 1 : effLayout === 'yaml' ? 0 : ratio;
+
+  // Chevrons: on wide screens step form-only <-> both <-> yaml-only; on narrow
+  // screens switch directly between the two single-pane views.
+  const goLeft = () => setLayout(isNarrow ? 'yaml' : effLayout === 'form' ? 'both' : 'yaml');
+  const goRight = () => setLayout(isNarrow ? 'form' : effLayout === 'yaml' ? 'both' : 'form');
+  const leftDisabled = effLayout === 'yaml';
+  const rightDisabled = effLayout === 'form';
+
+  const startDrag = (e: React.MouseEvent) => {
+    if (isNarrow) return;
+    e.preventDefault();
+    draggingRef.current = true;
+    setDragging(true);
+  };
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!draggingRef.current || !panesRef.current) return;
+      const rect = panesRef.current.getBoundingClientRect();
+      const r = (e.clientX - rect.left) / rect.width;
+      // Snap to single-pane near an edge; otherwise split at the cursor.
+      if (r < SNAP) {
+        if (layoutRef.current !== 'yaml') setLayoutState('yaml');
+      } else if (r > 1 - SNAP) {
+        if (layoutRef.current !== 'form') setLayoutState('form');
+      } else {
+        setRatio(r);
+        if (layoutRef.current !== 'both') setLayoutState('both');
+      }
+    };
+    const onUp = () => {
+      if (!draggingRef.current) return;
+      draggingRef.current = false;
+      setDragging(false);
+      iLocalStorage.setEditorSplitRatio(ratioRef.current);
+      iLocalStorage.setEditorLayout(layoutRef.current);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, []);
+
   useEffect(() => {
     setUsagesListener(setUsages);
     setValidityListener(setIsValid);
@@ -47,7 +146,17 @@ const EditFrame = ({
     };
   }, []);
 
+  useEffect(() => {
+    setIsReadOnly(requestEditContext.mode === 'read');
+  }, [requestEditContext.mode]);
+
+  // Reset the selected-action labels when switching to another entity.
+  useEffect(() => {
+    setActionTitles([]);
+  }, [requestEditContext.entityName, requestEditContext.mode, requestEditContext.rc.entityTypeName]);
+
   const saveDisabled = isValidating || !isValid;
+  const commitLabel = actionTitles.length ? `Commit + ${actionTitles.join(' + ')}` : 'Commit';
 
   const setEditErrorMsg = (msg: string) => {
     if (msg === '') {
@@ -57,32 +166,104 @@ const EditFrame = ({
       setIsDisplayingYACError(true);
     }
   };
-  useEffect(() => {
-    setIsReadOnly(requestEditContext.mode === 'read');
-  }, [requestEditContext.mode]);
+
+  const paneHeight = window.outerHeight - 380;
+
+  const chevronBtn =
+    'rounded border border-stroke bg-white p-0.5 text-reducedfont enabled:hover:text-plainfont ' +
+    'enabled:hover:border-primary disabled:opacity-30 disabled:cursor-default dark:bg-boxdark dark:border-meta-4';
+
   return (
     <section className="rounded-sm border border-stroke bg-white py-4 shadow-default dark:bg-boxdark">
       <div
+        ref={containerRef}
         className="relative px-4 overflow-hidden md:px-8 flex flex-col"
         style={{ minHeight: window.outerHeight - 320 }}
       >
-        {/* <section className="rounded-sm border border-stroke bg-white py-4 shadow-default dark:bg-boxdark">
-      <div className="relative px-4 overflow-hidden md:px-8 flex flex-col"></div> */}
+        {/* Always-visible Name + Actions. */}
+        {!isReadOnly && (
+          <MetaInfoPanel
+            requestEditContext={requestEditContext}
+            updateCallback={() => {
+              revalidateMeta(requestEditContext);
+              refreshActionTitles();
+            }}
+          />
+        )}
 
-        <div className="relative grow flex flex-col">
-          {isExpertMode ? (
-            <ExpertMode
-              requestContext={requestEditContext}
-              setEditErrorMsg={setEditErrorMsg}
-              setIsValidating={setIsValidating}
-            />
-          ) : (
+        <div ref={panesRef} className="relative grow flex flex-row" style={{ height: paneHeight }}>
+          {isLoading && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-white bg-opacity-70 dark:bg-boxdark dark:bg-opacity-70">
+              <SubLoader action="Loading editor" />
+            </div>
+          )}
+          {/* Transparent overlay so a drag keeps receiving mouse events even over
+              the Monaco editor (which otherwise swallows them). */}
+          {dragging && <div className="fixed inset-0 z-40 cursor-col-resize" />}
+
+          <div
+            className={`${formVisible ? 'flex' : 'hidden'} flex-col min-w-0 overflow-hidden`}
+            style={{ width: `calc((100% - ${DIVIDER_W}) * ${formFrac})` }}
+          >
             <StandardEditMode
               requestEditContext={requestEditContext}
               setEditErrorMsg={setEditErrorMsg}
               setIsValidating={setIsValidating}
+              setLoading={setFormLoading}
             />
-          )}
+          </div>
+
+          {/* Divider: always present (between the panes, or at the edge when one
+              side is collapsed). Draggable on wide screens. */}
+          <div
+            onMouseDown={startDrag}
+            title={isNarrow ? undefined : 'Drag to resize'}
+            className={`relative flex-none flex items-center justify-center group ${
+              isNarrow ? '' : 'cursor-col-resize'
+            }`}
+            style={{ width: DIVIDER_W }}
+          >
+            <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-px bg-stroke dark:bg-meta-4 group-hover:bg-primary" />
+            {/* Only the buttons stop the drag; the grip / gaps remain draggable. */}
+            <div className="relative z-10 flex flex-col items-center gap-1">
+              <button
+                type="button"
+                title={leftDisabled ? undefined : 'Show more of the YAML editor'}
+                disabled={leftDisabled}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={goLeft}
+                className={chevronBtn}
+              >
+                <FaChevronLeft size={12} />
+              </button>
+              {!isNarrow && (
+                <FaGripLinesVertical className="text-reducedfont pointer-events-none" size={12} />
+              )}
+              <button
+                type="button"
+                title={rightDisabled ? undefined : 'Show more of the form'}
+                disabled={rightDisabled}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={goRight}
+                className={chevronBtn}
+              >
+                <FaChevronRight size={12} />
+              </button>
+            </div>
+          </div>
+
+          <div
+            className={`${yamlVisible ? 'flex' : 'hidden'} flex-col relative min-w-0 overflow-hidden`}
+            style={{ width: `calc((100% - ${DIVIDER_W}) * ${1 - formFrac})` }}
+          >
+            <ExpertMode
+              requestContext={requestEditContext}
+              setEditErrorMsg={setEditErrorMsg}
+              setIsValidating={setIsValidating}
+              setLoading={setYamlLoading}
+              visible={yamlVisible}
+            />
+          </div>
         </div>
 
         <div
@@ -124,11 +305,9 @@ const EditFrame = ({
                 }
                 onClick={() => {
                   if (saveDisabled) return;
-                  if (requestEditContext.viewMode === 'standard') {
-                    sendFormData(requestEditContext);
-                  } else {
-                    sendYAMLData(requestEditContext);
-                  }
+                  // Unified save: the canonical YAML (kept current no matter which
+                  // pane was edited) is PUT, preserving comments/order.
+                  sendYAMLData(requestEditContext);
                 }}
                 className={`inline-flex items-center justify-center rounded border py-1.5 px-4 m-4 text-center font-medium ${
                   saveDisabled
@@ -142,7 +321,7 @@ const EditFrame = ({
                     className=" h-4 w-4 animate-spin rounded-full border-2 border-solid border-grey border-t-transparent z-10"
                   ></div>
                 ) : (
-                  'Save'
+                  commitLabel
                 )}
               </div>
             </div>

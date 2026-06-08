@@ -7,7 +7,7 @@ import { isCustomRenderer } from '../utils/customTesterUtils';
 /**
  * Renders a field marked as "unavailable" — typically a required field whose
  * option list came out empty, in which case the backend has also made it
- * unsatisfiable (`not: {}`) so the form is invalid and Save is blocked.
+ * unsatisfiable (`not: {}`) so the form is invalid and Commit is blocked.
  * Instead of a broken/empty dropdown it shows an explanatory box. The message
  * comes from `vays_options.renderer_options.unavailable_msg` (markdown), kept
  * separate from the field's `description` (which is also shown in the normal,

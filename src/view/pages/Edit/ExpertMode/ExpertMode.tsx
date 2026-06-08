@@ -1,8 +1,6 @@
 import { RequestEditContext } from '../../../../utils/types/internal/request';
-// import Editor from ;
 
 import { lazy, Suspense } from 'react';
-import SubLoader from '../../../thirdparty/components/SubLoader';
 
 const Editor = lazy(() => import('./Editor'));
 
@@ -10,27 +8,26 @@ const ExpertMode = ({
   requestContext,
   setEditErrorMsg,
   setIsValidating,
+  setLoading,
+  visible = true,
 }: {
   requestContext: RequestEditContext;
   setEditErrorMsg: (v: string) => void;
   setIsValidating: (b: boolean) => void;
+  setLoading: (b: boolean) => void;
+  visible?: boolean;
 }) => {
   return (
     <>
-      {/* <section className="rounded-sm border border-stroke bg-white py-4 shadow-default dark:bg-boxdark">
-      <div className="relative px-4 overflow-hidden md:px-8 flex flex-col"> */}
-      {/* md:overflow-auto */}
-      <Suspense
-        fallback={
-          <div className="absolute w-full h-full" style={{ bottom: 0 }}>
-            <SubLoader action="Loading Editor" />
-          </div>
-        }
-      >
+      {/* While the lazy Editor chunk loads, the frame's single loader is shown
+          (the YAML pane reports `loading=true` until the editor is set up). */}
+      <Suspense fallback={<></>}>
         <Editor
           requestEditContext={requestContext}
           setEditErrorMsg={setEditErrorMsg}
           setIsValidating={setIsValidating}
+          setLoading={setLoading}
+          visible={visible}
         />
       </Suspense>
       {/* <div className={`absolute mx-4 md:mx-8 p-2 rounded duration-1000 opacity-0 ${isDisplayingYACError && "opacity-100"}`} 

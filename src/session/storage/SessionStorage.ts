@@ -16,14 +16,6 @@ class ISessionStorage {
     return ret;
   }
 
-  public getIsExpertMode(): boolean {
-    return this.get('isExpertMode') ?? false;
-  }
-
-  public setIsExpertMode(v: boolean) {
-    this.set('isExpertMode', v);
-  }
-
   private set(key: string, v: any) {
     sessionStorage.setItem(key, JSON.stringify(v));
   }

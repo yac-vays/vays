@@ -2,7 +2,6 @@ import React, { Component, DetailedHTMLProps, InputHTMLAttributes } from 'react'
 import { ActionDecl } from '../../../utils/types/api';
 import { CallbackSuccessType } from '../../../utils/types/internal/modal';
 import Checkbox from '../../thirdparty/components/ifc/CheckBox/CheckBox';
-import ConcurrencyReport, { ConcurrencyReportProps } from '../ConcurrencyReport';
 
 interface ConfirmationModalState {
   show: boolean;
@@ -16,7 +15,6 @@ interface ConfirmationModalState {
   textInputPlaceholder: string;
   actions: ActionDecl[];
   actionsChoice: boolean[];
-  crep?: ConcurrencyReportProps;
 }
 
 type ConfirmationModalProps = object;
@@ -40,7 +38,6 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
       textInputPlaceholder: 'Enter Name...',
       actions: [],
       actionsChoice: [],
-      crep: undefined,
     };
     this.ref = React.createRef();
     this.textInputRef = React.createRef();
@@ -108,7 +105,6 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
     confirmVerb: string,
     enableTextInput: boolean,
     actions?: ActionDecl[],
-    crep?: ConcurrencyReportProps,
     textInputPlaceholder: string = 'Enter Name...',
   ): void {
     this.blockConfirm = false;
@@ -125,7 +121,6 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
       textInputPlaceholder: textInputPlaceholder,
       actions: actions,
       actionsChoice: actions.map(() => false),
-      crep,
     });
     // Requires slight delay to take effect
     setInterval(() => this.textInputRef.current?.focus(), 16);
@@ -218,7 +213,6 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
                   })()}
                 </>
               </div>
-              {this.state.crep ? <ConcurrencyReport {...this.state.crep} /> : <></>}
               <div className="h-4"></div>
             </>
             <div className="-mx-3 flex flex-wrap gap-y-2">

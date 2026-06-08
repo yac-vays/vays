@@ -2,7 +2,6 @@ import { createContext, useContext, useRef } from 'react';
 import ConfirmAlert from '.';
 import { ActionDecl } from '../../../utils/types/api';
 import { CallbackSuccessType } from '../../../utils/types/internal/modal';
-import { ConcurrencyReportProps } from '../ConcurrencyReport';
 
 /**
  * Mode is either
@@ -15,7 +14,6 @@ export type ModalCallback = (
   confirmVerb: string,
   enableTextInput: boolean,
   actions?: ActionDecl[],
-  crep?: ConcurrencyReportProps,
   textInputPlaceholder?: string,
 ) => void;
 
@@ -36,7 +34,6 @@ export const ModalContextProvider = ({ children }: { children: React.ReactNode }
     confirmVerb,
     enableTextInput,
     actions,
-    crep,
     textInputPlaceholder,
   ) => {
     if (!modalRef.current) return;
@@ -48,7 +45,6 @@ export const ModalContextProvider = ({ children }: { children: React.ReactNode }
       confirmVerb,
       enableTextInput, // TODO: Allow setting this so you can do ... And put input into success.
       actions,
-      crep,
       textInputPlaceholder,
     );
   };

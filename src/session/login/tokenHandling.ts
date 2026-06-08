@@ -50,11 +50,20 @@ export function handleAuthFailed(
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getTokenClaims(): any {
+  if (!userIsLoggedIn()) return {};
+  try {
+    return jwtDecode(getTokenFromStorage() ?? '');
+  } catch {
+    return {};
+  }
+}
+
 export function getUserName(): string {
   if (!userIsLoggedIn()) return 'Not Logged In';
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { givenName, surname, name, mail } = jwtDecode(getTokenFromStorage() ?? '') as any;
+  const { givenName, surname, name, mail } = getTokenClaims();
 
   if (givenName && surname) {
     return givenName + ' ' + surname;
@@ -62,6 +71,18 @@ export function getUserName(): string {
     return mail;
   }
   return name;
+}
+
+/** The user's email address from the token, or '' if none. */
+export function getUserEmail(): string {
+  const { mail, email } = getTokenClaims();
+  return mail ?? email ?? '';
+}
+
+/** The user's login / short username from the token, or '' if none. */
+export function getUserLogin(): string {
+  const c = getTokenClaims();
+  return c.username ?? c.preferred_username ?? c.uid ?? c.sub ?? '';
 }
 
 function tokenExpired(token: Nullable<string>): boolean {

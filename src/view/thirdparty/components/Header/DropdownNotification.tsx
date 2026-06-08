@@ -30,14 +30,15 @@ const DropdownNotification = () => {
 
   return !isProd ? (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
-      <li className="lg:hover:scale-110 duration-500">
+      <li>
         <Link
           onClick={() => {
             setNotifying(false);
             setDropdownOpen(!dropdownOpen);
           }}
           to="#"
-          className="relative flex h-10 w-10 items-center justify-center rounded-full border-[0.5px] border-stroke bg-primary-5 hover:text-primary dark:bg-meta-4 dark:text-white sm:hover:scale-125 lg:hover:scale-100 duration-500"
+          title="Schema Warnings"
+          className="relative flex h-10 w-10 items-center justify-center rounded-full border-[0.5px] border-stroke bg-primary-5 duration-300 hover:scale-110 hover:text-primary dark:bg-meta-4 dark:text-white"
         >
           <span
             className={`absolute -top-0.5 right-0 z-1 h-2 w-2 rounded-full bg-danger ${
@@ -50,9 +51,9 @@ const DropdownNotification = () => {
           <svg
             className="fill-current duration-300 ease-in-out"
             xmlns="http://www.w3.org/2000/svg"
-            height="30px"
+            height="24px"
             viewBox="0 -960 960 960"
-            width="30px"
+            width="24px"
             fill="none"
           >
             <path d="M824-120 636-308q-41 32-90.5 50T440-240q-90 0-162.5-44T163-400h98q34 37 79.5 58.5T440-320q100 0 170-70t70-170q0-100-70-170t-170-70q-94 0-162.5 63.5T201-580h-80q8-127 99.5-213.5T440-880q134 0 227 93t93 227q0 56-18 105.5T692-364l188 188-56 56ZM397-400l-63-208-52 148H80v-60h160l66-190h60l61 204 43-134h60l60 120h30v60h-67l-47-94-50 154h-59Z" />

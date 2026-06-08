@@ -5,6 +5,7 @@ import { YACBackend } from '../../../../utils/types/config';
 import { useModalContext } from '../../../components/Modal/ModalContext';
 import { useToastContext } from '../../../components/ToastNotification/ToastContext';
 import Header from '../../components/Header/index';
+import { HeaderSlotsProvider } from '../../components/Header/HeaderSlots';
 import Sidebar from '../Sidebar/index';
 
 const DefaultLayout: React.FC<{ children: ReactNode; backendList: YACBackend[] }> = ({
@@ -28,12 +29,14 @@ const DefaultLayout: React.FC<{ children: ReactNode; backendList: YACBackend[] }
           backendList={backendList}
         />
         <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
-          <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-          <main>
-            {/* No max width: the side-by-side editor (and wide tables) should be
-                free to use all available horizontal space. */}
-            <div className="p-4 md:p-6 2xl:p-10">{children}</div>
-          </main>
+          <HeaderSlotsProvider>
+            <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+            <main>
+              {/* No max width: the side-by-side editor (and wide tables) should be
+                  free to use all available horizontal space. */}
+              <div className="p-4 md:p-6 2xl:p-10">{children}</div>
+            </main>
+          </HeaderSlotsProvider>
         </div>
       </div>
     </div>

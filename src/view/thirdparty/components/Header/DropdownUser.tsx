@@ -1,78 +1,62 @@
 import { useState } from 'react';
-import UserOne from '../../../../../rsc/user/user.png';
 import { navigateToURL } from '../../../../controller/global/url';
 import { logOut } from '../../../../session/login/loginProcess';
-import { getUserName, userIsLoggedIn } from '../../../../session/login/tokenHandling';
+import {
+  getUserEmail,
+  getUserLogin,
+  getUserName,
+  userIsLoggedIn,
+} from '../../../../session/login/tokenHandling';
 import ClickOutside from '../../ClickOutside';
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [userName, setUserName] = useState<string>(
-    userIsLoggedIn() ? getUserName() : 'Not Logged In',
-  );
+  const [loggedIn, setLoggedIn] = useState<boolean>(!!userIsLoggedIn());
 
-  window.addEventListener('sign-in', () => {
-    setUserName(getUserName());
-  });
+  window.addEventListener('sign-in', () => setLoggedIn(true));
+  window.addEventListener('sign-out', () => setLoggedIn(false));
 
-  window.addEventListener('sign-out', () => {
-    setUserName('Not Logged In');
-  });
+  const userName = loggedIn ? getUserName() : 'Not Logged In';
+  const login = loggedIn ? getUserLogin() : '';
+  const email = loggedIn ? getUserEmail() : '';
 
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
-      <a
+      {/* Trigger: a circular icon button matching the other top-bar controls. */}
+      <button
+        title={loggedIn ? userName : 'Log in'}
         onClick={() => {
-          if (!userIsLoggedIn()) {
+          if (!loggedIn) {
             navigateToURL('/');
           } else {
             setDropdownOpen(!dropdownOpen);
           }
         }}
-        className="flex items-center gap-4"
-        style={{ cursor: 'pointer' }}
+        className="flex h-10 w-10 items-center justify-center rounded-full border-[0.5px] border-stroke bg-primary-5 duration-300 hover:scale-110 hover:text-primary dark:bg-meta-4 dark:text-white"
       >
-        <span className="hidden text-right lg:block">
-          <span className="block text-sm font-medium text-plainfont">{userName}</span>
-        </span>
-
-        {userIsLoggedIn() ? (
-          <>
-            <span className="h-12 w-12 rounded-full">
-              <img src={UserOne} alt="User" />
-            </span>
-
-            <svg
-              className="hidden fill-current sm:block"
-              width="12"
-              height="8"
-              viewBox="0 0 12 8"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M0.410765 0.910734C0.736202 0.585297 1.26384 0.585297 1.58928 0.910734L6.00002 5.32148L10.4108 0.910734C10.7362 0.585297 11.2638 0.585297 11.5893 0.910734C11.9147 1.23617 11.9147 1.76381 11.5893 2.08924L6.58928 7.08924C6.26384 7.41468 5.7362 7.41468 5.41077 7.08924L0.410765 2.08924C0.0853277 1.76381 0.0853277 1.23617 0.410765 0.910734Z"
-                fill=""
-              />
-            </svg>
-          </>
-        ) : (
-          <></>
-        )}
-      </a>
+        <svg
+          className="fill-current"
+          xmlns="http://www.w3.org/2000/svg"
+          height="24px"
+          viewBox="0 -960 960 960"
+          width="24px"
+        >
+          <path d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Z" />
+        </svg>
+      </button>
 
       {/* <!-- Dropdown Start --> */}
-      {dropdownOpen && (
-        <div
-          className={`absolute right-0 mt-4 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:bg-boxdark`}
-        >
+      {dropdownOpen && loggedIn && (
+        <div className="absolute right-0 mt-2.5 flex w-64 flex-col rounded-sm border border-stroke bg-white shadow-default dark:bg-boxdark">
+          <div className="flex flex-col gap-0.5 border-b border-stroke px-4 py-3">
+            <span className="text-sm font-medium text-plainfont">{userName}</span>
+            {login && <span className="text-xs text-reducedfont">{login}</span>}
+            {email && <span className="break-all text-xs text-reducedfont">{email}</span>}
+          </div>
           <button
             className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
             onClick={() => {
               logOut();
-              //navigateToURL('/');
               setDropdownOpen(false);
             }}
           >

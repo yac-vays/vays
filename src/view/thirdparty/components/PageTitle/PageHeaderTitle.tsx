@@ -19,7 +19,10 @@ const PageHeaderTitle = ({ title, subText, children }: PageHeaderTitleProps) => 
     <>
       {titleEl &&
         createPortal(
-          <h2 className="truncate text-lg font-semibold text-plainfont md:text-title-md2">
+          // `min-w-0` lets this flex item shrink below its content width so the
+          // title truncates instead of pushing the top-bar action buttons off
+          // the (overflow-hidden) screen on small viewports.
+          <h2 className="min-w-0 truncate text-base font-semibold text-plainfont sm:text-lg md:text-title-md2">
             {title}
           </h2>,
           titleEl,

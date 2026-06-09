@@ -10,8 +10,8 @@ const Header = (props: {
   const { setTitleEl, setActionsEl } = useHeaderSlots();
   return (
     <header className="sticky top-0 z-50 flex w-full bg-white drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none">
-      <div className="flex flex-grow items-center justify-between gap-4 px-4 py-2.5 shadow-2 md:px-6 2xl:px-11">
-        <div className="flex min-w-0 items-center gap-2 sm:gap-4">
+      <div className="flex min-w-0 flex-grow items-center justify-between gap-4 px-4 py-2.5 shadow-2 md:px-6 2xl:px-11">
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
           {/* <!-- Hamburger Toggle BTN (small screens only) --> */}
           <button
             aria-controls="sidebar"
@@ -55,8 +55,11 @@ const Header = (props: {
           </button>
           {/* <!-- Hamburger Toggle BTN --> */}
 
-          {/* Page title slot — pages render their title here (see PageHeaderTitle). */}
-          <div ref={setTitleEl} className="flex min-w-0 items-center" />
+          {/* Page title slot — pages render their title here (see PageHeaderTitle).
+              `flex-1 min-w-0` makes this the flexible region that shrinks first,
+              so the title truncates before the right-hand controls are pushed off
+              the (overflow-hidden) screen on small viewports. */}
+          <div ref={setTitleEl} className="min-w-0 flex-1" />
         </div>
 
         <div className="flex flex-shrink-0 items-center gap-2 2xsm:gap-4">

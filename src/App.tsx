@@ -1,7 +1,7 @@
 import { lazy, LazyExoticComponent, Suspense, useEffect, useState } from 'react';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
-import LoginView from './view/pages/Login/LoginView';
+import HomeView from './view/pages/Login/HomeView';
 import DefaultLayout from './view/thirdparty/components/Layout';
 import Loader from './view/thirdparty/components/Loader';
 import PageTitle from './view/thirdparty/components/PageTitle/PageTitle';
@@ -10,6 +10,7 @@ import { registerNavigationHook } from './controller/global/url';
 import { getConfig } from './model/config';
 import { setColors } from './session/color';
 import { generateCSP } from './session/csp';
+import { setFavicon } from './session/favicon';
 import { AppConfig, YACBackend } from './utils/types/config';
 import { ModalContextProvider } from './view/components/Modal/ModalContext';
 import { ToastContextProvider } from './view/components/ToastNotification/ToastContext';
@@ -84,6 +85,7 @@ function App(): JSX.Element {
       setBackendsList(conf.backends ?? []);
       setConfig(conf);
       setColors(conf);
+      setFavicon(conf);
       setLoading(false);
       // setTimeout(() => {
       //   driverObj.drive();
@@ -109,7 +111,7 @@ function App(): JSX.Element {
                   index
                   element={
                     <>
-                      <LoginView config={config} />
+                      <HomeView config={config} />
                     </>
                   }
                 />

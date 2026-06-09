@@ -1,10 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import Logo from '../../../../../rsc/logo/eth_logo.svg';
 import { getConfig } from '../../../../model/config';
+import { asImageSource } from '../../../../utils/imageUtils';
 import { YACBackend } from '../../../../utils/types/config';
 import NoticeFooter from '../../../components/NoticeFooter';
 import SidebarGroup from './SidebarGroup';
+
+/** Built-in default sidebar logo (the project logo, served from /public). */
+const DEFAULT_LOGO = '/yac.svg';
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -23,10 +26,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, backendList }: SidebarProps) => 
   const [sidebarExpanded, setSidebarExpanded] = useState(
     storedSidebarExpanded === null ? false : storedSidebarExpanded === 'true',
   );
-  const [logoURL, setLogoURL] = useState<string>('/favicon.ico');
+  const [logoURL, setLogoURL] = useState<string>(DEFAULT_LOGO);
   useEffect(() => {
     (async () => {
-      setLogoURL((await getConfig())?.logo ?? Logo);
+      const logo = (await getConfig())?.logo;
+      setLogoURL(logo ? asImageSource(logo) : DEFAULT_LOGO);
     })();
   }, []);
 
@@ -76,7 +80,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, backendList }: SidebarProps) => 
     >
       {/* <!-- SIDEBAR HEADER --> */}
       <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
-        <NavLink style={{ width: '100%' }} to="https://ethz.ch">
+        <NavLink style={{ width: '100%' }} to="/">
           <div
             className="rounded overflow-hidden"
             style={{
@@ -115,11 +119,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, backendList }: SidebarProps) => 
 
       <div className="no-scrollbar grow flex flex-col overflow-y-auto duration-300 ease-linear">
         {/* <!-- Sidebar Menu --> */}
-        <nav className="mt-5 py-4 px-4 lg:mt-9 lg:px-6">
+        <nav className="py-4 px-4 lg:px-6">
           {/* <!-- Menu Group --> */}
           <div>
-            <h3 className="mb-4 ml-4 text-sm font-semibold text-bodydark2">MENU</h3>
-
             <ul className="mb-6 flex flex-col gap-1.5">
               {/* <!-- Menu Item Dashboard --> */}
               {(function () {

@@ -2,6 +2,7 @@ import { RefObject, useEffect, useRef } from 'react';
 import { registerTableScrollContainer, reload } from '../../../controller/local/Overview/list';
 import { registerEntityListInvalidationHook } from '../../../model/entityList';
 import { invalidateLogCache } from '../../../model/logs';
+import iLocalStorage from '../../../session/persistent/LocalStorage';
 import { RequestContext } from '../../../utils/types/internal/request';
 import SubLoader from '../../thirdparty/components/SubLoader';
 import NoDataIndicator from '../NoDataIndicator';
@@ -180,15 +181,17 @@ const EntityList = ({ requestContext, highlightEntityName }: EntityListProps) =>
             <p className="pl-2 text-plainfont">Show entries</p>
             <select
               ref={selectorRef}
+              value={numResultsPerPage}
               className="bg-transparent ml-2 pl-1 rounded border border-grey"
               onChange={(e) => {
-                setNumResultsPerPage(parseInt(e.target.value));
+                const next = parseInt(e.target.value);
+                setNumResultsPerPage(next);
+                // Persist so the chosen page size is remembered across sessions.
+                iLocalStorage.setNumEntriesPerPage(next);
               }}
             >
               <option value="10">10</option>
-              <option value="50" selected={true}>
-                50
-              </option>
+              <option value="50">50</option>
               <option value="100">100</option>
               <option value="200">200</option>
             </select>

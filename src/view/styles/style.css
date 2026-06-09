@@ -40,7 +40,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 
 :root{
-  --color-primary:  #08407E;
+  /* Default brand colour — the yac-vays.github.io reference branding.
+     Override per deployment via config.json (`color.primary`). */
+  --color-primary:  #784421;
   --color-primary-2:  color-mix(in srgb, var(--color-primary) 2% , transparent);
   --color-primary-5:  color-mix(in srgb, var(--color-primary) 5% , transparent);
   --color-primary-10: color-mix(in srgb, var(--color-primary) 10%, transparent);
@@ -53,16 +55,28 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   --color-primary-80: color-mix(in srgb, var(--color-primary) 80%, transparent);
   --color-primary-90: color-mix(in srgb, var(--color-primary) 90%, transparent);
 
-  --color-primary-highlighted: #215CAF;
+  --color-primary-highlighted: #502d16;
 
   --color-background: color-mix(in srgb, var(--color-primary) 5% , white);
 
-  /** Dynamically overwritten by the color mode */
+  /** Dynamically overwritten by the color mode (see session/color.ts) */
   --color-plainfont: #000000;
   --color-plainfont-inv: #FFFFFF;
   --color-reducedfont: #64748B;
   --color-stroke: #E2E8F0;
   --color-dyn-bg: #ffffff;
+
+  /**
+   * Dark-mode component surfaces. Derived from the brand colour so dark mode is
+   * a dark version of the actual colour scheme (a dark brown by default, a dark
+   * blue for an ETH-blue primary, …) rather than a fixed blue-grey. Mixed into a
+   * neutral dark grey to keep them readable surfaces, not muddy near-black.
+   * Each is independently overridable via config.color.box* .
+   */
+  --color-box:        color-mix(in srgb, var(--color-primary) 18%, #1f1f1f);
+  --color-box-2:      color-mix(in srgb, var(--color-primary) 18%, #161616);
+  --color-box-input:  color-mix(in srgb, var(--color-primary) 20%, #303030);
+  --color-box-stroke: color-mix(in srgb, var(--color-primary) 20%, #2b2b2b);
 
   --color-danger: #DC3545;
   --color-danger-10: color-mix(in srgb, var(--color-danger) 10%, transparent);

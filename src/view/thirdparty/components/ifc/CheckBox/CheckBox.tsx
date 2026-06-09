@@ -50,7 +50,7 @@ const Checkbox = ({
             onClick={callback}
           >
             <span
-              className={`text-[#3056D3] dark:text-white opacity-0 ${isChecked && '!opacity-100'}`}
+              className={`text-primary dark:text-white opacity-0 ${isChecked && '!opacity-100'}`}
             >
               <svg
                 width="11"

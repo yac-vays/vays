@@ -116,7 +116,13 @@ function storeToken(token: string) {
 }
 
 export function logOut() {
-  iLocalStorage.setToken('');
-  setUserLoggedIn(false);
-  window.dispatchEvent(new Event('sign-out'));
+  // Wipe everything except the persisted UI preferences, then do a *full page
+  // reload* to the home page. A hard reload (rather than a client-side
+  // navigation) is what makes it look and feel like a real logout: every bit of
+  // in-memory state — the auth token, all caches, and rendered UI such as the
+  // sidebar submenus and fetched lists — is thrown away and the app boots fresh
+  // into the logged-out home page. (The token lives only in memory + the
+  // now-cleared storage, so the reload genuinely deauthenticates.)
+  iLocalStorage.clearSession();
+  window.location.replace('/');
 }

@@ -156,7 +156,7 @@ const ActionDropdown = ({ actions, entityName }: ActionDropdownProps) => {
                 jsx.push(
                   <li
                     key={i++}
-                    className="relative items-center justify-center cursor-pointer hover:bg-[#f5f6fd] dark:hover:bg-meta-4"
+                    className="relative items-center justify-center cursor-pointer hover:bg-primary-5 dark:hover:bg-meta-4"
                   >
                     <div
                       id={id}

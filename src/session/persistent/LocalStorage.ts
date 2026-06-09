@@ -9,7 +9,34 @@ class ILocalStorage {
     'isOverviewDescriptionShown',
     'editorLayout',
     'editorSplitRatio',
+    'numEntriesPerPage',
   ];
+
+  /**
+   * UI preferences we deliberately keep across logout/login: they describe how
+   * the user likes the app to look, not who is logged in. Everything else in
+   * local/session storage is session state and is wiped on logout (see
+   * {@link clearSession}) so the app looks exactly as if never logged in.
+   */
+  private PERSISTENT_KEYS: readonly string[] = [
+    'isOverviewDescriptionShown',
+    'editorLayout',
+    'editorSplitRatio',
+    'numEntriesPerPage',
+  ];
+
+  /**
+   * Wipe all local- and session-storage except the persistent UI preferences.
+   * Called on logout so no entity data, token or navigation state lingers.
+   */
+  public clearSession(): void {
+    for (const key of Object.keys(localStorage)) {
+      if (!this.PERSISTENT_KEYS.includes(key)) {
+        localStorage.removeItem(key);
+      }
+    }
+    sessionStorage.clear();
+  }
 
   public setIsSidebarGroupExpanded(backendName: string, v: boolean): void {
     this.set(`ìsSidebarGroupExpanded.${backendName}`, v);
@@ -73,6 +100,15 @@ class ILocalStorage {
 
   public getEditorSplitRatio(): number {
     return this.get('editorSplitRatio') ?? 0.5;
+  }
+
+  /** The number of entities shown per page in the overview table. */
+  public setNumEntriesPerPage(v: number) {
+    this.set('numEntriesPerPage', v);
+  }
+
+  public getNumEntriesPerPage(): number {
+    return this.get('numEntriesPerPage') ?? 10;
   }
 }
 

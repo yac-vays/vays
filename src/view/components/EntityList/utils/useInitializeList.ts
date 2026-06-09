@@ -4,6 +4,7 @@ import {
   getEntityPage,
   getHeaderEntries,
 } from '../../../../controller/local/Overview/list';
+import iLocalStorage from '../../../../session/persistent/LocalStorage';
 import { QueryResponse, QueryResult } from '../../../../utils/types/internal/entityList';
 import { RequestContext } from '../../../../utils/types/internal/request';
 
@@ -20,7 +21,9 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
 
   // Query Level information
   const [currPage, setCurrPage] = useState<number>(1);
-  const [numResultsPerPage, setNumResultsPerPage] = useState<number>(50);
+  const [numResultsPerPage, setNumResultsPerPage] = useState<number>(
+    iLocalStorage.getNumEntriesPerPage(),
+  );
   const [totalNumResults, setTotalNumResults] = useState<number>(10);
 
   // Always-current view of the entries / data identity, read inside the effect

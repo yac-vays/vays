@@ -66,6 +66,14 @@ function isOperationGloballyEnabled(opName: string, requestContext: RequestConte
 }
 
 /**
+ * Copy, link and edit (change) cannot be performed on an entity that is itself a
+ * link — YAC rejects them — so they are disabled / hidden for link entities.
+ */
+function isBlockedOnLink(opName: string): boolean {
+  return opName === 'create_copy' || opName === 'create_link' || opName === 'change';
+}
+
+/**
  * Get fav actions.
  * @param favorites
  * @param actions
@@ -126,6 +134,11 @@ function _addFavoriteOperation(
   // A read-only type (`change` disabled) degrades Edit to the View operation,
   // exactly like lacking the per-entity edit permission does.
   if (entry.name === 'change' && requestContext.accessedEntityType?.change === false) {
+    isAllowed = false;
+  }
+  // Copy/link/edit are not possible on a link entity (YAC rejects them): edit
+  // degrades to View below, copy/link end up disabled.
+  if (entity.link != null && isBlockedOnLink(entry.name)) {
     isAllowed = false;
   }
   if (entry.name === 'change' && !isAllowed) {
@@ -197,6 +210,11 @@ function getDropdownActions(
     let isAllowed = checkPermissions(entity.perms, operation.perms);
     // A read-only type (`change` disabled) degrades Edit to the View operation.
     if (opName === 'change' && requestContext.accessedEntityType?.change === false) {
+      isAllowed = false;
+    }
+    // Copy/link are dropped from the dropdown and edit degrades to View when the
+    // entity is a link (these operations are not allowed on links by YAC).
+    if (entity.link != null && isBlockedOnLink(opName)) {
       isAllowed = false;
     }
     if (!isAllowed && operation.name === 'change') {

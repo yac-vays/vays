@@ -34,7 +34,7 @@ import {
   registerFormWriter,
   setActivePane,
 } from '../../../../controller/local/EditController/sync';
-import { locateBackendError } from '../../../../utils/schema/locatedErrors';
+import { footerErrorMessage, locateBackendError } from '../../../../utils/schema/locatedErrors';
 import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import NoDataIndicator from '../../../components/NoDataIndicator';
 import useInitializeForm from './useInitializeState';
@@ -100,12 +100,12 @@ const StandardEditMode = memo(
       setUISchema(resp.ui_schema);
       const located = locateBackendError(resp);
       setAdditionalErrors(located.additionalErrors);
-      // A schema (field-level) error carries a `data_loc` and is already shown
-      // inside the form — inline on its control when locatable, otherwise by
-      // JSON Forms' own validation — so it is not repeated in the footer. The
-      // footer is reserved for request-level errors (permissions, limits,
-      // conflicts), which have no form location.
-      setEditErrorMsg(resp.data_loc != undefined ? '' : resp.detail);
+      // Always explain a blocked commit in the (tab-independent) footer. Inline
+      // control errors only render on the active categorization tab, so a
+      // locatable error on another tab — or one that maps to no rendered control
+      // (e.g. a `required` object reported at the document root) — would
+      // otherwise leave the user with a disabled Commit and no visible reason.
+      setEditErrorMsg(footerErrorMessage(resp));
       setLocalData(resp.data);
       setIsEmpty(false);
       setFormData(resp.data, errors);
@@ -197,11 +197,9 @@ const StandardEditMode = memo(
     return (
       <>
         <div className="relative w-full h-full">
-          <div
-            ref={formContainer}
-            className="static duration-300"
-            style={{ height: window.outerHeight - 380 }}
-          >
+          {/* Fill the (flex-sized) pane and scroll internally, so a tall form
+              never grows the page — mirrors the Monaco pane's `h-full`. */}
+          <div ref={formContainer} className="h-full overflow-y-auto duration-300">
             {isEmpty ? (
               <div className="w-full h-full items-center align-center">
                 <NoDataIndicator />
@@ -211,7 +209,7 @@ const StandardEditMode = memo(
               <></>
             ) : (
               <>
-                <div className="relative h-full">
+                <div className="relative">
                   <FormsErrorBoundary>
                     <JsonForms
                       schema={jsonSchema}

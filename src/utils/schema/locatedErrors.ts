@@ -93,3 +93,22 @@ export function locateBackendError(resp: ValidateResponse): LocatedBackendError 
   };
   return { additionalErrors: [error], shownInForm: true };
 }
+
+/**
+ * The message for the always-visible footer status bar. Inline control errors
+ * only show when the offending field's tab is open *and* the control is rendered
+ * (JSON Forms mounts only the active categorization tab), so an inline-only error
+ * is invisible whenever the user is on another tab — yet the commit stays
+ * blocked. The footer is tab-independent, so it is the reliable explainer: show
+ * the reason here whenever the response is invalid.
+ *
+ * For a locatable schema error the field path is prefixed (e.g.
+ * `monitoring_enabled: 'no' is not of type 'boolean'`) so the user knows where to
+ * look; request-level / document-root errors fall back to the bare detail.
+ */
+export function footerErrorMessage(resp: ValidateResponse): string {
+  if (resp.valid) return '';
+  const instancePath = dataLocToInstancePath(resp.data_loc);
+  if (instancePath === '') return resp.detail;
+  return `${instancePathToDotted(instancePath)}: ${resp.detail}`;
+}

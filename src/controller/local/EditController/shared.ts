@@ -2,7 +2,13 @@
 import Ajv from 'ajv';
 import { getEntityData } from '../../../model/entityData';
 import { getSchema, validate } from '../../../model/validate';
-import { extractPatch, getAllErrors, removeOldData } from '../../../utils/schema/dataUtils';
+import {
+  extractPatch,
+  getAllErrors,
+  hasAtPath,
+  removeOldData,
+  setUndefinedAtPath,
+} from '../../../utils/schema/dataUtils';
 import {
   insertDefaults,
   mergeDefaults,
@@ -30,6 +36,8 @@ export function clearYACStatus() {
   emitValidity();
   // A fresh editing session starts clean (called on both panes' init).
   clearEditDirty();
+  // Pending schema-forbidden removals are scoped to a single session.
+  editingState.strippedPaths.clear();
 }
 
 /** Mark the editing session as having unsaved user edits. */
@@ -260,6 +268,14 @@ export async function coreUpdate(
     data = extractPatch(editingState.initialData, data);
   }
 
+  // Re-emit session-stripped keys as `~undefined` so the additive YAML merge
+  // (`yaml.update` on `yaml_base`) actually unsets them. Without this, a default
+  // that appeared and disappeared (e.g. a toggled `yac_if`) leaves its now-illegal
+  // value lingering in the editor YAML and blocks the commit. `entityData` is a
+  // clone owned by `updateSchema`, so mutating `data` (which may alias it in
+  // create mode) never touches the live form state.
+  applyStrippedPaths(data, entityData);
+
   const valResp: Nullable<ValidateResponse> = await validate(
     name,
     data,
@@ -321,15 +337,40 @@ function handleDefaults(
 /**
  * Removes the data which is no longer allowed by the new schema.
  * This is necessary due to `yac_if`.
+ *
+ * Each removed key is also recorded in `editingState.strippedPaths` so the next
+ * patch can re-emit it as `~undefined` (see `applyStrippedPaths`), keeping the
+ * merged YAML in sync with the cleaned data.
  * @param valResp
  * @returns Whether the data object has been altered.
  */
 function cleanData(valResp: ValidateResponse): boolean {
-  return removeOldData(
+  const removed = removeOldData(
     valResp.data,
     getAllErrors(valResp.data, valResp.json_schema, getAJV(), (e: any) => {
       showError('Faulty YAC Config: Schema Error', e.toString());
       navigateToURL('/');
     }),
   );
+  for (const path of removed) {
+    editingState.strippedPaths.add(JSON.stringify(path));
+  }
+  return removed.length > 0;
+}
+
+/**
+ * Inject `~undefined` into the outgoing `patch` for every key that was stripped
+ * this session and is still absent from the current form `data`. A key that has
+ * reappeared (its `yac_if` condition is met again) is dropped from the pending
+ * set so its real value flows through the normal patch instead.
+ */
+function applyStrippedPaths(patch: { [key: string]: unknown }, data: any) {
+  for (const encoded of [...editingState.strippedPaths]) {
+    const path: string[] = JSON.parse(encoded);
+    if (hasAtPath(data, path)) {
+      editingState.strippedPaths.delete(encoded);
+    } else {
+      setUndefinedAtPath(patch, path);
+    }
+  }
 }

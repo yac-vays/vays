@@ -17,7 +17,7 @@ export interface AppConfig {
   /**
    * The editor layout shown the first time a user opens an entity. Once the user
    * changes it, their choice (persisted in local storage) takes precedence.
-   * Defaults to `form`.
+   * Defaults to `both` (form + YAML side by side).
    */
   defaultEditorLayout?: EditorLayout;
   oidcConf: {

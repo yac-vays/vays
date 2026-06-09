@@ -46,6 +46,22 @@ class EditControlState {
   public initialData: any = {};
 
   /**
+   * Paths (as JSON-encoded `string[]` segment arrays) of keys that the schema
+   * forbade and that `removeOldData` stripped from the form data this session —
+   * typically session-added `yac_if` defaults that became illegal when their
+   * condition flipped back to false.
+   *
+   * The form data is cleaned in place, but the YAML the backend writes is the
+   * additive merge of a patch into `yaml_base`; a key that is absent from both
+   * `initialData` and the current data produces no patch entry, so it would
+   * linger in the YAML and block the commit. We re-emit each of these paths as
+   * `~undefined` in the outgoing patch so the merge actually unsets them. An
+   * entry is dropped once its key reappears in the data (condition re-met).
+   * Reset at the start of every editing session (see `clearYACStatus`).
+   */
+  public strippedPaths: Set<string> = new Set();
+
+  /**
    * The most recently fetched YAML file content
    */
   public initialYAML: string = '';

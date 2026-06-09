@@ -62,7 +62,7 @@ class ILocalStorage {
    * The persisted editor layout, or `fallback` (the config default) when the
    * user has not chosen one yet.
    */
-  public getEditorLayout(fallback: EditorLayout = 'form'): EditorLayout {
+  public getEditorLayout(fallback: EditorLayout = 'both'): EditorLayout {
     return this.get('editorLayout') ?? fallback;
   }
 

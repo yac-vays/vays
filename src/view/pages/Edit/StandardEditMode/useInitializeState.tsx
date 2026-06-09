@@ -16,7 +16,7 @@ import { RequestEditContext } from '../../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import { Nullable } from '../../../../utils/types/typeUtils';
 import { ErrorObject } from 'ajv';
-import { locateBackendError } from '../../../../utils/schema/locatedErrors';
+import { footerErrorMessage, locateBackendError } from '../../../../utils/schema/locatedErrors';
 
 /**
  * Custom hook to initialize the form state for the edit page.
@@ -110,10 +110,11 @@ const useInitializeForm = (
             '(migration). Please fix the highlighted fields before saving.',
         );
       } else {
-        // Schema (field-level) errors carry a `data_loc` and are shown inside the
-        // form, so the footer is reserved for request-level errors (see the
-        // matching comment in StandardEditMode).
-        onYacError(resp.data_loc != undefined ? '' : resp.detail);
+        // Always explain a blocked commit in the (tab-independent) footer:
+        // inline control errors only render on the active categorization tab, so
+        // relying on them leaves the user with no visible reason when the error
+        // is on another tab. See the matching comment in StandardEditMode.
+        onYacError(footerErrorMessage(resp));
       }
       setLocalValidity(!migrationError);
       emitValidity();

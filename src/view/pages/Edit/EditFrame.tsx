@@ -78,7 +78,7 @@ const EditFrame = ({
   const isNarrow = (width ?? SIDE_BY_SIDE_MIN_WIDTH) < SIDE_BY_SIDE_MIN_WIDTH;
 
   // Layout + split ratio. The initial layout is the user's persisted choice, or
-  // the `defaultEditorLayout` from config (default form-only) for first-time use.
+  // the `defaultEditorLayout` from config (default side-by-side) for first-time use.
   const [layout, setLayoutState] = useState<EditorLayout>(() =>
     iLocalStorage.getEditorLayout(getCachedConfig()?.defaultEditorLayout),
   );
@@ -218,8 +218,6 @@ const EditFrame = ({
     }
   };
 
-  const paneHeight = window.outerHeight - 380;
-
   const chevronBtn =
     'rounded border border-stroke bg-white p-0.5 text-reducedfont enabled:hover:text-plainfont ' +
     'enabled:hover:border-primary disabled:opacity-30 disabled:cursor-default dark:bg-boxdark dark:border-meta-4';
@@ -229,7 +227,11 @@ const EditFrame = ({
       <div
         ref={containerRef}
         className="relative px-4 overflow-hidden md:px-8 flex flex-col"
-        style={{ minHeight: window.outerHeight - 320 }}
+        // Definite (not min-) height so the editor cannot grow past this envelope
+        // and push the footer/Commit button off-screen. The always-visible
+        // MetaInfoPanel and footer take their natural height; the panes flex to
+        // fill whatever is left (see the `grow min-h-0` panes container below).
+        style={{ height: window.outerHeight - 320 }}
       >
         {/* Always-visible Name + Actions. */}
         {!isReadOnly && (
@@ -242,7 +244,10 @@ const EditFrame = ({
           />
         )}
 
-        <div ref={panesRef} className="relative grow flex flex-row" style={{ height: paneHeight }}>
+        {/* `grow` fills the space left by the panel + footer; `min-h-0` lets the
+            panes shrink below their content so the form / Monaco scroll internally
+            instead of stretching the page. */}
+        <div ref={panesRef} className="relative grow min-h-0 flex flex-row">
           {isLoading && (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-white bg-opacity-70 dark:bg-boxdark dark:bg-opacity-70">
               <SubLoader action="Loading editor" />
@@ -325,7 +330,7 @@ const EditFrame = ({
         </div>
 
         <div
-          className="relative flex group w-full h-full mt-1 border-t"
+          className="relative flex group w-full shrink-0 mt-1 border-t"
           style={{ height: 55, borderColor: '#ddddddaa' }}
         >
           <div

@@ -4,27 +4,76 @@ import Ajv, { ErrorObject } from 'ajv';
 import _ from 'lodash';
 import { Nullable } from '../types/typeUtils';
 
+/**
+ * Delete every property the schema rejected as `additionalProperties` from
+ * `data` (in place) and return the path of each removed key (segment arrays,
+ * e.g. `['networking', 'extra']`). The caller uses these to re-emit the
+ * removals as `~undefined` in the outgoing patch (see `editingState.strippedPaths`).
+ */
 export function removeOldData(
   data: any,
   errors: ErrorObject<string, Record<string, any>, unknown>[] | null,
-): boolean {
-  if (errors == null) return false;
-  let hasAltered = false;
+): string[][] {
+  if (errors == null) return [];
+  const removed: string[][] = [];
   for (const error of errors) {
     if (error.keyword === 'additionalProperties') {
-      hasAltered = true;
       const key: string = error.params.additionalProperty;
       if (error.instancePath === '' && key in data) {
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete data[key];
+        removed.push([key]);
       } else if (error.instancePath !== '') {
         const l = (error.instancePath as string).split('/');
         l.shift();
         deepDelete(data, l, key);
+        removed.push([...l, key]);
       }
     }
   }
-  return hasAltered;
+  return removed;
+}
+
+/**
+ * Set `~undefined` (YAC's "unset this key" sentinel) at `path` inside the patch
+ * `payload`, creating any missing intermediate objects. Used to turn a removal
+ * detected by `removeOldData` into an explicit unset the additive YAML merge can
+ * act on.
+ *
+ * Array contents are sent wholesale by `extractPatch`, so removals nested inside
+ * an array are already covered by that replacement; we bail rather than
+ * materialise a (sparse) array here, which would corrupt the merge.
+ */
+export function setUndefinedAtPath(payload: any, path: string[]): void {
+  if (path.length === 0 || payload == null || typeof payload !== 'object') return;
+  let cur = payload;
+  for (let i = 0; i < path.length - 1; i++) {
+    if (Array.isArray(cur)) return;
+    const seg = path[i];
+    if (cur[seg] == null || typeof cur[seg] !== 'object') {
+      // Would need to step through an array index next — leave it to extractPatch.
+      // @ts-expect-error isNaN accepts non-number arguments
+      if (!isNaN(path[i + 1])) return;
+      cur[seg] = {};
+    }
+    cur = cur[seg];
+  }
+  if (Array.isArray(cur)) return;
+  cur[path[path.length - 1]] = '~undefined';
+}
+
+/**
+ * Whether `path` (segment array) resolves to an existing key in `data`.
+ */
+export function hasAtPath(data: any, path: string[]): boolean {
+  let cur = data;
+  for (const seg of path) {
+    if (cur == null || typeof cur !== 'object') return false;
+    const key: any = Array.isArray(cur) ? Number.parseInt(seg) : seg;
+    if (!(key in cur)) return false;
+    cur = cur[key];
+  }
+  return true;
 }
 
 /**

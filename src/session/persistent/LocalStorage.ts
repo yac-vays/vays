@@ -39,11 +39,11 @@ class ILocalStorage {
   }
 
   public setIsSidebarGroupExpanded(backendName: string, v: boolean): void {
-    this.set(`ìsSidebarGroupExpanded.${backendName}`, v);
+    this.set(`isSidebarGroupExpanded.${backendName}`, v);
   }
 
   public isSidebarGroupExpanded(backendName: string): boolean | undefined {
-    return this.get(`ìsSidebarGroupExpanded.${backendName}`);
+    return this.get(`isSidebarGroupExpanded.${backendName}`);
   }
 
   private set(key: string, v: any) {

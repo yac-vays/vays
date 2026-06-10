@@ -13,7 +13,7 @@ const InfoPanel = ({
   show: boolean;
   title?: string;
   description?: string;
-  isMarkdown: boolean;
+  isMarkdown?: boolean;
 }) => {
   const arrowRef = useRef(null);
   const { refs, floatingStyles, context, placement } = useFloating({

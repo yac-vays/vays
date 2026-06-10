@@ -170,7 +170,12 @@ export const TYPE_CHECK_ENTITY_OBJECT =
 export interface EntityObject {
   name: string;
   link: Nullable<string>;
-  options: object;
+  /**
+   * The per-entity values of the type's `options` columns, keyed by option
+   * name. Values come straight from the YAML, so they may be of any scalar
+   * or list type (or missing).
+   */
+  options: Record<string, unknown>;
   perms: string[];
 }
 

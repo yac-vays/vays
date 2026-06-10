@@ -12,7 +12,6 @@ import {
   withJsonFormsArrayLayoutProps,
   withTranslateProps,
 } from '@jsonforms/react';
-import _ from 'lodash';
 import React, { useCallback } from 'react';
 import { showModalMessage } from '../../../controller/global/modal';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
@@ -38,8 +37,6 @@ export const NestedObjectRenderer = ({
   translations,
   removeItems,
 }: ArrayLayoutProps & { translations: ArrayTranslations }) => {
-  if (!visible) return <></>;
-
   // No type checking since the data is only the lenght of the array.
   // But yea, it does give you a heads up if the type is not correct.
 
@@ -50,6 +47,9 @@ export const NestedObjectRenderer = ({
     },
     [addItem],
   );
+
+  // After all hooks: rules of hooks forbid an early return before them.
+  if (!visible) return <></>;
 
   const openDeleteDialog = (p: string, rowIndex: number) => () => {
     showModalMessage(
@@ -105,7 +105,17 @@ export default React.memo(
   withJsonFormsArrayLayoutProps(
     withTranslateProps(withArrayTranslationProps(NestedObjectRenderer)),
   ),
-  (prevProps, props) => _.isEqual(prevProps, props),
+  // Compare only the (dispatch-level) props that affect this layout instead of
+  // deep-comparing the whole JSON Forms context on every keystroke. Data
+  // changes inside rows propagate through the JSON Forms context regardless.
+  (prevProps, props) =>
+    prevProps.path === props.path &&
+    prevProps.enabled === props.enabled &&
+    Object.is(prevProps.visible, props.visible) &&
+    Object.is(prevProps.schema, props.schema) &&
+    Object.is(prevProps.uischema, props.uischema) &&
+    Object.is(prevProps.renderers, props.renderers) &&
+    Object.is(prevProps.cells, props.cells),
 );
 
 export const ArrayLayoutTester: RankedTester = rankWith(24, isObjectArrayWithNesting);

@@ -87,6 +87,7 @@ const EntityListRow = ({
               jsx.push(
                 // TODO: Make this a bit more elegant, avoid such hard coded flags.
                 <td
+                  key={`col-${i}`}
                   className="pl-8:first-child border-stroke opacity-40"
                   style={{ paddingRight: 40 }}
                   role="cell"
@@ -114,6 +115,7 @@ const EntityListRow = ({
             jsx.push(
               // TODO: Make this a bit more elegant, avoid such hard coded flags.
               <td
+                key={`col-${i}`}
                 className="pl-8:first-child border-stroke"
                 style={{ paddingRight: 40 }}
                 role="cell"
@@ -125,6 +127,7 @@ const EntityListRow = ({
           if (showLogs) {
             jsx.push(
               <td
+                key="logs"
                 className="pl-8:first-child border-stroke"
                 style={{ paddingRight: 40 }}
                 role="cell"
@@ -134,7 +137,7 @@ const EntityListRow = ({
             );
           }
           jsx.push(
-            <td className="border-stroke" style={{ width: '1px', whiteSpace: 'nowrap' }}>
+            <td key="actions" className="border-stroke" style={{ width: '1px', whiteSpace: 'nowrap' }}>
               {/* overflow:"hidden" */}
               {/* The buttons stacking up version...*/}
               {/* <div className="flex flex-col items-center" style={{width:"100%"}}>
@@ -145,7 +148,7 @@ const EntityListRow = ({
                   const jsx: ReactNode[] = [];
                   let isLeft = true;
                   for (const act of actionPair.favActs) {
-                    jsx.push(<ActionButton actArgs={act} isLeft={isLeft} />);
+                    jsx.push(<ActionButton key={act.action.name} actArgs={act} isLeft={isLeft} />);
                     isLeft = false;
                     // TODO: using pseudoclass?
                   }

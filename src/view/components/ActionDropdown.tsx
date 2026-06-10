@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   positionDropdownElement,
   registerTableScrollContainerEvent,
+  unregisterTableScrollContainerEvent,
 } from '../../controller/local/Overview/list';
 import { hashCode } from '../../utils/hashUtils';
 import { GUIActionDropdownArg } from '../../utils/types/internal/actions';
@@ -51,19 +52,15 @@ const ActionDropdown = ({ actions, entityName }: ActionDropdownProps) => {
   useOutsideClick(dropdownRef, () => {
     setOpen(false);
   });
-  let tick = false;
   useEffect(() => {
-    const update = () => {
-      positionDropdownElement(dropdownContentRef, dropdownHeaderRef);
-      if (tick) {
-        window.requestAnimationFrame(update);
-        tick = false;
-      } else {
-        tick = true;
-      }
+    const close = () => setOpen(false);
+    const reposition = () => positionDropdownElement(dropdownContentRef, dropdownHeaderRef);
+    registerTableScrollContainerEvent(close);
+    window.addEventListener('resize', reposition);
+    return () => {
+      unregisterTableScrollContainerEvent(close);
+      window.removeEventListener('resize', reposition);
     };
-    window.requestAnimationFrame(update);
-    registerTableScrollContainerEvent(() => setOpen(false));
   }, []);
 
   // Reposition once the menu is actually visible: while hidden its width is 0,
@@ -73,10 +70,6 @@ const ActionDropdown = ({ actions, entityName }: ActionDropdownProps) => {
       positionDropdownElement(dropdownContentRef, dropdownHeaderRef);
     }
   }, [open]);
-
-  window.addEventListener('resize', () =>
-    positionDropdownElement(dropdownContentRef, dropdownHeaderRef),
-  );
 
   return (
     <>

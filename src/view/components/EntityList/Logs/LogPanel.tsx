@@ -13,9 +13,10 @@ const LogPanel = ({ logList, title }: { logList: EntityLog[]; title: string }) =
         <div className="space-y-4">
           {(function () {
             const jsx = [];
+            let i = 0;
             for (const logEntry of logList) {
               jsx.push(
-                <div className="flex">
+                <div key={i++} className="flex">
                   <div className="text-gray-500 w-32">
                     <span className="block text-sm opacity-70">
                       {logEntry.time

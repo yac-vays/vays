@@ -28,6 +28,7 @@ import editorPlugins, { editorSetupPlugins } from './EditorPlugins';
 import { getUpdateCallback, setupMonacoYAMLPlugin } from './utils/setup.js';
 
 import { startExpertModeSession } from '../../../../controller/local/EditController/ExpertMode/index.js';
+import { disposeErrorMarkersListener } from './EditorPlugins/errorDecoration';
 import './glyph.css';
 import { getEditor, getModel } from './utils/factory.js';
 
@@ -80,6 +81,14 @@ export const Editor = ({
       })().finally(() => {
         setIsSettingUp(false);
       });
+
+      // Dispose the editor (and the global markers listener registered by the
+      // error-decoration plugin) on teardown; otherwise every navigation into
+      // the edit view leaks a live editor instance.
+      return () => {
+        disposeErrorMarkersListener();
+        ed.dispose();
+      };
     }
   }, [
     requestEditContext.mode === 'change' ? requestEditContext.entityName : '',

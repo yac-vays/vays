@@ -92,6 +92,7 @@ const DropdownNotification = () => {
                   for (const elt of content) {
                     jsx.push(
                       <SchemaWarningMessage
+                        key={elt.msgKey}
                         priority={elt.prop.priority}
                         title={elt.prop.title}
                         affectedKeys={elt.prop.affectedKeys}

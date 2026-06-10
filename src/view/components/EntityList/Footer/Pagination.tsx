@@ -98,9 +98,12 @@ export const EntityListPagination = ({
           buttonLayout.push([`${maxPages}`, PagingButtonType.SECONDARY, pageSwitch(maxPages)]);
         }
 
-        let jsx: ReactNode[] = [];
-        for (let elt of buttonLayout) {
-          jsx.push(<PagingButton content={elt[0]} buttonType={elt[1]} callback={elt[2]} />);
+        const jsx: ReactNode[] = [];
+        let i = 0;
+        for (const elt of buttonLayout) {
+          jsx.push(
+            <PagingButton key={i++} content={elt[0]} buttonType={elt[1]} callback={elt[2]} />,
+          );
         }
 
         return jsx;

@@ -44,7 +44,7 @@ function Accordion(props: {
             </div>
           </div>
         </div>
-        <p {...getCollapseProps()}>{props.children}</p>
+        <div {...getCollapseProps()}>{props.children}</div>
       </div>
     </>
   );

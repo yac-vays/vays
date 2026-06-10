@@ -62,6 +62,14 @@ spec:
             timeoutSeconds: 5
             failureThreshold: 2
             periodSeconds: 300
+          readinessProbe:
+            # Static nginx - cheap to probe frequently
+            httpGet:
+              path: /
+              port: http
+            timeoutSeconds: 2
+            failureThreshold: 3
+            periodSeconds: 10
           startupProbe:
             httpGet:
               path: /config.json

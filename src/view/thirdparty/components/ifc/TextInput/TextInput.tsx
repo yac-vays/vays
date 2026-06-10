@@ -36,10 +36,12 @@ const TextInput = ({
   }
 
   /**
-   * caching fix
+   * caching fix — but never overwrite while the user is typing in this input:
+   * a stale async validation response must not clobber in-progress edits.
    */
   useEffect(() => {
     if (!inputRef.current) return;
+    if (document.activeElement === inputRef.current) return;
     inputRef.current.value = defValue;
   }, [defValue]);
 

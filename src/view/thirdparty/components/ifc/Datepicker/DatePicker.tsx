@@ -1,5 +1,5 @@
 import flatpickr from 'flatpickr';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { DateRange } from '../../../../../utils/types/internal/date';
 
 //import Language from "flatpickr/dist/l10n/de.js";
@@ -43,10 +43,11 @@ const DatePicker = ({
   disableRange,
 }: DatePickerProps): JSX.Element => {
   const altFmt = format == undefined || format === '' ? 'D M j, Y' : format;
+  const instanceRef = useRef<flatpickr.Instance | null>(null);
 
   useEffect(() => {
     // Init flatpickr
-    flatpickr(`.form-datepicker-${id}`, {
+    const inst = flatpickr(`.form-datepicker-${id}`, {
       defaultDate: data,
       allowInvalidPreload: true,
       mode: 'single',
@@ -63,7 +64,23 @@ const DatePicker = ({
       nextArrow:
         '<svg className="fill-current" width="7" height="11" viewBox="0 0 7 11"><path d="M1.4 10.8L0 9.4l4-4-4-4L1.4 0l5.4 5.4z" /></svg>',
     });
-  }, [enableRange, disableRange]);
+    instanceRef.current = Array.isArray(inst) ? (inst[0] ?? null) : inst;
+    // Destroy on re-init/unmount: with `altInput` every init injects another
+    // alt input element, so undisposed instances leak DOM nodes + listeners.
+    return () => {
+      instanceRef.current?.destroy();
+      instanceRef.current = null;
+    };
+  }, [enableRange, disableRange, altFmt, id]);
+
+  // Propagate external `data` changes into the picker (without re-initializing
+  // it and without firing onChange back).
+  useEffect(() => {
+    const inst = instanceRef.current;
+    if (!inst) return;
+    if (data) inst.setDate(data, false);
+    else inst.clear(false);
+  }, [data]);
 
   return (
     <>

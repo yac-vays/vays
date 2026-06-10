@@ -73,7 +73,22 @@ const withContextToCardRender =
 const withCustomProps = (Component: ComponentType<CardRendererProps>) => {
   return withJsonFormsContext(
     withContextToCardRender(
-      React.memo(Component, (prevProps, props) => _.isEqual(prevProps, props)),
+      React.memo(
+        Component,
+        // Compare only the row-relevant props instead of deep-comparing the
+        // whole prop tree on every keystroke. Data changes inside the row
+        // reach the dispatched controls through the JSON Forms context (and
+        // the title via `useJsonForms`) regardless of this memo.
+        (prevProps, props) =>
+          prevProps.path === props.path &&
+          prevProps.index === props.index &&
+          prevProps.enabled === props.enabled &&
+          Object.is(prevProps.schema, props.schema) &&
+          Object.is(prevProps.uischema, props.uischema) &&
+          Object.is(prevProps.renderers, props.renderers) &&
+          Object.is(prevProps.cells, props.cells) &&
+          Object.is(prevProps.onRemove, props.onRemove),
+      ),
     ),
   );
 };

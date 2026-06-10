@@ -1,6 +1,5 @@
 import { showError } from '../controller/global/notification';
-import { handleAuthFailed } from '../session/login/tokenHandling';
-import { hasAuthFailed, sendRequest } from '../utils/authRequest';
+import { sendRequest } from '../utils/authRequest';
 import { logError } from '../utils/logger';
 import { EntityObject, TYPE_CHECK_ENTITY_OBJECT } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
@@ -8,11 +7,15 @@ import { Nullable } from '../utils/types/typeUtils';
 import { joinUrl } from '../utils/urlUtils';
 import VAYS_CACHE from './caching';
 import { ENTITY_LIST_CACHE_KEY } from './caching/cachekeys';
+import { handleYacResponse } from './utils/handleYacResponse';
 
 import { typeCheck } from 'type-check';
 
+/** Hard upper bound on the number of entities fetched per list request. */
+const ENTITY_LIST_LIMIT = 10000;
+
 function getListURL(yacURL: string, entityTypeName: string) {
-  return joinUrl(yacURL, `/entity/${entityTypeName}?limit=10000`);
+  return joinUrl(yacURL, `/entity/${entityTypeName}?limit=${ENTITY_LIST_LIMIT}`);
 }
 
 export function invalidateEntityListCache(
@@ -69,25 +72,24 @@ export async function getEntityList(requestContext: RequestContext): Promise<Ent
     ENTITY_LIST_CACHE_KEY,
   );
 
-  if (resp == null) {
-    return [];
-  } else if (resp.status == 200) {
-    const res = await resp.json();
-    // TODO: Do not ignore the hash here
-    return typeCheckEntityList(res.list, requestContext.backendObject.title);
-  } else if (resp.status >= 500) {
-    const ans = await resp.json();
-    showError(
-      `${requestContext.backendObject.title}: ` +
-        (ans.title ??
-          `Could not fetch ${requestContext.entityTypeName} list (Status ${resp.status})`),
-      ans.message ?? 'Waking up the admin, please stand by...',
-    );
-    return [];
-  } else if (hasAuthFailed(resp.status)) {
-    const ans = await resp.json();
-    handleAuthFailed(ans.detail, ans.message);
-  }
+  const result = await handleYacResponse(resp, {
+    backendTitle: requestContext.backendObject.title,
+    errorTitle: `Could not fetch ${requestContext.entityTypeName} list`,
+    errorMessage: 'Waking up the admin, please stand by...',
+  });
 
-  return [];
+  if (result.kind !== 'success') return [];
+
+  const res = await result.resp.json();
+  // TODO: Do not ignore the hash here
+  const list = typeCheckEntityList(res.list, requestContext.backendObject.title);
+  if (list.length >= ENTITY_LIST_LIMIT) {
+    // The backend truncates at the requested limit, so the list is most likely
+    // incomplete — tell the user instead of silently dropping the rest.
+    showError(
+      'Entity list truncated',
+      `Only the first ${ENTITY_LIST_LIMIT} entities of ${requestContext.entityTypeName} are shown.`,
+    );
+  }
+  return list;
 }

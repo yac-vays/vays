@@ -1,16 +1,17 @@
 import { showError, showSuccess } from '../controller/global/notification';
 import { actionNames2URLQuery } from '../utils/actionUtils';
-import { hasAuthFailed, sendRequest } from '../utils/authRequest';
+import { sendRequest } from '../utils/authRequest';
 import { RequestEditContext } from '../utils/types/internal/request';
 import { joinUrl } from '../utils/urlUtils';
+import { handleYacResponse } from './utils/handleYacResponse';
 
 /**
  * @param name
- * @param patch
+ * @param yaml
+ * @param yaml_old
  * @param requestEditContext
  * @returns
  */
-
 export async function putYAMLEntity(
   name: string,
   yaml: string,
@@ -35,32 +36,26 @@ export async function putYAMLEntity(
     JSON.stringify({ name: name, yaml_old: yaml_old, yaml_new: yaml }),
   );
 
-  // Network error
-  if (resp == null) {
-    return false;
-  }
+  const result = await handleYacResponse(resp, {
+    backendTitle: requestEditContext.rc.backendObject?.title,
+    errorTitle: `Cannot update ${name}`,
+    errorMessage: 'Please contact your admin on this issue. ',
+    serverErrorSuffix: 'The data you entered is cached for now.',
+  });
 
-  if (resp.status == 200) {
+  if (result.kind === 'success') {
     showSuccess(`Modified ${name} successfully!`, 'The entity was successfully modified.');
     return true;
-  } else if (resp.status == 422) {
+  } else if (result.kind === 'invalid-request') {
     showError(
       'Frontend Error',
       'Invalid specification used, cannot talk to YAC servers. Please report ID-NEW-SD-01.',
     );
-  } else if (resp.status >= 500) {
-    const ans = await resp.json();
+  } else if (result.kind === 'client-error') {
     showError(
-      `${requestEditContext.rc.backendObject?.title}: ` +
-        (ans.title ?? `Cannot update ${name} (Status ${resp.status})`),
-      (ans.message ?? 'Please contact your admin on this issue. ') +
-        'The data you entered is cached for now.',
+      `Client Error (Status ${result.status}) ${result.body.title}`,
+      result.body.message ?? '',
     );
-  } else if (hasAuthFailed(resp.status)) {
-    // TODO
-  } else if (resp.status >= 400) {
-    const jresp = await resp.json();
-    showError(`Client Error (Status ${resp.status})`, jresp['detail']);
   }
 
   return false;

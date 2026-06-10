@@ -67,7 +67,6 @@ export interface AppConfig {
   oidcConf: {
     server: string;
     clientID: string;
-    redirectURI: string;
   };
   backends: YACBackend[];
 } /**

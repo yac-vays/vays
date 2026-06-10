@@ -22,7 +22,7 @@ export function isOfTypeWeak(
   if (typeof type === 'string') {
     return typeof data === type;
   } else if (Array.isArray(type)) {
-    return type.indexOf(typeof data);
+    return type.indexOf(typeof data) !== -1;
   }
   return true; // if no constraints then okay.
 }

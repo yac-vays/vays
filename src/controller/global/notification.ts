@@ -10,6 +10,8 @@ export function registerErrorNotifyCallback(callback: ToastCallback) {
   for (const oldMsg of notifyCtrlState.callbackBuffer) {
     notifyCtrlState.notifyCallback(ToastMode.ERROR, oldMsg[0], oldMsg[1]);
   }
+  // Drop the replayed messages so a later remount does not re-toast old errors.
+  notifyCtrlState.callbackBuffer = [];
 }
 
 /**

@@ -5,6 +5,7 @@ import {
   OPERATIONS,
   OPERATIONS_META,
 } from '../../../model/action';
+import { logError } from '../../../utils/logger';
 import { ActionDecl, EntityObject, FavOpObject } from '../../../utils/types/api';
 import {
   ActionsColumnResults,
@@ -173,11 +174,14 @@ function isActionFavorite(
 }
 
 function __alertBadAction(name: string, yacURL: string | null | undefined) {
-  console.log(`ERROR: ${name} is not defined in the Entity Type Definition.
+  logError(
+    `${name} is not defined in the Entity Type Definition.
     This is a configuration errror on the side of the YAC backend.
-    Please contact the maintainer of the corresponding backend, 
+    Please contact the maintainer of the corresponding backend,
     ${yacURL} in this case. Thank you very much and sorry
-    for any inconveniences caused by this.`);
+    for any inconveniences caused by this.`,
+    '__alertBadAction',
+  );
 }
 
 /**

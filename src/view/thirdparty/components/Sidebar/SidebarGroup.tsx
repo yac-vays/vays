@@ -23,16 +23,23 @@ const SidebarGroup = ({ yacBackendObject, isOpen }: SidebarLinkGroupProps) => {
   // https://codedamn.com/news/reactjs/handle-async-functions-with-ease
   // Really annoying, but this is what JavaScript has done to us...
   useEffect(() => {
+    let cancelled = false;
     async function loadingEntityTypes() {
       if (window.location.pathname.startsWith('/oauth2-redirect')) {
-        while (!userIsLoggedIn()) {
+        // Wait for the login to complete, but bail out if the component is
+        // unmounted or the login never finishes (cap at ~60s).
+        for (let i = 0; !userIsLoggedIn(); i++) {
+          if (cancelled || i >= 120) return;
           await new Promise((res) => setTimeout(res, 500));
         }
       }
       const data = await getEntityTypes(yacBackendObject);
-      setEntityList(data);
+      if (!cancelled) setEntityList(data);
     }
     loadingEntityTypes();
+    return () => {
+      cancelled = true;
+    };
   }, [yacBackendObject]);
 
   const handleClick = () => {
@@ -61,10 +68,10 @@ const SidebarGroup = ({ yacBackendObject, isOpen }: SidebarLinkGroupProps) => {
         {/* <!-- Dropdown Menu Start --> */}
         <div className={`translate transform overflow-hidden ${!open && 'hidden'}`}>
           {(function () {
-            let jsx: React.ReactNode[] = [];
-            let etList: EntityTypeDecl[] = entityList;
+            const jsx: React.ReactNode[] = [];
+            const etList: EntityTypeDecl[] = entityList;
             let i: number = 0;
-            for (let et of etList) {
+            for (const et of etList) {
               jsx.push(
                 <SidebarGroupEntry
                   entityDecl={et}

@@ -15,8 +15,8 @@ const Checkbox = ({
   onChange(value: boolean): void;
   minified?: boolean;
   description?: string;
-  disabled: boolean;
-  isMarkdownDesc: boolean;
+  disabled?: boolean;
+  isMarkdownDesc?: boolean;
 }) => {
   const [isChecked, setIsChecked] = useState<boolean>(initValue);
 

@@ -7,16 +7,18 @@ import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTester
 import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
 
 export const ListAsStringRenderer = (props: ControlProps) => {
-  /// data check
-  if (!isOfTypeWeak(props.data, 'string')) {
-    props.errors = reportBadData(props.data);
-    props.data = undefined;
+  /// data check (derived locally — props are shared and must not be mutated)
+  let data = props.data;
+  let errors = props.errors;
+  if (!isOfTypeWeak(data, 'string')) {
+    errors = reportBadData(data);
+    data = undefined;
   }
   ///
 
   const sep = props.uischema.options?.renderer_options?.separator ?? ',';
   let list: string[];
-  if (props.data) list = (props.data as string).split(sep);
+  if (data) list = (data as string).split(sep);
   else list = [];
 
   const handleChange = (path: string, v: string[]) => {
@@ -32,7 +34,7 @@ export const ListAsStringRenderer = (props: ControlProps) => {
           onClick={() => {}}
           description={props.description ?? ''}
           required={props.required}
-          errors={props.errors}
+          errors={errors}
         />
         {list.length > 0 ? (
           <p>
@@ -41,7 +43,7 @@ export const ListAsStringRenderer = (props: ControlProps) => {
         ) : (
           <></>
         )}
-        <ErrorRing errors={props.errors}>
+        <ErrorRing errors={errors}>
           <LargeStringList
             handleChange={handleChange}
             path={props.path}

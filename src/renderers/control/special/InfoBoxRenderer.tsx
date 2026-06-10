@@ -1,7 +1,7 @@
-import { ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
+import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
-import { isCustomRenderer } from '../../utils/customTesterUtils';
+import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
 
 export const InfoBoxControl = (props: ControlProps) => {
   return (
@@ -18,7 +18,7 @@ export const InfoBoxControl = (props: ControlProps) => {
 };
 
 export const InfoBoxTester: RankedTester = rankWith(
-  21,
-  or(isStringControl, isCustomRenderer('info_box')),
+  22,
+  and(or(isStringControl, isUntypedStringInput), isCustomRenderer('info_box')),
 );
 export default withJsonFormsControlProps(InfoBoxControl);

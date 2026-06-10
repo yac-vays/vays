@@ -48,7 +48,7 @@ class FormsErrorBoundary extends React.Component<
     );
     console.error(
       'EDIT VIEW CRITICAL: Forms could not be rendererd. The error log is \n\n' +
-        info.componentStack.toString(),
+        (info.componentStack ?? '<no component stack>'),
       'JSON Schema; Edit View',
     );
   }

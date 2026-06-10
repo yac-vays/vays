@@ -26,8 +26,9 @@ export function removeOldData(
       } else if (error.instancePath !== '') {
         const l = (error.instancePath as string).split('/');
         l.shift();
-        deepDelete(data, l, key);
-        removed.push([...l, key]);
+        // Only report paths that were actually deleted; otherwise the caller
+        // would keep re-validating data that never changes.
+        if (deepDelete(data, l, key)) removed.push([...l, key]);
       }
     }
   }
@@ -82,12 +83,12 @@ export function hasAtPath(data: any, path: string[]): boolean {
  * @param data The data object. Will be modified in place.
  * @param instancePath A list of subkeys to access, to get at the target.
  * @param key The target name. Can be null, in this case, the key is extracted from the instancePath.
- * @returns
+ * @returns Whether something was actually deleted.
  */
-export function deepDelete(data: any, instancePath: string[], key: Nullable<string>) {
+export function deepDelete(data: any, instancePath: string[], key: Nullable<string>): boolean {
   if (key == null) {
     if (instancePath.length > 0) key = instancePath.pop() as string;
-    else return;
+    else return false;
   }
   let subdata = data;
   let elt: string | number;
@@ -97,19 +98,25 @@ export function deepDelete(data: any, instancePath: string[], key: Nullable<stri
     //@ts-expect-error isNaN can indeed be used with nonnumber arguments
     if (!isNaN(pth) && Array.isArray(subdata)) {
       elt = Number.parseInt(elt);
-    } else if (!(elt in data)) {
-      return;
+    } else if (subdata == null || typeof subdata !== 'object' || !(elt in subdata)) {
+      return false;
     }
 
-    subdata = data[elt];
+    subdata = subdata[elt];
   }
   //@ts-expect-error isNaN can indeed be used with nonnumber arguments
   if (Array.isArray(subdata) && !isNaN(key)) {
-    if (subdata.length >= Number.parseInt(key)) subdata.splice(Number.parseInt(key), 1);
-  } else if (key in subdata) {
+    const idx = Number.parseInt(key);
+    if (subdata.length > idx) {
+      subdata.splice(idx, 1);
+      return true;
+    }
+  } else if (subdata != null && typeof subdata === 'object' && key in subdata) {
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete subdata[key];
+    return true;
   }
+  return false;
 }
 
 /**
@@ -131,7 +138,8 @@ export function extractPatch(oldData: any, newData: any) {
     } else if (
       typeof oldData[key] === 'object' &&
       typeof newData[key] === 'object' &&
-      oldData[key] != null
+      oldData[key] != null &&
+      newData[key] != null
     ) {
       patch[key] = extractPatch(oldData[key], newData[key]);
     } else if (!_.isEqual(oldData[key], newData[key])) {

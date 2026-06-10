@@ -8,7 +8,11 @@ import {
 } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { debounce } from 'lodash';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
+import {
+  deregisterDebouncedCommit,
+  registerDebouncedCommit,
+} from '../../controller/local/EditController/debounceRegistry';
 import ErrorRing from '../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import NumberInput from '../../view/thirdparty/components/ifc/NumberInput/NumberInput';
@@ -32,11 +36,18 @@ export const NumberControl = ({
   uischema,
   errors,
 }: ControlProps) => {
-  if (!visible) return <></>;
   const onChange = useCallback(
     debounce((e: React.ChangeEvent<HTMLInputElement>) => handleChange(path, eventToValue(e)), 800),
     [path],
   );
+
+  // Let the commit path flush a still-pending debounced edit before saving.
+  useEffect(() => {
+    registerDebouncedCommit(onChange);
+    return () => deregisterDebouncedCommit(onChange);
+  }, [onChange]);
+
+  if (!visible) return <></>;
 
   ///// data check
   if (!isOfTypeWeak(data, 'number')) {

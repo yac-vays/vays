@@ -2,7 +2,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import { createContext, useContext } from 'react';
 import SuccessNotification from './SuccessNotification';
-import { Id, toast, ToastContainer } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import ErrorNotification from './ErrorNotification';
 import { hashCode } from '../../../utils/hashUtils';
 
@@ -17,7 +17,7 @@ export const enum ToastMode {
 export type ToastCallback = (mode: ToastMode, title: string, detail: string) => void;
 
 // create context
-const ToastContext: React.Context<any> = createContext<any>(undefined);
+const ToastContext = createContext<{ showToast: ToastCallback } | undefined>(undefined);
 
 // wrap context provider to add functionality
 export const ToastContextProvider = ({ children }: { children: React.ReactNode }) => {

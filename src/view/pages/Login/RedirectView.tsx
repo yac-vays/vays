@@ -24,25 +24,6 @@ const RedirectView = ({ appconf }: { appconf: AppConfig }) => {
       }
     })();
   }, []);
-  /************
-   *   useLayoutEffect(() => {
-    finalizeAuthentication(appconf).then((authSuccessful) => {
-      if (!iSessionStorage.isLoggedIn() && !authSuccessful) {
-        navigateToURL('/error-page');
-        setUserLoggedIn(false);
-        return;
-      }
-      setUserLoggedIn(true);
-
-      const mostRecentURL = iSessionStorage.getMostRecentURL();
-      if (mostRecentURL) {
-        navigateToURL(mostRecentURL);
-      } else {
-        getDefaultURL(getConfig().backends ?? []).then((url) => navigateToURL(url));
-      }
-    });
-  }, []);
-   */
 
   return <Loader />;
 };

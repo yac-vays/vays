@@ -2,7 +2,7 @@ import { JsonFormsCore } from '@jsonforms/core';
 import { materialCells, materialRenderers } from '@jsonforms/material-renderers';
 import { JsonForms } from '@jsonforms/react';
 import _ from 'lodash';
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 import FormsErrorBoundary from './ErrorBoundary';
 
@@ -81,15 +81,11 @@ const StandardEditMode = memo(
       formContainer,
     } = useInitializeForm(requestEditContext, setEditErrorMsg);
 
-    let isFormProcessing = false;
-    const toggleBlurForm = (targetValue: boolean) => {
-      isFormProcessing = !isFormProcessing;
-
-      if (targetValue !== isFormProcessing) return;
-
-      formContainer.current?.classList.toggle('opacity-50');
-      formContainer.current?.classList.toggle('pointer-events-none');
-    };
+    // Number of in-flight validations that should blur (dim + lock) the form.
+    // State-driven (and counted) so the dimming is idempotent and survives
+    // re-renders, unlike the former per-render closure flag + classList.toggle.
+    const [pendingValidations, setPendingValidations] = useState<number>(0);
+    const formBlurred = pendingValidations > 0;
 
     // Render a (canonical) validation response into the form. Shared between the
     // user's own onChange flow and the cross-pane writer that the YAML editor
@@ -146,13 +142,11 @@ const StandardEditMode = memo(
       setActivePane('form');
       setEditDirty();
 
-      if (!IsCurrentlyEditingString()) {
-        toggleBlurForm(true);
+      const didBlur = !IsCurrentlyEditingString();
+      if (didBlur) {
+        setPendingValidations((c) => c + 1);
       }
 
-      console.log(
-        'OnChange Handler Start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>',
-      );
       setLocalData(data);
 
       // Reflect the form's own (JSON Forms) validation immediately for snappy
@@ -165,11 +159,13 @@ const StandardEditMode = memo(
       // Merge this form change into the YAML the user currently has in the editor
       // (preserving its comments/formatting) rather than regenerating from data.
       updateSchema(data, requestEditContext, true, true, null, getEntityYAML()).then((resp) => {
+        if (didBlur) {
+          setPendingValidations((c) => Math.max(0, c - 1));
+        }
         // A newer edit (in either pane) has since been dispatched; drop this
         // stale response so it cannot clobber the latest state.
         if (isStaleValidation(seq)) {
           setIsValidating(false);
-          toggleBlurForm(false);
           setIsCurrentlyEditingString(false);
           return;
         }
@@ -181,16 +177,7 @@ const StandardEditMode = memo(
           applyCanonical('form', resp);
         }
         setIsValidating(false);
-        // if (IsCurrentlyEditingString()) {
-        //   //formContainer.current?.classList.toggle("opacity-80");
-        // } else {
-        // }
-        toggleBlurForm(false);
         setIsCurrentlyEditingString(false);
-
-        console.log(
-          'OnChange Handler Done >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>',
-        );
       });
     };
 
@@ -199,7 +186,12 @@ const StandardEditMode = memo(
         <div className="relative w-full h-full">
           {/* Fill the (flex-sized) pane and scroll internally, so a tall form
               never grows the page — mirrors the Monaco pane's `h-full`. */}
-          <div ref={formContainer} className="h-full overflow-y-auto duration-300">
+          <div
+            ref={formContainer}
+            className={`h-full overflow-y-auto duration-300 ${
+              formBlurred ? 'opacity-50 pointer-events-none' : ''
+            }`}
+          >
             {isEmpty ? (
               <div className="w-full h-full items-center align-center">
                 <NoDataIndicator />

@@ -15,9 +15,9 @@ const withContextToControlProps = (
   function WithContextToControlProps({ ctx, props }: JsonFormsStateContext & ControlProps) {
     const controlProps = ctxToControlProps(ctx, props);
     const arrayLayoutProps = ctxToArrayLayoutProps(ctx, props);
-    controlProps.errors = new Set(arrayLayoutProps.errors.split('\n'))
-      .values()
-      .reduce((u, v) => u + '\n' + v);
+    // Dedupe error lines. (Spread the Set: `Iterator.prototype.reduce` is
+    // ES2025 and not available in older Safari/Firefox.)
+    controlProps.errors = [...new Set(arrayLayoutProps.errors.split('\n'))].join('\n');
     const dispatchProps = ctxDispatchToControlProps(ctx.dispatch);
     return <Component {...props} {...controlProps} {...dispatchProps} />;
   };

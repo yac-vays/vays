@@ -1,4 +1,4 @@
-import { lazy, LazyExoticComponent, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 
 import HomeView from './view/pages/Login/HomeView';
@@ -16,20 +16,15 @@ import { ModalContextProvider } from './view/components/Modal/ModalContext';
 import { ToastContextProvider } from './view/components/ToastNotification/ToastContext';
 import DevInfo from './view/pages/DevInfo';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let EditView: React.FC<any>;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let Overview: LazyExoticComponent<React.FC<any>> | React.FC<any> = lazy(() =>
-  import('./view/pages/Bundles/LogRouteBundle').then((module) => {
-    EditView = module.EditView;
-    return { default: module.Overview };
-  }),
+const Overview = lazy(() =>
+  import('./view/pages/Bundles/LogRouteBundle').then((module) => ({
+    default: module.Overview,
+  })),
 );
-EditView = lazy(() =>
-  import('./view/pages/Bundles/LogRouteBundle').then((module) => {
-    Overview = module.Overview;
-    return { default: module.EditView };
-  }),
+const EditView = lazy(() =>
+  import('./view/pages/Bundles/LogRouteBundle').then((module) => ({
+    default: module.EditView,
+  })),
 );
 const RedirectView = lazy(() =>
   import('./view/pages/Bundles/LogRouteBundle').then((module) => ({
@@ -68,7 +63,10 @@ function App(): JSX.Element {
 
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  registerNavigationHook(navigate);
+
+  useEffect(() => {
+    registerNavigationHook(navigate);
+  }, [navigate]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -87,10 +85,6 @@ function App(): JSX.Element {
       setColors(conf);
       setFavicon(conf);
       setLoading(false);
-      // setTimeout(() => {
-      //   driverObj.drive();
-      // }, 2000);
-      // window.onload = () => driverObj.drive();
     })();
   }, []);
 
@@ -177,10 +171,8 @@ function App(): JSX.Element {
                     </>
                   }
                 />
-                {/* <Route path="*" element={<Navigate to="/error/not-found" replace />} /> */}
               </Routes>
             </DefaultLayout>
-            {/* <Tour /> */}
           </ModalContextProvider>
         )}
       </Suspense>

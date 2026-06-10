@@ -2,15 +2,26 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 import { RequestEditContext } from '../../../../../utils/types/internal/request';
 
+// The markers listener is global (monaco-level, not editor-level); keep the
+// IDisposable so the editor teardown can dispose it (see Editor.tsx cleanup).
+let markersListener: monaco.IDisposable | null = null;
+
+export function disposeErrorMarkersListener() {
+  markersListener?.dispose();
+  markersListener = null;
+}
+
 export default async function editorErrorDecoration(
   ed: monaco.editor.IStandaloneCodeEditor,
   _: RequestEditContext,
   reInvoked: boolean = false,
 ) {
   if (reInvoked) return;
+  // Never stack listeners: the previous editor's listener (if any) is gone.
+  disposeErrorMarkersListener();
   const decorations = ed.createDecorationsCollection([]);
 
-  monaco.editor.onDidChangeMarkers(([resource]) => {
+  markersListener = monaco.editor.onDidChangeMarkers(([resource]) => {
     const markers = monaco.editor.getModelMarkers({ resource });
     const decs: monaco.editor.IModelDeltaDecoration[] = [];
     for (const marker of markers) {

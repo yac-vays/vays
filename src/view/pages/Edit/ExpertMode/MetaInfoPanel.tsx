@@ -34,10 +34,12 @@ const MetaInfoPanel = ({
     requestEditContext.rc.accessedEntityType?.actions ?? [],
     requestEditContext.mode,
   );
-  const [actionActive, _setActionActive] = useState<boolean[]>(acts.map(() => false));
-  const setActionActive = (v: boolean[]) => {
-    setActivatedActions(acts.filter((_, idx) => v[idx]));
-    _setActionActive(v);
+  const [actionActive, setActionActive] = useState<boolean[]>(acts.map(() => false));
+  const setActionActiveAt = (idx: number, value: boolean) => {
+    // Never mutate the existing state array; derive a new one.
+    const next = actionActive.map((x, i) => (i === idx ? value : x));
+    setActivatedActions(acts.filter((_, i) => next[i]));
+    setActionActive(next);
   };
 
   // Track the current name so we can surface a "missing / invalid" error the same
@@ -97,17 +99,17 @@ const MetaInfoPanel = ({
         )}
         <div className="flex flex-col">
           {(function () {
-            const jsx = acts.map((v, idx) => {
+            const jsx = acts.map((act, idx) => {
               return (
                 <Checkbox
-                  title={v.title}
+                  key={act.name ?? idx}
+                  title={act.title}
                   initValue={false}
-                  onChange={(v) => {
-                    actionActive[idx] = v;
-                    setActionActive(actionActive);
+                  onChange={(checked) => {
+                    setActionActiveAt(idx, checked);
                     updateCallback();
                   }}
-                  description={v.description}
+                  description={act.description}
                 />
               );
             });

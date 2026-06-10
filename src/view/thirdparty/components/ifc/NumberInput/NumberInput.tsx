@@ -42,9 +42,12 @@ const NumberInput = ({
   // e.g. when the YAML editor updates the form data. Without this the input
   // keeps its initial `defaultValue` and ignores later prop changes. Mirrors
   // TextInput's "caching fix". Guarded so it never disrupts the user's own
-  // typing (the value already matches, so nothing is written).
+  // typing: while the input has focus, a (possibly stale) async response must
+  // not clobber in-progress edits.
   useEffect(() => {
-    if (inputRef.current && inputRef.current.value !== defValue) {
+    if (!inputRef.current) return;
+    if (document.activeElement === inputRef.current) return;
+    if (inputRef.current.value !== defValue) {
       inputRef.current.value = defValue;
     }
   }, [defValue]);

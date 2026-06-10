@@ -11,6 +11,7 @@ import { showModalMessage } from '../../../global/modal';
 import { showError } from '../../../global/notification';
 import { navigateToURL } from '../../../global/url';
 import editingState from '../../../state/EditCtrlState';
+import { flushPendingDebouncedCommits } from '../debounceRegistry';
 import { clearEditDirty, clearYACStatus, getInitialEntityYAML, setYACStatus } from '../shared';
 import {
   getActivatedActions,
@@ -49,6 +50,9 @@ export async function updateYAMLschema(
  * @returns
  */
 export function sendYAMLData(requestContext: RequestEditContext) {
+  // An edit may still be sitting in a renderer's debounce window; commit it now
+  // so the YAML read below includes the user's last keystrokes.
+  flushPendingDebouncedCommits();
   // Defensive: the Commit button is disabled while invalid and the error is shown
   // in the editor + footer status bar, so no modal is needed here.
   if (!editingState.isValidYAC) {

@@ -90,11 +90,7 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
     data,
     ajv,
   } = props;
-  if (!visible) {
-    return <></>;
-  }
   const categorization = uischema as Categorization;
-  checkSchema(categorization);
   const [activeCategory, setActiveCategory] = useState<number>(selected ?? getCurrentTab());
   const categories = useMemo(
     () =>
@@ -118,6 +114,22 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
     setActiveCategory(getCurrentTab());
   }, [categorization]);
 
+  // Admin schema checks update another component's state (the notification
+  // dropdown), so they must run after render, not during it.
+  useEffect(() => {
+    checkSchema(categorization);
+  }, [categorization]);
+
+  // Memoize since this changes hardly anytime (except if category is added or removed)
+  const tabLabels = useMemo(() => {
+    return categories.map((e: Category | Categorization) => e.label);
+  }, [categories]);
+
+  // After all hooks: rules of hooks forbid an early return before them.
+  if (!visible) {
+    return <></>;
+  }
+
   const safeCategory = sanitizeCategory(activeCategory, categorization);
 
   const onTabChange = (_event: any, value: number) => {
@@ -127,11 +139,6 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
     }
     setActiveCategory(value);
   };
-
-  // Memoize since this changes hardly anytime (except if category is added or removed)
-  const tabLabels = useMemo(() => {
-    return categories.map((e: Category | Categorization) => e.label);
-  }, [categories]);
 
   // With a single category the tabs carry no information, so the tab bar is
   // hidden and the category's content is shown on its own.
@@ -146,6 +153,7 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
               {(() => {
                 return categories.map((_, idx: number) => (
                   <Tab
+                    key={idx}
                     index={idx}
                     label={tabLabels[idx]}
                     currentTab={safeCategory}

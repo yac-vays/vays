@@ -80,12 +80,11 @@ export async function sendRequest(
   cacheContext: Nullable<string> = null,
 ): Promise<Response | null> {
   if (cacheContext) {
-    const cacheElt = (await VAYS_CACHE.retreive(cacheContext, url)) as Request;
+    const cacheElt = await VAYS_CACHE.retreive<Response>(cacheContext, url);
     if (cacheElt) {
-      //@ts-expect-error await has no effect on non-promise objects
       return cacheElt.clone();
     } else if (!VAYS_CACHE.preCacheRegister(cacheContext, url)) {
-      const resp = (await VAYS_CACHE.retreive(cacheContext, url)) as Response;
+      const resp = await VAYS_CACHE.retreive<Response>(cacheContext, url);
       if (resp) return resp.clone();
       return null;
     }
@@ -113,8 +112,4 @@ export async function sendRequest(
   }
 
   return resp;
-}
-
-export function hasAuthFailed(status: number): boolean {
-  return status == 401 || status == 403;
 }

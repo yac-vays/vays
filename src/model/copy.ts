@@ -1,14 +1,28 @@
-import { showError } from '../controller/global/notification';
 import { actions2URLQuery } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
 import { ActionDecl, NameGeneratedCond } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
 import { joinUrl } from '../utils/urlUtils';
+import { handleYacResponse } from './utils/handleYacResponse';
 
-export async function copyEntity(
+/**
+ * Create a new entity derived from an existing one. A *copy* duplicates the
+ * source's values; a *link* is a shallow copy that keeps following the source.
+ * The two YAC requests only differ in the key carrying the source entity name.
+ *
+ * @param kind Whether to copy or link the source entity.
+ * @param entityName The name for the new entity (may be undefined when YAC generates it).
+ * @param sourceEntityName The entity to copy/link from.
+ * @param actions The create-actions to trigger alongside.
+ * @param requestContext The request context.
+ * @returns `success: true` with the (possibly generated) name, `success: null`
+ * when an error toast was already shown, `success: false` otherwise.
+ */
+export async function createDerivedEntity(
+  kind: 'copy' | 'link',
   entityName: string | undefined,
-  copyEntityName: string,
+  sourceEntityName: string,
   actions: ActionDecl[],
   requestContext: RequestContext,
 ): Promise<{ success: Nullable<boolean>; name: Nullable<string> }> {
@@ -31,28 +45,36 @@ export async function copyEntity(
     // name_generated === 'never': a name is mandatory.
     name = entityName ?? '';
   }
-  const entity: object = { name, copy: copyEntityName };
 
   const resp: Nullable<Response> = await sendRequest(
     joinUrl(url, `/entity/${requestContext.entityTypeName}${actions2URLQuery(actions)}`),
     'POST',
-    JSON.stringify(entity),
+    JSON.stringify({ name, [kind]: sourceEntityName }),
   );
-  if (resp == null) return { success: false, name: null };
 
-  if (resp?.status == 201) {
+  const result = await handleYacResponse(resp, {
+    backendTitle: requestContext.backendObject?.title,
+    errorTitle: `Cannot ${kind === 'copy' ? 'Copy' : 'Link'} ${sourceEntityName}`,
+    errorMessage: 'Waking up the admin, please stand by...',
+    successStatus: 201,
+    genericClientErrors: true,
+  });
+
+  if (result.kind === 'success') {
     // YAC returns the (possibly generated) name of the new entity.
-    const ans = await resp.json();
+    const ans = await result.resp.json();
     return { success: true, name: ans?.name ?? null };
   }
-  if (resp?.status >= 400) {
-    const ans = await resp.json();
-    showError(
-      `${requestContext.backendObject?.title}: ` +
-        (ans.title ?? `Cannot Copy ${copyEntityName} (Status ${resp.status})`),
-      ans.message ?? 'Waking up the admin, please stand by...',
-    );
-    return { success: null, name: null };
-  }
-  return { success: false, name: null };
+  if (result.kind === 'network-error') return { success: false, name: null };
+  // The error was already reported (toast or re-login flow).
+  return { success: null, name: null };
+}
+
+export async function copyEntity(
+  entityName: string | undefined,
+  copyEntityName: string,
+  actions: ActionDecl[],
+  requestContext: RequestContext,
+): Promise<{ success: Nullable<boolean>; name: Nullable<string> }> {
+  return createDerivedEntity('copy', entityName, copyEntityName, actions, requestContext);
 }

@@ -22,12 +22,15 @@ export const BigStringArray = (props: ControlProps) => {
     return null;
   }
 
-  if (!isOfTypeWeak(props.data, props.schema.type, true)) {
-    props.errors = reportBadData(props.data);
-    props.data = undefined;
+  // data check (derived locally — props are shared and must not be mutated)
+  let data = props.data;
+  let errors = props.errors;
+  if (!isOfTypeWeak(data, props.schema.type, true)) {
+    errors = reportBadData(data);
+    data = undefined;
   }
 
-  const hasItems = props.data ? props.data.length > 0 : false;
+  const hasItems = data ? data.length > 0 : false;
   // TODO: include integer handling.
   return (
     <>
@@ -38,7 +41,7 @@ export const BigStringArray = (props: ControlProps) => {
           onClick={() => {}}
           description={props.description}
           required={props.required}
-          errors={props.errors}
+          errors={errors}
         />
         {hasItems ? (
           <p>
@@ -51,9 +54,9 @@ export const BigStringArray = (props: ControlProps) => {
           handleChange={props.handleChange}
           path={props.path}
           id={props.id}
-          data={props.data}
+          data={data}
           disabled={!props.enabled}
-          error={!!props.errors}
+          error={!!errors}
         />
       </div>
     </>
@@ -61,8 +64,10 @@ export const BigStringArray = (props: ControlProps) => {
 };
 // isObjectArrayControl, isPrimitiveArrayControl
 
+// Rank 24 so it beats the generic ArrayControlTester (23) regardless of
+// renderer registration order.
 export const BigStringArrayTester: RankedTester = rankWith(
-  23,
+  24,
   and(
     and(not(isObjectArrayWithNesting), or(isPrimitiveArrayControl)),
     isCustomRenderer('big_string_list'),

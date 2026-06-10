@@ -127,14 +127,14 @@ function representEntity(
 ): OverviewListCellEntry[] {
   const values = [{ value: entity.name, isMarkdown: false }];
   for (const option of requestContext.accessedEntityType?.options ?? []) {
-    // TODO: This is ugly, do better typing!
-    const value: string = (entity.options as any)[option.name] as string;
-    if (value in option.aliases) {
+    const rawValue = entity.options[option.name];
+    const value = rawValue == null ? null : String(rawValue);
+    if (value != null && value in option.aliases) {
       values.push({ value: option.aliases[value], isMarkdown: true });
     } else if (value == null) {
       values.push({ value: '(None)', isMarkdown: false });
     } else {
-      values.push({ value: value.toString().replaceAll(',', ', '), isMarkdown: false });
+      values.push({ value: value.replaceAll(',', ', '), isMarkdown: false });
     }
   }
   if (hasLogsDefined(requestContext)) {
@@ -186,6 +186,14 @@ export interface EntityListVariableHandlers {
 }
 
 /**
+ * Stamp of the latest {@link reload} dispatch. Responses carrying an older
+ * stamp lost the race against a newer reload (rapid page flips / context
+ * switches) and must not overwrite the newer table content. Mirrors the
+ * validationSeq pattern of the edit controller.
+ */
+let reloadSeq = 0;
+
+/**
  * @param requestContext
  * @param param1
  * @param numResultsPerPage
@@ -212,8 +220,9 @@ export async function reload(
       pageNumber = 1;
     }
 
+    const seq = ++reloadSeq;
     setLoading(true);
-    const header: string[] = await getHeaderEntries(requestContext);
+    const header: string[] = getHeaderEntries(requestContext);
     setTableHeaderEntries(header);
 
     const qRes: QueryResponse = await fetchEntities(
@@ -222,6 +231,9 @@ export async function reload(
       (pageNumber - 1) * numResultsPerPage,
       searchList,
     );
+
+    // A newer reload has been dispatched in the meantime — let it win.
+    if (seq !== reloadSeq) return;
 
     setLoading(false);
     setTableEntries(qRes.partialResults);
@@ -252,4 +264,8 @@ export function positionDropdownElement(
 
 export function registerTableScrollContainerEvent(callback: () => void) {
   entityListCtrlState.scrollContainer?.current?.addEventListener('scroll', callback);
+}
+
+export function unregisterTableScrollContainerEvent(callback: () => void) {
+  entityListCtrlState.scrollContainer?.current?.removeEventListener('scroll', callback);
 }

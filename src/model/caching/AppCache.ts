@@ -1,4 +1,3 @@
-import { hashCode } from '../../utils/hashUtils';
 import { Nullable } from '../../utils/types/typeUtils';
 import CacheNode from './CacheNode';
 
@@ -40,12 +39,12 @@ export class AppCache {
     }
   }
 
-  async retreive(ctx: string, id: string): Promise<unknown> {
+  async retreive<T = unknown>(ctx: string, id: string): Promise<Nullable<T>> {
     if (ctx in this._nodes) {
       while (this._nodes[ctx].hasRegistration(id)) {
         await new Promise((res) => setTimeout(res, BLOCKINGWAIT_DURATION));
       }
-      return this._nodes[ctx].fetch(id).value;
+      return this._nodes[ctx].fetch(id).value as Nullable<T>;
     }
 
     return null;
@@ -89,15 +88,5 @@ export class AppCache {
     if (ctx in this._nodes) {
       this._nodes[ctx].invalidate(id);
     }
-  }
-
-  invalidateAll(): void {
-    for (const ctx of Object.keys(this._nodes)) {
-      this._nodes[ctx] = new CacheNode(this._nodes[ctx].ttl);
-    }
-  }
-
-  getIDFromRequest(yacBackendURL: string, apiCall: string) {
-    return hashCode(yacBackendURL + apiCall);
   }
 }

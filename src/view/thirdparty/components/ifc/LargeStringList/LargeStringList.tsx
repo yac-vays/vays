@@ -1,6 +1,10 @@
 import { debounce } from 'lodash';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  deregisterDebouncedCommit,
+  registerDebouncedCommit,
+} from '../../../../../controller/local/EditController/debounceRegistry';
 import { setIsCurrentlyEditingString } from '../../../../../controller/local/EditController/StandardMode/access';
 import useOutsideClick from '../../../../hooks/useOutsideClick';
 import DeleteButton from '../MultiSelect/DeleteButton';
@@ -18,7 +22,6 @@ interface LargeStringProps {
 }
 
 const LargeStringList: React.FC<LargeStringProps> = ({
-  id,
   handleChange,
   path,
   data,
@@ -41,12 +44,21 @@ const LargeStringList: React.FC<LargeStringProps> = ({
     [path],
   );
 
+  // Let the commit path flush a still-pending debounced edit before saving.
+  useEffect(() => {
+    registerDebouncedCommit(debouncedHandleChange);
+    return () => deregisterDebouncedCommit(debouncedHandleChange);
+  }, [debouncedHandleChange]);
+
   /**
-   * caching fix
+   * Re-sync the local selection when the data prop changes externally (mirrors
+   * MultiSelect) — but not while the user is editing in this component, so a
+   * stale async validation response cannot clobber an in-progress edit.
    */
   useEffect(() => {
+    if (isItemEditing || document.activeElement === inputRef.current) return;
     setSelected(data ?? []);
-  }, [id]);
+  }, [data]);
 
   const open = () => {
     setShow(true);
@@ -109,6 +121,7 @@ const LargeStringList: React.FC<LargeStringProps> = ({
                     {selected.map((value, idx) => {
                       return (
                         <ListItem
+                          key={idx}
                           editable
                           idx={idx}
                           value={value}

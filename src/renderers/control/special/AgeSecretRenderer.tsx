@@ -21,8 +21,6 @@ interface RendererOptions {
 }
 
 export const AgeSecretRenderer = (props: ControlProps) => {
-  if (!props.visible) return <></>;
-
   const ropts: RendererOptions = props.uischema?.options?.renderer_options ?? {};
   const recipient = ropts.age_public_key;
   const length =
@@ -85,12 +83,16 @@ export const AgeSecretRenderer = (props: ControlProps) => {
 
   useEffect(() => {
     if (autoGenStarted.current) return;
+    if (!props.visible) return;
     if (!props.enabled) return;
     if (specError) return;
     if (data !== undefined && data !== '') return;
     autoGenStarted.current = true;
     void doGenerate();
-  }, [props.enabled, data, specError, doGenerate]);
+  }, [props.visible, props.enabled, data, specError, doGenerate]);
+
+  // After all hooks: rules of hooks forbid an early return before them.
+  if (!props.visible) return <></>;
 
   const hasData = data !== undefined && data !== '';
   const dataLooksValid = !hasData || looksLikeAgeArmor(data);

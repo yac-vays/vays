@@ -43,11 +43,6 @@ export function hasYamlPane(): boolean {
   return yamlWriter != null;
 }
 
-/** Whether the form pane is currently mounted (its writer is registered). */
-export function hasFormPane(): boolean {
-  return formWriter != null;
-}
-
 export function setActivePane(p: Pane | null) {
   editingState.activePane = p;
 }

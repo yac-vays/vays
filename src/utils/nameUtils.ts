@@ -11,11 +11,6 @@ export function isNameGeneratedByYAC(accessedEntityType: Nullable<EntityTypeDecl
   return accessedEntityType?.name_generated === NameGeneratedCond.enforced;
 }
 
-export function isNameRequiredByYAC(accessedEntityType: Nullable<EntityTypeDecl>) {
-  if (!accessedEntityType) return false;
-  return accessedEntityType?.name_generated === NameGeneratedCond.never;
-}
-
 export function isNameOptionalByYAC(accessedEntityType: Nullable<EntityTypeDecl>) {
   if (!accessedEntityType) return false;
   return accessedEntityType?.name_generated === NameGeneratedCond.optional;

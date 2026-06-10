@@ -69,6 +69,7 @@ export const MultiCheckboxRenderer = ({
           const checkboxValue = data?.includes(option.value); // ? option.value : undefined;
           const n: ReactNode = (
             <BooleanControl
+              key={option.value ?? index}
               label={option.label}
               id={id + '-' + option.value}
               data={checkboxValue}

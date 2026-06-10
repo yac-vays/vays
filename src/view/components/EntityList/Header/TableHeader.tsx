@@ -29,6 +29,7 @@ const TableHeader = ({
             for (const value of tableHeaderEntries) {
               jsx.push(
                 <EntityListHeaderCell
+                  key={`${value}-${i}`}
                   searchCallback={searchCallback(i++)}
                   title={value}
                   searchable={i <= len - numTrailingCols}

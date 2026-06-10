@@ -1,7 +1,6 @@
 import { typeCheck } from 'type-check';
 import { showError } from '../controller/global/notification';
-import { handleAuthFailed } from '../session/login/tokenHandling';
-import { hasAuthFailed, sendRequest } from '../utils/authRequest';
+import { sendRequest } from '../utils/authRequest';
 import { EntityLog, TYPE_CHECK_ENTITY_LOG } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
@@ -9,6 +8,7 @@ import { joinUrl } from '../utils/urlUtils';
 import VAYS_CACHE from './caching';
 import { LOGS_CACHE_KEY } from './caching/cachekeys';
 import { invalidateEntityListCache } from './entityList';
+import { handleYacResponse } from './utils/handleYacResponse';
 
 function getLogID(
   url: string | null | undefined,
@@ -52,29 +52,26 @@ export async function getEntityLogs(
     return null;
   }
 
-  if (resp.status == 200) return typeCheckLog(await resp.json(), entityName);
-  else if (resp.status == 404) {
+  if (resp.status == 404) {
+    // The entity is gone — refresh the list so it disappears.
     invalidateEntityListCache(url, requestContext.entityTypeName);
-    return null;
-  } else if (resp.status == 422) {
-    // No validation error should happen here.
-    showError('Internal Error', 'Error ID-VAL-GEL-01. Please file a bug report!');
-    return null;
-  } else if (resp.status >= 500) {
-    const ans = await resp.json();
-    showError(
-      `${requestContext.backendObject?.title}: ` +
-        (ans.title ?? `Could not fetch entity logs for ${entityName} (Status ${resp.status})`),
-      ans.message ?? 'Could not fetch entity logs. Please contact the admin to resolve this issue.',
-    );
-    return null;
-  } else if (hasAuthFailed(resp.status)) {
-    handleAuthFailed();
     return null;
   }
 
-  const message = (await resp.json()).message;
-  showError(`Cannot fetch logs (Status)`, `Server responded with "${message}"`);
+  const result = await handleYacResponse(resp, {
+    backendTitle: requestContext.backendObject?.title,
+    errorTitle: `Could not fetch entity logs for ${entityName}`,
+    errorMessage: 'Could not fetch entity logs. Please contact the admin to resolve this issue.',
+  });
+
+  if (result.kind === 'success') {
+    return typeCheckLog(await result.resp.json(), entityName);
+  } else if (result.kind === 'invalid-request') {
+    // No validation error should happen here.
+    showError('Internal Error', 'Error ID-VAL-GEL-01. Please file a bug report!');
+  } else if (result.kind === 'client-error') {
+    showError(`Cannot fetch logs (Status)`, `Server responded with "${result.body.message}"`);
+  }
   return null;
 }
 

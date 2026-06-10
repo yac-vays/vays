@@ -1,4 +1,5 @@
 import React, { Component, DetailedHTMLProps, InputHTMLAttributes } from 'react';
+import { logError } from '../../../utils/logger';
 import { ActionDecl } from '../../../utils/types/api';
 import { CallbackSuccessType } from '../../../utils/types/internal/modal';
 import Checkbox from '../../thirdparty/components/ifc/CheckBox/CheckBox';
@@ -23,6 +24,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
   private ref: React.RefObject<HTMLDivElement>;
   private textInputRef: React.RefObject<HTMLInputElement>;
   private blockConfirm: boolean;
+  private focusTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(props: object) {
     super(props);
@@ -54,6 +56,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
   componentWillUnmount(): void {
     document.removeEventListener('mousedown', this.handleClickOutside);
     document.removeEventListener('keydown', this.handleEscapeButton);
+    if (this.focusTimeout != null) clearTimeout(this.focusTimeout);
   }
 
   handleClickOutside(event: Event): void {
@@ -85,10 +88,13 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
       this._setSending(false);
       this.hide();
     };
+    const fail = (error: unknown) => {
+      logError(`Modal confirm callback failed: ${error}`, 'ConfirmAlert._confirm');
+      finish();
+    };
     const selectedActions = this.state.actions.filter((_v, i) => this.state.actionsChoice[i]);
-    if (!this.state.textInputEnabled)
-      this.state.callbackSuccess(undefined, selectedActions).then(finish);
-    else this.state.callbackSuccess(this.textInputRef.current?.value, selectedActions).then(finish);
+    const textInput = this.state.textInputEnabled ? this.textInputRef.current?.value : undefined;
+    this.state.callbackSuccess(textInput, selectedActions).then(finish, fail);
   }
 
   _cancel() {
@@ -123,10 +129,15 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
       actionsChoice: actions.map(() => false),
     });
     // Requires slight delay to take effect
-    setInterval(() => this.textInputRef.current?.focus(), 16);
+    if (this.focusTimeout != null) clearTimeout(this.focusTimeout);
+    this.focusTimeout = setTimeout(() => this.textInputRef.current?.focus(), 16);
   }
 
   hide(): void {
+    if (this.focusTimeout != null) {
+      clearTimeout(this.focusTimeout);
+      this.focusTimeout = null;
+    }
     const stateCopy: ConfirmationModalState = { ...this.state };
     stateCopy.show = false;
     this.setState(stateCopy);
@@ -188,29 +199,23 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
               <div className="h-3"></div>
               <div className="flex flex-row w-full items-center">
                 <>
-                  {/* Function keyword usage here would shadow the 'this' pointer with the container. */}
-                  {(() => {
-                    const jsx = [];
-                    let i = 0;
-                    for (const act of this.state.actions) {
-                      jsx.push(
-                        <>
-                          <Checkbox
-                            title={act.title}
-                            initValue={this.state.actionsChoice[i]}
-                            onChange={() => {
-                              this.state.actionsChoice[i] = !this.state.actionsChoice[i];
-                            }}
-                            minified
-                          />
-                          <div className="h-2 w-10"></div>
-                        </>,
-                      );
-                      i++;
-                    }
-
-                    return jsx;
-                  })()}
+                  {this.state.actions.map((act, i) => (
+                    <React.Fragment key={act.name ?? i}>
+                      <Checkbox
+                        title={act.title}
+                        initValue={this.state.actionsChoice[i]}
+                        onChange={(value) => {
+                          this.setState((prev) => {
+                            const actionsChoice = [...prev.actionsChoice];
+                            actionsChoice[i] = value;
+                            return { actionsChoice };
+                          });
+                        }}
+                        minified
+                      />
+                      <div className="h-2 w-10"></div>
+                    </React.Fragment>
+                  ))}
                 </>
               </div>
               <div className="h-4"></div>

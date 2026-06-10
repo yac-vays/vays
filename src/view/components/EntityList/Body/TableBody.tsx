@@ -24,6 +24,7 @@ const TableBody = ({
             for (let i = 0; i < tableEntries.length; i++) {
               jsx.push(
                 <EntityListRow
+                  key={tableEntries[i].entityName}
                   entityName={tableEntries[i].entityName}
                   entryValues={tableEntries[i].elt}
                   requestContext={requestContext}

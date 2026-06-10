@@ -15,10 +15,11 @@ interface ErrorProps {
  * @returns
  */
 const ErrorButton = ({ content }: ErrorProps) => {
-  if (!content) return <></>;
   const [show, setShow] = useState<boolean>(false);
   const popoutRef = useRef<HTMLDivElement>(null);
   useOutsideClick(popoutRef, () => setShow(false));
+  // After all hooks: rules of hooks forbid an early return before them.
+  if (!content) return <></>;
   return (
     <>
       <div ref={popoutRef} onMouseLeave={() => setShow(false)}>

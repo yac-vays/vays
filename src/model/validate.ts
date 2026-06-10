@@ -1,8 +1,7 @@
 import { typeCheck } from 'type-check';
 import { showError } from '../controller/global/notification';
-import { handleAuthFailed } from '../session/login/tokenHandling';
 import { getActionNames } from '../utils/actionUtils';
-import { hasAuthFailed, sendRequest } from '../utils/authRequest';
+import { sendRequest } from '../utils/authRequest';
 import { dumpEditActions, EditActionSnapshot, NO_ACTIONS } from '../utils/schema/injectActions';
 import { ActionDecl, APIValidateResponse, TYPE_CHECK_VALIDATE_RESP } from '../utils/types/api';
 import { RequestEditContext } from '../utils/types/internal/request';
@@ -10,6 +9,7 @@ import { ValidateResponse } from '../utils/types/internal/validation';
 import { Nullable } from '../utils/types/typeUtils';
 import { joinUrl } from '../utils/urlUtils';
 import { stringifyEntityInfoForAPI } from '../utils/validatorUtils';
+import { handleYacResponse } from './utils/handleYacResponse';
 
 export const defaultValidationResponse: ValidateResponse = {
   json_schema: { type: 'object', required: [], properties: {} },
@@ -55,12 +55,14 @@ async function _validate(
 ): Promise<ValidateResponse | null> {
   const resp: Nullable<Response> = await sendRequest(joinUrl(url, `/validate`), 'POST', obj);
 
-  if (resp == null) {
-    return null;
-  }
+  const result = await handleYacResponse(resp, {
+    backendTitle: requestEditContext.rc.backendObject?.title,
+    errorTitle: 'Cannot validate YAML',
+    errorMessage: 'Waking up the admin, please stand by...',
+  });
 
-  if (resp.status == 200) {
-    const dat = typeCheckValidationResponse(await resp.json());
+  if (result.kind === 'success') {
+    const dat = typeCheckValidationResponse(await result.resp.json());
     if (!dat) return null;
 
     // A located error only makes sense for a *schema* failure (the displayed
@@ -87,27 +89,13 @@ async function _validate(
         json_schema_loc: dat.schemas.json_schema_loc,
       }),
     };
-  } else if (resp.status == 422) {
+  } else if (result.kind === 'invalid-request') {
     showError('Frontend Error', 'Invalid specification used, cannot talk to YAC servers.');
-    return null;
-  } else if (resp.status >= 500) {
-    const ans = await resp.json();
-    showError(
-      `${requestEditContext.rc.backendObject?.title}: ` +
-        (ans.title ?? `Cannot validate YAML (Status ${resp.status})`),
-      ans.message ?? 'Waking up the admin, please stand by...',
-    );
-    return null;
-  } else if (hasAuthFailed(resp.status)) {
-    const ans = await resp.json();
-    handleAuthFailed(ans.title, ans.message);
-    return null;
+  } else if (result.kind === 'client-error') {
+    showError('Cannot fetch schema', `Server responded with "${result.body.message}"`);
   }
 
-  return resp.json().then((body) => {
-    showError('Cannot fetch schema', `Server responded with "${body.message}"`);
-    return null;
-  });
+  return null;
 }
 
 /**

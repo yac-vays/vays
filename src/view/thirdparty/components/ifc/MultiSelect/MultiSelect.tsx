@@ -57,11 +57,12 @@ const MultiSelect: React.FC<DropdownProps> = ({
     return show === true;
   };
 
-  const select = (index: number) => {
+  const select = (option: Option) => {
     if (disabled) return;
-    const value = options[index].value;
-    if (!multiple && selected.findIndex((v) => value == v) != -1) {
-      remove(index);
+    const value = option.value;
+    const selectedIndex = selected.findIndex((v) => value == v);
+    if (!multiple && selectedIndex != -1) {
+      remove(selectedIndex);
       return;
     }
     const newS = [...selected, value];
@@ -69,12 +70,11 @@ const MultiSelect: React.FC<DropdownProps> = ({
     handleChange(path, newS);
   };
 
+  /** Removes an entry from `selected` (`index` is an index into `selected`). */
   const remove = (index: number) => {
     if (disabled) return;
-    const selectedIndex = index; //selected.indexOf(options[index].value);
-
-    if (selectedIndex !== -1) {
-      const newS = selected.filter((_, idx) => idx !== selectedIndex);
+    if (index !== -1) {
+      const newS = selected.filter((_, idx) => idx !== index);
       setSelected(newS);
       handleChange(path, newS);
     }
@@ -102,8 +102,10 @@ const MultiSelect: React.FC<DropdownProps> = ({
     >
       <div className="z-40">
         <select className="hidden" id={id}>
-          {options.map(({ value, label: text }) => (
-            <option value={value}>{text}</option>
+          {options.map(({ value, label: text }, idx) => (
+            <option key={idx} value={value}>
+              {text}
+            </option>
           ))}
         </select>
 
@@ -129,6 +131,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
                       if (valueIndex == -1)
                         return (
                           <ListItem
+                            key={idx}
                             idx={idx}
                             value={value.toString()}
                             removeCallback={remove}
@@ -138,6 +141,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
 
                       return (
                         <ListItem
+                          key={idx}
                           idx={idx}
                           value={options[valueIndex].label}
                           removeCallback={remove}
@@ -156,9 +160,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
                         if (event.key === 'Enter' || event.key === 'Tab') {
                           const filterResults = filterOptions(options, event.currentTarget.value);
                           if (filterResults.length == 1) {
-                            select(
-                              options.findIndex(({ label }) => filterResults[0].label === label),
-                            );
+                            select(filterResults[0]);
                             setNewInput('');
                             if (inputRef.current != null) inputRef.current.value = '';
                           }
@@ -200,7 +202,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
                       <div key={index}>
                         <div
                           className="w-full cursor-pointer rounded-t border-b border-stroke hover:bg-primary-5 dark:border-form-strokedark"
-                          onClick={() => select(index)}
+                          onClick={() => select(option)}
                         >
                           <div
                             className={`relative flex w-full items-center border-l-[3px]  p-2 pl-2 ${
@@ -213,10 +215,9 @@ const MultiSelect: React.FC<DropdownProps> = ({
                               <div className="mx-2 leading-6 select-none">
                                 {option.label}
                                 {(function () {
-                                  const numOcc = selected.reduce(
-                                    (count, x) => (x === option.value ? count + 1 : count),
-                                    0,
-                                  ) as number;
+                                  const numOcc = selected.filter(
+                                    (x) => x === option.value,
+                                  ).length;
                                   if (numOcc <= 1) return <></>;
 
                                   return (

@@ -37,16 +37,20 @@ export function getEditor(
   let ed: monaco.editor.IStandaloneCodeEditor;
   let newEditor: boolean = false;
 
+  // Reuse the existing editor only if one is actually alive (the previous one
+  // is disposed on Editor.tsx effect cleanup, which may leave the container
+  // attribute behind).
+  const existingEditors = monaco.editor.getEditors();
   if (
     monacoEl?.current != null &&
-    monacoEl.current.attributes.getNamedItem('data-keybinding-context') == null
+    (existingEditors.length === 0 ||
+      monacoEl.current.attributes.getNamedItem('data-keybinding-context') == null)
   ) {
-    //editors.length == 0) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     ed = monaco.editor.create(monacoEl.current!, getEditorSettings(model!));
     newEditor = true;
   } else {
-    ed = monaco.editor.getEditors()[0] as monaco.editor.IStandaloneCodeEditor;
+    ed = existingEditors[0] as monaco.editor.IStandaloneCodeEditor;
     ed.setModel(model);
   }
   return [ed, newEditor];

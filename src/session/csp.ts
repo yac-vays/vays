@@ -31,7 +31,7 @@ export function generateCSP(config: AppConfig) {
   cspMetaTag.httpEquiv = 'Content-Security-Policy';
 
   const yacURLs = config.backends.map((v) => v.url).join(' ');
-  const yacURLSandOIDC = yacURLs + ' ' + new URL(config.oidcConf.server).hostname;
+  const yacURLSandOIDC = yacURLs + ' ' + new URL(config.oidcConf.server).origin;
 
   // The logo and favicon are loaded as images; if either lives on another
   // origin it must be allow-listed for img-src (same-origin paths and data:

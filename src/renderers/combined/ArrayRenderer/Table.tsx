@@ -6,7 +6,6 @@ import {
   useJsonForms,
   withJsonFormsContext,
 } from '@jsonforms/react';
-import _ from 'lodash';
 import React, { ComponentType } from 'react';
 import ItemDeleteButton from '../NestedObjectRenderer/ItemDeleteButton';
 
@@ -29,7 +28,25 @@ const withContextToRowItem =
 
 const withCustomProps = (Component: ComponentType<ItemRendererProps>) => {
   return withJsonFormsContext(
-    withContextToRowItem(React.memo(Component, (prevProps, props) => _.isEqual(prevProps, props))),
+    withContextToRowItem(
+      React.memo(
+        Component,
+        // Compare only the row-relevant props instead of deep-comparing the
+        // whole JSON Forms context (also spread into the row) per row per
+        // keystroke. Data changes inside the row reach the dispatched controls
+        // through the JSON Forms context regardless of this memo.
+        (prevProps, props) =>
+          prevProps.path === props.path &&
+          prevProps.index === props.index &&
+          prevProps.enabled === props.enabled &&
+          Object.is(prevProps.schema, props.schema) &&
+          Object.is(prevProps.uischema, props.uischema) &&
+          Object.is(prevProps.renderers, props.renderers) &&
+          Object.is(prevProps.cells, props.cells) &&
+          Object.is(prevProps.openDeleteDialog, props.openDeleteDialog) &&
+          Object.is(prevProps.onRemove, props.onRemove),
+      ),
+    ),
   );
 };
 

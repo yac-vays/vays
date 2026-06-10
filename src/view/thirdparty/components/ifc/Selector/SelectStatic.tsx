@@ -80,7 +80,11 @@ const SelectStatic: React.FC<DropdownProps> = ({
           const jsx = [];
           for (const item of options) {
             jsx.push(
-              <option value={item.value} className="text-plainfont dark:text-reducedfont">
+              <option
+                key={item.value}
+                value={item.value}
+                className="text-plainfont dark:text-reducedfont"
+              >
                 {item.label}
               </option>,
             );

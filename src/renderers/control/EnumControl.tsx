@@ -14,6 +14,10 @@ import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc
 import SelectStatic from '../../view/thirdparty/components/ifc/Selector/SelectStatic';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
 
+/**
+ * Shared select control for both `enum` and `oneOf`-enum schemas; only the
+ * testers/HOC wrappers differ (see `OneOfEnumControl`).
+ */
 export const EnumControl = ({
   errors,
   required,

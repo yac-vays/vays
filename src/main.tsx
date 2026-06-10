@@ -19,7 +19,5 @@ import './view/thirdparty/styles/satoshi.css';
 const router = createBrowserRouter([{ path: '*', element: <App /> }]);
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  // <React.StrictMode>
   <RouterProvider router={router} />,
-  // </React.StrictMode>,
 );

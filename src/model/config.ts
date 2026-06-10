@@ -30,6 +30,10 @@ export async function getConfig(): Promise<Nullable<AppConfig>> {
       try {
         config = validateConfig((await resp.json()) as AppConfig);
       } catch {
+        showError(
+          'Config Not Available',
+          'The config.json file could not be parsed. Please contact the admin.',
+        );
         return null;
       }
 

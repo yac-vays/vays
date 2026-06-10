@@ -1,13 +1,13 @@
 import { typeCheck } from 'type-check';
 import { showError } from '../controller/global/notification';
-import { handleAuthFailed } from '../session/login/tokenHandling';
-import { hasAuthFailed, sendRequest } from '../utils/authRequest';
+import { sendRequest } from '../utils/authRequest';
 import { logError } from '../utils/logger';
 import { EntityTypeDecl, TYPE_CHECK_ENTITY_TYPE_DECL } from '../utils/types/api';
 import { YACBackend } from '../utils/types/config';
 import { Nullable } from '../utils/types/typeUtils';
 import { joinUrl } from '../utils/urlUtils';
 import { ENTITY_TYPE_CACHE_KEY } from './caching/cachekeys';
+import { handleYacResponse } from './utils/handleYacResponse';
 
 /**
  * Checks whether the received object has the right typing. Reduces damage of
@@ -46,25 +46,19 @@ export async function getEntityTypes(yacBackend: YACBackend | null): Promise<Ent
     ENTITY_TYPE_CACHE_KEY,
   );
 
-  if (resp == null) {
-    return [];
-  } else if (resp.status >= 500) {
-    const ans = await resp.json();
-    showError(
-      `${yacBackend.title}: ` +
-        (ans.title ?? `Could not fetch Entity Types on ${yacBackend.name} (Status ${resp.status})`),
-      ans.message ?? 'Waking up the admin, please stand by...',
-    );
-    return [];
-  } else if (resp.status == 200) {
-    const res = await resp.json();
+  const result = await handleYacResponse(resp, {
+    backendTitle: yacBackend.title,
+    errorTitle: `Could not fetch Entity Types on ${yacBackend.name}`,
+    errorMessage: 'Waking up the admin, please stand by...',
+  });
+
+  if (result.kind === 'success') {
+    const res = await result.resp.json();
     return typeCheckEntityTypeDecl(res, yacBackend.title);
-  } else if (hasAuthFailed(resp.status)) {
-    handleAuthFailed();
-  } else {
+  } else if (result.kind === 'invalid-request' || result.kind === 'client-error') {
     showError(
-      `Error ${resp.status}: Can't fetch Entity Types of ${yacBackend.name}`,
-      `Server returned: ${JSON.stringify(resp.json())}`,
+      `Error ${result.status}: Can't fetch Entity Types of ${yacBackend.name}`,
+      `Server returned: ${JSON.stringify(result.body)}`,
     );
   }
 

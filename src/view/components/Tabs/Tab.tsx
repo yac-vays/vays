@@ -10,12 +10,22 @@ const Tab = ({ index, label, currentTab, onClick, hasError }: TabProps) => {
   return (
     <>
       <a
+        role="tab"
+        tabIndex={0}
+        aria-selected={index == currentTab}
         className={`rounded-t-xl duration-300 cursor-pointer py-4 px-2 text-md font-medium hover:text-primary dark:hover:text-white md:text-base ${
           index == currentTab
             ? 'border-primary text-plainfont border-b-2 bg-primary-5'
             : 'border-transparent border-b-2 hover:translate-y-[-10px] opacity-70 hover:opacity-100'
         }`}
         onClick={(e) => onClick(e, index)}
+        onKeyDown={(e) => {
+          // Keyboard operability: an href-less <a> is not natively activatable.
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick(e, index);
+          }
+        }}
       >
         {label}
         {hasError ? (

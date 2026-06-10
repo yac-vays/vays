@@ -231,7 +231,11 @@ const EditFrame = ({
         // and push the footer/Commit button off-screen. The always-visible
         // MetaInfoPanel and footer take their natural height; the panes flex to
         // fill whatever is left (see the `grow min-h-0` panes container below).
-        style={{ height: window.outerHeight - 320 }}
+        // Viewport-relative (100vh minus the surrounding header/breadcrumb/
+        // padding) so it tracks window resizes, unlike the former
+        // `window.outerHeight` snapshot which included browser chrome and never
+        // updated.
+        style={{ height: 'calc(100vh - 240px)' }}
       >
         {/* Always-visible Name + Actions. */}
         {!isReadOnly && (
@@ -360,14 +364,15 @@ const EditFrame = ({
               className=" grid place-items-center align-middle h-full"
               style={{ right: 0, bottom: 0 }}
             >
-              <div
+              <button
+                type="button"
+                disabled={saveDisabled}
                 title={
                   !isValid && !isValidating
                     ? 'Resolve the highlighted errors before saving.'
                     : undefined
                 }
                 onClick={() => {
-                  if (saveDisabled) return;
                   // Unified save: the canonical YAML (kept current no matter which
                   // pane was edited) is PUT, preserving comments/order.
                   sendYAMLData(requestEditContext);
@@ -386,7 +391,7 @@ const EditFrame = ({
                 ) : (
                   commitLabel
                 )}
-              </div>
+              </button>
             </div>
           )}
         </div>

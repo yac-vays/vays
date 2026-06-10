@@ -12,10 +12,9 @@ const vocab = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 function generateSalt(length = 16) {
   const randomValues = new Uint8Array(length);
   crypto.getRandomValues(randomValues);
-  const base64String = btoa(String.fromCharCode(...randomValues));
-
-  // Remove padding '=' from Base64 and slice to 16 characters
-  return base64String.replace(/=+$/, '').slice(0, 16); // Remove padding and slice to 16
+  // Sample from the crypt salt alphabet [./0-9A-Za-z]. `vocab` has exactly 64
+  // characters, so `byte % 64` is uniform (no rejection sampling needed).
+  return Array.from(randomValues, (b) => vocab[b % 64]).join('');
 }
 
 export function rencode(a: number, b: number, c: number, len: number) {

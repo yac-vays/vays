@@ -17,6 +17,12 @@ export function setUserLoggedIn(v: boolean) {
   iLocalStorage.setIsLoggedIn(v);
 }
 
+/**
+ * Handle an HTTP 401 from a backend: the session is expired or invalid, so
+ * route the user back into the login flow. (A 403 — valid session but missing
+ * permission — must *not* end up here; it is reported as an error toast by the
+ * model layer instead.)
+ */
 export function handleAuthFailed(
   title: string | undefined = undefined,
   msg: undefined | string = undefined,
@@ -44,10 +50,19 @@ export function handleAuthFailed(
     if (title) {
       showError(title, msg ?? '');
     } else {
-      // showError('Please sign in (again).', 'There is no valid token. Please sign in.');
+      showError('Please sign in again.', 'Your session has expired.');
     }
     navigateToURL('/');
+    return;
   }
+
+  // The token still looks valid locally, yet the backend rejected it (401):
+  // clock skew, revocation or a backend misconfiguration. Do not silently
+  // swallow it — tell the user what happened.
+  showError(
+    title ?? 'Authentication failed',
+    msg ?? 'The backend rejected the session token. Try signing out and in again.',
+  );
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,10 +1,14 @@
 import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { debounce } from 'lodash';
-import { ChangeEvent, useCallback, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { hashPassword } from '../../../utils/passwordHashes';
 import TextInput from '../../../view/thirdparty/components/ifc/TextInput/TextInput';
 
+import {
+  deregisterDebouncedCommit,
+  registerDebouncedCommit,
+} from '../../../controller/local/EditController/debounceRegistry';
 import ErrorRing from '../../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
@@ -14,19 +18,22 @@ export const PasswordRenderer = (props: ControlProps) => {
   const pt = props.uischema?.options?.renderer_options?.save_password_as === 'plaintext';
   const [pw, setPW] = useState<string>('');
 
-  /// data check
-  if (!isOfTypeWeak(props.data, 'string')) {
-    props.errors = reportBadData(props.data);
-    props.data = undefined;
+  /// data check (derived locally — props/uischema are shared and must not be mutated)
+  let storedData = props.data;
+  let errors = props.errors;
+  if (!isOfTypeWeak(storedData, 'string')) {
+    errors = reportBadData(storedData);
+    storedData = undefined;
   }
   ///
 
-  if (!props.uischema.options) {
-    props.uischema.options = {};
-  }
-  if (props.data) {
-    props.uischema.options.initial = pt ? '*'.repeat(props.data.length) : '*'.repeat(10);
-    props.uischema.options.initial_editable = false;
+  // When a value is stored, show a masked placeholder instead of the
+  // uischema-provided initial value.
+  let placeholder = props.uischema.options?.initial;
+  let placeholderEditable = props.uischema.options?.initial_editable;
+  if (storedData) {
+    placeholder = pt ? '*'.repeat(storedData.length) : '*'.repeat(10);
+    placeholderEditable = false;
   }
 
   const update = useCallback(
@@ -38,6 +45,12 @@ export const PasswordRenderer = (props: ControlProps) => {
     [props.path],
   );
 
+  // Let the commit path flush a still-pending debounced edit before saving.
+  useEffect(() => {
+    registerDebouncedCommit(update);
+    return () => deregisterDebouncedCommit(update);
+  }, [update]);
+
   const onChange = async (ev: ChangeEvent<HTMLInputElement>) => {
     const value = ev.target.value;
     setPW(value);
@@ -45,22 +58,20 @@ export const PasswordRenderer = (props: ControlProps) => {
     update(value);
   };
   const data = pw;
-  // props.schema.example = props.data != undefined ? '********' : 'Please Enter the Password...';
-  //
   return (
     <div className="p-1">
       <OverheadLabelWithMarkdownDescr
         title={props.label ?? props.schema.title}
         required={props.required || false}
         description={props.description}
-        errors={props.errors}
+        errors={errors}
       />
-      <ErrorRing errors={props.errors}>
+      <ErrorRing errors={errors}>
         <TextInput
           enabled={props.enabled}
           defaultv={props.schema.default}
-          placeholder={props.uischema.options?.initial}
-          placeholderEditable={props.uischema.options?.initial_editable}
+          placeholder={placeholder}
+          placeholderEditable={placeholderEditable}
           data={data}
           onChange={onChange}
           password

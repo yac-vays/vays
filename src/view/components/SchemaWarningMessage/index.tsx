@@ -30,7 +30,7 @@ const SchemaWarningMessage = ({
   return (
     <div className={`border-l-8 border-${color}`}>
       <div className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-primary-2 dark:hover:bg-meta-4">
-        <p className="text-sm">
+        <div className="text-sm">
           <span className=" font-bold text-plainfont">{title}</span> {subtitle}
           <Accordion
             title="Show affected keys"
@@ -40,9 +40,10 @@ const SchemaWarningMessage = ({
             <ul className="border rounded border-[#0000044] mt-1 p-0.5">
               {(() => {
                 const jsx = [];
+                let i = 0;
                 for (const key of affectedKeys) {
                   jsx.push(
-                    <li>
+                    <li key={`${key[0]}-${key[1]}-${i++}`}>
                       <div>
                         - <b>{key[0]}</b> in <b>{key[1]}</b>
                       </div>
@@ -53,7 +54,7 @@ const SchemaWarningMessage = ({
               })()}
             </ul>
           </Accordion>
-        </p>
+        </div>
 
         <p className="text-xs">Priority {priority}</p>
       </div>

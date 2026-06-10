@@ -36,10 +36,13 @@ const TextAreaInput = ({
   }
 
   /**
-   * Fix caching issues to ensure correct rendering
+   * Fix caching issues to ensure correct rendering — but never overwrite while
+   * the user is typing in this textarea: a stale async validation response must
+   * not clobber in-progress edits.
    */
   useEffect(() => {
     if (!textAreaRef.current) return;
+    if (document.activeElement === textAreaRef.current) return;
     textAreaRef.current.value = defValue;
   }, [defValue]);
 

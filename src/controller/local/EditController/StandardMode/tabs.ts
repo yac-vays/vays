@@ -75,29 +75,6 @@ export function updateTabsErrorNotification(
   editingState.onUpdateCategoryErrors(catHasErr);
 }
 
-/**
- * Do not use this for regular setting of the category Error!
- *
- * This is for special cases only where exactly a single category needs
- * to have an error signal set - don't use in a loop over all categories.
- * Use updateTabsErrorNotification for that instead.
- * @param catName
- * @param err
- * @param uischema
- * @returns
- */
-export function setErrorForCategory(catName: string, err: boolean, uischema: UISchemaElement) {
-  const [categories] = assembleStructure(uischema);
-  const idx = categories.indexOf(catName);
-  if (idx === -1) return;
-
-  const v = getCategoryErrs();
-  if (!v || v.length <= idx) return; // bad internal state, return.
-  v[idx] = err;
-  setCategoryErrs(v);
-  editingState.onUpdateCategoryErrors(v);
-}
-
 type CategoryName = string;
 /** Dotted instance path of a control, e.g. `users_root` or `networking.gateway`. */
 type ControlPath = string;

@@ -92,11 +92,10 @@ const LogsField = ({
   // opacity-60
   return (
     <div
-      className={`flex flex-row xl:flex-wrap 2xl:flex-nowrap gap-1 w-full p-1 min-w-[${
-        Math.max(2, numLogElts) * 60
-      }px] xl:min-w-[0px]`}
+      className="flex flex-row xl:flex-wrap 2xl:flex-nowrap gap-1 w-full p-1 xl:!min-w-0"
       style={{
         verticalAlign: 'middle',
+        minWidth: Math.max(2, numLogElts) * 60,
       }}
     >
       {(function () {
@@ -118,6 +117,7 @@ const LogsField = ({
           if (l.problem && !l.progress) {
             jsx.push(
               <div
+                key={l.name}
                 className={`${
                   numLogElts == 2 ? 'xl:max-w-[42px]' : 'xl:max-w-[38px]'
                 } 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]`}
@@ -142,6 +142,7 @@ const LogsField = ({
           } else if (l.progress) {
             jsx.push(
               <div
+                key={l.name}
                 className={`${
                   numLogElts == 2 ? 'xl:max-w-[42px]' : 'xl:max-w-[38px]'
                 } 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]`}
@@ -166,6 +167,7 @@ const LogsField = ({
           } else {
             jsx.push(
               <div
+                key={l.name}
                 className={`${
                   numLogElts == 2 ? 'xl:max-w-[42px]' : 'xl:max-w-[38px]'
                 } 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]`}

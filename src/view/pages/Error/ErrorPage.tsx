@@ -20,12 +20,6 @@ const ErrorPage = () => {
             >
               Go back
             </a>
-            <a
-              href="mailto:TODO@ethz.ch?subject=Error Report"
-              className="block py-2 px-4 hover:opacity-70 font-medium duration-150 active:bg-gray-100 border rounded-lg"
-            >
-              Contact support
-            </a>
           </div>
         </div>
       </div>

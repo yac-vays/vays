@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { navigateToURL } from '../../../../controller/global/url';
 import { logOut } from '../../../../session/login/loginProcess';
 import {
@@ -13,8 +13,16 @@ const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState<boolean>(!!userIsLoggedIn());
 
-  window.addEventListener('sign-in', () => setLoggedIn(true));
-  window.addEventListener('sign-out', () => setLoggedIn(false));
+  useEffect(() => {
+    const onSignIn = () => setLoggedIn(true);
+    const onSignOut = () => setLoggedIn(false);
+    window.addEventListener('sign-in', onSignIn);
+    window.addEventListener('sign-out', onSignOut);
+    return () => {
+      window.removeEventListener('sign-in', onSignIn);
+      window.removeEventListener('sign-out', onSignOut);
+    };
+  }, []);
 
   const userName = loggedIn ? getUserName() : 'Not Logged In';
   const login = loggedIn ? getUserLogin() : '';

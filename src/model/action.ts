@@ -13,6 +13,7 @@ import { copyEntity } from './copy';
 import { deleteEntity } from './delete';
 import { invalidateEntityListCache } from './entityList';
 import { linkEntity } from './link';
+import { handleYacResponse } from './utils/handleYacResponse';
 
 /**
  * After an action that creates/changes an entity from the overview, refresh the
@@ -313,15 +314,17 @@ export async function sendAction(
     joinUrl(url, `/entity/${requestContext.entityTypeName}/${entityName}/run/${actionName}`),
     'POST',
   );
-  if (resp?.status == 204) return true;
-  if (resp != null && resp.status >= 400) {
-    const ans = await resp.json();
-    showError(
-      `${requestContext.backendObject?.title}: ` +
-        (ans.title ?? `Action could not be sent (Status ${resp.status})`),
-      ans.message ?? 'Action cannot be sent. Please contact the admin to resolve this issue.',
-    );
-    return null;
-  }
-  return false;
+
+  const result = await handleYacResponse(resp, {
+    backendTitle: requestContext.backendObject?.title,
+    errorTitle: 'Action could not be sent',
+    errorMessage: 'Action cannot be sent. Please contact the admin to resolve this issue.',
+    successStatus: 204,
+    genericClientErrors: true,
+  });
+
+  if (result.kind === 'success') return true;
+  if (result.kind === 'network-error') return false;
+  // The error was already reported (toast or re-login flow).
+  return null;
 }

@@ -17,6 +17,7 @@ import {
 import { EditActionSnapshot, NO_ACTIONS } from '../../../utils/schema/injectActions';
 import { LimitUsage } from '../../../utils/types/api';
 import { RequestEditContext } from '../../../utils/types/internal/request';
+import { logError } from '../../../utils/logger';
 import { ValidateResponse } from '../../../utils/types/internal/validation';
 import { Nullable } from '../../../utils/types/typeUtils';
 import { showError } from '../../global/notification';
@@ -241,6 +242,13 @@ export function getAJV(): Ajv {
 }
 
 /**
+ * Safety net for `coreUpdate`'s stabilization loop: deep nesting can
+ * legitimately need many passes, but a pass count this high means the
+ * defaults/cleanup handling oscillates instead of converging.
+ */
+const CORE_UPDATE_MAX_PASSES = 100;
+
+/**
  * Subroutine which performs as many validates as it
  * is necessary to stabilize out the data object. That is, it validates and if new parameters
  * with defaults appear or parameters are removed and the data needs to be cleared up.
@@ -262,6 +270,8 @@ export async function coreUpdate(
   // The YAML the form patch should be merged into (comment-preserving). Passed
   // for user form edits; omitted on initial loads (then the stored YAML is used).
   yamlBase?: string,
+  // Internal: number of stabilization passes already performed.
+  pass: number = 0,
 ) {
   let data = entityData;
   if (requestEditContext.mode === 'change') {
@@ -291,6 +301,13 @@ export async function coreUpdate(
   // do revalidation here!
   // See ephemeral property problem.
   if (doRevalidate && didChange) {
+    if (pass >= CORE_UPDATE_MAX_PASSES) {
+      logError(
+        `coreUpdate did not stabilize after ${CORE_UPDATE_MAX_PASSES} passes; aborting revalidation loop`,
+        'EditController/shared.ts coreUpdate',
+      );
+      return valResp;
+    }
     return await coreUpdate(
       valResp.data,
       requestEditContext,
@@ -298,6 +315,7 @@ export async function coreUpdate(
       editActions,
       name,
       yamlBase,
+      pass + 1,
     );
   }
   return valResp;
@@ -321,11 +339,9 @@ function handleDefaults(
   let didChange = false;
 
   if (requestEditContext.mode === 'change') {
-    console.log('Edit controller: Going into branch change.');
     valResp.data = previousData; //frontData;
     didChange = mergeDefaults(valResp);
   } else {
-    console.log('Edit controller: Going into general branch.');
     didChange = updateDefaults(valResp);
   }
   // Note: seperate calculate and store here, avoiding short circuiting.

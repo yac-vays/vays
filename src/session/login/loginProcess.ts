@@ -1,6 +1,7 @@
 import * as client from 'openid-client';
 
 import { navigateToURL } from '../../controller/global/url';
+import { logError } from '../../utils/logger';
 import { AppConfig } from '../../utils/types/config';
 import { AuthDiscConfig } from '../../utils/types/internal/request';
 import { Nullable } from '../../utils/types/typeUtils';
@@ -42,7 +43,7 @@ async function performDiscovery(appconf: AppConfig): Promise<Nullable<URL>> {
      * Value used in the authorization request as redirect_uri pre-registered at the
      * Authorization Server.
      */
-    redirect_uri: joinUrl(`https://${window.location.host}`, 'oauth2-redirect'), // appconf.oidcConf.redirectURI,
+    redirect_uri: joinUrl(`https://${window.location.host}`, 'oauth2-redirect'),
     scope: 'openid email',
     code_challenge,
     code_challenge_method,
@@ -79,32 +80,38 @@ export async function finalizeAuthentication(appconf: AppConfig): Promise<boolea
     return false;
   }
 
-  let id_token: string | undefined;
-
   const currentUrl = new URL(window.location.href);
-  const tokens = await client.authorizationCodeGrant(
-    await client.discovery(
-      new URL(appconf.oidcConf.server),
-      appconf.oidcConf.clientID,
-      appconf.oidcConf.clientID,
-    ),
+  try {
+    const tokens = await client.authorizationCodeGrant(
+      await client.discovery(
+        new URL(appconf.oidcConf.server),
+        appconf.oidcConf.clientID,
+        appconf.oidcConf.clientID,
+      ),
 
-    currentUrl,
-    {
-      pkceCodeVerifier: config.code_verifier,
-      ...(config.nonce ? { expectedNonce: config.nonce } : {}),
-      idTokenExpected: true,
-    },
-  );
+      currentUrl,
+      {
+        pkceCodeVerifier: config.code_verifier,
+        ...(config.nonce ? { expectedNonce: config.nonce } : {}),
+        idTokenExpected: true,
+      },
+    );
 
-  // eslint-disable-next-line prefer-const
-  ({ id_token } = tokens);
-  if (id_token == undefined) return false;
+    const { id_token } = tokens;
+    if (id_token == undefined) return false;
 
-  storeToken(id_token);
-  setUserLoggedIn(true);
-  window.dispatchEvent(new Event('sign-in'));
-  return true;
+    storeToken(id_token);
+    setUserLoggedIn(true);
+    window.dispatchEvent(new Event('sign-in'));
+    return true;
+  } catch (e) {
+    // openid-client throws here e.g. when the user cancelled at the IdP
+    // (?error=access_denied), on a PKCE mismatch, or on a network failure.
+    // Report failure so the caller can route to the error page instead of
+    // leaving the user on an infinite loader.
+    logError(`OIDC token exchange failed: ${e}`, 'finalizeAuthentication');
+    return false;
+  }
 }
 
 function storeToken(token: string) {
@@ -118,11 +125,11 @@ function storeToken(token: string) {
 export function logOut() {
   // Wipe everything except the persisted UI preferences, then do a *full page
   // reload* to the home page. A hard reload (rather than a client-side
-  // navigation) is what makes it look and feel like a real logout: every bit of
-  // in-memory state — the auth token, all caches, and rendered UI such as the
-  // sidebar submenus and fetched lists — is thrown away and the app boots fresh
-  // into the logged-out home page. (The token lives only in memory + the
-  // now-cleared storage, so the reload genuinely deauthenticates.)
+  // navigation) is what makes it look and feel like a real logout: all
+  // in-memory state — caches and rendered UI such as the sidebar submenus and
+  // fetched lists — is thrown away and the app boots fresh into the logged-out
+  // home page. (The token is stored in localStorage and is removed by
+  // clearSession() below, so the reload genuinely deauthenticates.)
   iLocalStorage.clearSession();
   window.location.replace('/');
 }

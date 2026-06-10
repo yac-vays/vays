@@ -1,12 +1,12 @@
 import { Nullable } from '../../utils/types/typeUtils';
 
-export interface CacheFetchResult {
+export interface CacheFetchResult<T = unknown> {
   found: boolean;
-  value: any;
+  value: Nullable<T>;
 }
 
-class CacheNode {
-  _cache: { [key: string]: any } = {};
+class CacheNode<T = unknown> {
+  _cache: { [key: string]: T } = {};
   _hooks: { [key: string]: () => void } = {};
   _isWrittenTo: { [key: string]: boolean } = {};
   _cacheTime: { [key: string]: number } = {};
@@ -26,7 +26,7 @@ class CacheNode {
    * @param value
    * @param hook
    */
-  cache(id: string, value: any, hook: Nullable<() => void>): void {
+  cache(id: string, value: T, hook: Nullable<() => void>): void {
     this._cache[id] = value;
     if (hook) this._hooks[id] = hook;
     this._isWrittenTo[id] = false;
@@ -63,11 +63,11 @@ class CacheNode {
   }
 
   /**
-   * Fetch an entry from tihs cache node.
+   * Fetch an entry from this cache node.
    * @param id
    * @returns
    */
-  fetch(id: string): CacheFetchResult {
+  fetch(id: string): CacheFetchResult<T> {
     if (id in this._cache) {
       if (this.ttl > 0 && new Date().getTime() - this._cacheTime[id] >= this.ttl) {
         this.invalidate(id);
@@ -87,7 +87,7 @@ class CacheNode {
    * @returns
    */
   invalidate(id: string): boolean {
-    let ret = this._cache[id] != undefined;
+    const ret = this._cache[id] != undefined;
     delete this._cache[id];
     if (id in this._cacheTime) delete this._cacheTime[id];
 

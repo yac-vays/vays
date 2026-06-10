@@ -8,7 +8,7 @@ interface ControlBarProps {
 const ControlBar = ({ children }: ControlBarProps) => {
   const [showFurther, setShowFurther] = useState<boolean>(false);
   const cbar = useRef<HTMLDivElement>(null);
-  const { width, height } = useContainerDimensions(cbar, 0, 0);
+  const { width } = useContainerDimensions(cbar, 0, 0);
 
   useEffect(() => {
     if (cbar.current == null) return;

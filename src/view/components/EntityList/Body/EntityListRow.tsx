@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useRef } from 'react';
 import 'react-circular-progressbar/dist/styles.css';
-import { navigateToURL } from '../../../../controller/global/url';
+import { buildOverviewHighlightURL, navigateToURL } from '../../../../controller/global/url';
 import { hasLogsDefined } from '../../../../utils/logUtils';
 import { ActionsColumnResults } from '../../../../utils/types/internal/actions';
 import { OverviewListCellEntry } from '../../../../utils/types/internal/entityList';
@@ -40,9 +40,15 @@ const EntityListRow = ({
     }
   }, [scroll, entityName]);
 
-  const overviewBase = `/${requestContext.backendObject?.name}/${requestContext.entityTypeName}`;
   // Navigate to the overview pointing at a given entity (highlights/scrolls to it).
-  const goToEntity = (name: string) => navigateToURL(`${overviewBase}/${encodeURIComponent(name)}`);
+  const goToEntity = (name: string) =>
+    navigateToURL(
+      buildOverviewHighlightURL(
+        requestContext.backendObject?.name,
+        requestContext.entityTypeName,
+        name,
+      ),
+    );
 
   // Renders the content of a data cell. The first column is the entity name and
   // is made clickable to put it in the URL (and thus highlight this row).

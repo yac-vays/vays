@@ -54,13 +54,21 @@ function typeCheckEntityList(list: unknown, yacName: string): EntityObject[] {
   return [];
 }
 
-export async function getEntityList(requestContext: RequestContext): Promise<EntityObject[]> {
+/**
+ * Like {@link getEntityList} but also reports whether the fetch actually
+ * succeeded. `ok` is false when the request errored (in which case `list` is
+ * empty), letting callers tell a genuinely-empty type apart from a failed load
+ * — both of which otherwise look like an empty array.
+ */
+export async function fetchEntityList(
+  requestContext: RequestContext,
+): Promise<{ ok: boolean; list: EntityObject[] }> {
   if (requestContext.backendObject?.url === undefined || requestContext.entityTypeName == null) {
     logError(
       `Backend Name ${requestContext.backendObject?.url} was undefined...`,
       'getEntityTypes',
     );
-    return [];
+    return { ok: false, list: [] };
   }
 
   const url = requestContext.backendObject?.url;
@@ -78,7 +86,7 @@ export async function getEntityList(requestContext: RequestContext): Promise<Ent
     errorMessage: 'Waking up the admin, please stand by...',
   });
 
-  if (result.kind !== 'success') return [];
+  if (result.kind !== 'success') return { ok: false, list: [] };
 
   const res = await result.resp.json();
   // TODO: Do not ignore the hash here
@@ -91,5 +99,9 @@ export async function getEntityList(requestContext: RequestContext): Promise<Ent
       `Only the first ${ENTITY_LIST_LIMIT} entities of ${requestContext.entityTypeName} are shown.`,
     );
   }
-  return list;
+  return { ok: true, list };
+}
+
+export async function getEntityList(requestContext: RequestContext): Promise<EntityObject[]> {
+  return (await fetchEntityList(requestContext)).list;
 }

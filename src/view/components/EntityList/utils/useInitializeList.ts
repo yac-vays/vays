@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
+import { buildCreateURL, navigateToURL } from '../../../../controller/global/url';
 import {
   fetchEntities,
   getEntityPage,
   getHeaderEntries,
 } from '../../../../controller/local/Overview/list';
+import { fetchEntityList } from '../../../../model/entityList';
 import iLocalStorage from '../../../../session/persistent/LocalStorage';
 import { QueryResponse, QueryResult } from '../../../../utils/types/internal/entityList';
 import { RequestContext } from '../../../../utils/types/internal/request';
@@ -84,7 +86,27 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
           numResultsPerPage.valueOf(),
           null,
         );
-        if (targetPage != null) page = targetPage;
+        if (targetPage != null) {
+          page = targetPage;
+        } else {
+          // The targeted entity is not in the list. Distinguish "doesn't exist
+          // yet" from "the list failed to load" (both yield an empty result):
+          // only on a confirmed-successful fetch do we forward the user to the
+          // create form, prefilled with the requested name. On a failed load we
+          // fall through and render the (empty) list — the error toast has
+          // already been shown by the fetch.
+          const { ok } = await fetchEntityList(requestContext);
+          if (ok && mounted && requestContext.backendObject && requestContext.entityTypeName) {
+            navigateToURL(
+              buildCreateURL(
+                requestContext.backendObject,
+                requestContext.entityTypeName,
+                targetEntityName,
+              ),
+            );
+            return;
+          }
+        }
       }
       setCurrPage(page);
 

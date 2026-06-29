@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import {
   getDefaultRequestOverviewContext,
   getDefaultURL,
@@ -20,7 +20,10 @@ interface OverviewPageProps {
 }
 
 const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) => {
-  const { backendName, entityTypeName, entityName } = useParams();
+  const { backendName, entityTypeName } = useParams();
+  // The entity to highlight comes from `?name=` (see the route in App.tsx).
+  const [searchParams] = useSearchParams();
+  const entityName = searchParams.get('name') ?? undefined;
   const [showDescription, setShowDescription] = useState<boolean>(
     iLocalStorage.isOverviewDescriptionShown(),
   );

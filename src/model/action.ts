@@ -1,6 +1,6 @@
 import { showModalMessage } from '../controller/global/modal';
 import { showError, showSuccess } from '../controller/global/notification';
-import { navigateToURL } from '../controller/global/url';
+import { buildOverviewHighlightURL, navigateToURL } from '../controller/global/url';
 import { isTriggable } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
 import { isNameGeneratedByYAC, isNameOptionalByYAC } from '../utils/nameUtils';
@@ -23,8 +23,13 @@ import { handleYacResponse } from './utils/handleYacResponse';
  */
 function reloadOverviewAtEntity(requestContext: RequestContext, entityName?: Nullable<string>) {
   invalidateEntityListCache(requestContext.yacURL, requestContext.entityTypeName);
-  const base = `/${requestContext.backendObject?.name}/${requestContext.entityTypeName}`;
-  navigateToURL(entityName ? `${base}/${encodeURIComponent(entityName)}` : base);
+  navigateToURL(
+    buildOverviewHighlightURL(
+      requestContext.backendObject?.name,
+      requestContext.entityTypeName,
+      entityName,
+    ),
+  );
 }
 
 export function getActionCallback(

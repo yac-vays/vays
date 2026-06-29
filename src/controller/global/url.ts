@@ -230,10 +230,16 @@ export function navigateToURL(link: string) {
  *
  * @param yacBackend The currently selected YAC Backend
  * @param entityTypeName The corresponding entity type name.
+ * @param entityName Optional name to prefill the create form with.
  * @returns Valid URL creating an entity of given type, on given backend.
  */
-export function buildCreateURL(yacBackend: YACBackend, entityTypeName: string) {
-  return `/${yacBackend.name}/${entityTypeName}/create/`;
+export function buildCreateURL(
+  yacBackend: YACBackend,
+  entityTypeName: string,
+  entityName?: string,
+) {
+  const base = `/${yacBackend.name}/${entityTypeName}/create/`;
+  return entityName ? `${base}${encodeURIComponent(entityName)}` : base;
 }
 
 /**
@@ -244,4 +250,21 @@ export function buildCreateURL(yacBackend: YACBackend, entityTypeName: string) {
  */
 export function buildOverviewURL(yacBackend: YACBackend, entityTypeName: string) {
   return `/${yacBackend.name}/${entityTypeName}`;
+}
+
+/**
+ * Builds the overview URL that highlights (and scrolls to) a specific entity.
+ * The entity name travels as the `name` query parameter.
+ *
+ * @param backendName The YAC backend name.
+ * @param entityTypeName The corresponding entity type name.
+ * @param entityName The entity to highlight; omit for the plain overview.
+ */
+export function buildOverviewHighlightURL(
+  backendName: string | undefined,
+  entityTypeName: string | null | undefined,
+  entityName?: string | null,
+) {
+  const base = `/${backendName}/${entityTypeName}`;
+  return entityName ? `${base}?name=${encodeURIComponent(entityName)}` : base;
 }

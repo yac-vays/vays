@@ -9,7 +9,7 @@ import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import { Nullable } from '../../../../utils/types/typeUtils';
 import { showModalMessage } from '../../../global/modal';
 import { showError } from '../../../global/notification';
-import { navigateToURL } from '../../../global/url';
+import { buildOverviewHighlightURL, navigateToURL } from '../../../global/url';
 import editingState from '../../../state/EditCtrlState';
 import { flushPendingDebouncedCommits } from '../debounceRegistry';
 import { clearEditDirty, clearYACStatus, getInitialEntityYAML, setYACStatus } from '../shared';
@@ -80,8 +80,13 @@ export function sendYAMLData(requestContext: RequestEditContext) {
         // navigation below) must not trigger the unsaved-changes warning.
         clearEditDirty();
         invalidateEntityListCache(requestContext.rc.yacURL, requestContext.rc.entityTypeName);
-        const base = `/${requestContext.rc.backendObject?.name}/${requestContext.rc.entityTypeName}`;
-        navigateToURL(entityName ? `${base}/${encodeURIComponent(entityName)}` : base);
+        navigateToURL(
+          buildOverviewHighlightURL(
+            requestContext.rc.backendObject?.name,
+            requestContext.rc.entityTypeName,
+            entityName,
+          ),
+        );
       }
     },
     async () => {},

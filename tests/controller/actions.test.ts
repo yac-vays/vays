@@ -22,6 +22,7 @@ const A = {
       },
       isAllowed: true,
       performAction: fn,
+      href: '/test/testType/view/blub',
     },
     {
       action: {
@@ -70,6 +71,7 @@ const B = {
       },
       isAllowed: true,
       performAction: fn,
+      href: '/test/testType/view/blub',
     },
     {
       action: {

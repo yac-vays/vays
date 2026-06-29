@@ -1,10 +1,18 @@
-import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  MouseEvent as ReactMouseEvent,
+  ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import {
   positionDropdownElement,
   registerTableScrollContainerEvent,
   unregisterTableScrollContainerEvent,
 } from '../../controller/local/Overview/list';
 import { hashCode } from '../../utils/hashUtils';
+import { isModifiedClick } from '../../utils/navClick';
 import { GUIActionDropdownArg } from '../../utils/types/internal/actions';
 import { Nullable } from '../../utils/types/typeUtils';
 import useOutsideClick from '../hooks/useOutsideClick';
@@ -146,47 +154,70 @@ const ActionDropdown = ({ actions, entityName }: ActionDropdownProps) => {
                   'action-dropdown-' +
                   hashCode(`${entityName}-${act.action.name}-${act.action.description}`).toString();
                 const idLoader: string = id + '-loader';
+                const itemClassName =
+                  'group pb-1 relative flex items-center gap-2.5 rounded-md px-2 font-medium duration-300 ease-in-out dark:hover:text-white';
+                const onItemClick = async (e: ReactMouseEvent) => {
+                  // Navigating items (edit/view) are real links: leave modified /
+                  // middle clicks to the browser (open in a new tab), otherwise
+                  // intercept for in-app navigation.
+                  if (act.href != null) {
+                    if (isModifiedClick(e)) return;
+                    e.preventDefault();
+                  }
+                  /**
+                   * Doing it here the traditional way to avoid variables for every single list element.
+                   * Keep in mind that the common case is that only a few of these (<< 1000) will be pressed over the
+                   * span of the webapp lifecycle. Thus having variables for each, for each entity is avoided.
+                   */
+                  const loaderElt: Nullable<HTMLElement> = document.getElementById(idLoader);
+                  const listEntryElt: Nullable<HTMLElement> = document.getElementById(id);
+                  if (loaderElt != null) {
+                    loaderElt.classList.toggle('hidden');
+                  }
+                  if (listEntryElt != null) {
+                    listEntryElt.classList.toggle('opacity-30');
+                  }
+                  await act.performAction();
+                  if (loaderElt != null) {
+                    loaderElt.classList.toggle('hidden');
+                  }
+                  if (listEntryElt != null) {
+                    listEntryElt.classList.toggle('opacity-30');
+                  }
+                };
+                const itemInner = (
+                  <>
+                    {act.action.icon ? (
+                      <img
+                        style={{ height: 20, width: 20, filter: GREY_ICON_FILTER }}
+                        src={`data:image/svg+xml;utf8,${encodeURIComponent(act.action.icon)}`}
+                      />
+                    ) : (
+                      <></>
+                    )}
+                    <span>{act.action.title}</span>
+                  </>
+                );
                 jsx.push(
                   <li
                     key={i++}
                     className="relative items-center justify-center cursor-pointer hover:bg-primary-5 dark:hover:bg-meta-4"
                   >
-                    <div
-                      id={id}
-                      className="group pb-1 relative flex items-center gap-2.5 rounded-md px-2 font-medium duration-300 ease-in-out dark:hover:text-white"
-                      onClick={async () => {
-                        /**
-                         * Doing it here the traditional way to avoid variables for every single list element.
-                         * Keep in mind that the common case is that only a few of these (<< 1000) will be pressed over the
-                         * span of the webapp lifecycle. Thus having variables for each, for each entity is avoided.
-                         */
-                        const loaderElt: Nullable<HTMLElement> = document.getElementById(idLoader);
-                        const listEntryElt: Nullable<HTMLElement> = document.getElementById(id);
-                        if (loaderElt != null) {
-                          loaderElt.classList.toggle('hidden');
-                        }
-                        if (listEntryElt != null) {
-                          listEntryElt.classList.toggle('opacity-30');
-                        }
-                        await act.performAction();
-                        if (loaderElt != null) {
-                          loaderElt.classList.toggle('hidden');
-                        }
-                        if (listEntryElt != null) {
-                          listEntryElt.classList.toggle('opacity-30');
-                        }
-                      }}
-                    >
-                      {act.action.icon ? (
-                        <img
-                          style={{ height: 20, width: 20, filter: GREY_ICON_FILTER }}
-                          src={`data:image/svg+xml;utf8,${encodeURIComponent(act.action.icon)}`}
-                        />
-                      ) : (
-                        <></>
-                      )}
-                      <span>{act.action.title}</span>
-                    </div>
+                    {act.href != null ? (
+                      <a
+                        id={id}
+                        href={act.href}
+                        className={itemClassName}
+                        style={{ textDecoration: 'none' }}
+                        onClick={onItemClick}
+                      >
+                        {itemInner}
+                      </a>
+                    ) : (
+                      <div id={id} className={itemClassName} onClick={onItemClick}>
+                        {itemInner}
+                      </div>
+                    )}
                     <div
                       id={idLoader}
                       className="absolute flex flex-col hidden"

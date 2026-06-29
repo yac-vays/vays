@@ -253,6 +253,23 @@ export function buildOverviewURL(yacBackend: YACBackend, entityTypeName: string)
 }
 
 /**
+ * Builds the URL of an entity-scoped action page (edit / view).
+ *
+ * @param backendName The YAC backend name.
+ * @param entityTypeName The corresponding entity type name.
+ * @param verb The route verb: `modify` (edit) or `view` (read-only).
+ * @param entityName The entity the action applies to.
+ */
+export function buildEntityActionURL(
+  backendName: string | undefined,
+  entityTypeName: string | null | undefined,
+  verb: 'modify' | 'view',
+  entityName: string,
+) {
+  return `/${backendName}/${entityTypeName}/${verb}/${encodeURIComponent(entityName)}`;
+}
+
+/**
  * Builds the overview URL that highlights (and scrolls to) a specific entity.
  * The entity name travels as the `name` query parameter.
  *

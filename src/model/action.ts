@@ -1,6 +1,10 @@
 import { showModalMessage } from '../controller/global/modal';
 import { showError, showSuccess } from '../controller/global/notification';
-import { buildOverviewHighlightURL, navigateToURL } from '../controller/global/url';
+import {
+  buildEntityActionURL,
+  buildOverviewHighlightURL,
+  navigateToURL,
+} from '../controller/global/url';
 import { isTriggable } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
 import { isNameGeneratedByYAC, isNameOptionalByYAC } from '../utils/nameUtils';
@@ -138,10 +142,22 @@ export const OPERATIONS_META: OperationsMetaInfo = {
    *
    */
   change: {
+    getOperationURL: (entityName: string, requestContext: RequestContext) =>
+      buildEntityActionURL(
+        requestContext.backendObject?.name,
+        requestContext.entityTypeName,
+        'modify',
+        entityName,
+      ),
     getOperationCallback: (entityName: string, requestContext: RequestContext) => {
       return async () => {
         navigateToURL(
-          `/${requestContext.backendObject?.name}/${requestContext.entityTypeName}/modify/${entityName}`,
+          buildEntityActionURL(
+            requestContext.backendObject?.name,
+            requestContext.entityTypeName,
+            'modify',
+            entityName,
+          ),
         );
         return true;
       };
@@ -152,10 +168,22 @@ export const OPERATIONS_META: OperationsMetaInfo = {
    *
    */
   view: {
+    getOperationURL: (entityName: string, requestContext: RequestContext) =>
+      buildEntityActionURL(
+        requestContext.backendObject?.name,
+        requestContext.entityTypeName,
+        'view',
+        entityName,
+      ),
     getOperationCallback: (entityName: string, requestContext: RequestContext) => {
       return async () => {
         navigateToURL(
-          `/${requestContext.backendObject?.name}/${requestContext.entityTypeName}/view/${entityName}`,
+          buildEntityActionURL(
+            requestContext.backendObject?.name,
+            requestContext.entityTypeName,
+            'view',
+            entityName,
+          ),
         );
         return true;
       };

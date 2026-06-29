@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { GUIActionButtonArg } from '../../../utils/types/internal/actions';
+import { isModifiedClick } from '../../../utils/navClick';
 
 interface ActionButtonProps {
   actArgs: GUIActionButtonArg;
@@ -21,66 +22,90 @@ const ActionButton = ({ actArgs, isLeft }: ActionButtonProps) => {
   const grey =
     'brightness(0) saturate(100%) invert(42%) sepia(24%) saturate(434%) hue-rotate(176deg) brightness(99%) contrast(85%)';
   const action = actArgs.action;
+
+  const activate = () => {
+    if (actArgs.isAllowed) {
+      if (action.dangerous) {
+        actArgs.performAction();
+      } else {
+        setSending(true);
+        actArgs.performAction().then(() => {
+          setSending(false);
+        });
+      }
+    }
+  };
+
+  // Navigating actions (edit/view) render as real links so they can be opened in
+  // a new tab; a plain left-click is intercepted for in-app navigation, while
+  // modified/middle clicks keep their native "open in new tab" behaviour.
+  const asLink = actArgs.href != null && actArgs.isAllowed;
+
+  const className = `p-1 inline-flex items-center justify-center text-center gap-2.5 font-medium bg-[#f5f5f5] dark:bg-meta-4  border-transparent
+             ${isLeft ? 'rounded-l' : ''}`;
+  const style = {
+    position: 'relative' as const,
+    left: -1,
+    zIndex: 1,
+    height: 36,
+    width: 36,
+    cursor: 'pointer',
+  };
+
+  const content = isSending ? (
+    <div
+      style={{ borderWidth: 3 }}
+      className="absolute h-4 w-4 animate-spin rounded-full border-2 border-solid border-grey border-t-transparent ml-1 mt-0 pt-0"
+    ></div>
+  ) : (
+    <>
+      {/* https://stackoverflow.com/questions/44900569/turning-an-svg-string-into-an-image-in-a-react-component */}
+      {/*
+        For the transformation, there is this brilliant commentary and website
+        https://stackoverflow.com/questions/42966641/how-to-transform-black-into-any-given-color-using-only-css-filters/43960991#43960991
+        https://codepen.io/sosuke/pen/Pjoqqp
+      */}
+      <div
+        className={`rounded duration-300 hover:border-black hover:bg-transparent ${
+          actArgs.isAllowed ? 'hover:scale-150' : ''
+        }`}
+        style={{ width: '100%' }}
+      >
+        <img
+          title={action.title}
+          style={{
+            height: 30,
+            width: 30,
+            backgroundColor: 'rgba(0 0 0/0)',
+            filter: grey,
+            opacity: actArgs.isAllowed ? 1 : 0.2,
+          }}
+          src={`data:image/svg+xml;utf8,${encodeURIComponent(action.icon)}`}
+        />
+      </div>
+    </>
+  );
+
   return (
     <>
-      <div
-        onClick={() => {
-          if (actArgs.isAllowed) {
-            if (action.dangerous) {
-              actArgs.performAction();
-            } else {
-              setSending(true);
-              actArgs.performAction().then(() => {
-                setSending(false);
-              });
-            }
-          }
-        }}
-        className={`p-1 inline-flex items-center justify-center text-center gap-2.5 font-medium bg-[#f5f5f5] dark:bg-meta-4  border-transparent 
-             ${isLeft ? 'rounded-l' : ''}`}
-        style={{
-          position: 'relative',
-          left: -1,
-          zIndex: 1,
-          height: 36,
-          width: 36,
-          cursor: 'pointer',
-        }}
-      >
-        {isSending ? (
-          <div
-            style={{ borderWidth: 3 }}
-            className="absolute h-4 w-4 animate-spin rounded-full border-2 border-solid border-grey border-t-transparent ml-1 mt-0 pt-0"
-          ></div>
-        ) : (
-          <>
-            {/* https://stackoverflow.com/questions/44900569/turning-an-svg-string-into-an-image-in-a-react-component */}
-            {/* 
-            For the transformation, there is this brilliant commentary and website 
-            https://stackoverflow.com/questions/42966641/how-to-transform-black-into-any-given-color-using-only-css-filters/43960991#43960991
-            https://codepen.io/sosuke/pen/Pjoqqp 
-          */}
-            <div
-              className={`rounded duration-300 hover:border-black hover:bg-transparent ${
-                actArgs.isAllowed ? 'hover:scale-150' : ''
-              }`}
-              style={{ width: '100%' }}
-            >
-              <img
-                title={action.title}
-                style={{
-                  height: 30,
-                  width: 30,
-                  backgroundColor: 'rgba(0 0 0/0)',
-                  filter: grey,
-                  opacity: actArgs.isAllowed ? 1 : 0.2,
-                }}
-                src={`data:image/svg+xml;utf8,${encodeURIComponent(action.icon)}`}
-              />
-            </div>
-          </>
-        )}
-      </div>
+      {asLink ? (
+        <a
+          href={actArgs.href}
+          onClick={(e) => {
+            if (isModifiedClick(e)) return;
+            e.preventDefault();
+            activate();
+          }}
+          className={className}
+          style={{ ...style, textDecoration: 'none' }}
+        >
+          {content}
+        </a>
+      ) : (
+        <div onClick={activate} className={className} style={style}>
+          {content}
+        </div>
+      )}
     </>
   );
 };

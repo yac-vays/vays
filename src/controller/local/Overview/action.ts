@@ -148,10 +148,14 @@ function _addFavoriteOperation(
     opName = entry.name;
   }
 
+  const href = OPERATIONS_META[opName].getOperationURL?.(entityName, requestContext);
   favActs.push({
     action: entry,
     isAllowed: isAllowed,
     performAction: OPERATIONS_META[opName].getOperationCallback(entityName, requestContext),
+    // Only navigating operations (edit/view) carry an href; omit the key
+    // entirely otherwise.
+    ...(href ? { href } : {}),
   });
 }
 
@@ -211,6 +215,10 @@ function getDropdownActions(
     }
 
     let operation: ActionDecl = OPERATIONS[opName];
+    // The operation actually carried out; diverges from opName only when Edit
+    // degrades to View below (so the click target / link follow the View op,
+    // not the Edit op the iteration started from).
+    let effectiveOpName = opName;
     let isAllowed = checkPermissions(entity.perms, operation.perms);
     // A read-only type (`change` disabled) degrades Edit to the View operation.
     if (opName === 'change' && requestContext.accessedEntityType?.change === false) {
@@ -223,13 +231,20 @@ function getDropdownActions(
     }
     if (!isAllowed && operation.name === 'change') {
       operation = OPERATION_VIEW;
+      effectiveOpName = OPERATION_VIEW.name;
     } else if (!isAllowed) {
       continue;
     }
 
+    const href = OPERATIONS_META[effectiveOpName].getOperationURL?.(entity.name, requestContext);
     result.push({
       action: operation,
-      performAction: OPERATIONS_META[opName].getOperationCallback(entity.name, requestContext),
+      performAction: OPERATIONS_META[effectiveOpName].getOperationCallback(
+        entity.name,
+        requestContext,
+      ),
+      // Only navigating operations (edit/view) carry an href; omit otherwise.
+      ...(href ? { href } : {}),
     });
   }
 

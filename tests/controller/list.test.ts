@@ -103,6 +103,7 @@ const RESPONSE = {
             },
             isAllowed: true,
             performAction: () => {},
+            href: '/test/testType/modify/a-0',
           },
           {
             action: {
@@ -192,6 +193,7 @@ const RESPONSE = {
             },
             isAllowed: true,
             performAction: () => {},
+            href: '/test/testType/modify/a-1',
           },
           {
             action: {

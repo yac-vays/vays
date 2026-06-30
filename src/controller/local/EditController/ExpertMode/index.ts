@@ -153,8 +153,11 @@ export function startExpertModeSession(
 ) {
   clearYACStatus();
   setActivatedActions([]);
-  if (requestEditContext.mode == 'edit') setEntityName(requestEditContext.entityName ?? null);
-  else setEntityName(null);
+  // Seed the global name from the context for both edit and create. On create this
+  // carries the name pre-filled from the URL (e.g. /create/xyz) into
+  // editingState, so the first validate sends entity.name instead of null. Defaults to
+  // null when no name was supplied (plain "create new"), preserving prior behavior.
+  setEntityName(requestEditContext.entityName ?? null);
   setCurrentContext(requestEditContext);
   setIsValidatingCallback(setIsValidating);
   setErrorMessageCallback(setEditErrorMsg);

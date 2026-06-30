@@ -156,15 +156,15 @@ function App(): JSX.Element {
                   }
                 />
                 <Route
-                  path="/:backendName/:entityTypeName/modify/:entityName?"
+                  path="/:backendName/:entityTypeName/edit/:entityName?"
                   element={
                     <>
-                      <EditView backends={backendsList} mode={'change'} />
+                      <EditView backends={backendsList} mode={'edit'} />
                     </>
                   }
                 />
                 <Route
-                  path="/:backendName/:entityTypeName/view/:entityName?"
+                  path="/:backendName/:entityTypeName/read/:entityName?"
                   element={
                     <>
                       <EditView backends={backendsList} mode={'read'} />

@@ -91,7 +91,7 @@ export const Editor = ({
       };
     }
   }, [
-    requestEditContext.mode === 'change' ? requestEditContext.entityName : '',
+    requestEditContext.mode === 'edit' ? requestEditContext.entityName : '',
     requestEditContext.mode,
     requestEditContext.rc.entityTypeName,
     requestEditContext.rc.yacURL,

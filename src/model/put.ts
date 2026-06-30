@@ -38,13 +38,13 @@ export async function putYAMLEntity(
 
   const result = await handleYacResponse(resp, {
     backendTitle: requestEditContext.rc.backendObject?.title,
-    errorTitle: `Cannot update ${name}`,
+    errorTitle: `Cannot edit ${name}`,
     errorMessage: 'Please contact your admin on this issue. ',
     serverErrorSuffix: 'The data you entered is cached for now.',
   });
 
   if (result.kind === 'success') {
-    showSuccess(`Modified ${name} successfully!`, 'The entity was successfully modified.');
+    showSuccess(`Edited ${name} successfully!`, 'The entity was successfully edited.');
     return true;
   } else if (result.kind === 'invalid-request') {
     showError(

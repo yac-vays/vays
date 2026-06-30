@@ -6,14 +6,14 @@ export function getTestEditRequestContext(
   backendName: string,
   entityName: string | null,
   entityTypeName: string,
-  mode: 'create' | 'change',
+  mode: 'create' | 'edit',
   favorites: FavOpObject[] = [
-    { name: 'change', action: false },
+    { name: 'edit', action: false },
     { name: 'act', action: true },
   ],
   actions: ActionDecl[] = [
     {
-      name: 'change',
+      name: 'edit',
       title: '',
       description: '',
       dangerous: false,
@@ -42,7 +42,7 @@ export function getTestEditRequestContext(
     name_generated: NameGeneratedCond.never,
     description: '',
     create: true,
-    change: true,
+    edit: true,
     delete: true,
     options: [],
     logs: [],

@@ -138,15 +138,15 @@ export const OPERATIONS_META: OperationsMetaInfo = {
     },
   },
   /**
-   * Change operation. This operation is the modification.
+   * Edit operation. This operation modifies an existing entity.
    *
    */
-  change: {
+  edit: {
     getOperationURL: (entityName: string, requestContext: RequestContext) =>
       buildEntityActionURL(
         requestContext.backendObject?.name,
         requestContext.entityTypeName,
-        'modify',
+        'edit',
         entityName,
       ),
     getOperationCallback: (entityName: string, requestContext: RequestContext) => {
@@ -155,7 +155,7 @@ export const OPERATIONS_META: OperationsMetaInfo = {
           buildEntityActionURL(
             requestContext.backendObject?.name,
             requestContext.entityTypeName,
-            'modify',
+            'edit',
             entityName,
           ),
         );
@@ -164,15 +164,15 @@ export const OPERATIONS_META: OperationsMetaInfo = {
     },
   },
   /**
-   * View operation. The replacement of change if the latter is not permitted to the user.
+   * Read operation. The replacement of edit if the latter is not permitted to the user.
    *
    */
-  view: {
+  read: {
     getOperationURL: (entityName: string, requestContext: RequestContext) =>
       buildEntityActionURL(
         requestContext.backendObject?.name,
         requestContext.entityTypeName,
-        'view',
+        'read',
         entityName,
       ),
     getOperationCallback: (entityName: string, requestContext: RequestContext) => {
@@ -181,7 +181,7 @@ export const OPERATIONS_META: OperationsMetaInfo = {
           buildEntityActionURL(
             requestContext.backendObject?.name,
             requestContext.entityTypeName,
-            'view',
+            'read',
             entityName,
           ),
         );
@@ -268,15 +268,15 @@ export const OPERATIONS_META: OperationsMetaInfo = {
 
 /**
  * View is a special operation which is not explicitly configured from the YAC side.
- * It is the replacement of the change (edit) Operation if the user does not have
+ * It is the replacement of the edit Operation if the user does not have
  * write permission.
  *
  * This behavior is different from the other actions/operations: They are typically greyed
  * out when not available.
  */
 export const OPERATION_VIEW: ActionDecl = {
-  name: 'view',
-  title: 'View',
+  name: 'read',
+  title: 'Read',
   perms: ['see'], // && !edt
   icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="grey"><path d="M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Zm0-300Zm0 220q113 0 207.5-59.5T832-500q-50-101-144.5-160.5T480-720q-113 0-207.5 59.5T128-500q50 101 144.5 160.5T480-280Z"/></svg>',
   dangerous: false,
@@ -288,7 +288,7 @@ export const OPERATION_VIEW: ActionDecl = {
 export const OPERATIONS: { [key: string]: ActionDecl } = {
   create_copy: {
     name: 'create_copy',
-    title: 'Copy',
+    title: 'Create Copy',
     perms: ['cpy'],
     icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="grey"><path d="M120-220v-80h80v80h-80Zm0-140v-80h80v80h-80Zm0-140v-80h80v80h-80ZM260-80v-80h80v80h-80Zm100-160q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480Zm40 240v-80h80v80h-80Zm-200 0q-33 0-56.5-23.5T120-160h80v80Zm340 0v-80h80q0 33-23.5 56.5T540-80ZM120-640q0-33 23.5-56.5T200-720v80h-80Zm420 80Z"/></svg>',
     dangerous: false,
@@ -296,8 +296,8 @@ export const OPERATIONS: { [key: string]: ActionDecl } = {
     hooks: [],
     description: '',
   },
-  change: {
-    name: 'change',
+  edit: {
+    name: 'edit',
     title: 'Edit',
     perms: ['edt'],
     icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="grey"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>',
@@ -318,7 +318,7 @@ export const OPERATIONS: { [key: string]: ActionDecl } = {
   },
   create_link: {
     name: 'create_link',
-    title: 'Link',
+    title: 'Create Link',
     perms: ['lnk'],
     icon: '<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="grey"><path d="M680-160v-120H560v-80h120v-120h80v120h120v80H760v120h-80ZM440-280H280q-83 0-141.5-58.5T80-480q0-83 58.5-141.5T280-680h160v80H280q-50 0-85 35t-35 85q0 50 35 85t85 35h160v80ZM320-440v-80h320v80H320Zm560-40h-80q0-50-35-85t-85-35H520v-80h160q83 0 141.5 58.5T880-480Z"/></svg>',
     dangerous: false,

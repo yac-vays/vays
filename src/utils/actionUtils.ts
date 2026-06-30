@@ -2,7 +2,7 @@ import { ActionDecl } from './types/api';
 
 export function getTriggerableActions(
   acts: ActionDecl[],
-  ctx: 'read' | 'create' | 'change' | 'delete',
+  ctx: 'read' | 'create' | 'edit' | 'delete',
 ) {
   if (ctx === 'read') return [];
   return acts.filter((v) => isTriggable(ctx, v));
@@ -14,7 +14,7 @@ export function getTriggerableActions(
  * @param act
  * @returns
  */
-export function isTriggable(ctx: 'create' | 'change' | 'delete', act: ActionDecl) {
+export function isTriggable(ctx: 'create' | 'edit' | 'delete', act: ActionDecl) {
   let hasHook = false;
   for (const hook of act.hooks) {
     if (hook.startsWith(ctx)) {

@@ -8,7 +8,7 @@
 import { JsonSchema } from '@jsonforms/core';
 import { Nullable, SafeSource } from './typeUtils';
 
-export type APIOperation = 'create' | 'change' | 'delete';
+export type APIOperation = 'create' | 'edit' | 'delete';
 
 /**
  * One `limits` rule's computed usage for the current operation, as returned
@@ -115,7 +115,7 @@ export const TYPE_CHECK_ENTITY_TYPE_DECL = `{
   description: String,
   create: Boolean,
   delete: Boolean,
-  change: Boolean,
+  edit: Boolean,
   options: [Object],
   logs: [{name: String, title: String, progress: Boolean, problem: Boolean}],
   actions: [${TYPE_CHECK_ACTION_DECL}],
@@ -133,7 +133,7 @@ export interface EntityTypeDecl {
   name_generated: NameGeneratedCond;
   description: SafeSource<string>;
   create: boolean;
-  change: boolean;
+  edit: boolean;
   delete: boolean;
   options: {
     title: string;
@@ -158,7 +158,6 @@ export type Permission =
   | 'cpy'
   | 'lnk'
   | 'edt'
-  | 'mod'
   | 'cln'
   | 'del'
   | 'act'

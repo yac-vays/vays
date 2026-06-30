@@ -153,7 +153,7 @@ export function startExpertModeSession(
 ) {
   clearYACStatus();
   setActivatedActions([]);
-  if (requestEditContext.mode == 'change') setEntityName(requestEditContext.entityName ?? null);
+  if (requestEditContext.mode == 'edit') setEntityName(requestEditContext.entityName ?? null);
   else setEntityName(null);
   setCurrentContext(requestEditContext);
   setIsValidatingCallback(setIsValidating);

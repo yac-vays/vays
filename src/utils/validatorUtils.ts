@@ -41,9 +41,9 @@ function getEntityObjectExpertMode(
   yaml_old?: string,
 ): string {
   // YAML editor (Expert mode)
-  if (requestEditContext.mode === 'change') {
+  if (requestEditContext.mode === 'edit') {
     return JSON.stringify({
-      operation: 'change',
+      operation: 'edit',
       type: requestEditContext.rc.entityTypeName,
       actions: actions,
       name: requestEditContext.entityName ?? null,
@@ -88,9 +88,9 @@ function getEntityObjectStdMode(
       name: null,
       entity: { name: name, data: data, ...base },
     });
-  } else if (requestEditContext.mode === 'change') {
+  } else if (requestEditContext.mode === 'edit') {
     return JSON.stringify({
-      operation: 'change',
+      operation: 'edit',
       type: requestEditContext.rc.entityTypeName,
       actions: actions,
       name: requestEditContext.entityName ?? null,

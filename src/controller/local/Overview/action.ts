@@ -71,7 +71,7 @@ function isOperationGloballyEnabled(opName: string, requestContext: RequestConte
  * link — YAC rejects them — so they are disabled / hidden for link entities.
  */
 function isBlockedOnLink(opName: string): boolean {
-  return opName === 'create_copy' || opName === 'create_link' || opName === 'change';
+  return opName === 'create_copy' || opName === 'create_link' || opName === 'edit';
 }
 
 /**
@@ -132,9 +132,9 @@ function _addFavoriteOperation(
   const entityName: string = entity.name;
   let entry: ActionDecl = OPERATIONS[opName] as ActionDecl;
   let isAllowed = checkPermissions(entity.perms, entry.perms);
-  // A read-only type (`change` disabled) degrades Edit to the View operation,
+  // A read-only type (`edit` disabled) degrades Edit to the Read operation,
   // exactly like lacking the per-entity edit permission does.
-  if (entry.name === 'change' && requestContext.accessedEntityType?.change === false) {
+  if (entry.name === 'edit' && requestContext.accessedEntityType?.edit === false) {
     isAllowed = false;
   }
   // Copy/link/edit are not possible on a link entity (YAC rejects them): edit
@@ -142,7 +142,7 @@ function _addFavoriteOperation(
   if (entity.link != null && isBlockedOnLink(entry.name)) {
     isAllowed = false;
   }
-  if (entry.name === 'change' && !isAllowed) {
+  if (entry.name === 'edit' && !isAllowed) {
     entry = OPERATION_VIEW;
     isAllowed = true;
     opName = entry.name;
@@ -220,8 +220,8 @@ function getDropdownActions(
     // not the Edit op the iteration started from).
     let effectiveOpName = opName;
     let isAllowed = checkPermissions(entity.perms, operation.perms);
-    // A read-only type (`change` disabled) degrades Edit to the View operation.
-    if (opName === 'change' && requestContext.accessedEntityType?.change === false) {
+    // A read-only type (`edit` disabled) degrades Edit to the Read operation.
+    if (opName === 'edit' && requestContext.accessedEntityType?.edit === false) {
       isAllowed = false;
     }
     // Copy/link are dropped from the dropdown and edit degrades to View when the
@@ -229,7 +229,7 @@ function getDropdownActions(
     if (entity.link != null && isBlockedOnLink(opName)) {
       isAllowed = false;
     }
-    if (!isAllowed && operation.name === 'change') {
+    if (!isAllowed && operation.name === 'edit') {
       operation = OPERATION_VIEW;
       effectiveOpName = OPERATION_VIEW.name;
     } else if (!isAllowed) {

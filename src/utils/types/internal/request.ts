@@ -1,7 +1,7 @@
 import { EntityTypeDecl } from '../api';
 import { YACBackend } from '../config';
 
-export type EditViewMode = 'create' | 'change' | 'read';
+export type EditViewMode = 'create' | 'edit' | 'read';
 
 export interface RequestOverviewContext {
   // isSearch: boolean; // TODO: Currently not supplied.

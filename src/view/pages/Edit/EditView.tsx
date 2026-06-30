@@ -23,7 +23,7 @@ interface EditViewProps {
  * (a single editor with a form pane and a YAML pane).
  *
  * @param {Backend[]} props.backends - The list of backends available.
- * @param {EditViewMode} props.mode - The operation: 'create', 'change' or 'read'.
+ * @param {EditViewMode} props.mode - The operation: 'create', 'edit' or 'read'.
  *
  * @returns {JSX.Element} The rendered EditView component.
  *
@@ -68,10 +68,10 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
           setTitle(
             `${backendTitle} / ${entityTypeTitle} / Create: '${requestEditContext.entityName}'`,
           );
-      } else if (mode === 'change') {
+      } else if (mode === 'edit') {
         setTitle(`${backendTitle} / ${entityTypeTitle} / Edit: '${requestEditContext.entityName}'`);
       } else {
-        setTitle(`${backendTitle} / ${entityTypeTitle} / View: '${requestEditContext.entityName}'`);
+        setTitle(`${backendTitle} / ${entityTypeTitle} / Read: '${requestEditContext.entityName}'`);
       }
       setRequestContext(requestEditContext);
     })();

@@ -274,7 +274,7 @@ export async function coreUpdate(
   pass: number = 0,
 ) {
   let data = entityData;
-  if (requestEditContext.mode === 'change') {
+  if (requestEditContext.mode === 'edit') {
     data = extractPatch(editingState.initialData, data);
   }
 
@@ -338,7 +338,7 @@ function handleDefaults(
 ) {
   let didChange = false;
 
-  if (requestEditContext.mode === 'change') {
+  if (requestEditContext.mode === 'edit') {
     valResp.data = previousData; //frontData;
     didChange = mergeDefaults(valResp);
   } else {

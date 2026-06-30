@@ -182,11 +182,11 @@ export async function isValidQueryEdit(
     return false;
   }
 
-  if (!['create', 'change', 'read'].includes(mode)) {
+  if (!['create', 'edit', 'read'].includes(mode)) {
     return false;
   }
 
-  if (mode === 'change' && entityName == undefined) return false;
+  if (mode === 'edit' && entityName == undefined) return false;
 
   return await isValidQueryOverview(backendName, entityTypeName, backends);
 }
@@ -257,13 +257,13 @@ export function buildOverviewURL(yacBackend: YACBackend, entityTypeName: string)
  *
  * @param backendName The YAC backend name.
  * @param entityTypeName The corresponding entity type name.
- * @param verb The route verb: `modify` (edit) or `view` (read-only).
+ * @param verb The route verb: `edit` or `read` (read-only).
  * @param entityName The entity the action applies to.
  */
 export function buildEntityActionURL(
   backendName: string | undefined,
   entityTypeName: string | null | undefined,
-  verb: 'modify' | 'view',
+  verb: 'edit' | 'read',
   entityName: string,
 ) {
   return `/${backendName}/${entityTypeName}/${verb}/${encodeURIComponent(entityName)}`;

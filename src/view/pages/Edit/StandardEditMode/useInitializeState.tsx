@@ -87,7 +87,7 @@ const useInitializeForm = (
       // Detect a "migration" situation: an existing entity whose stored data no
       // longer validates against the current schema (e.g. the spec changed).
       let migrationError = false;
-      if (requestEditContext.mode === 'change') {
+      if (requestEditContext.mode === 'edit') {
         const validate = getAJV().compile(resp.json_schema);
         validate(structuredClone(resp.data));
         migrationError = (validate.errors?.length ?? 0) > 0;

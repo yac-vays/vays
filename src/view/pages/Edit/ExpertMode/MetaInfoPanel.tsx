@@ -110,6 +110,7 @@ const MetaInfoPanel = ({
                     updateCallback();
                   }}
                   description={act.description}
+                  isMarkdownDesc
                 />
               );
             });

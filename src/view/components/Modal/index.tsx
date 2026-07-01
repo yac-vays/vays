@@ -3,6 +3,7 @@ import { logError } from '../../../utils/logger';
 import { ActionDecl } from '../../../utils/types/api';
 import { CallbackSuccessType } from '../../../utils/types/internal/modal';
 import Checkbox from '../../thirdparty/components/ifc/CheckBox/CheckBox';
+import MarkdownRender from '../Markdown';
 
 interface ConfirmationModalState {
   show: boolean;
@@ -166,9 +167,11 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
                 <h3 className="text-xl font-bold text-plainfont sm:text-2xl mt-0 pb-2 mr-14">
                   {this.state.title}
                 </h3>
-                <p className="font-medium mb-4 whitespace-pre-line hyphens-auto">
-                  {this.state.text}
-                </p>
+                {/* The body (e.g. an action's description) is rendered as
+                    markdown; plain strings render unchanged. */}
+                <div className="font-medium mb-4 hyphens-auto">
+                  <MarkdownRender text={this.state.text} />
+                </div>
               </div>
               <div className="mr-2 pt-2 fill-danger" style={{ right: 0 }}>
                 <span className="mx-auto inline-block p-1">

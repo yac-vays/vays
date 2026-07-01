@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { setCurrentContext } from '../../../../controller/local/EditController/ExpertMode/access';
+import {
+  setCurrentContext,
+  setEntityName,
+} from '../../../../controller/local/EditController/ExpertMode/access';
 import {
   clearYACStatus,
   emitValidity,
@@ -71,6 +74,14 @@ const useInitializeForm = (
       setIsEmpty(false);
       setLoading(true);
       setCurrentContext(requestEditContext);
+      // Seed the global entity name from the URL context here, in the eager form
+      // pane. The create validate below (updateSchema) reads the name from this
+      // global for user-provided (non-generated) names, but the only other seeder
+      // (startExpertModeSession) lives in the lazily-imported Monaco editor. On a
+      // cold load that chunk isn't ready yet, so without this the first validate
+      // would send name=null and YAC rejects it with "entity.name must be set"
+      // (until an F5, when the cached Monaco chunk wins the race).
+      setEntityName(requestEditContext.entityName ?? null);
       clearYACStatus();
       resetCategoryErrs();
       // Name + actions are rendered separately in the always-visible

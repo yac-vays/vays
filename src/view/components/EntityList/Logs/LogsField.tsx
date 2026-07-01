@@ -6,7 +6,13 @@ import RichInfoPanel from '../../RichInfoPanel';
 import BoolLog from './BoolLog';
 import LogPanel from './LogPanel';
 import MessageLog from './MessageLog';
+import NoDataLog from './NoDataLog';
 import NumberLog from './NumberLog';
+
+// Compact size for a single log indicator. Kept small (and equal across log
+// types) so a Logs column does not make its table rows noticeably taller than
+// rows in a type without logs.
+const LOG_ITEM_CLASS = 'max-w-[34px] min-w-[26px] 2xl:max-w-[40px]';
 
 const LogsField = ({
   requestContext,
@@ -92,10 +98,10 @@ const LogsField = ({
   // opacity-60
   return (
     <div
-      className="flex flex-row xl:flex-wrap 2xl:flex-nowrap gap-1 w-full p-1 xl:!min-w-0"
+      className="flex flex-row xl:flex-wrap 2xl:flex-nowrap gap-1 px-1 py-0 xl:!min-w-0"
       style={{
         verticalAlign: 'middle',
-        minWidth: Math.max(2, numLogElts) * 60,
+        minWidth: Math.max(2, numLogElts) * 34,
       }}
     >
       {(function () {
@@ -114,82 +120,30 @@ const LogsField = ({
             problem = logObject[l.name][0].problem ?? null;
             progress = logObject[l.name][0].progress ?? null;
           }
+
+          // The indicator shown once the log actually has data depends on the
+          // log's declared type. When there is no data, every type falls back to
+          // the same neutral placeholder (grey ring + question mark).
+          let indicator;
           if (l.problem && !l.progress) {
-            jsx.push(
-              <div
-                key={l.name}
-                className={`${
-                  numLogElts == 2 ? 'xl:max-w-[42px]' : 'xl:max-w-[38px]'
-                } 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]`}
-              >
-                {!hasLogs ? (
-                  <div className="opacity-60">
-                    <BoolLog problem={problem} loading={isLoading} />
-                  </div>
-                ) : (
-                  <RichInfoPanel
-                    anchor={
-                      <div className="opacity-60">
-                        <BoolLog problem={problem} loading={isLoading} />
-                      </div>
-                    }
-                  >
-                    <LogPanel title={l.title} logList={logObject[l.name]} />
-                  </RichInfoPanel>
-                )}
-              </div>,
-            );
+            indicator = <BoolLog problem={problem} loading={isLoading} />;
           } else if (l.progress) {
-            jsx.push(
-              <div
-                key={l.name}
-                className={`${
-                  numLogElts == 2 ? 'xl:max-w-[42px]' : 'xl:max-w-[38px]'
-                } 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]`}
-              >
-                {!hasLogs ? (
-                  <div className="opacity-60">
-                    <NumberLog problem={problem} progress={progress} loading={isLoading} />
-                  </div>
-                ) : (
-                  <RichInfoPanel
-                    anchor={
-                      <div className="opacity-60">
-                        <NumberLog problem={problem} progress={progress} loading={isLoading} />
-                      </div>
-                    }
-                  >
-                    <LogPanel title={l.title} logList={logObject[l.name]} />
-                  </RichInfoPanel>
-                )}
-              </div>,
-            );
+            indicator = <NumberLog problem={problem} progress={progress} loading={isLoading} />;
           } else {
-            jsx.push(
-              <div
-                key={l.name}
-                className={`${
-                  numLogElts == 2 ? 'xl:max-w-[42px]' : 'xl:max-w-[38px]'
-                } 1.5xl:max-w-[50px] 2xl:max-w-[60px] min-w-[38px]`}
-              >
-                {!hasLogs ? (
-                  <div className="opacity-60">
-                    <MessageLog loading={isLoading} hasLogs={hasLogs} />
-                  </div>
-                ) : (
-                  <RichInfoPanel
-                    anchor={
-                      <div className="opacity-60">
-                        <MessageLog loading={isLoading} hasLogs={hasLogs} />
-                      </div>
-                    }
-                  >
-                    <LogPanel title={l.title} logList={logObject[l.name]} />
-                  </RichInfoPanel>
-                )}
-              </div>,
-            );
+            indicator = <MessageLog loading={isLoading} hasLogs={hasLogs} />;
           }
+
+          jsx.push(
+            <div key={l.name} className={LOG_ITEM_CLASS}>
+              {!hasLogs ? (
+                <NoDataLog loading={isLoading} />
+              ) : (
+                <RichInfoPanel anchor={<div className="opacity-60">{indicator}</div>}>
+                  <LogPanel title={l.title} logList={logObject[l.name]} />
+                </RichInfoPanel>
+              )}
+            </div>,
+          );
         }
         return jsx;
       })()}

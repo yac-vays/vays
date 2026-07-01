@@ -1,6 +1,15 @@
 import { useRef, useState } from 'react';
-import { useFloating, autoUpdate, offset, flip, arrow, FloatingArrow } from '@floating-ui/react';
-import useOutsideClick from '../../hooks/useOutsideClick';
+import {
+  useFloating,
+  autoUpdate,
+  offset,
+  flip,
+  arrow,
+  FloatingArrow,
+  useClick,
+  useDismiss,
+  useInteractions,
+} from '@floating-ui/react';
 
 const RichInfoPanel = ({
   children,
@@ -10,7 +19,6 @@ const RichInfoPanel = ({
   anchor: React.ReactNode;
 }) => {
   const arrowRef = useRef(null);
-  const infoPanelRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
   const { refs, floatingStyles, context, placement } = useFloating({
     placement: 'right',
@@ -30,52 +38,46 @@ const RichInfoPanel = ({
     whileElementsMounted: autoUpdate,
   });
 
-  useOutsideClick(infoPanelRef, () => setIsOpen(false));
+  // Toggle on the anchor, and dismiss on any press outside the panel/anchor (or
+  // Escape). `useDismiss` tracks both the reference and floating elements, so a
+  // click inside the panel keeps it open while a click anywhere else closes it.
+  const click = useClick(context);
+  const dismiss = useDismiss(context, { outsidePress: true });
+  const { getReferenceProps, getFloatingProps } = useInteractions([click, dismiss]);
 
   return (
     <>
-      <div ref={infoPanelRef}>
-        <button
-          className="cursor-pointer"
-          ref={refs.setReference}
-          onClick={() => setIsOpen(!isOpen)}
+      <button className="cursor-pointer" ref={refs.setReference} {...getReferenceProps()}>
+        {anchor}
+      </button>
+
+      {isOpen && (
+        // https://austencam.com/posts/quick-tip-fixing-initial-position-and-transitions-with-floating-ui
+        <div
+          className="absolute top-0 left-0 z-50"
+          ref={refs.setFloating}
+          style={floatingStyles}
+          {...getFloatingProps()}
         >
-          {anchor}
-        </button>
+          <FloatingArrow
+            ref={arrowRef}
+            context={context}
+            style={
+              placement.startsWith('right')
+                ? { left: 0 }
+                : placement.startsWith('top')
+                ? {}
+                : placement.startsWith('left')
+                ? { left: 360 }
+                : { top: -14 }
+            }
+            tipRadius={3}
+            className="dark:fill-white"
+          />
 
-        <div className={`absolute duration-300 z-40 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
-          {isOpen ? (
-            // https://austencam.com/posts/quick-tip-fixing-initial-position-and-transitions-with-floating-ui
-            <div
-              className="absolute top-0 left-0 z-50"
-              ref={refs.setFloating}
-              style={floatingStyles}
-            >
-              <FloatingArrow
-                ref={arrowRef}
-                context={context}
-                style={
-                  placement.startsWith('right')
-                    ? { left: 0 }
-                    : placement.startsWith('top')
-                    ? {}
-                    : placement.startsWith('left')
-                    ? { left: 360 }
-                    : { top: -14 }
-                }
-                tipRadius={3}
-                className="dark:fill-white"
-              />
-
-              {children}
-            </div>
-          ) : (
-            <></>
-          )}
+          {children}
         </div>
-      </div>
-      {/* </div>
-      </div> */}
+      )}
     </>
   );
 };

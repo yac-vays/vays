@@ -135,7 +135,10 @@ const EntityListRow = ({
               <td
                 key="logs"
                 className="pl-8:first-child border-stroke"
-                style={{ paddingRight: 40 }}
+                // `width:1px` makes the auto-layout table shrink this column to its
+                // content (the compact indicator row) instead of stretching it and
+                // leaving a large empty gap on the right of the log icons.
+                style={{ width: '1px', paddingRight: 8 }}
                 role="cell"
               >
                 <LogsField requestContext={requestContext} entityName={entityName} />

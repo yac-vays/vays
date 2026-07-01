@@ -32,6 +32,12 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
   // without making them dependencies (which would cause unwanted reloads).
   const latestEntriesRef = useRef<QueryResult[]>(tableEntries);
   latestEntriesRef.current = tableEntries;
+  // Current search filter, read inside the (re)load effect without being one of
+  // its dependencies — otherwise every keystroke would trigger a full reload
+  // (the search box drives filtering itself, see getSearchCallback). This lets a
+  // manual "Refresh table" re-apply the active filter instead of dropping it.
+  const latestSearchTermsRef = useRef<(string | null)[]>(searchTerms);
+  latestSearchTermsRef.current = searchTerms;
   const prevDataKeyRef = useRef<string>('');
 
   useEffect(() => {
@@ -84,7 +90,7 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
           requestContext,
           targetEntityName,
           numResultsPerPage.valueOf(),
-          null,
+          latestSearchTermsRef.current,
         );
         if (targetPage != null) {
           page = targetPage;
@@ -114,7 +120,7 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
         requestContext,
         numResultsPerPage.valueOf(),
         (page - 1) * numResultsPerPage.valueOf(),
-        null,
+        latestSearchTermsRef.current,
       );
       // TODO make sure that spamming reload does not cause problem with this.
       // It is likely beneficial to include a cooldown on the reload button.

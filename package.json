@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "sh ./scripts/run-dev.sh",
+    "dev-network": "sh ./scripts/run-dev.sh --host 0.0.0.0",
     "build": "sh ./scripts/run-build.sh",
     "dev-editor": "webpack --mode development",
     "prod-editor": "webpack --mode production",

@@ -14,6 +14,9 @@ const LogPanel = ({ logList, title }: { logList: EntityLog[]; title: string }) =
       </div>
       <div className="max-w-3xl mx-auto p-4">
         <div className="space-y-4">
+          {logList.length === 0 && (
+            <em className="block text-center opacity-70">No log entries.</em>
+          )}
           {(function () {
             const jsx = [];
             let i = 0;

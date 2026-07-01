@@ -9,10 +9,10 @@ import MessageLog from './MessageLog';
 import NoDataLog from './NoDataLog';
 import NumberLog from './NumberLog';
 
-// Compact size for a single log indicator. Kept small (and equal across log
-// types) so a Logs column does not make its table rows noticeably taller than
-// rows in a type without logs.
-const LOG_ITEM_CLASS = 'max-w-[34px] min-w-[26px] 2xl:max-w-[40px]';
+// Size of a single log indicator (equal across log types). The row height is
+// kept in line with log-less rows by trimming the cell's vertical padding in
+// EntityListRow, not by shrinking the symbol — see the Logs <td> there.
+const LOG_ITEM_CLASS = 'max-w-[44px] min-w-[34px] 2xl:max-w-[50px]';
 
 const LogsField = ({
   requestContext,
@@ -101,7 +101,7 @@ const LogsField = ({
       className="flex flex-row xl:flex-wrap 2xl:flex-nowrap gap-1 px-1 py-0 xl:!min-w-0"
       style={{
         verticalAlign: 'middle',
-        minWidth: Math.max(2, numLogElts) * 34,
+        minWidth: Math.max(2, numLogElts) * 40,
       }}
     >
       {(function () {
@@ -135,11 +135,17 @@ const LogsField = ({
 
           jsx.push(
             <div key={l.name} className={LOG_ITEM_CLASS}>
-              {!hasLogs ? (
-                <NoDataLog loading={isLoading} />
-              ) : (
+              {isLoading ? (
+                // Still fetching: show the (non-clickable) spinner placeholder.
+                <NoDataLog loading />
+              ) : hasLogs ? (
                 <RichInfoPanel anchor={<div className="opacity-60">{indicator}</div>}>
                   <LogPanel title={l.title} logList={logObject[l.name]} />
+                </RichInfoPanel>
+              ) : (
+                // No data: still openable, but the panel just states there are none.
+                <RichInfoPanel anchor={<NoDataLog loading={false} />}>
+                  <LogPanel title={l.title} logList={[]} />
                 </RichInfoPanel>
               )}
             </div>,

@@ -26,7 +26,14 @@ const NumberLog = ({
           path: {
             stroke: 'grey',
           },
-          text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'currentcolor' },
+          text: {
+            fontSize: 28,
+            textRendering: 'optimizeLegibility',
+            fill: 'currentcolor',
+            // `dominant-baseline: central` centers the "%" text vertically; the
+            // library stylesheet's `middle` sits high in most fonts.
+            dominantBaseline: 'central',
+          },
         }}
       >
         <div
@@ -51,7 +58,14 @@ const NumberLog = ({
               transform: 'scale(1)',
             },
             path: { stroke: 'grey' },
-            text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'currentcolor' },
+            text: {
+            fontSize: 28,
+            textRendering: 'optimizeLegibility',
+            fill: 'currentcolor',
+            // `dominant-baseline: central` centers the "%" text vertically; the
+            // library stylesheet's `middle` sits high in most fonts.
+            dominantBaseline: 'central',
+          },
           }}
         >
           <svg
@@ -78,7 +92,14 @@ const NumberLog = ({
               transform: 'scale(1)',
             },
             path: { stroke: '#DC3545' },
-            text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'currentcolor' },
+            text: {
+            fontSize: 28,
+            textRendering: 'optimizeLegibility',
+            fill: 'currentcolor',
+            // `dominant-baseline: central` centers the "%" text vertically; the
+            // library stylesheet's `middle` sits high in most fonts.
+            dominantBaseline: 'central',
+          },
           }}
         >
           {problem === null ? (
@@ -108,7 +129,14 @@ const NumberLog = ({
               transform: 'scale(1)',
             },
             path: { stroke: '#10B981' },
-            text: { fontSize: 28, textRendering: 'optimizeLegibility', fill: 'currentcolor' },
+            text: {
+            fontSize: 28,
+            textRendering: 'optimizeLegibility',
+            fill: 'currentcolor',
+            // `dominant-baseline: central` centers the "%" text vertically; the
+            // library stylesheet's `middle` sits high in most fonts.
+            dominantBaseline: 'central',
+          },
           }}
         >
           {problem === null ? (

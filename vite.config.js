@@ -15,8 +15,13 @@ export default defineConfig({
   plugins: [react(), ...(hasLocalCerts ? [] : [basicSsl()])],
   build: { sourcemap: false },
   server: {
+    // Bind to 127.0.0.1 by default; run `npm run dev-network` (which passes
+    // `--host 0.0.0.0`) to reach the dev server from another host over HTTPS.
     host: '127.0.0.1',
     port: 5173,
+    // Accept the Host header sent when connecting by network IP/hostname, so
+    // Vite's host check doesn't reject requests coming from other machines.
+    allowedHosts: true,
     ...(hasLocalCerts
       ? {
           https: {

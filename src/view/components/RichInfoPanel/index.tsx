@@ -47,7 +47,14 @@ const RichInfoPanel = ({
 
   return (
     <>
-      <button className="cursor-pointer" ref={refs.setReference} {...getReferenceProps()}>
+      {/* Size-neutral button: no UA padding/border/background, fills the anchor
+          box exactly so the trigger does not shift the content vs a plain
+          (non-interactive) render of the same anchor. */}
+      <button
+        className="cursor-pointer block w-full appearance-none border-0 bg-transparent p-0"
+        ref={refs.setReference}
+        {...getReferenceProps()}
+      >
         {anchor}
       </button>
 

@@ -142,12 +142,25 @@ async function retreiveEditSchema(
     return null;
   }
 
+  // Read mode is a pure view: show the stored YAML verbatim and never materialize
+  // defaults into it.
+  const isReadMode = requestEditContext.mode === 'read';
+
+  // The stabilization patch/diff must be relative to what is actually stored, so
+  // seed the baseline with the stored data before the loop runs (in edit mode it
+  // is replaced with the stabilized state below).
+  editingState.initialData = structuredClone(entityData.data);
+
   const valResp = await coreUpdate(
     entityData.data,
     requestEditContext,
     true,
     NO_ACTIONS,
     requestEditContext.entityName,
+    // In edit mode, merge any missing defaults INTO the stored YAML
+    // (comment-preserving) so the *displayed* document already contains them. In
+    // read mode we keep the stored YAML as-is.
+    isReadMode ? undefined : entityData.yaml,
   );
 
   if (valResp == null) {
@@ -155,11 +168,21 @@ async function retreiveEditSchema(
   }
 
   if (startEditingSession) {
+    // The diff/commit baseline is ALWAYS the original stored YAML. It is sent to
+    // the backend as `yaml_old`, which must equal what is on disk or conflict
+    // detection false-fires ("data has changed in the meantime"); and keeping it
+    // as the stored file makes the editor highlight the injected defaults as
+    // additions, so the user can see that what is shown is not verbatim on disk.
     setInitialEntityYAML(entityData.yaml);
-    editingState.initialData = structuredClone(entityData.data);
+    // Adopt the stabilized data as the form patch baseline (edit mode) so a form
+    // edit only diffs the field the user actually changed instead of also
+    // injecting every previously-missing default on the first keystroke.
+    editingState.initialData = structuredClone(isReadMode ? entityData.data : valResp.data);
   }
 
-  valResp.yaml = entityData.yaml;
+  // Editor display: the defaulted YAML in edit mode (diffed green against the
+  // stored baseline above), the stored YAML verbatim in read mode.
+  valResp.yaml = isReadMode ? entityData.yaml : (valResp.yaml ?? entityData.yaml);
 
   return valResp;
 }

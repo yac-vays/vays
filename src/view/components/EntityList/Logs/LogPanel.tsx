@@ -1,14 +1,18 @@
 // import { useState } from 'react';
 import { EntityLog } from '../../../../utils/types/api';
 import { formatLogTime, formatRelativeTime } from '../../../../utils/logUtils';
+import MarkdownRender from '../../Markdown';
 
 const LogPanel = ({
   logList,
   title,
+  description,
   showProgress,
 }: {
   logList: EntityLog[];
   title: string;
+  /** The log's description from the specs (markdown), shown below the title. */
+  description?: string;
   /**
    * Whether this log type declares the progress feature (`TypeLog.progress`).
    * If so, every entry gets the percentage as the first column of the table.
@@ -23,6 +27,11 @@ const LogPanel = ({
       {/* <button className="absolute right-4 top-2">x</button> */}
       <div className="p-3">
         <h4 className="text-center text-title-sm font-bold text-solid hyphens-auto">{title}</h4>
+        {description && (
+          <div className="pt-1 px-2 text-sm text-reducedfont hyphens-auto">
+            <MarkdownRender text={description} />
+          </div>
+        )}
       </div>
       <div className="max-w-3xl mx-auto p-4">
         <div className="space-y-4">

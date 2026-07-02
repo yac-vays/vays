@@ -15,8 +15,7 @@ export type APIOperation = 'create' | 'edit' | 'delete';
  * by the backend in the `/validate` response. `used` already includes the
  * entity being created/changed (see the YAC `limits` docs).
  */
-export const TYPE_CHECK_LIMIT_USAGE =
-  '{title: String, used: Number, max: Number, ok: Boolean}';
+export const TYPE_CHECK_LIMIT_USAGE = '{title: String, used: Number, max: Number, ok: Boolean}';
 
 export interface LimitUsage {
   title: string;
@@ -117,7 +116,7 @@ export const TYPE_CHECK_ENTITY_TYPE_DECL = `{
   delete: Boolean,
   edit: Boolean,
   options: [Object],
-  logs: [{name: String, title: String, progress: Boolean, problem: Boolean}],
+  logs: [{name: String, title: String, description: Maybe String, progress: Boolean, problem: Boolean}],
   actions: [${TYPE_CHECK_ACTION_DECL}],
   favorites: [${TYPE_CHECK_FAVOP_OBJECT}]
 }`;
@@ -144,6 +143,9 @@ export interface EntityTypeDecl {
   logs: {
     name: string;
     title: string;
+    /** Markdown description shown in the log details panel (YAC >= the
+     * version introducing `TypeLog.description`; older backends omit it). */
+    description?: SafeSource<string>;
     progress: boolean;
     problem: boolean;
   }[];

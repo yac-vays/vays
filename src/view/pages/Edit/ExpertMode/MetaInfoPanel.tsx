@@ -36,11 +36,24 @@ const MetaInfoPanel = ({
   );
   const [actionActive, setActionActive] = useState<boolean[]>(acts.map(() => false));
   const setActionActiveAt = (idx: number, value: boolean) => {
-    // Never mutate the existing state array; derive a new one.
-    const next = actionActive.map((x, i) => (i === idx ? value : x));
+    // Derive the new state from `acts`, not from the previous state array: the
+    // panel first mounts with the placeholder context (no entity type, so no
+    // actions yet — see `getDefaultEditContext`), which freezes the initial
+    // state at length 0. Mapping over that stale array would silently drop the
+    // tick, so every validate went out with `actions: []`.
+    const next = acts.map((_, i) => (i === idx ? value : (actionActive[i] ?? false)));
     setActivatedActions(acts.filter((_, i) => next[i]));
     setActionActive(next);
   };
+  // Start over with no ticked actions when the edit session targets another
+  // backend/type/mode (the panel is not remounted in between).
+  useEffect(() => {
+    setActionActive(acts.map(() => false));
+  }, [
+    requestEditContext.rc.backendObject?.name,
+    requestEditContext.rc.entityTypeName,
+    requestEditContext.mode,
+  ]);
 
   // Track the current name so we can surface a "missing / invalid" error the same
   // way the form does for its fields (a red ring). Kept in sync if the context's

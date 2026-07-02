@@ -2,7 +2,19 @@
 import { EntityLog } from '../../../../utils/types/api';
 import { formatLogTime, formatRelativeTime } from '../../../../utils/logUtils';
 
-const LogPanel = ({ logList, title }: { logList: EntityLog[]; title: string }) => {
+const LogPanel = ({
+  logList,
+  title,
+  showProgress,
+}: {
+  logList: EntityLog[];
+  title: string;
+  /**
+   * Whether this log type declares the progress feature (`TypeLog.progress`).
+   * If so, every entry gets the percentage as the first column of the table.
+   */
+  showProgress?: boolean;
+}) => {
   //   const [expand, setExpand] = useState<boolean>(false);
   return (
     // `w-max` sizes the panel to its widest line so short logs stay compact, while
@@ -28,6 +40,20 @@ const LogPanel = ({ logList, title }: { logList: EntityLog[]; title: string }) =
               const timeTitle = relative ? formatLogTime(logEntry.time) : undefined;
               jsx.push(
                 <div key={i++} className="flex gap-2">
+                  {/* Percentage first, for log types with the progress
+                      feature. Entries without a value get a dimmed dash.
+                      Lighter than the message (like the time column) so the
+                      two are easy to tell apart; wide enough for "100%" and
+                      nowrap so it never line-breaks. */}
+                  {showProgress && (
+                    <div className="w-12 shrink-0 text-right tabular-nums whitespace-nowrap text-sm text-gray-500 opacity-70">
+                      {logEntry.progress != null ? (
+                        `${logEntry.progress}%`
+                      ) : (
+                        <span className="opacity-40">—</span>
+                      )}
+                    </div>
+                  )}
                   {/* Message on the left. */}
                   <div className="p-2 pt-0 rounded-md text-gray-800 flex-1 dark:text-white">
                     <p>{logEntry.message}</p>

@@ -140,12 +140,12 @@ const LogsField = ({
                 <NoDataLog loading />
               ) : hasLogs ? (
                 <RichInfoPanel anchor={<div className="opacity-60">{indicator}</div>}>
-                  <LogPanel title={l.title} logList={logObject[l.name]} />
+                  <LogPanel title={l.title} logList={logObject[l.name]} showProgress={l.progress} />
                 </RichInfoPanel>
               ) : (
                 // No data: still openable, but the panel just states there are none.
                 <RichInfoPanel anchor={<NoDataLog loading={false} />}>
-                  <LogPanel title={l.title} logList={[]} />
+                  <LogPanel title={l.title} logList={[]} showProgress={l.progress} />
                 </RichInfoPanel>
               )}
             </div>,

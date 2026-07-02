@@ -17,6 +17,5 @@ dist
 src/utils/_token.tsx
 old/*
 cert/*
-public/editor
 testserver.py
 RESOURCES.md

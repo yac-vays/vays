@@ -1,12 +1,9 @@
 /**
- * Note: Do not make these two imports below dynamic!
+ * Sets up the Monaco workers, the YAML grammar and the curated feature
+ * contributions (side-effect import). Keep it before the editor.api import so
+ * everything is registered by the time an editor is created below.
  */
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-//@ts-ignore
-//@vite-ignore
-import '../../../../../public/editor/monaco-editor.js';
-import '../../../../workerInit';
-//import 'monaco-editor/esm/vs/editor/editor.all.js';
+import './monacoSetup';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 import { memo, useEffect, useRef, useState } from 'react';

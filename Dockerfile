@@ -10,7 +10,7 @@ RUN npm ci
 # Copy only what the build needs (deliberately no .dockerignore: an explicit
 # list keeps node_modules, dist/, cert/ keys etc. out of the image and avoids
 # busting the npm ci layer above).
-COPY index.html vite.config.js webpack.config.js tsconfig.json tsconfig.node.json \
+COPY index.html vite.config.js tsconfig.json tsconfig.node.json \
      tailwind.config.cjs postcss.config.cjs ./
 COPY scripts/run-build.sh ./scripts/
 COPY public ./public

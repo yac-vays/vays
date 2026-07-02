@@ -204,7 +204,11 @@ const EditFrame = ({
   // Reset the selected-action labels when switching to another entity.
   useEffect(() => {
     setActionTitles([]);
-  }, [requestEditContext.entityName, requestEditContext.mode, requestEditContext.rc.entityTypeName]);
+  }, [
+    requestEditContext.entityName,
+    requestEditContext.mode,
+    requestEditContext.rc.entityTypeName,
+  ]);
 
   const saveDisabled = isValidating || !isValid;
   const commitLabel = actionTitles.length ? `Commit + ${actionTitles.join(' + ')}` : 'Commit';
@@ -265,12 +269,18 @@ const EditFrame = ({
             className={`${formVisible ? 'flex' : 'hidden'} relative flex-col min-w-0 overflow-hidden`}
             style={{ width: `calc((100% - ${DIVIDER_W}) * ${formFrac})` }}
           >
-            <StandardEditMode
-              requestEditContext={requestEditContext}
-              setEditErrorMsg={setEditErrorMsg}
-              setIsValidating={setIsValidating}
-              setLoading={setFormLoading}
-            />
+            {/* `isolate` opens a stacking context so the pane content's own
+                z-indexes (dropdowns z-20/30, multi-select z-40/50, info
+                popouts z-50) cannot escape past the sibling dim overlay
+                (z-10) below. */}
+            <div className="isolate flex grow flex-col min-h-0 min-w-0 overflow-hidden">
+              <StandardEditMode
+                requestEditContext={requestEditContext}
+                setEditErrorMsg={setEditErrorMsg}
+                setIsValidating={setIsValidating}
+                setLoading={setFormLoading}
+              />
+            </div>
             {bothVisible && (
               <div className={`${dimOverlay} ${yamlFocused ? 'opacity-100' : 'opacity-0'}`} />
             )}
@@ -319,14 +329,18 @@ const EditFrame = ({
             className={`${yamlVisible ? 'flex' : 'hidden'} flex-col relative min-w-0 overflow-hidden`}
             style={{ width: `calc((100% - ${DIVIDER_W}) * ${1 - formFrac})` }}
           >
-            <ExpertMode
-              requestContext={requestEditContext}
-              setEditErrorMsg={setEditErrorMsg}
-              setIsValidating={setIsValidating}
-              setLoading={setYamlLoading}
-              setFocused={setYamlFocused}
-              visible={yamlVisible}
-            />
+            {/* Same stacking-context isolation as the form pane, so Monaco's
+                internal widgets cannot escape past the dim overlay either. */}
+            <div className="isolate flex grow flex-col min-h-0 min-w-0 overflow-hidden">
+              <ExpertMode
+                requestContext={requestEditContext}
+                setEditErrorMsg={setEditErrorMsg}
+                setIsValidating={setIsValidating}
+                setLoading={setYamlLoading}
+                setFocused={setYamlFocused}
+                visible={yamlVisible}
+              />
+            </div>
             {bothVisible && (
               <div className={`${dimOverlay} ${!yamlFocused ? 'opacity-100' : 'opacity-0'}`} />
             )}

@@ -1,4 +1,5 @@
 import { stringify } from 'yaml';
+import { diffToastLink } from '../controller/global/diffViewer';
 import { showError, showSuccess } from '../controller/global/notification';
 import { actionNames2URLQuery } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
@@ -37,12 +38,14 @@ export async function createNewEntity(
   });
 
   if (result.kind === 'success') {
-    // YAC returns the (possibly generated) name of the new entity.
-    const ans = await result.resp.json();
+    // YAC answers with a `Diff` object: the (possibly generated) name of the
+    // new entity plus `patch`, the unified diff of the commit.
+    const ans: { name?: string; patch?: string } = await result.resp.json();
     const createdName: Nullable<string> = ans?.name ?? name;
     showSuccess(
       `Created ${createdName} successfully!`,
       'The entity was successfully created and added to the repository.',
+      diffToastLink(`Changes for '${createdName}'`, ans?.patch),
     );
     return { success: true, name: createdName };
   } else if (result.kind === 'invalid-request') {

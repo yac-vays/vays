@@ -18,6 +18,7 @@ import ErrorRing from '../../view/components/Form/ErrorRing';
 import FormComponentTitle from '../../view/components/FormComponentTitle';
 import MultiSelect from '../../view/thirdparty/components/ifc/MultiSelect/MultiSelect';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
+import { resolveInitial } from '../utils/initialHandling';
 
 export const MultipleChoiceRenderer = ({
   // config,
@@ -40,11 +41,11 @@ export const MultipleChoiceRenderer = ({
     return null;
   }
 
-  // placeholder is always editable for here for now
-  // TODO: revisit?
-  if (data == undefined) {
-    data = uischema.options?.initial;
-  }
+  // `initial` is shown but is not data yet; with `initial_editable: false`
+  // (the default) the pre-selected chips are greyed out until the user
+  // changes the selection (which commits the whole shown array).
+  const { data: resolvedData, isPlaceholder } = resolveInitial(data, uischema);
+  data = resolvedData;
 
   if (!isOfTypeWeak(data, schema.type, true)) {
     errors = reportBadData(data);
@@ -72,15 +73,17 @@ export const MultipleChoiceRenderer = ({
       />
 
       <ErrorRing errors={errors}>
-        <MultiSelect
-          options={options}
-          data={data}
-          handleChange={_handleChange}
-          id={id}
-          path={path}
-          multiple={!schema.uniqueItems}
-          disabled={!enabled}
-        />
+        <div className={isPlaceholder ? 'opacity-60' : ''}>
+          <MultiSelect
+            options={options}
+            data={data}
+            handleChange={_handleChange}
+            id={id}
+            path={path}
+            multiple={!schema.uniqueItems}
+            disabled={!enabled}
+          />
+        </div>
       </ErrorRing>
     </div>
   );
@@ -107,9 +110,7 @@ export const MultipleChoiceTester: RankedTester = rankWith(
         const resolvedSchema = schema.$ref
           ? resolveSchema(rootSchema, schema.$ref, rootSchema)
           : schema;
-        return (
-          !!resolvedSchema && (hasOneOfItems(resolvedSchema) || hasEnumItems(resolvedSchema))
-        );
+        return !!resolvedSchema && (hasOneOfItems(resolvedSchema) || hasEnumItems(resolvedSchema));
       }),
     ),
   ),

@@ -1,4 +1,8 @@
-import { ToastCallback, ToastMode } from '../../view/components/ToastNotification/ToastContext';
+import {
+  ToastCallback,
+  ToastLink,
+  ToastMode,
+} from '../../view/components/ToastNotification/ToastContext';
 import notifyCtrlState from '../state/NotifyCtrlState';
 
 /**
@@ -31,9 +35,10 @@ export function showError(title: string, detail: string) {
  * Show success toast.
  * @param title the title to display.
  * @param detail the message below, giving more detail.
+ * @param link optional action link below the detail (e.g. "Show changes").
  */
-export function showSuccess(title: string, detail: string) {
+export function showSuccess(title: string, detail: string, link?: ToastLink) {
   if (notifyCtrlState.notifyCallback != null) {
-    notifyCtrlState.notifyCallback(ToastMode.SUCCESS, title, detail);
+    notifyCtrlState.notifyCallback(ToastMode.SUCCESS, title, detail, link);
   }
 }

@@ -12,6 +12,7 @@ import { setColors } from './session/color';
 import { generateCSP } from './session/csp';
 import { setFavicon } from './session/favicon';
 import { AppConfig, YACBackend } from './utils/types/config';
+import DiffViewer from './view/components/DiffViewer';
 import { ModalContextProvider } from './view/components/Modal/ModalContext';
 import { ToastContextProvider } from './view/components/ToastNotification/ToastContext';
 import DevInfo from './view/pages/DevInfo';
@@ -97,6 +98,9 @@ function App(): JSX.Element {
           <Loader />
         ) : (
           <ModalContextProvider>
+            {/* Root-mounted like the toasts, so the "Show changes" link keeps
+                working after the post-save navigation to the overview. */}
+            <DiffViewer />
             <DefaultLayout backendList={backendsList}>
               {/* The browser tab title is always the title configured in config.json. */}
               <PageTitle title={config.title} />

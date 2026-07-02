@@ -1,4 +1,14 @@
-const SuccessNotification = ({ title, detail }: { title: string; detail: string }) => {
+import { ToastLink } from './ToastContext';
+
+const SuccessNotification = ({
+  title,
+  detail,
+  link,
+}: {
+  title: string;
+  detail: string;
+  link?: ToastLink;
+}) => {
   return (
     <>
       <div className="flex flex-grow items-center gap-5">
@@ -17,6 +27,18 @@ const SuccessNotification = ({ title, detail }: { title: string; detail: string 
           {/* Need to be more explicit with the text color to overwrite the default style of toastify. */}
           <h4 className="mb-0.5 text-title-xsm font-medium text-plainfont">{title}</h4>
           <p className="text-sm font-medium text-reducedfont">{detail}</p>
+          {link && (
+            <button
+              className="mt-1 text-sm font-medium text-primary underline hover:opacity-80"
+              onClick={(e) => {
+                // Keep the toast itself from swallowing/handling the click.
+                e.stopPropagation();
+                link.onClick();
+              }}
+            >
+              {link.label}
+            </button>
+          )}
         </div>
       </div>
     </>

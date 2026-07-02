@@ -13,6 +13,7 @@ import ErrorRing from '../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import SelectStatic from '../../view/thirdparty/components/ifc/Selector/SelectStatic';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
+import { resolveInitial } from '../utils/initialHandling';
 
 /**
  * Shared select control for both `enum` and `oneOf`-enum schemas; only the
@@ -39,10 +40,10 @@ export const EnumControl = ({
     });
   }
 
-  // placeholder is always editable for enums (makes no difference)
-  if (data == undefined) {
-    data = uischema.options?.initial;
-  }
+  // `initial` is shown but is not data yet; with `initial_editable: false`
+  // (the default) the pre-selected option is greyed out until the user picks.
+  const { data: resolvedData, isPlaceholder } = resolveInitial(data, uischema);
+  data = resolvedData;
 
   //// bad data check
   // using short circuiting here for type safety
@@ -68,6 +69,7 @@ export const EnumControl = ({
             initValue={data}
             disabled={!enabled}
             canResetToUndefined={!required}
+            placeholder={isPlaceholder}
           />
         </ErrorRing>
       </div>

@@ -9,6 +9,7 @@ const Checkbox = ({
   description,
   disabled,
   isMarkdownDesc = false,
+  placeholder = false,
 }: {
   title?: string;
   initValue: boolean;
@@ -17,6 +18,12 @@ const Checkbox = ({
   description?: string;
   disabled?: boolean;
   isMarkdownDesc?: boolean;
+  /**
+   * Render the tick as a greyed-out placeholder value (`vays_options.initial`
+   * with `initial_editable: false`): the shown state is not real data yet.
+   * The caller drops the flag once the user has interacted (data is set).
+   */
+  placeholder?: boolean;
 }) => {
   const [isChecked, setIsChecked] = useState<boolean>(initValue);
 
@@ -45,12 +52,17 @@ const Checkbox = ({
           <input type="checkbox" className="sr-only" />
           <div
             className={`flex  h-5 w-5 items-center justify-center rounded border cursor-pointer  ${
-              isChecked && 'border-primary dark:border-white bg-primary-10 dark:bg-transparent'
+              isChecked &&
+              (placeholder
+                ? 'border-stroke dark:border-form-strokedark'
+                : 'border-primary dark:border-white bg-primary-10 dark:bg-transparent')
             }`}
             onClick={callback}
           >
             <span
-              className={`text-primary dark:text-white opacity-0 ${isChecked && '!opacity-100'}`}
+              className={`${
+                placeholder ? 'text-reducedfont' : 'text-primary dark:text-white'
+              } opacity-0 ${isChecked && '!opacity-100'}`}
             >
               <svg
                 width="11"

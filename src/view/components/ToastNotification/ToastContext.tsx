@@ -11,20 +11,33 @@ export const enum ToastMode {
   ERROR,
 }
 
+/** An optional action link rendered below a (success) toast's detail text. */
+export type ToastLink = { label: string; onClick: () => void };
+
 /**
  * Mode is either
  */
-export type ToastCallback = (mode: ToastMode, title: string, detail: string) => void;
+export type ToastCallback = (
+  mode: ToastMode,
+  title: string,
+  detail: string,
+  link?: ToastLink,
+) => void;
 
 // create context
 const ToastContext = createContext<{ showToast: ToastCallback } | undefined>(undefined);
 
 // wrap context provider to add functionality
 export const ToastContextProvider = ({ children }: { children: React.ReactNode }) => {
-  const showToast: ToastCallback = (mode: ToastMode, title: string, detail: string): void => {
+  const showToast: ToastCallback = (
+    mode: ToastMode,
+    title: string,
+    detail: string,
+    link?: ToastLink,
+  ): void => {
     switch (mode) {
       case ToastMode.SUCCESS: {
-        toast(<SuccessNotification {...{ title, detail }} />, {
+        toast(<SuccessNotification {...{ title, detail, link }} />, {
           icon: false,
           className:
             'sm:w-full max-w-[490px] bg-white border-solid border-[1px] rounded py-2 pl-2 pr-3 shadow-2 dark:bg-meta-4',

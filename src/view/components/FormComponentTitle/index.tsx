@@ -1,5 +1,5 @@
 import ErrorButton from '../Buttons/ErrorButton';
-import MarkdownRender from '../Markdown';
+import InformationButton from '../Buttons/InformationButton';
 
 const FormComponentTitle = ({
   label,
@@ -20,10 +20,26 @@ const FormComponentTitle = ({
 }) => {
   return (
     <>
-      <div className="relative flex flex-row w-full">
+      <div className="relative flex flex-row w-full items-center">
         <h4 className={`mb-0 ${large ? 'text-2xl' : 'text-xl'} text-plainfont`}>
           {label} {required ? <span className="text-danger pr-2"> *</span> : <></>}
         </h4>
+        {/* Description behind the markdown info-button, matching how the
+            simple controls handle it (OverheadLabelWithMarkdownDescr). */}
+        {description != undefined && description.trim().length > 0 ? (
+          <div className="relative pl-1.5">
+            <InformationButton title={label} description={description} isMarkdown />
+          </div>
+        ) : (
+          <></>
+        )}
+        {errors ? (
+          <div className="relative pl-1.5">
+            <ErrorButton content={errors} />
+          </div>
+        ) : (
+          <></>
+        )}
 
         {hideAddButton ? (
           <></>
@@ -42,22 +58,6 @@ const FormComponentTitle = ({
               </svg>
             </button>
           </div>
-        )}
-      </div>
-      <div className="inline flex flex-row hyphens-auto">
-        {description ? (
-          <MarkdownRender text={description.replaceAll('\n', ' ')} />
-        ) : (
-          <></>
-        )}
-        {errors ? (
-          <label className="inline ml-2.5 block text-plainfont flex flex-row">
-            <div className="relative">
-              <ErrorButton content={errors} />
-            </div>
-          </label>
-        ) : (
-          <></>
         )}
       </div>
     </>

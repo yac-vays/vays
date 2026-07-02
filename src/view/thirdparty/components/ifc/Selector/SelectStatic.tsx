@@ -10,6 +10,12 @@ interface DropdownProps {
   initValue?: string;
   disabled?: boolean;
   canResetToUndefined?: boolean;
+  /**
+   * Show `initValue` as a greyed-out placeholder value (`vays_options.initial`
+   * with `initial_editable: false`): the shown selection is not real data yet.
+   * The caller drops the flag once the user has picked an option.
+   */
+  placeholder?: boolean;
 }
 
 function isValidOption(optValue: string | undefined, options: DropDownOptions) {
@@ -27,6 +33,7 @@ const SelectStatic: React.FC<DropdownProps> = ({
   initValue,
   disabled,
   canResetToUndefined,
+  placeholder,
 }: DropdownProps) => {
   if (!isValidOption(initValue, options)) {
     initValue = undefined;
@@ -66,7 +73,7 @@ const SelectStatic: React.FC<DropdownProps> = ({
           changeTextColor();
         }}
         className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-5 outline-none focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary ${
-          isOptionSelected ? 'text-plainfont' : ''
+          placeholder ? 'text-reducedfont' : isOptionSelected ? 'text-plainfont' : ''
         }`}
       >
         <option

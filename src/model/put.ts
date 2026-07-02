@@ -1,3 +1,4 @@
+import { diffToastLink } from '../controller/global/diffViewer';
 import { showError, showSuccess } from '../controller/global/notification';
 import { actionNames2URLQuery } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
@@ -44,7 +45,19 @@ export async function putYAMLEntity(
   });
 
   if (result.kind === 'success') {
-    showSuccess(`Edited ${name} successfully!`, 'The entity was successfully edited.');
+    // YAC answers with a `Diff` object; `patch` is the unified diff of the
+    // commit. Tolerate a missing/JSON-less body (the toast then has no link).
+    let patch: string | undefined;
+    try {
+      patch = ((await result.resp.json()) as { patch?: string })?.patch;
+    } catch {
+      patch = undefined;
+    }
+    showSuccess(
+      `Edited ${name} successfully!`,
+      'The entity was successfully edited.',
+      diffToastLink(`Changes to '${name}'`, patch),
+    );
     return true;
   } else if (result.kind === 'invalid-request') {
     showError(

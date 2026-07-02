@@ -7,6 +7,7 @@ import ErrorRing from '../../view/components/Form/ErrorRing';
 import DatePicker from '../../view/thirdparty/components/ifc/Datepicker/DatePicker';
 import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
+import { resolveInitial } from '../utils/initialHandling';
 
 export const DateControl = ({
   description,
@@ -34,10 +35,10 @@ export const DateControl = ({
     return null;
   }
 
-  // placeholder is always editable for date (makes no difference)
-  if (data == undefined) {
-    data = uischema.options?.initial;
-  }
+  // `initial` is shown but is not data yet; with `initial_editable: false`
+  // (the default) the pre-filled date is greyed out until the user picks one.
+  const { data: resolvedData, isPlaceholder } = resolveInitial<string>(data, uischema);
+  data = resolvedData;
 
   //// data check
   if (!isOfTypeWeak(data, 'string') || (data != undefined && !isRFC3339Date(data))) {
@@ -56,18 +57,23 @@ export const DateControl = ({
       />
 
       <ErrorRing errors={errors}>
-        <DatePicker
-          id={hashCode(path).toString()}
-          onChange={(v: string) => {
-            handleChange(path, v);
-          }}
-          format={format}
-          data={data}
-          type={schema.format ?? 'date'}
-          enabled={enabled}
-          enableRange={enableRange}
-          disableRange={disableRange}
-        />
+        {/* Placeholder look via inherited text color + reduced opacity: the
+            flatpickr alt input is created once at init, so a class on the
+            input itself would not update afterwards. */}
+        <div className={isPlaceholder ? 'text-reducedfont opacity-60' : ''}>
+          <DatePicker
+            id={hashCode(path).toString()}
+            onChange={(v: string) => {
+              handleChange(path, v);
+            }}
+            format={format}
+            data={data}
+            type={schema.format ?? 'date'}
+            enabled={enabled}
+            enableRange={enableRange}
+            disableRange={disableRange}
+          />
+        </div>
       </ErrorRing>
     </div>
   );

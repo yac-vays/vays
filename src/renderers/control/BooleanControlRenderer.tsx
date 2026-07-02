@@ -4,6 +4,7 @@ import ErrorButton from '../../view/components/Buttons/ErrorButton';
 import ErrorRing from '../../view/components/Form/ErrorRing';
 import Checkbox from '../../view/thirdparty/components/ifc/CheckBox/CheckBox';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
+import { resolveInitial } from '../utils/initialHandling';
 
 export const BooleanControl = ({
   data,
@@ -22,10 +23,11 @@ export const BooleanControl = ({
     return null;
   }
 
-  // placeholder is always editable for booleans.
-  if (data == undefined) {
-    data = uischema.options?.initial;
-  }
+  // `initial` is shown but is not data yet; with `initial_editable: false`
+  // (the default) it gets the greyed-out placeholder look until the first
+  // click commits a real value.
+  const { data: resolvedData, isPlaceholder } = resolveInitial<boolean>(data, uischema);
+  data = resolvedData;
 
   ///////// check data
   if (!isOfTypeWeak(data, 'boolean')) {
@@ -46,6 +48,7 @@ export const BooleanControl = ({
               description={description}
               disabled={!enabled}
               isMarkdownDesc
+              placeholder={isPlaceholder}
             />
           </ErrorRing>
           {errors ? (

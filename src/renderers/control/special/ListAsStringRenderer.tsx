@@ -1,6 +1,5 @@
 import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import ErrorRing from '../../../view/components/Form/ErrorRing';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
 import LargeStringList from '../../../view/thirdparty/components/ifc/LargeStringList/LargeStringList';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
@@ -32,7 +31,7 @@ export const ListAsStringRenderer = (props: ControlProps) => {
           hideAddButton
           label={props.label}
           onClick={() => {}}
-          description={props.description ?? ''}
+          description={props.description}
           required={props.required}
           errors={errors}
         />
@@ -43,15 +42,16 @@ export const ListAsStringRenderer = (props: ControlProps) => {
         ) : (
           <></>
         )}
-        <ErrorRing errors={errors}>
-          <LargeStringList
-            handleChange={handleChange}
-            path={props.path}
-            id={props.id}
-            data={list}
-            disabled={!props.enabled}
-          />
-        </ErrorRing>
+        {/* The list draws its own red border on error (same as the
+            big_string_list renderer), so no extra ErrorRing here. */}
+        <LargeStringList
+          handleChange={handleChange}
+          path={props.path}
+          id={props.id}
+          data={list}
+          disabled={!props.enabled}
+          error={!!errors}
+        />
       </div>
     </>
   );

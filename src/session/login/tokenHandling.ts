@@ -40,18 +40,26 @@ export function handleAuthFailed(
     );
     return;
   }
+  // Remember where the user wanted to go, for the post-login redirect.
   if (iSessionStorage.getMostRecentURL() === undefined) {
     iSessionStorage.setMostRecentURL(localPath);
+  }
+
+  if (!userIsLoggedIn()) {
+    // Never signed in — or a concurrent 401 already performed the sign-out
+    // transition below. The user is on (or being routed to) the login page,
+    // so a "not authenticated" toast would tell them nothing new.
+    navigateToURL('/');
     return;
   }
 
-  if (tokenExpired(getTokenFromStorage() ?? null) || !userIsLoggedIn()) {
+  if (isStoredTokenExpired()) {
+    // The signed-in -> expired transition: sign out and explain ONCE. Any
+    // other in-flight 401s land in the silent branch above afterwards, so a
+    // burst of parallel requests cannot stack up toasts.
     setUserLoggedIn(false);
-    if (title) {
-      showError(title, msg ?? '');
-    } else {
-      showError('Please sign in again.', 'Your session has expired.');
-    }
+    window.dispatchEvent(new Event('sign-out'));
+    showError('Please sign in again.', 'Your session has expired.');
     navigateToURL('/');
     return;
   }
@@ -102,9 +110,23 @@ export function getUserLogin(): string {
 
 function tokenExpired(token: Nullable<string>): boolean {
   if (!token) return false;
-  const { exp } = jwtDecode(token);
-  if (!exp) return false;
-  const currentTime = new Date().getTime() / 1000;
+  try {
+    const { exp } = jwtDecode(token);
+    if (!exp) return false;
+    const currentTime = new Date().getTime() / 1000;
+    return currentTime > exp;
+  } catch {
+    // A token we cannot even decode is as good as an expired one: the
+    // backend will reject it, so treat it as expired and re-login.
+    return true;
+  }
+}
 
-  return currentTime > exp;
+/**
+ * Whether the stored session token has (locally) passed its expiry. Used to
+ * short-circuit doomed backend requests and to distinguish "session expired"
+ * from "backend rejected a seemingly valid token" on a 401.
+ */
+export function isStoredTokenExpired(): boolean {
+  return tokenExpired(getTokenFromStorage() ?? null);
 }

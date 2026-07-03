@@ -1,6 +1,6 @@
 import { showError } from '../controller/global/notification';
 import VAYS_CACHE from '../model/caching';
-import { getTokenFromStorage } from '../session/login/tokenHandling';
+import { getTokenFromStorage, isStoredTokenExpired } from '../session/login/tokenHandling';
 import { Nullable } from './types/typeUtils';
 
 /**
@@ -79,6 +79,18 @@ export async function sendRequest(
   requestBody: Nullable<string> = null,
   cacheContext: Nullable<string> = null,
 ): Promise<Response | null> {
+  if (getTokenFromStorage() && isStoredTokenExpired()) {
+    // The stored token is already past its expiry: the backend would answer
+    // 401 anyway. Skip the doomed round-trip (a page load fires many requests
+    // in parallel — no reason to send them all) and synthesize the 401, so
+    // every caller runs its normal auth handling: one friendly re-login
+    // toast via handleAuthFailed, not one error per request.
+    return new Response(
+      JSON.stringify({ title: 'Please sign in again.', message: 'Your session has expired.' }),
+      { status: 401, headers: { 'Content-Type': 'application/json' } },
+    );
+  }
+
   if (cacheContext) {
     const cacheElt = await VAYS_CACHE.retreive<Response>(cacheContext, url);
     if (cacheElt) {

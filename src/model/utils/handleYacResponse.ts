@@ -10,7 +10,7 @@
  */
 
 import { showError } from '../../controller/global/notification';
-import { handleAuthFailed } from '../../session/login/tokenHandling';
+import { handleAuthFailed, userIsLoggedIn } from '../../session/login/tokenHandling';
 import { Nullable } from '../../utils/types/typeUtils';
 
 /** The error envelope YAC returns for non-2xx responses. */
@@ -95,6 +95,16 @@ export async function handleYacResponse(
   }
 
   if (status === 403) {
+    if (!userIsLoggedIn()) {
+      // No credentials were attached (the user is not signed in), and
+      // FastAPI's security scheme rejects such requests with 403
+      // "Not authenticated". That is not a permission problem — the user is
+      // simply logged out and already on (or being routed to) the login
+      // page, so this goes through the silent re-login flow instead of a
+      // noisy permission toast.
+      handleAuthFailed(body.title ?? body.detail, body.message);
+      return { kind: 'auth-expired', status, body };
+    }
     // The session itself is fine — the user merely lacks permission for this
     // operation. Surface the backend's explanation instead of re-logging-in.
     showError(

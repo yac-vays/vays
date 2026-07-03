@@ -13,6 +13,7 @@ import {
 } from '../../../../../controller/local/EditController/shared';
 import { seedCanonical } from '../../../../../controller/local/EditController/sync';
 import { getDefaultsAsYAML } from '../../../../../utils/schema/defaultsHandling';
+import { patchSchemaForMonaco } from '../../../../../utils/schema/monacoSchemaFix';
 import { RequestEditContext } from '../../../../../utils/types/internal/request';
 
 export default async function editorInitializeSchema(
@@ -61,7 +62,7 @@ export default async function editorInitializeSchema(
     schemas: [
       {
         uri: `inmemory://schema.json`,
-        schema: v.json_schema,
+        schema: patchSchemaForMonaco(v.json_schema),
         fileMatch: ['*'],
       },
     ],

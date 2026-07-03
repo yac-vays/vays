@@ -24,6 +24,7 @@ import {
   getYACValidateResponse,
   setEditDirty,
 } from '../../../../../controller/local/EditController/shared';
+import { patchSchemaForMonaco } from '../../../../../utils/schema/monacoSchemaFix';
 import {
   applyCanonical,
   isStaleValidation,
@@ -122,7 +123,7 @@ export function getUpdateCallback(): EditorUpdateCallback {
         schemas: [
           {
             uri: 'inmemory://schema.json',
-            schema: rep.json_schema,
+            schema: patchSchemaForMonaco(rep.json_schema),
             fileMatch: ['*'],
           },
         ],

@@ -18,6 +18,7 @@ import {
   registerYamlWriter,
   setActivePane,
 } from '../../../../controller/local/EditController/sync';
+import { patchSchemaForMonaco } from '../../../../utils/schema/monacoSchemaFix';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 import { computeDiffDecorations } from './EditorPlugins/diffDecoration';
 import editorPlugins, { editorSetupPlugins } from './EditorPlugins';
@@ -115,7 +116,13 @@ export const Editor = ({
       editor.setValue(resp.yaml);
       editor.setScrollTop(scrollTop);
       getMonacoYaml()?.update({
-        schemas: [{ uri: 'inmemory://schema.json', schema: resp.json_schema, fileMatch: ['*'] }],
+        schemas: [
+          {
+            uri: 'inmemory://schema.json',
+            schema: patchSchemaForMonaco(resp.json_schema),
+            fileMatch: ['*'],
+          },
+        ],
       });
     });
     // Lets the sync layer see un-validated keystrokes waiting in the debounce

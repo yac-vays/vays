@@ -27,6 +27,7 @@ import { getUpdateCallback, setupMonacoYAMLPlugin } from './utils/setup.js';
 
 import { startExpertModeSession } from '../../../../controller/local/EditController/ExpertMode/index.js';
 import { disposeErrorMarkersListener } from './EditorPlugins/errorDecoration';
+import { disposeMissingPropertyRelocator } from './EditorPlugins/missingPropertyRelocator';
 import './glyph.css';
 import { getEditor, getModel } from './utils/factory.js';
 
@@ -80,11 +81,12 @@ export const Editor = ({
         setIsSettingUp(false);
       });
 
-      // Dispose the editor (and the global markers listener registered by the
-      // error-decoration plugin) on teardown; otherwise every navigation into
-      // the edit view leaks a live editor instance.
+      // Dispose the editor (and the global markers listeners registered by the
+      // error-decoration / marker-relocation plugins) on teardown; otherwise
+      // every navigation into the edit view leaks a live editor instance.
       return () => {
         disposeErrorMarkersListener();
+        disposeMissingPropertyRelocator();
         // A keystroke may still sit in the debounce window; it belongs to THIS
         // session (the epoch stamp would drop it anyway) — cancel it so it
         // does not fire into the next session at all.

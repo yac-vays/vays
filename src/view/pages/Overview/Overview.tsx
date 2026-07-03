@@ -66,7 +66,7 @@ const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) 
     };
   }, [window.location.href]);
 
-  let title = 'Loading Type Definition...';
+  let title = 'Loading...';
   let subText =
     'This is required for understanding the backend responses and verifying your request.';
   if (requestContext.rc.accessedEntityType) {

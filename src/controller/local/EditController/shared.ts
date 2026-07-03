@@ -106,6 +106,29 @@ export function setYACUsages(usages: LimitUsage[]) {
   usagesListener?.(usages);
 }
 
+// The form pane and the (lazily loaded) Monaco editor both request the schema
+// when the edit view mounts, so the same load runs twice concurrently. The
+// stabilization loop works on module-global state (initialData,
+// previousDefaultsObject, strippedPaths); a second in-flight run for the same
+// context can therefore race the first one: its defaults patch is computed
+// against the baseline the finished run already replaced, so the injected
+// defaults never reach its YAML. Concurrent duplicates share one promise
+// instead; late callers get a copy so the panes never alias the same objects.
+const inflightSchemaLoads = new Map<string, Promise<ValidateResponse | null>>();
+
+function schemaLoadKey(
+  requestEditContext: RequestEditContext,
+  startEditingSession: boolean,
+): string {
+  return [
+    requestEditContext.rc.yacURL ?? '',
+    requestEditContext.rc.entityTypeName,
+    requestEditContext.mode,
+    requestEditContext.entityName ?? '',
+    startEditingSession,
+  ].join('|');
+}
+
 /**
  * Get the schema (and validated data) for the current entity. Name + actions are
  * never injected into the schema/data: they live in the always-visible
@@ -121,11 +144,23 @@ export async function retreiveSchema(
 ): Promise<ValidateResponse | null> {
   if (requestEditContext.rc.yacURL == null) return null;
 
-  if (requestEditContext.mode === 'create') {
-    return await retreiveNewCreateSchema(requestEditContext);
+  const key = schemaLoadKey(requestEditContext, startEditingSession);
+  const running = inflightSchemaLoads.get(key);
+  if (running !== undefined) {
+    const resp = await running;
+    return resp == null ? null : structuredClone(resp);
   }
 
-  return await retreiveEditSchema(requestEditContext, startEditingSession);
+  const load =
+    requestEditContext.mode === 'create'
+      ? retreiveNewCreateSchema(requestEditContext)
+      : retreiveEditSchema(requestEditContext, startEditingSession);
+  inflightSchemaLoads.set(key, load);
+  try {
+    return await load;
+  } finally {
+    inflightSchemaLoads.delete(key);
+  }
 }
 
 /**

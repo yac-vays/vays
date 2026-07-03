@@ -31,9 +31,9 @@ const HelpLink = ({ label, href, text }: { label: string; href: string; text: st
  * The help page (`/help`, reachable from the top bar). Two parts:
  *  - the deployment-specific help text from the app config (`helpText`,
  *    markdown) — the place for "who to contact HERE" (shown only when set);
- *  - general developer information: documentation site, GitHub organisation
- *    and the configured backends' API docs (YAC serves its interactive
- *    OpenAPI documentation at its root URL).
+ *  - developer information: links to the documentation site and the GitHub
+ *    organisation, plus a table of the configured backends' API docs (YAC
+ *    serves its interactive OpenAPI documentation at its root URL).
  */
 const Help = () => {
   const [backends, setBackends] = useState<YACBackend[]>([]);
@@ -68,44 +68,49 @@ const Help = () => {
               </>
             )}
 
-            <h3 className="mb-3 text-title-sm font-bold text-plainfont">Developer Information</h3>
-            <p className="mb-5">
-              VAYS is a web interface for managing configuration entities — the forms, the YAML
-              editor and the validation you see here are all generated from the specification that
-              your administrators maintain in the backend (YAC). Both frontend and backend are open
-              source software developed at ETH Zürich.
-            </p>
-            <p className="mb-5">
-              If something does not work as expected, or you have a question or an idea, please open
-              an issue or a discussion on GitHub. For questions about the entities themselves (what
-              a field means, why a value is rejected), the field descriptions and your
-              administrators are the best starting point.
-            </p>
+            <div className="text-sm">
+              <h3 className="mb-3 text-base font-bold text-plainfont">Developer Information</h3>
 
-            <HelpLink
-              label="Documentation"
-              href="https://yac-vays.github.io"
-              text="yac-vays.github.io"
-            />
-            <HelpLink
-              label="GitHub"
-              href="https://github.com/yac-vays"
-              text="github.com/yac-vays"
-            />
-
-            <p className="mt-6 mb-1 text-plainfont font-bold">Backend APIs</p>
-            <p className="mb-3">
-              Everything shown in this interface is also available programmatically. Each configured
-              backend serves its interactive API documentation at its root URL:
-            </p>
-            {backends.map((backend) => (
               <HelpLink
-                key={backend.name}
-                label={backend.title}
-                href={backend.url}
-                text={backend.url}
+                label="Documentation"
+                href="https://yac-vays.github.io"
+                text="yac-vays.github.io"
               />
-            ))}
+              <HelpLink
+                label="GitHub"
+                href="https://github.com/yac-vays"
+                text="github.com/yac-vays"
+              />
+
+              <table className="mt-6 border-collapse text-left">
+                <thead>
+                  <tr>
+                    <th className="border border-stroke py-2 px-4 font-bold text-plainfont">
+                      Backend
+                    </th>
+                    <th className="border border-stroke py-2 px-4 font-bold text-plainfont">API</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {backends.map((backend) => (
+                    <tr key={backend.name}>
+                      <td className="border border-stroke py-2 px-4">{backend.title}</td>
+                      <td className="border border-stroke py-2 px-4">
+                        <a
+                          href={backend.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          {backend.url}
+                          <ExternalLinkIcon />
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>

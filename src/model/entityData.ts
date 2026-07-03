@@ -1,11 +1,12 @@
 import { typeCheck } from 'type-check';
 import { showError } from '../controller/global/notification';
 import { sendRequest } from '../utils/authRequest';
+import { entityToastTitle } from '../utils/toastUtils';
 import { EntityData, TYPE_CHECK_ENTITY_DATA } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
 import { joinUrl } from '../utils/urlUtils';
-import { handleYacResponse } from './utils/handleYacResponse';
+import { handleYacResponse, yacErrorDetail } from './utils/handleYacResponse';
 
 export async function getEntityData(
   entityName: string,
@@ -20,14 +21,17 @@ export async function getEntityData(
   );
 
   if (resp == null) {
-    showError('Network Error', `No data for the entity ${entityName} could be fetched.`);
+    showError(
+      entityToastTitle(requestContext, entityName),
+      `Read of ${entityName} failed: the backend could not be reached.`,
+    );
     return null;
   }
 
   const result = await handleYacResponse(resp, {
-    backendTitle: requestContext.backendObject?.title,
-    errorTitle: `Could not fetch entity data for ${entityName}`,
-    errorMessage: 'Could not fetch entity data. Please contact the admin to resolve this issue.',
+    title: entityToastTitle(requestContext, entityName),
+    errorText: `Read of ${entityName} failed`,
+    errorMessage: 'Please contact the admin to resolve this issue.',
   });
 
   if (result.kind === 'success') {
@@ -36,7 +40,10 @@ export async function getEntityData(
     // No validation error should happen here.
     showError('Internal Error', 'Error ID-VAL-GED-01. Please file a bug report!');
   } else if (result.kind === 'client-error') {
-    showError('Cannot fetch schema', `Server responded with "${result.body.message}"`);
+    showError(
+      entityToastTitle(requestContext, entityName),
+      yacErrorDetail(`Read of ${entityName} failed`, result.status, result.body, 'Please try again.'),
+    );
   }
   return null;
 }

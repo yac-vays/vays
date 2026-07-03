@@ -1,25 +1,27 @@
 import { stringify } from 'yaml';
 import { diffToastLink } from '../controller/global/diffViewer';
 import { showError, showSuccess } from '../controller/global/notification';
-import { actionNames2URLQuery } from '../utils/actionUtils';
+import { actions2URLQuery } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
+import { entityToastTitle, operationSuccessText } from '../utils/toastUtils';
+import { ActionDecl } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
 import { joinUrl } from '../utils/urlUtils';
-import { handleYacResponse } from './utils/handleYacResponse';
+import { handleYacResponse, yacErrorDetail } from './utils/handleYacResponse';
 
 export async function createNewEntity(
   name: Nullable<string>,
   data: { [key: string]: unknown },
   requestContext: RequestContext,
   yaml?: string,
-  acts: string[] = [],
+  acts: ActionDecl[] = [],
 ): Promise<{ success: boolean; name: Nullable<string> }> {
   const url = requestContext.yacURL;
   if (url == null || url == undefined) return { success: false, name: null };
 
   const resp = await sendRequest(
-    joinUrl(url, `/entity/${requestContext.entityTypeName}${actionNames2URLQuery(acts)}`),
+    joinUrl(url, `/entity/${requestContext.entityTypeName}${actions2URLQuery(acts)}`),
     'POST',
     JSON.stringify({
       // The key must be present (null instead of omitted), otherwise YAC
@@ -29,10 +31,11 @@ export async function createNewEntity(
     }),
   );
 
+  const errorText = name ? `Create of ${name} failed` : 'Create failed';
   const result = await handleYacResponse(resp, {
-    backendTitle: requestContext.backendObject?.title,
-    errorTitle: `Cannot create ${name}`,
-    errorMessage: 'Please contact your admin on this issue. ',
+    title: entityToastTitle(requestContext, name),
+    errorText,
+    errorMessage: 'Please contact your admin on this issue.',
     serverErrorSuffix: 'The data you entered is cached for now.',
     successStatus: 201,
   });
@@ -43,9 +46,9 @@ export async function createNewEntity(
     const ans: { name?: string; patch?: string } = await result.resp.json();
     const createdName: Nullable<string> = ans?.name ?? name;
     showSuccess(
-      `Created ${createdName} successfully!`,
-      'The entity was successfully created and added to the repository.',
-      diffToastLink(`Changes for '${createdName}'`, ans?.patch),
+      entityToastTitle(requestContext, createdName),
+      operationSuccessText(createdName ? `Create of ${createdName}` : 'Create', acts),
+      diffToastLink(`Changes for ${createdName}`, ans?.patch),
     );
     return { success: true, name: createdName };
   } else if (result.kind === 'invalid-request') {
@@ -55,8 +58,8 @@ export async function createNewEntity(
     );
   } else if (result.kind === 'client-error') {
     showError(
-      `Client Error (Status ${result.status}) ${result.body.title}`,
-      result.body.message ?? '',
+      entityToastTitle(requestContext, name),
+      yacErrorDetail(errorText, result.status, result.body, 'Please try again.'),
     );
   }
 

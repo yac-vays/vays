@@ -41,7 +41,7 @@ function yacResponse(status: number, body: object): Response {
   });
 }
 
-const CTX = { errorTitle: 'Cannot fetch data' };
+const CTX = { title: 'Backend / Type / entity', errorText: 'Fetching data failed' };
 
 beforeEach(() => {
   localStorage.clear();
@@ -117,7 +117,7 @@ describe('signed in, missing permission (real 403)', () => {
     iLocalStorage.setToken(jwt(Math.floor(Date.now() / 1000) + 3600));
     const result = await handleYacResponse(
       yacResponse(403, { title: 'Forbidden', message: 'Operation edit is not allowed' }),
-      { ...CTX, backendTitle: 'Test' },
+      CTX,
     );
     expect(result.kind).toBe('forbidden');
     expect(showError).toHaveBeenCalledTimes(1);

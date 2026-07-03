@@ -117,7 +117,7 @@ export async function getEntityPage(
  * - If the value is found in the option's aliases, the alias is used.
  * - If the value is null, it adds '(None)' to the values array.
  * - The function ensures that commas in the values are properly spaced.
- * - Additional values such as 'Logs' and 'Actions' are added to the end
+ * - Additional values such as 'Status' (logs) and 'Actions' are added to the end
  *
  */
 function representEntity(
@@ -137,7 +137,7 @@ function representEntity(
     }
   }
   if (hasLogsDefined(requestContext)) {
-    values.push({ value: 'Logs', isMarkdown: false });
+    values.push({ value: 'Status', isMarkdown: false });
   }
   values.push({ value: 'Actions', isMarkdown: false });
 
@@ -154,7 +154,7 @@ function representEntity(
  * The header entries include:
  * - 'Name': A default entry.
  * - Titles of the options from the accessed entity type.
- * - 'Logs': A placeholder for logs (needs further validation).
+ * - 'Status': A placeholder for the log indicators (needs further validation).
  * - 'Actions': A default entry for actions.
  */
 export function getHeaderEntries(requestContext: RequestContext): string[] {
@@ -171,7 +171,7 @@ export function getHeaderEntries(requestContext: RequestContext): string[] {
     header.push(optName);
   }
   if (hasLogsDefined(requestContext)) {
-    header.push('Logs');
+    header.push('Status');
   }
   header.push('Actions');
   return header;

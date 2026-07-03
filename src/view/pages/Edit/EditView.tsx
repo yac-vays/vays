@@ -72,12 +72,12 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
           );
         else
           setTitle(
-            `${backendTitle} / ${entityTypeTitle} / Create: '${requestEditContext.entityName}'`,
+            `${backendTitle} / ${entityTypeTitle} / Create: ${requestEditContext.entityName}`,
           );
       } else if (mode === 'edit') {
-        setTitle(`${backendTitle} / ${entityTypeTitle} / Edit: '${requestEditContext.entityName}'`);
+        setTitle(`${backendTitle} / ${entityTypeTitle} / Edit: ${requestEditContext.entityName}`);
       } else {
-        setTitle(`${backendTitle} / ${entityTypeTitle} / Read: '${requestEditContext.entityName}'`);
+        setTitle(`${backendTitle} / ${entityTypeTitle} / Read: ${requestEditContext.entityName}`);
       }
       setRequestContext(requestEditContext);
     })();

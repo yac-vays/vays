@@ -66,7 +66,7 @@ const MarkdownRender = ({ text }: { text: string | null | undefined }) => {
           a({ href, children }) {
             return (
               <a
-                style={{ color: 'lightblue' }}
+                className="text-primary hover:underline"
                 target="_blank"
                 rel="noopener noreferrer"
                 href={href}

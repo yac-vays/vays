@@ -83,7 +83,7 @@ const EntityListRow = ({
           const jsx = [];
 
           // The trailing placeholder entries are 'Actions' and, only when the
-          // entity type defines logs, 'Logs'. Skip them in the data-column loop.
+          // entity type defines logs, 'Status'. Skip them in the data-column loop.
           const showLogs = hasLogsDefined(requestContext);
           const numTrailingCols = showLogs ? 2 : 1;
 

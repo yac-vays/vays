@@ -1,10 +1,12 @@
 import { diffToastLink } from '../controller/global/diffViewer';
 import { showError, showSuccess } from '../controller/global/notification';
-import { actionNames2URLQuery } from '../utils/actionUtils';
+import { actions2URLQuery } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
+import { entityToastTitle, operationSuccessText } from '../utils/toastUtils';
+import { ActionDecl } from '../utils/types/api';
 import { RequestEditContext } from '../utils/types/internal/request';
 import { joinUrl } from '../utils/urlUtils';
-import { handleYacResponse } from './utils/handleYacResponse';
+import { handleYacResponse, yacErrorDetail } from './utils/handleYacResponse';
 
 /**
  * @param name
@@ -18,10 +20,10 @@ export async function putYAMLEntity(
   yaml: string,
   yaml_old: string,
   requestEditContext: RequestEditContext,
-  acts: string[],
+  acts: ActionDecl[],
 ): Promise<boolean> {
   if (requestEditContext.entityName == null) {
-    showError('Frontend error', 'Name of entity is null. Please file a bug report!');
+    showError('Frontend error', 'The name is missing. Please file a bug report!');
     return false;
   }
   const url = requestEditContext.rc.yacURL;
@@ -31,16 +33,16 @@ export async function putYAMLEntity(
   const resp = await sendRequest(
     joinUrl(
       url,
-      `/entity/${requestEditContext.rc.entityTypeName}/${requestEditContext.entityName}${actionNames2URLQuery(acts)}`,
+      `/entity/${requestEditContext.rc.entityTypeName}/${requestEditContext.entityName}${actions2URLQuery(acts)}`,
     ),
     'PUT',
     JSON.stringify({ name: name, yaml_old: yaml_old, yaml_new: yaml }),
   );
 
   const result = await handleYacResponse(resp, {
-    backendTitle: requestEditContext.rc.backendObject?.title,
-    errorTitle: `Cannot edit ${name}`,
-    errorMessage: 'Please contact your admin on this issue. ',
+    title: entityToastTitle(requestEditContext.rc, name),
+    errorText: `Edit of ${name} failed`,
+    errorMessage: 'Please contact your admin on this issue.',
     serverErrorSuffix: 'The data you entered is cached for now.',
   });
 
@@ -54,9 +56,9 @@ export async function putYAMLEntity(
       patch = undefined;
     }
     showSuccess(
-      `Edited ${name} successfully!`,
-      'The entity was successfully edited.',
-      diffToastLink(`Changes to '${name}'`, patch),
+      entityToastTitle(requestEditContext.rc, name),
+      operationSuccessText(`Edit of ${name}`, acts),
+      diffToastLink(`Changes to ${name}`, patch),
     );
     return true;
   } else if (result.kind === 'invalid-request') {
@@ -66,8 +68,8 @@ export async function putYAMLEntity(
     );
   } else if (result.kind === 'client-error') {
     showError(
-      `Client Error (Status ${result.status}) ${result.body.title}`,
-      result.body.message ?? '',
+      entityToastTitle(requestEditContext.rc, name),
+      yacErrorDetail(`Edit of ${name} failed`, result.status, result.body, 'Please try again.'),
     );
   }
 

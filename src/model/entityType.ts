@@ -7,7 +7,7 @@ import { YACBackend } from '../utils/types/config';
 import { Nullable } from '../utils/types/typeUtils';
 import { joinUrl } from '../utils/urlUtils';
 import { ENTITY_TYPE_CACHE_KEY } from './caching/cachekeys';
-import { handleYacResponse } from './utils/handleYacResponse';
+import { handleYacResponse, yacErrorDetail } from './utils/handleYacResponse';
 
 /**
  * Checks whether the received object has the right typing. Reduces damage of
@@ -47,8 +47,8 @@ export async function getEntityTypes(yacBackend: YACBackend | null): Promise<Ent
   );
 
   const result = await handleYacResponse(resp, {
-    backendTitle: yacBackend.title,
-    errorTitle: `Could not fetch Entity Types on ${yacBackend.name}`,
+    title: yacBackend.title,
+    errorText: 'Fetching the available types failed',
     errorMessage: 'Waking up the admin, please stand by...',
   });
 
@@ -57,8 +57,13 @@ export async function getEntityTypes(yacBackend: YACBackend | null): Promise<Ent
     return typeCheckEntityTypeDecl(res, yacBackend.title);
   } else if (result.kind === 'invalid-request' || result.kind === 'client-error') {
     showError(
-      `Error ${result.status}: Can't fetch Entity Types of ${yacBackend.name}`,
-      `Server returned: ${JSON.stringify(result.body)}`,
+      yacBackend.title,
+      yacErrorDetail(
+        'Fetching the entity types failed',
+        result.status,
+        result.body,
+        'Please try again.',
+      ),
     );
   }
 

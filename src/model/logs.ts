@@ -1,6 +1,7 @@
 import { typeCheck } from 'type-check';
 import { showError } from '../controller/global/notification';
 import { sendRequest } from '../utils/authRequest';
+import { entityToastTitle } from '../utils/toastUtils';
 import { EntityLog, TYPE_CHECK_ENTITY_LOG } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
@@ -8,7 +9,7 @@ import { joinUrl } from '../utils/urlUtils';
 import VAYS_CACHE from './caching';
 import { LOGS_CACHE_KEY } from './caching/cachekeys';
 import { invalidateEntityListCache } from './entityList';
-import { handleYacResponse } from './utils/handleYacResponse';
+import { handleYacResponse, yacErrorDetail } from './utils/handleYacResponse';
 
 function getLogID(
   url: string | null | undefined,
@@ -48,7 +49,10 @@ export async function getEntityLogs(
   );
 
   if (resp == null) {
-    showError('Network Error', `No logs for the entity ${entityName} could be fetched.`);
+    showError(
+      entityToastTitle(requestContext, entityName),
+      `Fetching logs for ${entityName} failed: the backend could not be reached.`,
+    );
     return null;
   }
 
@@ -59,9 +63,9 @@ export async function getEntityLogs(
   }
 
   const result = await handleYacResponse(resp, {
-    backendTitle: requestContext.backendObject?.title,
-    errorTitle: `Could not fetch entity logs for ${entityName}`,
-    errorMessage: 'Could not fetch entity logs. Please contact the admin to resolve this issue.',
+    title: entityToastTitle(requestContext, entityName),
+    errorText: `Fetching logs for ${entityName} failed`,
+    errorMessage: 'Please contact the admin to resolve this issue.',
   });
 
   if (result.kind === 'success') {
@@ -70,7 +74,15 @@ export async function getEntityLogs(
     // No validation error should happen here.
     showError('Internal Error', 'Error ID-VAL-GEL-01. Please file a bug report!');
   } else if (result.kind === 'client-error') {
-    showError(`Cannot fetch logs (Status)`, `Server responded with "${result.body.message}"`);
+    showError(
+      entityToastTitle(requestContext, entityName),
+      yacErrorDetail(
+        `Fetching logs for ${entityName} failed`,
+        result.status,
+        result.body,
+        'Please try again.',
+      ),
+    );
   }
   return null;
 }

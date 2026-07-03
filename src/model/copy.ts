@@ -1,5 +1,6 @@
 import { actions2URLQuery } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
+import { entityToastTitle } from '../utils/toastUtils';
 import { ActionDecl, NameGeneratedCond } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
@@ -53,8 +54,8 @@ export async function createDerivedEntity(
   );
 
   const result = await handleYacResponse(resp, {
-    backendTitle: requestContext.backendObject?.title,
-    errorTitle: `Cannot ${kind === 'copy' ? 'Copy' : 'Link'} ${sourceEntityName}`,
+    title: entityToastTitle(requestContext, sourceEntityName),
+    errorText: `Create ${kind === 'copy' ? 'copy of' : 'link to'} ${sourceEntityName} failed`,
     errorMessage: 'Waking up the admin, please stand by...',
     successStatus: 201,
     genericClientErrors: true,

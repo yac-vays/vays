@@ -31,12 +31,6 @@ export function actions2URLQuery(actions: ActionDecl[]): string {
   return '?' + actions.map((v) => `run=${v.name}`).join('&');
 }
 
-export function actionNames2URLQuery(actions: string[]): string {
-  if (actions.length == 0) return '';
-
-  return '?' + actions.map((v) => `run=${v}`).join('&');
-}
-
 export function getActionNames(actions: ActionDecl[]): string[] {
   return actions.map((v) => v.name);
 }

@@ -8,6 +8,7 @@ import {
 import { isTriggable } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
 import { isNameGeneratedByYAC, isNameOptionalByYAC } from '../utils/nameUtils';
+import { entityToastTitle, operationSuccessText } from '../utils/toastUtils';
 import { ActionDecl } from '../utils/types/api';
 import { OperationsMetaInfo } from '../utils/types/internal/actions';
 import { RequestContext } from '../utils/types/internal/request';
@@ -43,24 +44,24 @@ export function getActionCallback(
 ): () => Promise<boolean> {
   return async () => {
     const doAction = async () => {
-      const successfullySubmitted = await sendAction(requestContext, entityName, actionObj.name);
+      const successfullySubmitted = await sendAction(requestContext, entityName, actionObj);
       if (successfullySubmitted) {
         showSuccess(
-          `Action '${actionObj.title}' has been submitted successfully.`,
-          'It may take a while for the process to complete. Please stand by.',
+          entityToastTitle(requestContext, entityName),
+          `${actionObj.title} was successful!`,
         );
       } else if (successfullySubmitted == null) {
         // Skip, the error was printed
       } else {
         showError(
-          `Action '${actionObj.title}' could not be submitted.`,
-          'Please stand by and try again later. If this keeps occuring, please contact your admin.',
+          entityToastTitle(requestContext, entityName),
+          `${actionObj.title} failed!`,
         );
       }
     };
     if (actionObj.dangerous) {
       showModalMessage(
-        `Are you sure to ${actionObj.title.toLowerCase()} on \n'${entityName}'?`,
+        `${actionObj.title} on ${entityName}?`,
         actionObj.description,
         doAction,
         async () => {},
@@ -106,10 +107,10 @@ export const OPERATIONS_META: OperationsMetaInfo = {
           ? 'Generate Automatically'
           : '';
         showModalMessage(
-          `Creating a copy of ${entityName}`,
+          `Create copy of ${entityName}?`,
           showNameField
-            ? 'Please enter a name of this new copy:'
-            : 'The name is generated automatically. Create a copy?',
+            ? 'Please enter a name for the new copy:'
+            : 'The name is generated automatically.',
           async (newName?: string, actionsSelected?: ActionDecl[]) => {
             const res = await copyEntity(
               newName,
@@ -119,12 +120,15 @@ export const OPERATIONS_META: OperationsMetaInfo = {
             );
             if (res.success) {
               showSuccess(
-                `Success Copying ${entityName}`,
-                'The entry is now available in the entity list.',
+                entityToastTitle(requestContext, res.name ?? newName),
+                operationSuccessText(`Create copy of ${entityName}`, actionsSelected),
               );
               reloadOverviewAtEntity(requestContext, res.name ?? newName);
             } else if (res.success !== null) {
-              showError(`Could not copy ${entityName}`, 'Please try again.');
+              showError(
+                entityToastTitle(requestContext, entityName),
+                `Create copy of ${entityName} failed!`,
+              );
             }
           },
           async () => {},
@@ -195,19 +199,36 @@ export const OPERATIONS_META: OperationsMetaInfo = {
   delete: {
     getOperationCallback: (entityName: string, requestContext: RequestContext) => {
       return async () => {
-        const del = async () => {
-          const success = await deleteEntity(entityName, requestContext);
+        const del = async (_enteredName?: string, actionsSelected?: ActionDecl[]) => {
+          const success = await deleteEntity(entityName, requestContext, actionsSelected);
           if (success) {
             // TODO: Need to change the cachin structure...
             invalidateEntityListCache(requestContext.yacURL, requestContext.entityTypeName);
-            showSuccess(`Deleted ${entityName}`, `Deletion of ${entityName} was successful.`);
+            showSuccess(
+              entityToastTitle(requestContext, entityName),
+              operationSuccessText(`Delete of ${entityName}`, actionsSelected),
+            );
+            // If the deleted entity is the one pinned in the URL (?name=...),
+            // drop the pin: the list reload would otherwise treat it as
+            // "doesn't exist yet" and forward to the create form.
+            if (new URLSearchParams(window.location.search).get('name') === entityName) {
+              navigateToURL(
+                buildOverviewHighlightURL(
+                  requestContext.backendObject?.name,
+                  requestContext.entityTypeName,
+                ),
+              );
+            }
             return;
           }
           if (success == null) return;
-          showError('Deletion error', `Could not delete ${entityName}.`);
+          showError(
+            entityToastTitle(requestContext, entityName),
+            `Delete of ${entityName} failed!`,
+          );
         };
         showModalMessage(
-          `Are you sure to delete ${entityName}?`,
+          `Delete ${entityName}?`,
           OPERATIONS['delete'].description,
           del,
           async () => {},
@@ -235,10 +256,10 @@ export const OPERATIONS_META: OperationsMetaInfo = {
           ? 'Generate Automatically'
           : '';
         showModalMessage(
-          `Creating a link to ${entityName}`,
+          `Create link to ${entityName}?`,
           showNameField
-            ? 'Please enter a name of this new link:'
-            : 'The name is generated automatically. Create a link?',
+            ? 'Please enter a name for the new link:'
+            : 'The name is generated automatically.',
           async (newName?: string, actionsSelected?: ActionDecl[]) => {
             const res = await linkEntity(
               newName,
@@ -247,10 +268,16 @@ export const OPERATIONS_META: OperationsMetaInfo = {
               requestContext,
             );
             if (res.success) {
-              showSuccess(`Successfully created link to ${entityName}`, '');
+              showSuccess(
+                entityToastTitle(requestContext, res.name ?? newName),
+                operationSuccessText(`Create link to ${entityName}`, actionsSelected),
+              );
               reloadOverviewAtEntity(requestContext, res.name ?? newName);
             } else if (res.success !== null) {
-              showError(`Could not create link to ${entityName}`, 'Please try again.');
+              showError(
+                entityToastTitle(requestContext, entityName),
+                `Create link to ${entityName} failed!`,
+              );
             }
           },
           async () => {},
@@ -331,29 +358,35 @@ export const OPERATIONS: { [key: string]: ActionDecl } = {
 /**
  * @param requestContext
  * @param entityName
- * @param actionName
+ * @param actionObj
  * @returns
  */
 export async function sendAction(
   requestContext: RequestContext,
   entityName: string,
-  actionName: string,
+  actionObj: ActionDecl,
 ): Promise<Nullable<boolean>> {
   const url: string | null | undefined = requestContext.yacURL;
 
   if (url == undefined || url == null) return false;
 
   const resp: Nullable<Response> = await sendRequest(
-    joinUrl(url, `/entity/${requestContext.entityTypeName}/${entityName}/run/${actionName}`),
+    joinUrl(url, `/entity/${requestContext.entityTypeName}/${entityName}/run/${actionObj.name}`),
     'POST',
   );
 
   const result = await handleYacResponse(resp, {
-    backendTitle: requestContext.backendObject?.title,
-    errorTitle: 'Action could not be sent',
-    errorMessage: 'Action cannot be sent. Please contact the admin to resolve this issue.',
+    title: entityToastTitle(requestContext, entityName),
+    errorText: `${actionObj.title} failed`,
     successStatus: 204,
     genericClientErrors: true,
+    // YAC sends a user-facing message for every status except 401/500 (see
+    // YAC's error handler); a 5xx only carries a generic apology, so it gets
+    // the plain "failed!".
+    errorDetail: (status, body) =>
+      status < 500 && body.message
+        ? `${actionObj.title} failed:\n${body.message}`
+        : `${actionObj.title} failed!`,
   });
 
   if (result.kind === 'success') return true;

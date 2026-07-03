@@ -70,6 +70,11 @@ export interface AppConfig {
    * installation: who to contact, internal documentation, house rules.
    */
   helpText?: string;
+  /**
+   * Deployment-specific welcome text (markdown), shown on the start page
+   * after signing in. Defaults to `You are signed in to {title}.`.
+   */
+  welcomeText?: string;
   oidcConf: {
     server: string;
     clientID: string;

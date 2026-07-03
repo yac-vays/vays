@@ -207,7 +207,7 @@ const SSHKeyInput = ({
                 onClick={() => {
                   navigator.clipboard.writeText(key).then(
                     function () {
-                      showSuccess('Copied to clipboard!', `Copied '${key}'`);
+                      showSuccess('Copied to clipboard!', `Copied ${key}`);
                     },
                     function (err) {
                       showError('Cannot copy to clipboard!', err);

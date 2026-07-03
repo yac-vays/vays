@@ -38,8 +38,8 @@ export const ArrayControlRenderer = (
 
   const openDeleteDialog = (p: string, rowIndex: number) => () => {
     showModalMessage(
-      translations.deleteDialogTitle ?? 'Delete?',
-      translations.deleteDialogMessage ?? 'Sure?',
+      translations.deleteDialogTitle ?? 'Delete this item?',
+      translations.deleteDialogMessage ?? 'The item is removed from the list.',
       async () => {
         if (!removeItems) return;
         const p2 = p.substring(0, p.lastIndexOf('.'));
@@ -47,7 +47,7 @@ export const ArrayControlRenderer = (
         removeItems(p2, [rowIndex])();
       },
       async () => {},
-      'Confirm',
+      'Delete',
     );
   };
   if (!visible) {

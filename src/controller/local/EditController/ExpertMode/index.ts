@@ -2,7 +2,6 @@ import { createNewEntity } from '../../../../model/create';
 import { invalidateEntityListCache } from '../../../../model/entityList';
 import { putYAMLEntity } from '../../../../model/put';
 import { validateYAML } from '../../../../model/validate';
-import { getActionNames } from '../../../../utils/actionUtils';
 import { ActionDecl } from '../../../../utils/types/api';
 import { RequestContext, RequestEditContext } from '../../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../../utils/types/internal/validation';
@@ -94,8 +93,16 @@ export async function sendYAMLData(requestContext: RequestEditContext) {
   if (requestContext.mode === 'edit' && !hasUncommittedChanges()) {
     return;
   }
+  const modalEntityName = getEntityName() ?? requestContext.entityName;
+  const typeTitle = requestContext.rc.accessedEntityType?.title;
   showModalMessage(
-    'Are You Sure You Want to Send the Data?',
+    requestContext.mode === 'create'
+      ? modalEntityName
+        ? `Create ${modalEntityName}?`
+        : typeTitle
+          ? `Create new ${typeTitle}?`
+          : 'Create?'
+      : `Commit changes to ${modalEntityName}?`,
     describeActivatedActions(getActivatedActions()),
     async () => {
       // A validation may have been dispatched while the modal was open (e.g.
@@ -135,7 +142,7 @@ export async function sendYAMLData(requestContext: RequestEditContext) {
       }
     },
     async () => {},
-    'Confirm',
+    'Commit',
     false,
   );
 }
@@ -151,13 +158,7 @@ async function sendCreateNewEntity(
   requestContext: RequestContext,
 ): Promise<{ success: boolean; name: Nullable<string> }> {
   const name: Nullable<string> = getEntityName();
-  const res = await createNewEntity(
-    name,
-    {},
-    requestContext,
-    yaml,
-    getActionNames(getActivatedActions()),
-  );
+  const res = await createNewEntity(name, {}, requestContext, yaml, getActivatedActions());
   // Only a successful create ends the session (navigation follows). On failure
   // the session continues and the panel still displays the name — clearing the
   // global would make every subsequent validate/retry send name=null.
@@ -187,7 +188,7 @@ async function sendPutEntity(
     yaml,
     getInitialEntityYAML(),
     requestEditContext,
-    getActionNames(getActivatedActions()),
+    getActivatedActions(),
   );
 }
 

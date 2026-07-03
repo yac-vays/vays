@@ -82,9 +82,13 @@ function validateConfig(config: AppConfig): Nullable<AppConfig> {
     config.defaultEditorLayout = undefined;
   }
 
-  // Ignore a non-string `helpText` rather than failing the whole config.
+  // Ignore a non-string `helpText` / `welcomeText` rather than failing the
+  // whole config.
   if (config.helpText != null && typeof config.helpText !== 'string') {
     config.helpText = undefined;
+  }
+  if (config.welcomeText != null && typeof config.welcomeText !== 'string') {
+    config.welcomeText = undefined;
   }
 
   return config;

@@ -1,6 +1,7 @@
 import { showError } from '../controller/global/notification';
 import { sendRequest } from '../utils/authRequest';
 import { logError } from '../utils/logger';
+import { entityToastTitle } from '../utils/toastUtils';
 import { EntityObject, TYPE_CHECK_ENTITY_OBJECT } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
@@ -81,8 +82,8 @@ export async function fetchEntityList(
   );
 
   const result = await handleYacResponse(resp, {
-    backendTitle: requestContext.backendObject.title,
-    errorTitle: `Could not fetch ${requestContext.entityTypeName} list`,
+    title: entityToastTitle(requestContext),
+    errorText: 'Fetching the list failed',
     errorMessage: 'Waking up the admin, please stand by...',
   });
 
@@ -95,8 +96,8 @@ export async function fetchEntityList(
     // The backend truncates at the requested limit, so the list is most likely
     // incomplete — tell the user instead of silently dropping the rest.
     showError(
-      'Entity list truncated',
-      `Only the first ${ENTITY_LIST_LIMIT} entities of ${requestContext.entityTypeName} are shown.`,
+      entityToastTitle(requestContext),
+      `The list was truncated: only the first ${ENTITY_LIST_LIMIT} entries are shown.`,
     );
   }
   return { ok: true, list };

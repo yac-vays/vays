@@ -112,7 +112,7 @@ const useInitializeForm = (
       setAdditionalErrors(located.additionalErrors);
       if (migrationError) {
         onYacError(
-          'This entity has validation errors — possibly because the specification changed ' +
+          'There are validation errors — possibly because the specification changed ' +
             '(migration). Please fix the highlighted fields before saving.',
         );
       } else {

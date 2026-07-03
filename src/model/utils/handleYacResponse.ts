@@ -41,17 +41,28 @@ export type YacResponseResult =
   | { kind: 'client-error'; status: number; body: YacErrorBody };
 
 export interface YacResponseContext {
-  /** Title of the backend (`requestContext.backendObject?.title`); prefixes 5xx/403 toasts. */
-  backendTitle?: string;
   /**
-   * Fallback toast title used when the envelope carries no `title`, e.g.
-   * `Cannot create foo`. The status code is appended automatically.
+   * Toast title: the `{backend} / {type} / {entityName}` breadcrumb of the
+   * affected resource (see `entityToastTitle`).
    */
-  errorTitle: string;
-  /** Fallback toast message used when the envelope carries no `message`. */
+  title: string;
+  /**
+   * First part of the toast detail, stating what failed in operation terms and
+   * without trailing punctuation, e.g. `Create of foo failed`. The status and
+   * the backend's explanation are appended (see {@link yacErrorDetail}).
+   */
+  errorText: string;
+  /** Fallback explanation used when the envelope carries neither title nor message. */
   errorMessage?: string;
-  /** Appended to the server-error toast message (e.g. a "data is cached" note). */
+  /** Appended to the server-error toast detail (e.g. a "data is cached" note). */
   serverErrorSuffix?: string;
+  /**
+   * Custom composer for the error-toast detail, replacing the uniform
+   * {@link yacErrorDetail} format in every toast branch. For call sites whose
+   * wording deviates (e.g. action runs, which show the backend's message
+   * verbatim without the status/title boilerplate).
+   */
+  errorDetail?: (status: number, body: YacErrorBody) => string;
   /** The status code counting as success. Defaults to 200. */
   successStatus?: number;
   /**
@@ -60,6 +71,24 @@ export interface YacResponseContext {
    * >= 400 alike, such as copy/link/delete/run-action).
    */
   genericClientErrors?: boolean;
+}
+
+/**
+ * Compose the uniform error-toast detail: `{errorText} (Status {status}):
+ * {explanation}`, where the explanation is the YAC error envelope (title and
+ * message joined) or `fallback` when the envelope is empty.
+ */
+export function yacErrorDetail(
+  errorText: string,
+  status: number,
+  body: YacErrorBody,
+  fallback: string,
+  suffix?: string,
+): string {
+  const explanation = [body.title, body.message ?? body.detail].filter(Boolean).join(': ');
+  return [`${errorText} (Status ${status}):`, explanation || fallback, suffix]
+    .filter(Boolean)
+    .join(' ');
 }
 
 /**
@@ -77,13 +106,18 @@ export async function handleYacResponse(
 
   const status = resp.status;
   const body = await decodeErrorBody(resp);
-  const fallbackTitle = `${ctx.errorTitle} (Status ${status})`;
 
   if (status >= 500) {
     showError(
-      `${ctx.backendTitle}: ` + (body.title ?? fallbackTitle),
-      (body.message ?? ctx.errorMessage ?? 'Please contact your admin on this issue. ') +
-        (ctx.serverErrorSuffix ?? ''),
+      ctx.title,
+      ctx.errorDetail?.(status, body) ??
+        yacErrorDetail(
+          ctx.errorText,
+          status,
+          body,
+          ctx.errorMessage ?? 'Please contact your admin on this issue.',
+          ctx.serverErrorSuffix,
+        ),
     );
     return { kind: 'server-error', status, body };
   }
@@ -108,11 +142,14 @@ export async function handleYacResponse(
     // The session itself is fine — the user merely lacks permission for this
     // operation. Surface the backend's explanation instead of re-logging-in.
     showError(
-      `${ctx.backendTitle}: ` + (body.title ?? fallbackTitle),
-      body.message ??
-        body.detail ??
-        ctx.errorMessage ??
-        'You do not have permission to perform this operation.',
+      ctx.title,
+      ctx.errorDetail?.(status, body) ??
+        yacErrorDetail(
+          ctx.errorText,
+          status,
+          body,
+          ctx.errorMessage ?? 'You do not have permission to perform this operation.',
+        ),
     );
     return { kind: 'forbidden', status, body };
   }
@@ -120,8 +157,14 @@ export async function handleYacResponse(
   const kind = status === 422 ? ('invalid-request' as const) : ('client-error' as const);
   if (ctx.genericClientErrors) {
     showError(
-      `${ctx.backendTitle}: ` + (body.title ?? fallbackTitle),
-      body.message ?? ctx.errorMessage ?? 'Waking up the admin, please stand by...',
+      ctx.title,
+      ctx.errorDetail?.(status, body) ??
+        yacErrorDetail(
+          ctx.errorText,
+          status,
+          body,
+          ctx.errorMessage ?? 'Waking up the admin, please stand by...',
+        ),
     );
   }
   return { kind, status, body };

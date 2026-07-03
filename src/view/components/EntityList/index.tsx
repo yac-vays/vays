@@ -3,6 +3,7 @@ import { reload } from '../../../controller/local/Overview/list';
 import { registerEntityListInvalidationHook } from '../../../model/entityList';
 import { invalidateLogCache } from '../../../model/logs';
 import iLocalStorage from '../../../session/persistent/LocalStorage';
+import { hasLogsDefined } from '../../../utils/logUtils';
 import { RequestContext } from '../../../utils/types/internal/request';
 import SubLoader from '../../thirdparty/components/SubLoader';
 import NoDataIndicator from '../NoDataIndicator';
@@ -141,6 +142,7 @@ const EntityList = ({ requestContext, highlightEntityName }: EntityListProps) =>
               <TableHeader
                 tableHeaderEntries={tableHeaderEntries}
                 searchCallback={searchCallback}
+                showStatusColumn={hasLogsDefined(requestContext)}
               />
               <TableBody
                 tableEntries={tableEntries}
@@ -160,7 +162,17 @@ const EntityList = ({ requestContext, highlightEntityName }: EntityListProps) =>
                 className="group flex flex-col items-center justify-center"
                 style={{ alignItems: 'center' }}
               >
-                {loading ? <SubLoader action="Loading entries..." /> : <NoDataIndicator />}
+                {loading ? (
+                  <SubLoader
+                    action={
+                      requestContext.accessedEntityType?.title
+                        ? `Loading ${requestContext.accessedEntityType.title} List...`
+                        : 'Loading...'
+                    }
+                  />
+                ) : (
+                  <NoDataIndicator />
+                )}
               </div>
             </div>
           </div>

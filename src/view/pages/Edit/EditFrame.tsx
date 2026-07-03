@@ -2,7 +2,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { FaChevronLeft, FaChevronRight, FaGripLinesVertical } from 'react-icons/fa';
 import { useBlocker } from 'react-router-dom';
 import { showModalMessage } from '../../../controller/global/modal';
-import { getActivatedActions } from '../../../controller/local/EditController/ExpertMode/access';
+import {
+  getActivatedActions,
+  setChangeListener,
+} from '../../../controller/local/EditController/ExpertMode/access';
 import { sendYAMLData } from '../../../controller/local/EditController/ExpertMode';
 import { newEditingView } from '../../../controller/local/EditController/session';
 import {
@@ -58,6 +61,9 @@ const EditFrame = ({
   const [isReadOnly, setIsReadOnly] = useState<boolean>(requestEditContext.mode === 'read');
   const [usages, setUsages] = useState<LimitUsage[]>([]);
   const [isValid, setIsValid] = useState<boolean>(isFormValid());
+  // Whether the save payload differs from the stored file (see access.ts's
+  // hasUncommittedChanges); kept current via setChangeListener below.
+  const [hasChanges, setHasChanges] = useState<boolean>(false);
   // Every mount of the edit frame is a new editing view: the panes' session
   // activations (beginPaneSession) key off this, so returning to the SAME
   // entity still starts a fresh session. Render-time on purpose — the panes'
@@ -162,9 +168,13 @@ const EditFrame = ({
   useEffect(() => {
     setUsagesListener(setUsages);
     setValidityListener(setIsValid);
+    // Tracks whether the payload differs from the stored file (edit mode's
+    // no-op guard on the Commit button; registering pushes the current state).
+    setChangeListener(setHasChanges);
     return () => {
       setUsagesListener(null);
       setValidityListener(null);
+      setChangeListener(null);
     };
   }, []);
 
@@ -217,7 +227,11 @@ const EditFrame = ({
     requestEditContext.rc.entityTypeName,
   ]);
 
-  const saveDisabled = isValidating || !isValid;
+  // Nothing to commit (edit mode): the document equals the stored file, and
+  // the backend would reject the PUT as a no-op (400). Injected defaults or
+  // any pane edit make the payload differ and re-enable the button.
+  const nothingToCommit = requestEditContext.mode === 'edit' && !hasChanges;
+  const saveDisabled = isValidating || !isValid || nothingToCommit;
   const commitLabel = actionTitles.length ? `Commit + ${actionTitles.join(' + ')}` : 'Commit';
 
   const setEditErrorMsg = (msg: string) => {
@@ -391,7 +405,9 @@ const EditFrame = ({
                 title={
                   !isValid && !isValidating
                     ? 'Resolve the highlighted errors before saving.'
-                    : undefined
+                    : nothingToCommit && !isValidating
+                      ? 'Nothing to commit: the document matches what is stored.'
+                      : undefined
                 }
                 onClick={() => {
                   // Unified save: the canonical YAML (kept current no matter which

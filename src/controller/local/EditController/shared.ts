@@ -23,6 +23,7 @@ import { Nullable } from '../../../utils/types/typeUtils';
 import { showError } from '../../global/notification';
 import { navigateToURL } from '../../global/url';
 import editingState from '../../state/EditCtrlState';
+import { emitChangeState } from './ExpertMode/access';
 import {
   activateEditingSession,
   currentSession,
@@ -71,6 +72,8 @@ export function beginPaneSession(requestEditContext: RequestEditContext): number
     editingState.previousDefaultsObject = null;
     editingState.suppressNextFormChange = false;
     editingState.suppressNextYamlChange = false;
+    // No payload yet in the fresh session — nothing to commit until seeded.
+    emitChangeState();
   }
   return epoch;
 }
@@ -337,6 +340,8 @@ export function getInitialEntityYAML() {
 
 export function setInitialEntityYAML(yaml: string) {
   editingState.initialYAML = yaml;
+  // The commit baseline moved: re-derive whether there is anything to commit.
+  emitChangeState();
 }
 
 export function getPreviousDefaultsObject() {

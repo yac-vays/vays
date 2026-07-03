@@ -18,9 +18,27 @@ import {
   getActivatedActions,
   getEntityName,
   getEntityYAML,
+  hasUncommittedChanges,
   setErrorMessageCallback,
   setIsValidatingCallback,
 } from './access';
+
+/**
+ * The confirm dialogue's body: what committing will additionally trigger. The
+ * activated actions' (markdown) descriptions are shown exactly like running an
+ * action standalone shows them (see `model/action.ts`), so the user confirms
+ * the side effects — not just the write.
+ */
+function describeActivatedActions(acts: ActionDecl[]): string {
+  if (acts.length === 0) return '';
+  const details = acts
+    .map((act) => {
+      const title = `#### ${act.title || act.name}`;
+      return act.description ? `${title}\n\n${act.description}` : title;
+    })
+    .join('\n\n');
+  return `This will also trigger the following action${acts.length > 1 ? 's' : ''}:\n\n${details}`;
+}
 
 /**
  * Send validation for the yaml.
@@ -69,10 +87,16 @@ export async function sendYAMLData(requestContext: RequestEditContext) {
   if (!editingState.isValidYAC) {
     return;
   }
-  // JSON.stringify(editingState.data).replaceAll(",", ",\n")
+  // No-op guard (edit only): the backend rejects a PUT whose content equals
+  // the stored file with a 400. The Commit button is already disabled in that
+  // state; this covers the gap where the just-settled validations reverted
+  // the payload back to the stored content.
+  if (requestContext.mode === 'edit' && !hasUncommittedChanges()) {
+    return;
+  }
   showModalMessage(
     'Are You Sure You Want to Send the Data?',
-    '',
+    describeActivatedActions(getActivatedActions()),
     async () => {
       // A validation may have been dispatched while the modal was open (e.g.
       // the editor's debounce fired); its response updates the payload.

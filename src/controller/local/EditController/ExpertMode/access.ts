@@ -22,10 +22,40 @@ export function getCurrentContext() {
 
 export function setEntityYAML(yaml: string) {
   editingState.entityYAML = yaml;
+  emitChangeState();
 }
 
 export function getEntityYAML() {
   return editingState.entityYAML;
+}
+
+//
+// Uncommitted-change tracking (drives the Commit button's no-op guard).
+//
+
+let changeListener: ((hasChanges: boolean) => void) | null = null;
+
+/** Register the view's listener; immediately called with the current state. */
+export function setChangeListener(cb: ((hasChanges: boolean) => void) | null) {
+  changeListener = cb;
+  cb?.(hasUncommittedChanges());
+}
+
+/**
+ * Whether committing now would write something different from what is stored.
+ * Only meaningful in edit mode: the backend rejects a PUT whose content equals
+ * the stored file ("Cannot write without changing anything", HTTP 400), so the
+ * Commit button is disabled while this is false. Injected defaults count as a
+ * change (the displayed document differs from the stored file) — committing
+ * them is a legitimate "heal" of the entity.
+ */
+export function hasUncommittedChanges(): boolean {
+  return editingState.entityYAML != null && editingState.entityYAML !== editingState.initialYAML;
+}
+
+/** Recompute + push the change state to the view (cheap; React bails on equal). */
+export function emitChangeState() {
+  changeListener?.(hasUncommittedChanges());
 }
 
 export function getEntityName() {

@@ -78,21 +78,9 @@ export function getActivePane(): Pane | null {
   return editingState.activePane;
 }
 
-/**
- * Seed the canonical pair at initialization time (before the user edits), so a
- * pane's own initial `setValue` is recognized as "already canonical" and does
- * not trigger a redundant validation round-trip.
- */
-export function seedCanonical(data: any, yaml: string) {
-  editingState.canonicalData = data;
-  editingState.canonicalYAML = yaml;
-  // Also the live editor-YAML string, so the very first form edit has the
-  // initial document (e.g. the create defaults template) as its merge base.
-  setEntityYAML(yaml);
-  // The canonical pair now belongs to the current session; meta-triggered
-  // revalidation may use it from here on.
-  editingState.canonicalSeeded = true;
-}
+// Lives in access.ts (leaf module) so the load path in shared.ts can seed
+// without an import cycle; re-exported here for the panes.
+export { seedCanonical } from './ExpertMode/access';
 
 export function getCanonicalYAML(): string {
   return editingState.canonicalYAML;

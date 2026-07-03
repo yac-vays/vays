@@ -25,6 +25,7 @@ import {
   setEditDirty,
 } from '../../../../../controller/local/EditController/shared';
 import { patchSchemaForMonaco } from '../../../../../utils/schema/monacoSchemaFix';
+import { setBackendValidationMarkers } from '../EditorPlugins/backendMarkers';
 import {
   applyCanonical,
   isStaleValidation,
@@ -128,6 +129,12 @@ export function getUpdateCallback(): EditorUpdateCallback {
           },
         ],
       });
+      // Backend-only findings (custom formats, ...) as markers on the text
+      // the user just typed.
+      setBackendValidationMarkers(
+        monaco.editor.getModel(monaco.Uri.parse('inmemory://schema.json')),
+        rep,
+      );
       // Project the canonical data into the (inactive) form pane.
       applyCanonical('yaml', rep);
     } finally {

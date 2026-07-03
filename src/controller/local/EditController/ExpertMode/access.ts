@@ -29,6 +29,24 @@ export function getEntityYAML() {
   return editingState.entityYAML;
 }
 
+/**
+ * Seed the canonical `{data, yaml}` pair (see sync.ts): at load time so a
+ * pane's own initial `setValue` is recognized as "already canonical" (no
+ * redundant validation round-trip), and so form edits made before the lazy
+ * Monaco pane mounts already have the correct patch baseline + merge base.
+ */
+
+export function seedCanonical(data: any, yaml: string) {
+  editingState.canonicalData = data;
+  editingState.canonicalYAML = yaml;
+  // Also the live editor-YAML string, so the very first form edit has the
+  // initial document (e.g. the create defaults template) as its merge base.
+  setEntityYAML(yaml);
+  // The canonical pair now belongs to the current session; meta-triggered
+  // revalidation may use it from here on.
+  editingState.canonicalSeeded = true;
+}
+
 //
 // Uncommitted-change tracking (drives the Commit button's no-op guard).
 //

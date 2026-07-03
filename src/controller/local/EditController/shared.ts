@@ -23,7 +23,7 @@ import { Nullable } from '../../../utils/types/typeUtils';
 import { showError } from '../../global/notification';
 import { navigateToURL } from '../../global/url';
 import editingState from '../../state/EditCtrlState';
-import { emitChangeState } from './ExpertMode/access';
+import { emitChangeState, seedCanonical } from './ExpertMode/access';
 import {
   activateEditingSession,
   currentSession,
@@ -245,6 +245,10 @@ async function retreiveEditSchema(
     // read mode we keep the stored YAML as-is.
     isReadMode ? undefined : entityData.yaml,
     undefined,
+    // Loads merge into the STORED file, so they diff against the stored data
+    // (`initialData` seeded above) — even on a same-session re-load where the
+    // canonical pair is already seeded.
+    false,
     0,
     epoch,
   );
@@ -260,15 +264,22 @@ async function retreiveEditSchema(
     // as the stored file makes the editor highlight the injected defaults as
     // additions, so the user can see that what is shown is not verbatim on disk.
     setInitialEntityYAML(entityData.yaml);
-    // Adopt the stabilized data as the form patch baseline (edit mode) so a form
-    // edit only diffs the field the user actually changed instead of also
-    // injecting every previously-missing default on the first keystroke.
+    // Keep the stabilized data as the session baseline. (User edits diff
+    // against the canonical pair seeded below; this remains the fallback for
+    // any validation racing in before the seed.)
     editingState.initialData = structuredClone(isReadMode ? entityData.data : valResp.data);
   }
 
   // Editor display: the defaulted YAML in edit mode (diffed green against the
   // stored baseline above), the stored YAML verbatim in read mode.
   valResp.yaml = isReadMode ? entityData.yaml : (valResp.yaml ?? entityData.yaml);
+
+  if (startEditingSession) {
+    // Seed the canonical pair right here (not only in the lazily-loaded
+    // Monaco pane's initializer): a form edit made before the editor mounts
+    // must already diff against this document and merge into this YAML.
+    seedCanonical(structuredClone(valResp.data), valResp.yaml);
+  }
 
   return valResp;
 }
@@ -388,6 +399,10 @@ export async function coreUpdate(
   // The validation-seq stamp of the user edit driving this update (loads pass
   // none). A newer stamped edit supersedes this whole stabilization chain.
   seq?: number,
+  // Whether to diff against the canonical pair (user edits, merged into the
+  // LIVE editor document) or the session-load baseline (schema loads, merged
+  // into the STORED file). Must match what `yamlBase` carries.
+  useCanonicalBaseline: boolean = true,
   // Internal: number of stabilization passes already performed.
   pass: number = 0,
   // The session this update belongs to; captured at the first pass.
@@ -395,7 +410,17 @@ export async function coreUpdate(
 ) {
   let data = entityData;
   if (requestEditContext.mode === 'edit') {
-    data = extractPatch(editingState.initialData, data);
+    // The patch is merged into `yaml_base`, so it must be diffed against THAT
+    // document's data. For user edits that is the canonical pair — diffing
+    // against the load baseline instead makes "change a value back to its
+    // stored state" an EMPTY patch, so the previous change would survive in
+    // the merged YAML forever. Loads (and anything racing in before the
+    // canonical seed) merge into the stored file and diff against its data.
+    const baseline =
+      useCanonicalBaseline && editingState.canonicalSeeded
+        ? editingState.canonicalData
+        : editingState.initialData;
+    data = extractPatch(baseline, data);
   }
 
   // Re-emit session-stripped keys as `~undefined` so the additive YAML merge
@@ -447,6 +472,7 @@ export async function coreUpdate(
       name,
       yamlBase,
       seq,
+      useCanonicalBaseline,
       pass + 1,
       epoch,
     );

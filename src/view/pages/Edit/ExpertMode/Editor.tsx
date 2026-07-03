@@ -20,6 +20,7 @@ import {
 } from '../../../../controller/local/EditController/sync';
 import { patchSchemaForMonaco } from '../../../../utils/schema/monacoSchemaFix';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
+import { setBackendValidationMarkers } from './EditorPlugins/backendMarkers';
 import { computeDiffDecorations } from './EditorPlugins/diffDecoration';
 import editorPlugins, { editorSetupPlugins } from './EditorPlugins';
 import { getUpdateCallback, setupMonacoYAMLPlugin } from './utils/setup.js';
@@ -124,6 +125,8 @@ export const Editor = ({
           },
         ],
       });
+      // Backend-only findings (custom formats, ...) on the projected document.
+      setBackendValidationMarkers(editor.getModel(), resp);
     });
     // Lets the sync layer see un-validated keystrokes waiting in the debounce
     // window, so a cross-pane rewrite never destroys them.

@@ -15,6 +15,7 @@ import { seedCanonical } from '../../../../../controller/local/EditController/sy
 import { getDefaultsAsYAML } from '../../../../../utils/schema/defaultsHandling';
 import { patchSchemaForMonaco } from '../../../../../utils/schema/monacoSchemaFix';
 import { RequestEditContext } from '../../../../../utils/types/internal/request';
+import { setBackendValidationMarkers } from './backendMarkers';
 
 export default async function editorInitializeSchema(
   ed: monaco.editor.IStandaloneCodeEditor,
@@ -67,4 +68,8 @@ export default async function editorInitializeSchema(
       },
     ],
   });
+
+  // Stored data can already violate backend-only checks (custom formats,
+  // migration): surface the located error from the load's validation.
+  setBackendValidationMarkers(ed.getModel(), v);
 }

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 /**
  * Controller element for the EntityList in the Overview page.
  */
@@ -13,7 +13,6 @@ import {
 import { hasLogsDefined } from '../../../utils/logUtils';
 import { RequestContext } from '../../../utils/types/internal/request';
 import { Nullable } from '../../../utils/types/typeUtils';
-import entityListCtrlState from '../../state/EntityListCtrlState';
 import { getActions } from './action';
 import { performSearch } from './search';
 
@@ -253,34 +252,4 @@ export async function reload(
     setLoading(false);
     setTableEntries(qRes.partialResults);
   }
-}
-
-export function registerTableScrollContainer(cb: any) {
-  entityListCtrlState.scrollContainer = cb;
-}
-
-export function positionDropdownElement(
-  dropDownElt: React.RefObject<HTMLDivElement>,
-  dropdownHeaderElt: React.RefObject<HTMLDivElement>,
-) {
-  if (dropdownHeaderElt.current == null || dropDownElt.current == null) {
-    return;
-  }
-  const rect = dropdownHeaderElt.current?.getBoundingClientRect();
-  // The trigger sits at the right edge of the screen, so open the menu leftward:
-  // align its right edge with the trigger's right edge.
-  //
-  // `style.left` is relative to the offset parent, while `rect` is in viewport
-  // coordinates, so we subtract the offset parent's left edge to convert.
-  const menuWidth = dropDownElt.current.offsetWidth;
-  const parentLeft = dropDownElt.current.offsetParent?.getBoundingClientRect().left ?? 0;
-  dropDownElt.current.style.left = `${rect.right - menuWidth - parentLeft}px`;
-}
-
-export function registerTableScrollContainerEvent(callback: () => void) {
-  entityListCtrlState.scrollContainer?.current?.addEventListener('scroll', callback);
-}
-
-export function unregisterTableScrollContainerEvent(callback: () => void) {
-  entityListCtrlState.scrollContainer?.current?.removeEventListener('scroll', callback);
 }

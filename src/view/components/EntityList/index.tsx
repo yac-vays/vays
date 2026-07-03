@@ -1,5 +1,5 @@
 import { RefObject, useEffect, useRef } from 'react';
-import { registerTableScrollContainer, reload } from '../../../controller/local/Overview/list';
+import { reload } from '../../../controller/local/Overview/list';
 import { registerEntityListInvalidationHook } from '../../../model/entityList';
 import { invalidateLogCache } from '../../../model/logs';
 import iLocalStorage from '../../../session/persistent/LocalStorage';
@@ -69,7 +69,6 @@ const EntityList = ({ requestContext, highlightEntityName }: EntityListProps) =>
   } = useInitializeList(requestContext, highlightEntityName);
 
   const scrollDivRef = useRef<HTMLDivElement>(null);
-  registerTableScrollContainer(scrollDivRef);
 
   // Selecor ref
   const selectorRef: RefObject<HTMLSelectElement> = useRef<HTMLSelectElement>(null);

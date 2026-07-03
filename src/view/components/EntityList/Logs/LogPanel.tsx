@@ -21,9 +21,11 @@ const LogPanel = ({
 }) => {
   //   const [expand, setExpand] = useState<boolean>(false);
   return (
-    // `w-max` sizes the panel to its widest line so short logs stay compact, while
-    // `max-w-[640px]` caps it for long messages (which then wrap).
-    <div className="relative border z-99 rounded ml-3 w-max max-w-[640px] max-h-[500px] overflow-y-auto bg-bg drop-shadow-xl">
+    // `w-max` sizes the panel to its widest line so short logs stay compact.
+    // Chrome (border/background/shadow), the size cap and scrolling come from
+    // the Popover the panel is rendered in (RichInfoPanel) — a second border
+    // or a fixed max here would fight the viewport-aware clamping.
+    <div className="relative w-max max-w-full">
       {/* <button className="absolute right-4 top-2">x</button> */}
       <div className="p-3">
         <h4 className="text-center text-title-sm font-bold text-solid hyphens-auto">{title}</h4>

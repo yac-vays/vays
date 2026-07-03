@@ -1,9 +1,9 @@
-import { debounce } from 'lodash';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   deregisterDebouncedCommit,
   flushPendingDebouncedCommits,
   registerDebouncedCommit,
+  trackedDebounce,
 } from '../../src/controller/local/EditController/debounceRegistry';
 
 describe('debounceRegistry', () => {
@@ -17,8 +17,8 @@ describe('debounceRegistry', () => {
   it('flushPendingDebouncedCommits runs every pending fn exactly once, without timer advance', () => {
     const spy1 = vi.fn();
     const spy2 = vi.fn();
-    const d1 = debounce(spy1, 1000);
-    const d2 = debounce(spy2, 500);
+    const d1 = trackedDebounce(spy1, 1000);
+    const d2 = trackedDebounce(spy2, 500);
     registerDebouncedCommit(d1);
     registerDebouncedCommit(d2);
 
@@ -44,7 +44,7 @@ describe('debounceRegistry', () => {
 
   it('flush is a no-op for registered fns with nothing pending', () => {
     const spy = vi.fn();
-    const d = debounce(spy, 1000);
+    const d = trackedDebounce(spy, 1000);
     registerDebouncedCommit(d);
 
     flushPendingDebouncedCommits();
@@ -55,7 +55,7 @@ describe('debounceRegistry', () => {
 
   it('deregister cancels a pending invocation (fn never runs)', () => {
     const spy = vi.fn();
-    const d = debounce(spy, 1000);
+    const d = trackedDebounce(spy, 1000);
     registerDebouncedCommit(d);
 
     d('pending');
@@ -71,7 +71,7 @@ describe('debounceRegistry', () => {
 
   it('registering the same fn twice still flushes it exactly once (Set semantics)', () => {
     const spy = vi.fn();
-    const d = debounce(spy, 1000);
+    const d = trackedDebounce(spy, 1000);
     registerDebouncedCommit(d);
     registerDebouncedCommit(d);
 

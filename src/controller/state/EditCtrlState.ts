@@ -98,6 +98,21 @@ class EditControlState {
   public validationSeq: number = 0;
 
   /**
+   * The editing-session epoch (see `EditController/session.ts`). Bumped when a
+   * new session starts (view mount or target change); async flows capture it
+   * at dispatch and must not write to this state once it has moved on.
+   */
+  public sessionSeq: number = 0;
+
+  /**
+   * Whether the canonical `{data, yaml}` pair has been seeded for the CURRENT
+   * session. Meta-triggered revalidation (`revalidateMeta`) reads the canonical
+   * data as its input; before the session's schema load has seeded it, that
+   * would validate the previous session's document — so it waits for this.
+   */
+  public canonicalSeeded: boolean = false;
+
+  /**
    * Programmatic-write guards. When one pane is rewritten from the canonical
    * projection, its change event must not be treated as a user edit (which
    * would re-validate and bounce back, looping). The writer sets the flag; the

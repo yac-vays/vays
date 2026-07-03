@@ -4,6 +4,8 @@ import {
   fetchEntities,
   getEntityPage,
   getHeaderEntries,
+  isStaleListGeneration,
+  nextListGeneration,
 } from '../../../../controller/local/Overview/list';
 import { fetchEntityList } from '../../../../model/entityList';
 import iLocalStorage from '../../../../session/persistent/LocalStorage';
@@ -80,6 +82,12 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
       setTotalNumResults(1);
       setLoading(true);
 
+      // Shared table-content generation (with reload + search): this run's
+      // writes below are dropped if any of the three paths dispatched again
+      // in the meantime — the `mounted` flag alone only covers unmounts, not
+      // a newer same-mount dispatch from another path.
+      const gen = nextListGeneration();
+
       const header: string[] = getHeaderEntries(requestContext);
       setTableHeaderEntries(header);
 
@@ -92,6 +100,7 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
           numResultsPerPage.valueOf(),
           latestSearchTermsRef.current,
         );
+        if (!mounted || isStaleListGeneration(gen)) return;
         if (targetPage != null) {
           page = targetPage;
         } else {
@@ -102,7 +111,8 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
           // fall through and render the (empty) list — the error toast has
           // already been shown by the fetch.
           const { ok } = await fetchEntityList(requestContext);
-          if (ok && mounted && requestContext.backendObject && requestContext.entityTypeName) {
+          if (!mounted || isStaleListGeneration(gen)) return;
+          if (ok && requestContext.backendObject && requestContext.entityTypeName) {
             navigateToURL(
               buildCreateURL(
                 requestContext.backendObject,
@@ -114,6 +124,8 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
           }
         }
       }
+      // Guarded like the final writes: a superseded run must not move the
+      // page indicator for a table it no longer describes.
       setCurrPage(page);
 
       const qRes: QueryResponse = await fetchEntities(
@@ -122,10 +134,8 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
         (page - 1) * numResultsPerPage.valueOf(),
         latestSearchTermsRef.current,
       );
-      // TODO make sure that spamming reload does not cause problem with this.
-      // It is likely beneficial to include a cooldown on the reload button.
 
-      if (mounted) {
+      if (mounted && !isStaleListGeneration(gen)) {
         setLoading(false);
         setTotalNumResults(qRes.totalNumberOfResults);
         setTableEntries(qRes.partialResults);

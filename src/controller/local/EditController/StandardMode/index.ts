@@ -42,6 +42,9 @@ export async function updateSchema(
   // The YAML the user is editing; merged with the form patch so comments survive
   // (see `validate`). Omit on initial loads.
   yamlBase?: string,
+  // The validation-seq stamp of the user edit driving this update (see
+  // `coreUpdate`): a newer stamped edit stops the stabilization chain early.
+  seq?: number,
 ) {
   // Need to clone it since it is being modified...
   const data = structuredClone(frontData);
@@ -58,6 +61,7 @@ export async function updateSchema(
     editActions,
     name,
     yamlBase,
+    seq,
   );
   if (valResp == null) return null;
 

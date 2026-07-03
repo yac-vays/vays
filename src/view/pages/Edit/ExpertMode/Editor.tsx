@@ -12,10 +12,9 @@ import {
   getMonacoYaml,
   setMonacoYaml,
 } from '../../../../controller/local/EditController/ExpertMode/access';
+import { getInitialEntityYAML } from '../../../../controller/local/EditController/shared';
 import {
-  getInitialEntityYAML,
-} from '../../../../controller/local/EditController/shared';
-import {
+  registerYamlInputPendingProbe,
   registerYamlWriter,
   setActivePane,
 } from '../../../../controller/local/EditController/sync';
@@ -84,6 +83,10 @@ export const Editor = ({
       // the edit view leaks a live editor instance.
       return () => {
         disposeErrorMarkersListener();
+        // A keystroke may still sit in the debounce window; it belongs to THIS
+        // session (the epoch stamp would drop it anyway) — cancel it so it
+        // does not fire into the next session at all.
+        update.cancel();
         ed.dispose();
       };
     }
@@ -115,10 +118,14 @@ export const Editor = ({
         schemas: [{ uri: 'inmemory://schema.json', schema: resp.json_schema, fileMatch: ['*'] }],
       });
     });
+    // Lets the sync layer see un-validated keystrokes waiting in the debounce
+    // window, so a cross-pane rewrite never destroys them.
+    registerYamlInputPendingProbe(() => update.pending());
     return () => {
       focusSub.dispose();
       blurSub.dispose();
       registerYamlWriter(null);
+      registerYamlInputPendingProbe(null);
     };
   }, [editor]);
 

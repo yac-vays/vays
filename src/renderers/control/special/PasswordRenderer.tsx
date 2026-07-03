@@ -1,12 +1,12 @@
 import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import { debounce } from 'lodash';
 import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { hashPassword } from '../../../utils/passwordHashes';
 import TextInput from '../../../view/thirdparty/components/ifc/TextInput/TextInput';
 
 import {
   deregisterDebouncedCommit,
+  trackedDebounce,
   registerDebouncedCommit,
 } from '../../../controller/local/EditController/debounceRegistry';
 import ErrorRing from '../../../view/components/Form/ErrorRing';
@@ -37,7 +37,7 @@ export const PasswordRenderer = (props: ControlProps) => {
   }
 
   const update = useCallback(
-    debounce(
+    trackedDebounce(
       (value: string) =>
         props.handleChange(props.path, value ? (pt ? value : hashPassword(value)) : undefined),
       1500,

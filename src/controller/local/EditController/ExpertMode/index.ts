@@ -12,14 +12,12 @@ import { showError } from '../../../global/notification';
 import { buildOverviewHighlightURL, navigateToURL } from '../../../global/url';
 import editingState from '../../../state/EditCtrlState';
 import { flushPendingDebouncedCommits } from '../debounceRegistry';
-import { clearEditDirty, clearYACStatus, getInitialEntityYAML, setYACStatus } from '../shared';
+import { isStaleValidation, whenValidationIdle } from '../session';
+import { beginPaneSession, clearEditDirty, getInitialEntityYAML, setYACStatus } from '../shared';
 import {
   getActivatedActions,
   getEntityName,
   getEntityYAML,
-  setActivatedActions,
-  setCurrentContext,
-  setEntityName,
   setErrorMessageCallback,
   setIsValidatingCallback,
 } from './access';
@@ -29,6 +27,9 @@ import {
  * @param name
  * @param yaml
  * @param requestEditContext
+ * @param seq The validation-seq stamp of the editor edit driving this call. A
+ *    response superseded by a newer edit must not write the global YAC status
+ *    (validity / footer / Commit gate) — that would describe the wrong document.
  * @returns
  */
 export async function updateYAMLschema(
@@ -36,10 +37,13 @@ export async function updateYAMLschema(
   yaml: string,
   requestEditContext: RequestEditContext,
   acts: ActionDecl[],
+  seq?: number,
 ): Promise<Nullable<ValidateResponse>> {
   const valResp = await validateYAML(requestEditContext, name, yaml, getInitialEntityYAML(), acts);
   if (valResp == null) return null;
-  setYACStatus(valResp.valid, valResp.detail, valResp.usages);
+  if (seq === undefined || !isStaleValidation(seq)) {
+    setYACStatus(valResp.valid, valResp.detail, valResp.usages);
+  }
 
   return valResp;
 }
@@ -49,12 +53,19 @@ export async function updateYAMLschema(
  * @param requestContext
  * @returns
  */
-export function sendYAMLData(requestContext: RequestEditContext) {
+export async function sendYAMLData(requestContext: RequestEditContext) {
   // An edit may still be sitting in a renderer's debounce window; commit it now
   // so the YAML read below includes the user's last keystrokes.
   flushPendingDebouncedCommits();
-  // Defensive: the Commit button is disabled while invalid and the error is shown
-  // in the editor + footer status bar, so no modal is needed here.
+  // The flushed edits reach the save payload (`entityYAML`) only through their
+  // validation round-trip (the backend returns the merged canonical YAML), and
+  // a form flush additionally crosses a React state tick before it even
+  // dispatches. Give that tick room, then wait for every in-flight validation
+  // to settle — otherwise what is saved is older than what the user sees.
+  await new Promise((resolve) => setTimeout(resolve, 80));
+  await whenValidationIdle();
+  // Validity may have changed with the just-settled validations; the Commit
+  // button state predates them.
   if (!editingState.isValidYAC) {
     return;
   }
@@ -63,6 +74,16 @@ export function sendYAMLData(requestContext: RequestEditContext) {
     'Are You Sure You Want to Send the Data?',
     '',
     async () => {
+      // A validation may have been dispatched while the modal was open (e.g.
+      // the editor's debounce fired); its response updates the payload.
+      await whenValidationIdle();
+      if (!editingState.isValidYAC) {
+        showError(
+          'Not saved: the document changed and is no longer valid',
+          'Please fix the reported error and commit again.',
+        );
+        return;
+      }
       let success = false;
       // Remember the affected entity so we can scroll to it in the overview.
       let entityName: Nullable<string> = null;
@@ -106,14 +127,20 @@ async function sendCreateNewEntity(
   requestContext: RequestContext,
 ): Promise<{ success: boolean; name: Nullable<string> }> {
   const name: Nullable<string> = getEntityName();
-  setEntityName(null);
-  return await createNewEntity(
+  const res = await createNewEntity(
     name,
     {},
     requestContext,
     yaml,
     getActionNames(getActivatedActions()),
   );
+  // Only a successful create ends the session (navigation follows). On failure
+  // the session continues and the panel still displays the name — clearing the
+  // global would make every subsequent validate/retry send name=null.
+  if (res.success) {
+    editingState.entityName = null;
+  }
+  return res;
 }
 
 /**
@@ -151,14 +178,12 @@ export function startExpertModeSession(
   setIsValidating: (v: boolean) => void,
   setEditErrorMsg: (v: string) => void,
 ) {
-  clearYACStatus();
-  setActivatedActions([]);
-  // Seed the global name from the context for both edit and create. On create this
-  // carries the name pre-filled from the URL (e.g. /create/xyz) into
-  // editingState, so the first validate sends entity.name instead of null. Defaults to
-  // null when no name was supplied (plain "create new"), preserving prior behavior.
-  setEntityName(requestEditContext.entityName ?? null);
-  setCurrentContext(requestEditContext);
+  // Activates the session and — only when a NEW session actually begins —
+  // performs the one-time resets (status, dirty flag, activated actions, name
+  // from the context/URL). The Monaco chunk loads lazily, so this often runs
+  // late into a session the form pane already started: it must not wipe
+  // actions/name/validity the user set in the meantime.
+  beginPaneSession(requestEditContext);
   setIsValidatingCallback(setIsValidating);
   setErrorMessageCallback(setEditErrorMsg);
 

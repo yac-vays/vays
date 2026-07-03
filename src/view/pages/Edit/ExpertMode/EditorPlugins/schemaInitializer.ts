@@ -4,6 +4,10 @@ import {
   getMonacoYaml,
 } from '../../../../../controller/local/EditController/ExpertMode/access';
 import {
+  currentSession,
+  isStaleSession,
+} from '../../../../../controller/local/EditController/session';
+import {
   retreiveSchema,
   setInitialEntityYAML,
 } from '../../../../../controller/local/EditController/shared';
@@ -16,7 +20,12 @@ export default async function editorInitializeSchema(
   requestEditContext: RequestEditContext,
 ) {
   requestEditContext = getCurrentContext() ?? requestEditContext;
+  const epoch = currentSession();
   const v = await retreiveSchema(requestEditContext);
+  // The user navigated on while the schema loaded: everything below (canonical
+  // seed, save payload, the SINGLETON monaco-yaml schema) would land in the
+  // next session — that session's own initializer takes care of it.
+  if (isStaleSession(epoch)) return;
   const defaultStr = "---\n\n# Please enter here... (btw couldn't fetch the data in time, sorry)";
 
   if (v == null) {

@@ -1,8 +1,7 @@
-import { debounce } from 'lodash';
-
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   deregisterDebouncedCommit,
+  trackedDebounce,
   registerDebouncedCommit,
 } from '../../../../../controller/local/EditController/debounceRegistry';
 import { setIsCurrentlyEditingString } from '../../../../../controller/local/EditController/StandardMode/access';
@@ -40,7 +39,7 @@ const LargeStringList: React.FC<LargeStringProps> = ({
    * We need to debounce here to avoid presenting an easy way to spam the server.
    */
   const debouncedHandleChange = useCallback(
-    debounce((newS: string[]) => handleChange(path, newS), 800),
+    trackedDebounce((newS: string[]) => handleChange(path, newS), 800),
     [path],
   );
 

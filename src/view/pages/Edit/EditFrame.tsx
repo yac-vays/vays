@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FaChevronLeft, FaChevronRight, FaGripLinesVertical } from 'react-icons/fa';
 import { useBlocker } from 'react-router-dom';
 import { showModalMessage } from '../../../controller/global/modal';
 import { getActivatedActions } from '../../../controller/local/EditController/ExpertMode/access';
 import { sendYAMLData } from '../../../controller/local/EditController/ExpertMode';
+import { newEditingView } from '../../../controller/local/EditController/session';
 import {
   clearEditDirty,
   isEditDirty,
@@ -57,6 +58,12 @@ const EditFrame = ({
   const [isReadOnly, setIsReadOnly] = useState<boolean>(requestEditContext.mode === 'read');
   const [usages, setUsages] = useState<LimitUsage[]>([]);
   const [isValid, setIsValid] = useState<boolean>(isFormValid());
+  // Every mount of the edit frame is a new editing view: the panes' session
+  // activations (beginPaneSession) key off this, so returning to the SAME
+  // entity still starts a fresh session. Render-time on purpose — the panes'
+  // effects run before this component's own effects would.
+  useMemo(() => newEditingView(), []);
+
   // A single loading indicator for the whole editor: shown until both panes have
   // finished their initial schema load.
   const [formLoading, setFormLoading] = useState<boolean>(true);

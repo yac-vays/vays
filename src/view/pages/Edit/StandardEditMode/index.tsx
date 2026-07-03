@@ -27,6 +27,10 @@ import {
 } from '../../../../controller/local/EditController/shared';
 import { updateTabsErrorNotification } from '../../../../controller/local/EditController/StandardMode/tabs';
 import {
+  beginValidationDispatch,
+  endValidationDispatch,
+} from '../../../../controller/local/EditController/session';
+import {
   applyCanonical,
   consumeFormSuppression,
   isStaleValidation,
@@ -156,29 +160,34 @@ const StandardEditMode = memo(
 
       setIsValidating(true);
       const seq = nextValidationSeq();
+      // The save path awaits validation quiescence before reading the payload;
+      // bracket the whole round-trip (incl. the stabilization passes).
+      beginValidationDispatch();
       // Merge this form change into the YAML the user currently has in the editor
       // (preserving its comments/formatting) rather than regenerating from data.
-      updateSchema(data, requestEditContext, true, true, null, getEntityYAML()).then((resp) => {
-        if (didBlur) {
-          setPendingValidations((c) => Math.max(0, c - 1));
-        }
-        // A newer edit (in either pane) has since been dispatched; drop this
-        // stale response so it cannot clobber the latest state.
-        if (isStaleValidation(seq)) {
+      updateSchema(data, requestEditContext, true, true, null, getEntityYAML(), seq)
+        .then((resp) => {
+          if (didBlur) {
+            setPendingValidations((c) => Math.max(0, c - 1));
+          }
+          // A newer edit (in either pane) has since been dispatched; drop this
+          // stale response so it cannot clobber the latest state.
+          if (isStaleValidation(seq)) {
+            setIsValidating(false);
+            setIsCurrentlyEditingString(false);
+            return;
+          }
+          if (resp == null) {
+            setIsEmpty(true);
+          } else {
+            applyRespToForm(resp, errors);
+            // Project the canonical YAML into the (inactive) YAML pane.
+            applyCanonical('form', resp);
+          }
           setIsValidating(false);
           setIsCurrentlyEditingString(false);
-          return;
-        }
-        if (resp == null) {
-          setIsEmpty(true);
-        } else {
-          applyRespToForm(resp, errors);
-          // Project the canonical YAML into the (inactive) YAML pane.
-          applyCanonical('form', resp);
-        }
-        setIsValidating(false);
-        setIsCurrentlyEditingString(false);
-      });
+        })
+        .finally(() => endValidationDispatch());
     };
 
     return (

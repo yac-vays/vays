@@ -1,4 +1,8 @@
-import { fetchEntities } from '../../../../controller/local/Overview/list';
+import {
+  fetchEntities,
+  isStaleListGeneration,
+  nextListGeneration,
+} from '../../../../controller/local/Overview/list';
 import { QueryResponse, QueryResult } from '../../../../utils/types/internal/entityList';
 import { RequestContext } from '../../../../utils/types/internal/request';
 
@@ -7,13 +11,6 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 /** Pending debounced fetch (one search runs at a time across all columns). */
 let debounceTimer: ReturnType<typeof setTimeout> | undefined;
-
-/**
- * Stamp of the latest dispatched search fetch. Responses carrying an older
- * stamp lost the race against a newer search and must not overwrite the newer
- * table content. Mirrors the validationSeq pattern of the edit controller.
- */
-let searchSeq = 0;
 
 export function getSearchCallback(
   hooks: {
@@ -48,18 +45,20 @@ export function getSearchCallback(
       setSearchTerms(newSearchTerms);
 
       // Debounce the fetch so fast typing causes one request, not one per
-      // keystroke; the sequence stamp drops responses that lost the race.
+      // keystroke; the (shared) generation stamp drops responses that lost the
+      // race against ANY newer table-content dispatch (search, reload, or the
+      // effect loader), not just against a newer search.
       if (debounceTimer !== undefined) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(async () => {
-        const seq = ++searchSeq;
+        const seq = nextListGeneration();
         const qRes: QueryResponse = await fetchEntities(
           requestContext,
           numResultsPerPage.valueOf(),
           0,
           newSearchTerms,
         );
-        // A newer search has been dispatched in the meantime — let it win.
-        if (seq !== searchSeq) return;
+        // A newer table-content dispatch happened in the meantime — let it win.
+        if (isStaleListGeneration(seq)) return;
 
         setLoading(false);
         setTotalNumResults(qRes.totalNumberOfResults);

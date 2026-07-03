@@ -1,4 +1,3 @@
-import { debounce, DebouncedFunc } from 'lodash';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { configureMonacoYaml, type SchemasSettings } from 'monaco-yaml';
 import { updateYAMLschema } from '../../../../../controller/local/EditController/ExpertMode';
@@ -11,6 +10,16 @@ import {
   setErrorMessage,
   setIsValidating,
 } from '../../../../../controller/local/EditController/ExpertMode/access';
+import {
+  registerDebouncedCommit,
+  trackedDebounce,
+  TrackedDebounced,
+} from '../../../../../controller/local/EditController/debounceRegistry';
+import {
+  beginValidationDispatch,
+  endValidationDispatch,
+  isStaleSession,
+} from '../../../../../controller/local/EditController/session';
 import {
   getYACValidateResponse,
   setEditDirty,
@@ -65,8 +74,23 @@ export default function getEditorSettings(
   };
 }
 
-export function getUpdateCallback(): DebouncedFunc<(value: string) => Promise<void>> {
-  return debounce(async (value: string) => {
+// One debounced editor-commit for the whole app: the (singleton) Monaco model
+// binds it once (factory.ts), the save path flushes it via the registry, and
+// the editor's unmount cleanup cancels a pending invocation.
+export type EditorUpdateCallback = TrackedDebounced<
+  (value: string, epoch: number) => Promise<void>
+>;
+let updateCallbackSingleton: EditorUpdateCallback | null = null;
+
+export function getUpdateCallback(): EditorUpdateCallback {
+  if (updateCallbackSingleton != null) return updateCallbackSingleton;
+
+  updateCallbackSingleton = trackedDebounce(async (value: string, epoch: number) => {
+    // `epoch` was captured when the KEYSTROKE happened. If the session moved on
+    // while the text sat in the debounce window (navigation to another entity),
+    // this text belongs to the previous document and must not become the new
+    // session's payload — nor be validated under the new context.
+    if (isStaleSession(epoch)) return;
     const requestEditContext = getCurrentContext();
     if (requestEditContext == null) return;
 
@@ -78,29 +102,42 @@ export function getUpdateCallback(): DebouncedFunc<(value: string) => Promise<vo
     setEntityYAML(value);
     setIsValidating(true);
     const seq = nextValidationSeq();
-    const rep = await updateYAMLschema(
-      getEntityName(),
-      value,
-      requestEditContext,
-      getActivatedActions(),
-    );
-    // A newer edit (in either pane) has since been dispatched; drop this stale
-    // response so it cannot overwrite the latest state.
-    if (isStaleValidation(seq)) return;
-    setErrorMessage(getYACValidateResponse());
-    setIsValidating(false);
+    beginValidationDispatch();
+    try {
+      const rep = await updateYAMLschema(
+        getEntityName(),
+        value,
+        requestEditContext,
+        getActivatedActions(),
+        seq,
+      );
+      // A newer edit (in either pane) has since been dispatched; drop this stale
+      // response so it cannot overwrite the latest state.
+      if (isStaleValidation(seq)) return;
+      setErrorMessage(getYACValidateResponse());
+      setIsValidating(false);
 
-    if (rep == null) return;
-    await getMonacoYaml().update({
-      schemas: [
-        {
-          uri: 'inmemory://schema.json',
-          schema: rep.json_schema,
-          fileMatch: ['*'],
-        },
-      ],
-    });
-    // Project the canonical data into the (inactive) form pane.
-    applyCanonical('yaml', rep);
+      if (rep == null) return;
+      await getMonacoYaml().update({
+        schemas: [
+          {
+            uri: 'inmemory://schema.json',
+            schema: rep.json_schema,
+            fileMatch: ['*'],
+          },
+        ],
+      });
+      // Project the canonical data into the (inactive) form pane.
+      applyCanonical('yaml', rep);
+    } finally {
+      endValidationDispatch();
+    }
   }, 1500);
+
+  // The save path's flush must include the editor's pending keystrokes, not
+  // just the form renderers' (a commit within the debounce window would
+  // otherwise silently save text older than what the editor shows).
+  registerDebouncedCommit(updateCallbackSingleton);
+
+  return updateCallbackSingleton;
 }

@@ -35,6 +35,10 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
   const [title, setTitle] = useState<React.ReactNode>('Loading...');
 
   useEffect(() => {
+    // Cancels a superseded run: the awaits below can resolve after the user
+    // already navigated on (the effect re-ran for a new URL), and applying the
+    // old run's context would re-target the whole editor to the wrong entity.
+    let cancelled = false;
     (async function () {
       const isValid: boolean = await isValidQueryEdit(
         backendName,
@@ -43,6 +47,7 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
         backends,
         mode,
       );
+      if (cancelled) return;
       if (!isValid) {
         navigateToURL(await getDefaultURL(backends));
         return;
@@ -54,6 +59,7 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
         mode,
         entityName,
       );
+      if (cancelled) return;
       const entityTypeTitle = requestEditContext.rc.accessedEntityType?.title;
       const backendTitle = requestEditContext.rc.backendObject?.title;
 
@@ -75,6 +81,9 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
       }
       setRequestContext(requestEditContext);
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [window.location.href]);
 
   return (

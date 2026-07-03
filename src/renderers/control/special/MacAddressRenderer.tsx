@@ -1,9 +1,9 @@
 import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import { debounce } from 'lodash';
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import {
   deregisterDebouncedCommit,
+  trackedDebounce,
   registerDebouncedCommit,
 } from '../../../controller/local/EditController/debounceRegistry';
 import ErrorRing from '../../../view/components/Form/ErrorRing';
@@ -46,7 +46,7 @@ export const MacAddressRenderer = (props: ControlProps) => {
   }, [storedData]);
 
   const update = useCallback(
-    debounce((value: string) => {
+    trackedDebounce((value: string) => {
       if (value === '') {
         // Explicit emptying: remove the stored value.
         props.handleChange(props.path, undefined);

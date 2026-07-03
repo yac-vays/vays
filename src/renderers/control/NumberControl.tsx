@@ -7,10 +7,10 @@ import {
   rankWith,
 } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import { debounce } from 'lodash';
 import { useCallback, useEffect } from 'react';
 import {
   deregisterDebouncedCommit,
+  trackedDebounce,
   registerDebouncedCommit,
 } from '../../controller/local/EditController/debounceRegistry';
 import ErrorRing from '../../view/components/Form/ErrorRing';
@@ -37,7 +37,10 @@ export const NumberControl = ({
   errors,
 }: ControlProps) => {
   const onChange = useCallback(
-    debounce((e: React.ChangeEvent<HTMLInputElement>) => handleChange(path, eventToValue(e)), 800),
+    trackedDebounce(
+      (e: React.ChangeEvent<HTMLInputElement>) => handleChange(path, eventToValue(e)),
+      800,
+    ),
     [path],
   );
 

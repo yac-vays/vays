@@ -3,6 +3,13 @@ import { RequestEditContext } from '../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../utils/types/internal/validation';
 import editingState from '../../state/EditCtrlState';
 import { getEntityYAML, setEntityYAML } from './ExpertMode/access';
+import { hasPendingDebouncedCommits } from './debounceRegistry';
+import {
+  beginValidationDispatch,
+  endValidationDispatch,
+  isStaleValidation,
+  nextValidationSeq,
+} from './session';
 import { updateSchema } from './StandardMode';
 
 /**
@@ -30,12 +37,32 @@ export type PaneWriter = (resp: ValidateResponse) => void;
 let formWriter: PaneWriter | null = null;
 let yamlWriter: PaneWriter | null = null;
 
+// Probe telling whether the YAML editor holds keystrokes still sitting in its
+// debounce window (registered by the editor alongside its writer). Such text
+// is newer than any in-flight validation, so a cross-pane rewrite would
+// destroy it; the pending edit's own validation reconciles the panes instead.
+let yamlInputPendingProbe: (() => boolean) | null = null;
+
 export function registerFormWriter(cb: PaneWriter | null) {
   formWriter = cb;
 }
 
 export function registerYamlWriter(cb: PaneWriter | null) {
   yamlWriter = cb;
+}
+
+export function registerYamlInputPendingProbe(cb: (() => boolean) | null) {
+  yamlInputPendingProbe = cb;
+}
+
+/** Un-validated user input pending in the YAML pane (debounce window). */
+function yamlInputPending(): boolean {
+  return yamlInputPendingProbe?.() ?? false;
+}
+
+/** Un-validated user input pending in a form renderer (debounce window). */
+function formInputPending(): boolean {
+  return hasPendingDebouncedCommits();
 }
 
 /** Whether the YAML pane is currently mounted (its writer is registered). */
@@ -62,6 +89,9 @@ export function seedCanonical(data: any, yaml: string) {
   // Also the live editor-YAML string, so the very first form edit has the
   // initial document (e.g. the create defaults template) as its merge base.
   setEntityYAML(yaml);
+  // The canonical pair now belongs to the current session; meta-triggered
+  // revalidation may use it from here on.
+  editingState.canonicalSeeded = true;
 }
 
 export function getCanonicalYAML(): string {
@@ -72,18 +102,9 @@ export function getCanonicalData(): any {
   return editingState.canonicalData;
 }
 
-/**
- * Stamp a new validation dispatch. Callers keep the returned id and pass it to
- * {@link isStaleValidation} when their response resolves.
- */
-export function nextValidationSeq(): number {
-  return ++editingState.validationSeq;
-}
-
-/** True if a newer validation has been dispatched since `seq` (drop the response). */
-export function isStaleValidation(seq: number): boolean {
-  return seq < editingState.validationSeq;
-}
+// Re-exported from session.ts (their home, next to the session epoch) so the
+// panes keep a single import point for the sync machinery.
+export { isStaleValidation, nextValidationSeq };
 
 /** Consume the form's programmatic-write guard (true => ignore this change). */
 export function consumeFormSuppression(): boolean {
@@ -122,13 +143,17 @@ export function applyCanonical(origin: Pane, resp: ValidateResponse) {
     setEntityYAML(resp.yaml);
   }
 
+  // Never rewrite a pane that holds user input still sitting in a debounce
+  // window: that text is newer than this response and would be destroyed. The
+  // skipped pane's own pending validation supersedes this one (its seq is
+  // newer) and reconciles both panes when it lands.
   if (origin === 'form') {
-    if (resp.yaml != null && yamlWriter) {
+    if (resp.yaml != null && yamlWriter && !yamlInputPending()) {
       editingState.suppressNextYamlChange = true;
       yamlWriter(resp);
     }
   } else {
-    if (formWriter) {
+    if (formWriter && !formInputPending()) {
       editingState.suppressNextFormChange = true;
       formWriter(resp);
     }
@@ -142,11 +167,13 @@ function writeBothPanes(resp: ValidateResponse) {
     editingState.canonicalYAML = resp.yaml;
     setEntityYAML(resp.yaml);
   }
-  if (formWriter) {
+  // Same protection as in `applyCanonical`: a pane with un-validated input in
+  // a debounce window is left alone; its own validation reconciles it.
+  if (formWriter && !formInputPending()) {
     editingState.suppressNextFormChange = true;
     formWriter(resp);
   }
-  if (resp.yaml != null && yamlWriter) {
+  if (resp.yaml != null && yamlWriter && !yamlInputPending()) {
     editingState.suppressNextYamlChange = true;
     yamlWriter(resp);
   }
@@ -159,16 +186,27 @@ function writeBothPanes(resp: ValidateResponse) {
  * by the panel) inside `updateSchema`.
  */
 export async function revalidateMeta(requestEditContext: RequestEditContext) {
+  // The canonical pair is this validation's input. Before the session's schema
+  // load has seeded it, it still holds the PREVIOUS session's document — a
+  // meta change made that early is picked up by the first regular validation
+  // after the load instead.
+  if (!editingState.canonicalSeeded) return;
   const seq = nextValidationSeq();
-  // Keep the editor's comments/formatting when an action toggle re-validates.
-  const resp = await updateSchema(
-    getCanonicalData(),
-    requestEditContext,
-    true,
-    true,
-    null,
-    getEntityYAML(),
-  );
-  if (resp == null || isStaleValidation(seq)) return;
-  writeBothPanes(resp);
+  beginValidationDispatch();
+  try {
+    // Keep the editor's comments/formatting when an action toggle re-validates.
+    const resp = await updateSchema(
+      getCanonicalData(),
+      requestEditContext,
+      true,
+      true,
+      null,
+      getEntityYAML(),
+      seq,
+    );
+    if (resp == null || isStaleValidation(seq)) return;
+    writeBothPanes(resp);
+  } finally {
+    endValidationDispatch();
+  }
 }

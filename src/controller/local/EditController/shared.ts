@@ -23,6 +23,12 @@ import { Nullable } from '../../../utils/types/typeUtils';
 import { showError } from '../../global/notification';
 import { navigateToURL } from '../../global/url';
 import editingState from '../../state/EditCtrlState';
+import {
+  activateEditingSession,
+  currentSession,
+  isStaleSession,
+  isStaleValidation,
+} from './session';
 import { updateSchema } from './StandardMode';
 
 /**
@@ -39,6 +45,34 @@ export function clearYACStatus() {
   clearEditDirty();
   // Pending schema-forbidden removals are scoped to a single session.
   editingState.strippedPaths.clear();
+}
+
+/**
+ * Activate the editing session for `ctx` on behalf of a pane and return the
+ * session epoch. Exactly the FIRST activation of a new session performs the
+ * one-time session resets; a pane initializing late into a running session
+ * (e.g. the lazily-loaded Monaco chunk) is a no-op here and cannot wipe state
+ * the user already changed (activated actions, dirty flag, validity).
+ */
+export function beginPaneSession(requestEditContext: RequestEditContext): number {
+  const { epoch, isNewSession } = activateEditingSession(requestEditContext);
+  if (isNewSession) {
+    clearYACStatus();
+    // Session-scoped fields left behind by the previous session. The canonical
+    // pair / save payload are re-seeded by this session's schema load; until
+    // then `canonicalSeeded` keeps consumers (revalidateMeta) from reading the
+    // previous document.
+    editingState.activatedActions = [];
+    editingState.entityName = requestEditContext.entityName ?? null;
+    editingState.canonicalData = {};
+    editingState.canonicalYAML = '';
+    editingState.canonicalSeeded = false;
+    editingState.entityYAML = undefined;
+    editingState.previousDefaultsObject = null;
+    editingState.suppressNextFormChange = false;
+    editingState.suppressNextYamlChange = false;
+  }
+  return epoch;
 }
 
 /** Mark the editing session as having unsaved user edits. */
@@ -144,20 +178,27 @@ export async function retreiveSchema(
 ): Promise<ValidateResponse | null> {
   if (requestEditContext.rc.yacURL == null) return null;
 
+  // The load belongs to the session that dispatched it. If the user navigates
+  // to another entity while it is in flight, the result must neither be
+  // rendered nor have touched the session baselines (checked again inside).
+  const epoch = currentSession();
+
   const key = schemaLoadKey(requestEditContext, startEditingSession);
   const running = inflightSchemaLoads.get(key);
   if (running !== undefined) {
     const resp = await running;
-    return resp == null ? null : structuredClone(resp);
+    if (resp == null || isStaleSession(epoch)) return null;
+    return structuredClone(resp);
   }
 
   const load =
     requestEditContext.mode === 'create'
-      ? retreiveNewCreateSchema(requestEditContext)
-      : retreiveEditSchema(requestEditContext, startEditingSession);
+      ? retreiveNewCreateSchema(requestEditContext, epoch)
+      : retreiveEditSchema(requestEditContext, startEditingSession, epoch);
   inflightSchemaLoads.set(key, load);
   try {
-    return await load;
+    const resp = await load;
+    return isStaleSession(epoch) ? null : resp;
   } finally {
     inflightSchemaLoads.delete(key);
   }
@@ -169,6 +210,7 @@ export async function retreiveSchema(
 async function retreiveEditSchema(
   requestEditContext: RequestEditContext,
   startEditingSession: boolean = true,
+  epoch: number = currentSession(),
 ): Promise<ValidateResponse | null> {
   if (requestEditContext.entityName == null) return null;
 
@@ -176,6 +218,9 @@ async function retreiveEditSchema(
   if (entityData == null) {
     return null;
   }
+  // The user navigated away while the entity was being fetched: the session
+  // baselines below belong to the NEW session and must not be overwritten.
+  if (isStaleSession(epoch)) return null;
 
   // Read mode is a pure view: show the stored YAML verbatim and never materialize
   // defaults into it.
@@ -196,9 +241,12 @@ async function retreiveEditSchema(
     // (comment-preserving) so the *displayed* document already contains them. In
     // read mode we keep the stored YAML as-is.
     isReadMode ? undefined : entityData.yaml,
+    undefined,
+    0,
+    epoch,
   );
 
-  if (valResp == null) {
+  if (valResp == null || isStaleSession(epoch)) {
     return null;
   }
 
@@ -227,11 +275,15 @@ async function retreiveEditSchema(
  */
 async function retreiveNewCreateSchema(
   requestEditContext: RequestEditContext,
+  epoch: number = currentSession(),
 ): Promise<ValidateResponse | null> {
   const valResp: Nullable<ValidateResponse> = await getSchema(requestEditContext);
   if (valResp == null) {
     return null;
   }
+  // Navigated away mid-fetch: insertDefaults would seed the NEW session's
+  // previousDefaultsObject with this (abandoned) schema's defaults.
+  if (isStaleSession(epoch)) return null;
 
   insertDefaults(valResp);
 
@@ -328,8 +380,13 @@ export async function coreUpdate(
   // The YAML the form patch should be merged into (comment-preserving). Passed
   // for user form edits; omitted on initial loads (then the stored YAML is used).
   yamlBase?: string,
+  // The validation-seq stamp of the user edit driving this update (loads pass
+  // none). A newer stamped edit supersedes this whole stabilization chain.
+  seq?: number,
   // Internal: number of stabilization passes already performed.
   pass: number = 0,
+  // The session this update belongs to; captured at the first pass.
+  epoch: number = currentSession(),
 ) {
   let data = entityData;
   if (requestEditContext.mode === 'edit') {
@@ -353,6 +410,17 @@ export async function coreUpdate(
   );
   if (valResp == null) return null;
 
+  // The session changed while the request was in flight (navigation to another
+  // entity): none of the writes below may touch the new session's state.
+  if (isStaleSession(epoch)) return null;
+
+  // A newer user edit was dispatched meanwhile: stop this stabilization chain.
+  // Its status, defaults bookkeeping and stripped-path records would describe a
+  // document the panes no longer show; the newer edit's own chain (which set
+  // out from the newer data) replaces all of it. The caller re-checks the seq
+  // and drops the returned response.
+  if (seq !== undefined && isStaleValidation(seq)) return valResp;
+
   setYACStatus(valResp.valid, valResp.detail, valResp.usages);
   const didChange = handleDefaults(entityData, valResp, requestEditContext);
 
@@ -373,7 +441,9 @@ export async function coreUpdate(
       editActions,
       name,
       yamlBase,
+      seq,
       pass + 1,
+      epoch,
     );
   }
   return valResp;

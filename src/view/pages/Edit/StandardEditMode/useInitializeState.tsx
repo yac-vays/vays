@@ -1,15 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
+import { getActivatedActions } from '../../../../controller/local/EditController/ExpertMode/access';
 import {
-  setCurrentContext,
-  setEntityName,
-} from '../../../../controller/local/EditController/ExpertMode/access';
-import {
-  clearYACStatus,
+  beginPaneSession,
   emitValidity,
   getAJV,
   retreiveSchema,
   setLocalValidity,
 } from '../../../../controller/local/EditController/shared';
+import { revalidateMeta } from '../../../../controller/local/EditController/sync';
 import { setCurrentTab } from '../../../../controller/local/EditController/StandardMode/access';
 import {
   resetCategoryErrs,
@@ -73,16 +71,13 @@ const useInitializeForm = (
     const fetchSchemaUI = async function () {
       setIsEmpty(false);
       setLoading(true);
-      setCurrentContext(requestEditContext);
-      // Seed the global entity name from the URL context here, in the eager form
-      // pane. The create validate below (updateSchema) reads the name from this
-      // global for user-provided (non-generated) names, but the only other seeder
-      // (startExpertModeSession) lives in the lazily-imported Monaco editor. On a
-      // cold load that chunk isn't ready yet, so without this the first validate
-      // would send name=null and YAC rejects it with "entity.name must be set"
-      // (until an F5, when the cached Monaco chunk wins the race).
-      setEntityName(requestEditContext.entityName ?? null);
-      clearYACStatus();
+      // Activate the session for this pane. Exactly the first pane to arrive
+      // performs the one-time session resets (status, dirty flag, actions, and
+      // seeding the global entity name from the URL context — the Monaco chunk
+      // loads lazily, so on a cold load this eager pane must do the seeding or
+      // the first validate would send name=null). A late re-activation of the
+      // same session is a no-op and preserves what the user already changed.
+      beginPaneSession(requestEditContext);
       resetCategoryErrs();
       // Name + actions are rendered separately in the always-visible
       // MetaInfoPanel, not injected into the form.
@@ -137,6 +132,13 @@ const useInitializeForm = (
       );
 
       setLoading(false);
+
+      // Actions toggled in the MetaInfoPanel while the schema was still
+      // loading could not re-validate yet (revalidateMeta waits for the
+      // canonical seed) — pick them up now so the schema reflects them.
+      if (getActivatedActions().length > 0) {
+        revalidateMeta(requestEditContext);
+      }
     };
     fetchSchemaUI();
 
@@ -147,6 +149,10 @@ const useInitializeForm = (
     requestEditContext.rc.entityTypeName,
     requestEditContext.rc.yacURL,
     requestEditContext.mode,
+    // Outside create mode the entity name is part of the editing target: a
+    // same-type navigation edit/A -> edit/B (browser back/forward) must reload
+    // the form, exactly like the Monaco pane does (see Editor.tsx deps).
+    requestEditContext.mode === 'create' ? '' : (requestEditContext.entityName ?? ''),
   ]);
 
   return {

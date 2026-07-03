@@ -40,22 +40,30 @@ const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) 
   );
 
   useEffect(() => {
+    // Cancels a superseded run: with fast cross-backend navigation the older
+    // run's (slow) context fetch can resolve last and would otherwise pin the
+    // page to a backend/type the URL no longer shows.
+    let cancelled = false;
     (async function () {
       const isValid: boolean = await isValidQueryOverview(backendName, entityTypeName, backends);
+      if (cancelled) return;
       if (!isValid) {
         // TODO: Really have to be a bit faster here!
         navigateToURL(await getDefaultURL(backends));
         // TODO: What here?
       } else {
-        setRequestContext(
-          await getRequestContextOverview(
-            backendName as string,
-            entityTypeName as string,
-            backends,
-          ),
+        const ctx = await getRequestContextOverview(
+          backendName as string,
+          entityTypeName as string,
+          backends,
         );
+        if (cancelled) return;
+        setRequestContext(ctx);
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [window.location.href]);
 
   let title = 'Loading Type Definition...';

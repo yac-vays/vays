@@ -1,14 +1,12 @@
-import { DebouncedFunc } from 'lodash';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import { currentSession } from '../../../../../controller/local/EditController/session';
 import {
   consumeYamlSuppression,
   getCanonicalYAML,
 } from '../../../../../controller/local/EditController/sync';
-import getEditorSettings from './setup';
+import getEditorSettings, { EditorUpdateCallback } from './setup';
 
-export function getModel(
-  update: DebouncedFunc<(value: string) => Promise<void>>,
-): monaco.editor.ITextModel {
+export function getModel(update: EditorUpdateCallback): monaco.editor.ITextModel {
   let model: monaco.editor.ITextModel;
 
   if (monaco.editor.getModels().length != 0) {
@@ -24,7 +22,9 @@ export function getModel(
       // No semantic change versus what the backend already blessed: skip the
       // round-trip (also guards initial setValue echoes).
       if (value === getCanonicalYAML()) return;
-      update(value);
+      // Stamp the keystroke with its session so the debounced commit can drop
+      // it if the user navigates away before the debounce fires.
+      update(value, currentSession());
     });
   }
   return model;

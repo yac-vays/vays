@@ -186,12 +186,26 @@ export interface EntityListVariableHandlers {
 }
 
 /**
- * Stamp of the latest {@link reload} dispatch. Responses carrying an older
- * stamp lost the race against a newer reload (rapid page flips / context
- * switches) and must not overwrite the newer table content. Mirrors the
- * validationSeq pattern of the edit controller.
+ * Stamp of the latest table-content dispatch across ALL fetch paths: the
+ * effect loader (useInitializeList), explicit reloads ({@link reload}, page
+ * flips / refresh button) and the column search (getSearchCallback). One
+ * SHARED counter, because all three write the same table state — a response
+ * that is newest within its own path can still be older than what another
+ * path already applied (e.g. a slow page-3 reload landing after a newer
+ * search already filtered the table). Mirrors the validationSeq pattern of
+ * the edit controller.
  */
-let reloadSeq = 0;
+let listGeneration = 0;
+
+/** Stamp a new table-content dispatch; keep the id for {@link isStaleListGeneration}. */
+export function nextListGeneration(): number {
+  return ++listGeneration;
+}
+
+/** True if a newer table-content dispatch happened since `gen` (drop the response). */
+export function isStaleListGeneration(gen: number): boolean {
+  return gen !== listGeneration;
+}
 
 /**
  * @param requestContext
@@ -220,7 +234,7 @@ export async function reload(
       pageNumber = 1;
     }
 
-    const seq = ++reloadSeq;
+    const seq = nextListGeneration();
     setLoading(true);
     const header: string[] = getHeaderEntries(requestContext);
     setTableHeaderEntries(header);
@@ -232,8 +246,9 @@ export async function reload(
       searchList,
     );
 
-    // A newer reload has been dispatched in the meantime — let it win.
-    if (seq !== reloadSeq) return;
+    // A newer table-content dispatch (reload, search, or the effect loader)
+    // happened in the meantime — let it win.
+    if (isStaleListGeneration(seq)) return;
 
     setLoading(false);
     setTableEntries(qRes.partialResults);

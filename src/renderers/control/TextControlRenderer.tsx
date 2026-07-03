@@ -1,9 +1,9 @@
 import { ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import { debounce } from 'lodash';
 import { useCallback, useEffect } from 'react';
 import {
   deregisterDebouncedCommit,
+  trackedDebounce,
   registerDebouncedCommit,
 } from '../../controller/local/EditController/debounceRegistry';
 import ErrorRing from '../../view/components/Form/ErrorRing';
@@ -33,7 +33,7 @@ export const TextControl = (props: ControlProps) => {
   });
 
   const onChange = useCallback(
-    debounce(
+    trackedDebounce(
       (e: React.ChangeEvent<HTMLInputElement>) =>
         props.handleChange(props.path, sendTrivial ? eventToValue(e) : strictEventToValue(e)),
       1500,

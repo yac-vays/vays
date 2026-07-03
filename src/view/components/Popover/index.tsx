@@ -147,12 +147,14 @@ const Popover = ({
 
   return (
     <>
-      {/* Size-neutral button: no UA padding/border/background, fills the anchor
-          box exactly so the trigger does not shift the content vs a plain
-          (non-interactive) render of the same anchor. */}
+      {/* Size-neutral button: no UA padding/border/background, sized by its
+          content so the trigger does not shift or squeeze surrounding content
+          vs a plain (non-interactive) render of the same anchor. Deliberately
+          NOT w-full: as a flex child that would claim the whole row and crush
+          the siblings (e.g. a checkbox title next to its info icon). */}
       <button
         type="button"
-        className={`block w-full appearance-none border-0 bg-transparent p-0 text-left ${
+        className={`block appearance-none border-0 bg-transparent p-0 text-left ${
           disabled ? 'cursor-default' : 'cursor-pointer'
         } ${anchorClassName}`}
         ref={refs.setReference}

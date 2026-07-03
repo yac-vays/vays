@@ -96,7 +96,6 @@ const ActionDropdown = ({ actions, entityName }: ActionDropdownProps) => {
         maxHeight={400}
         role="menu"
         disabled={isEmpty}
-        anchorClassName="w-auto"
         onOpenChange={setOpen}
       >
         <ul className="flex flex-col p-2" style={{ minWidth: MINWIDTH_DROPDOWN }}>

@@ -3,7 +3,8 @@ import { useHeaderSlots } from '../Header/HeaderSlots';
 
 interface PageHeaderTitleProps {
   title: React.ReactNode;
-  subText: string;
+  /** Optional intro text at the top of the page body. */
+  subText?: string;
   /** Action buttons rendered into the top bar (e.g. refresh, description toggle). */
   children?: React.ReactNode;
 }

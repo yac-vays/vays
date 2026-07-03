@@ -1,6 +1,7 @@
 import DarkModeSwitcher from './DarkModeSwitcher';
 import DropdownNotification from './DropdownNotification';
 import DropdownUser from './DropdownUser';
+import HelpButton from './HelpButton';
 import { useHeaderSlots } from './HeaderSlots';
 
 const Header = (props: {
@@ -78,6 +79,10 @@ const Header = (props: {
             {/* <!-- Chat Notification Area --> */}
             {/* <DropdownMessage /> */}
             {/* <!-- Chat Notification Area --> */}
+
+            {/* <!-- Help Page Button --> */}
+            <HelpButton />
+            {/* <!-- Help Page Button --> */}
           </ul>
 
           {/* <!-- User Area --> */}

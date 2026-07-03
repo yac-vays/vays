@@ -15,7 +15,7 @@ import { AppConfig, YACBackend } from './utils/types/config';
 import DiffViewer from './view/components/DiffViewer';
 import { ModalContextProvider } from './view/components/Modal/ModalContext';
 import { ToastContextProvider } from './view/components/ToastNotification/ToastContext';
-import DevInfo from './view/pages/DevInfo';
+import Help from './view/pages/Help';
 
 const Overview = lazy(() =>
   import('./view/pages/Bundles/LogRouteBundle').then((module) => ({
@@ -142,11 +142,11 @@ function App(): JSX.Element {
                 />
                 <Route
                   // index
-                  path="/dev-info"
+                  path="/help"
                   element={
                     <>
                       <Suspense fallback={<Loader bgTransparent />}>
-                        <DevInfo />
+                        <Help />
                       </Suspense>
                     </>
                   }

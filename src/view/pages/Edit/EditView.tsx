@@ -88,13 +88,7 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
 
   return (
     <>
-      <PageHeaderTitle
-        title={title}
-        subText={
-          'Edit via the form, the YAML editor, or both — they stay in sync. ' +
-          'In the YAML editor press F1 for all commands; hover an error to see details.'
-        }
-      />
+      <PageHeaderTitle title={title} />
 
       <EditFrame requestEditContext={requestContext} />
     </>

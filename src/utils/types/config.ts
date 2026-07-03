@@ -64,6 +64,12 @@ export interface AppConfig {
    * Defaults to `both` (form + YAML side by side).
    */
   defaultEditorLayout?: EditorLayout;
+  /**
+   * Deployment-specific help text (markdown), shown at the top of the help
+   * page (`/help`). Use it for pointers that only make sense for THIS
+   * installation: who to contact, internal documentation, house rules.
+   */
+  helpText?: string;
   oidcConf: {
     server: string;
     clientID: string;

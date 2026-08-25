@@ -9,19 +9,19 @@ import {
   registerDebouncedCommit,
 } from '../../../controller/local/EditController/debounceRegistry';
 import {
+  DEFAULT_RANDOM_STRING_FORMAT,
+  DEFAULT_RANDOM_STRING_LENGTH,
   generateRandomString,
   RandomStringFormat,
   RANDOM_STRING_FORMATS,
 } from '../../../utils/randomString';
+import { consumeEagerGenerated } from '../../../utils/schema/eagerValues';
 import ErrorRing from '../../../view/components/Form/ErrorRing';
 import { useModalContext } from '../../../view/components/Modal/ModalContext';
 import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import TextInput from '../../../view/thirdparty/components/ifc/TextInput/TextInput';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
 import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
-
-const DEFAULT_FORMAT: RandomStringFormat = 'alphanumeric';
-const DEFAULT_LENGTH = 32;
 
 interface RendererOptions {
   format?: RandomStringFormat;
@@ -31,9 +31,11 @@ interface RendererOptions {
 
 export const RandomStringRenderer = (props: ControlProps) => {
   const ropts: RendererOptions = props.uischema?.options?.renderer_options ?? {};
-  const format: RandomStringFormat = ropts.format ?? DEFAULT_FORMAT;
+  const format: RandomStringFormat = ropts.format ?? DEFAULT_RANDOM_STRING_FORMAT;
   const length =
-    typeof ropts.length === 'number' && ropts.length > 0 ? Math.floor(ropts.length) : DEFAULT_LENGTH;
+    typeof ropts.length === 'number' && ropts.length > 0
+      ? Math.floor(ropts.length)
+      : DEFAULT_RANDOM_STRING_LENGTH;
 
   let specError: string | null = null;
   if (!RANDOM_STRING_FORMATS.includes(format)) {
@@ -56,9 +58,12 @@ export const RandomStringRenderer = (props: ControlProps) => {
 
   const hasData = storedData !== undefined && storedData !== '';
   // A value that came in from YAC (present on first render, not yet replaced
-  // this session) gets a confirmation dialog before being overwritten.
+  // this session) gets a confirmation dialog before being overwritten. A value
+  // the eager load-time pass generated is NOT a YAC value: regenerating it
+  // silently matches the mount-generation behavior.
   const hasYacValue = useRef<boolean | null>(null);
-  if (hasYacValue.current === null) hasYacValue.current = hasData;
+  if (hasYacValue.current === null)
+    hasYacValue.current = hasData && !consumeEagerGenerated(props.path);
 
   const autoGenStarted = useRef<boolean>(false);
   const { showModal } = useModalContext();
@@ -80,14 +85,20 @@ export const RandomStringRenderer = (props: ControlProps) => {
 
   // Set the random value exactly once: only if YAC supplied neither a value
   // nor a default for this field (a spec default wins over generation).
+  // Deferred one macrotask: on initial mount the JsonForms provider re-dispatches
+  // updateCore(props.data) in its own effect AFTER child effects, which would
+  // silently wipe a value dispatched synchronously from here.
   useEffect(() => {
     if (autoGenStarted.current) return;
     if (!props.visible || !props.enabled) return;
     if (specError) return;
     if (hasData) return;
     if (props.schema.default !== undefined) return;
-    autoGenStarted.current = true;
-    doGenerate();
+    const t = setTimeout(() => {
+      autoGenStarted.current = true;
+      doGenerate();
+    }, 0);
+    return () => clearTimeout(t);
   }, [props.visible, props.enabled, specError, hasData, props.schema.default, doGenerate]);
 
   const update = useCallback(

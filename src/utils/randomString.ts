@@ -6,6 +6,10 @@ export type RandomStringFormat =
   | 'ascii_printable'
   | 'custom';
 
+/** Shared by the renderer and the eager (load-time) generation pass. */
+export const DEFAULT_RANDOM_STRING_FORMAT: RandomStringFormat = 'alphanumeric';
+export const DEFAULT_RANDOM_STRING_LENGTH = 32;
+
 export const RANDOM_STRING_FORMATS: RandomStringFormat[] = [
   'uuid',
   'alphanumeric',

@@ -14,6 +14,10 @@ import {
   mergeDefaults,
   updateDefaults,
 } from '../../../utils/schema/defaultsHandling';
+import {
+  injectEagerRandomStrings,
+  resetEagerGenerated,
+} from '../../../utils/schema/eagerValues';
 import { EditActionSnapshot, NO_ACTIONS } from '../../../utils/schema/injectActions';
 import { LimitUsage } from '../../../utils/types/api';
 import { RequestEditContext } from '../../../utils/types/internal/request';
@@ -72,6 +76,7 @@ export function beginPaneSession(requestEditContext: RequestEditContext): number
     editingState.previousDefaultsObject = null;
     editingState.suppressNextFormChange = false;
     editingState.suppressNextYamlChange = false;
+    resetEagerGenerated();
     // No payload yet in the fresh session — nothing to commit until seeded.
     emitChangeState();
   }
@@ -300,6 +305,9 @@ async function retreiveNewCreateSchema(
   if (isStaleSession(epoch)) return null;
 
   insertDefaults(valResp);
+  // Generate `random_string` values for ALL tabs now (the renderer's own
+  // mount-time generation only reaches controls on the currently open tab).
+  injectEagerRandomStrings(valResp);
 
   return await updateSchema(valResp.data, requestEditContext, false, false);
 }

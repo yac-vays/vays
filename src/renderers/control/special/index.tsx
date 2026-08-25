@@ -5,6 +5,7 @@ import ListAsStringRenderer, { ListAsStringTester } from './ListAsStringRenderer
 import MACAddressRenderer, { MacAddressRendererTester } from './MacAddressRenderer';
 import MultiLineTextControl, { MultiLineTextControlTester } from './MultiLineTextControlRenderer';
 import PasswordRenderer, { PasswordRendererTester } from './PasswordRenderer';
+import RandomStringRenderer, { RandomStringRendererTester } from './RandomStringRenderer';
 import SSHKeyRenderer, { SSHKeyRendererTester } from './SSHKeyRenderer';
 
 export const specialRenderers = [
@@ -16,4 +17,5 @@ export const specialRenderers = [
   { tester: MultiLineTextControlTester, renderer: MultiLineTextControl },
   { tester: MacAddressRendererTester, renderer: MACAddressRenderer },
   { tester: AgeSecretRendererTester, renderer: AgeSecretRenderer },
+  { tester: RandomStringRendererTester, renderer: RandomStringRenderer },
 ];

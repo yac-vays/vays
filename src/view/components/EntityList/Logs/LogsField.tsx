@@ -98,7 +98,7 @@ const LogsField = ({
   // opacity-60
   return (
     <div
-      className="flex flex-row xl:flex-wrap 2xl:flex-nowrap gap-1 px-1 py-0 xl:!min-w-0"
+      className="flex flex-row flex-nowrap gap-1 px-1 py-0"
       style={{
         verticalAlign: 'middle',
         minWidth: Math.max(2, numLogElts) * 40,

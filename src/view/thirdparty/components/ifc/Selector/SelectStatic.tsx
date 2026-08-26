@@ -1,7 +1,8 @@
 import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
+import InformationButton from '../../../../components/Buttons/InformationButton';
 
-type DropDownOptions = { label: string; value: string }[];
+type DropDownOptions = { label: string; value: string; description?: string }[];
 
 interface DropdownProps {
   // Expects the first one to be the title, the second one the label.
@@ -16,6 +17,8 @@ interface DropdownProps {
    * The caller drops the flag once the user has picked an option.
    */
   placeholder?: boolean;
+  /** Heading of the option-descriptions info panel (usually the field label). */
+  title?: string;
 }
 
 function isValidOption(optValue: string | undefined, options: DropDownOptions) {
@@ -34,10 +37,20 @@ const SelectStatic: React.FC<DropdownProps> = ({
   disabled,
   canResetToUndefined,
   placeholder,
+  title,
 }: DropdownProps) => {
   if (!isValidOption(initValue, options)) {
     initValue = undefined;
   }
+
+  // A native <select> cannot show per-option tooltips inside its popup list,
+  // so options with a description (oneOf consts) are explained together in
+  // one (i)-panel anchored at the right border of the box, next to the
+  // chevron — all boxes of a form thus line their icons up in one column.
+  const describedOptions = options.filter((opt) => opt.description);
+  const optionsDescription = describedOptions
+    .map((opt) => `**${opt.label}**\n\n${opt.description}`)
+    .join('\n\n');
   const [selectedOption, setSelectedOption] = useState<string | undefined>(initValue ?? '');
   const [isOptionSelected, setIsOptionSelected] = useState<boolean>(initValue != undefined);
 
@@ -73,8 +86,8 @@ const SelectStatic: React.FC<DropdownProps> = ({
           changeTextColor();
         }}
         className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-5 outline-none focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary ${
-          placeholder ? 'text-reducedfont' : isOptionSelected ? 'text-plainfont' : ''
-        }`}
+          describedOptions.length > 0 ? 'pr-20' : ''
+        } ${placeholder ? 'text-reducedfont' : isOptionSelected ? 'text-plainfont' : ''}`}
       >
         <option
           value=""
@@ -101,7 +114,15 @@ const SelectStatic: React.FC<DropdownProps> = ({
         })()}
       </select>
 
-      <span className="absolute top-1/2 right-4 z-30 -translate-y-1/2">
+      {describedOptions.length > 0 && (
+        <span className="absolute top-1/2 right-12 z-30 -translate-y-1/2">
+          <InformationButton title={title} description={optionsDescription} isMarkdown />
+        </span>
+      )}
+
+      {/* pointer-events-none: the icon overlays the select, so without it a
+          click exactly on the chevron is swallowed and never opens the list. */}
+      <span className="pointer-events-none absolute top-1/2 right-4 z-30 -translate-y-1/2">
         <svg
           className="fill-current"
           width="24"

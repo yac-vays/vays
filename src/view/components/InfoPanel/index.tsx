@@ -25,7 +25,7 @@ const InfoPanel = ({
           {title}
         </h4>
       </div>
-      <div className="px-5 pt-1 pb-5 text-center">
+      <div className="px-5 pt-1 pb-5 text-left">
         <p className="font-medium whitespace-pre-line hyphens-auto break-words text-reducedfont">
           {isMarkdown ? <MarkdownRender text={description} /> : description}
         </p>

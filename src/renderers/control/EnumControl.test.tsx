@@ -23,7 +23,7 @@ const mount = (flavorSchema: object) =>
   );
 
 describe('EnumControl / OneOfEnumControl', () => {
-  it('shows an info button listing the markdown descriptions of the oneOf consts', async () => {
+  it('shows an info button with the markdown description of the selected oneOf const', async () => {
     mount({
       type: 'string',
       title: 'Flavor',
@@ -33,16 +33,19 @@ describe('EnumControl / OneOfEnumControl', () => {
       ],
     });
 
+    // Nothing selected yet -> nothing to describe.
+    expect(screen.queryAllByRole('button')).toHaveLength(0);
+
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'a' } });
     const [infoButton] = screen.getAllByRole('button');
     expect(infoButton).toBeDefined();
     fireEvent.click(infoButton);
 
-    // Panel lists every option label with its markdown-rendered description.
+    // Panel shows the selected option's markdown-rendered description only.
     const panel = within(await screen.findByRole('dialog'));
     expect(panel.getByText('Alpha')).toBeDefined();
     expect(panel.getByText('First')).toBeDefined();
-    expect(panel.getByText('Beta')).toBeDefined();
-    expect(panel.getByText('Second option')).toBeDefined();
+    expect(panel.queryByText('Second option')).toBeNull();
   });
 
   it('shows no info button when no option has a description (plain enum)', () => {

@@ -17,8 +17,6 @@ interface DropdownProps {
    * The caller drops the flag once the user has picked an option.
    */
   placeholder?: boolean;
-  /** Heading of the option-descriptions info panel (usually the field label). */
-  title?: string;
 }
 
 function isValidOption(optValue: string | undefined, options: DropDownOptions) {
@@ -37,21 +35,20 @@ const SelectStatic: React.FC<DropdownProps> = ({
   disabled,
   canResetToUndefined,
   placeholder,
-  title,
 }: DropdownProps) => {
   if (!isValidOption(initValue, options)) {
     initValue = undefined;
   }
+  const [selectedOption, setSelectedOption] = useState<string | undefined>(initValue ?? '');
 
   // A native <select> cannot show per-option tooltips inside its popup list,
-  // so options with a description (oneOf consts) are explained together in
-  // one (i)-panel anchored at the right border of the box, next to the
-  // chevron — all boxes of a form thus line their icons up in one column.
-  const describedOptions = options.filter((opt) => opt.description);
-  const optionsDescription = describedOptions
-    .map((opt) => `**${opt.label}**\n\n${opt.description}`)
-    .join('\n\n');
-  const [selectedOption, setSelectedOption] = useState<string | undefined>(initValue ?? '');
+  // so the description of the currently selected option (oneOf consts) is
+  // shown in an (i)-panel anchored at the right border of the box, next to
+  // the chevron — all boxes of a form thus line their icons up in one column.
+  // String coercion mirrors how the <select> itself matches its value.
+  const selectedWithDescription = options.find(
+    (opt) => opt.description && String(opt.value) === selectedOption,
+  );
   const [isOptionSelected, setIsOptionSelected] = useState<boolean>(initValue != undefined);
 
   const changeTextColor = () => {
@@ -86,7 +83,7 @@ const SelectStatic: React.FC<DropdownProps> = ({
           changeTextColor();
         }}
         className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-5 outline-none focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary ${
-          describedOptions.length > 0 ? 'pr-20' : ''
+          selectedWithDescription ? 'pr-20' : ''
         } ${placeholder ? 'text-reducedfont' : isOptionSelected ? 'text-plainfont' : ''}`}
       >
         <option
@@ -114,9 +111,13 @@ const SelectStatic: React.FC<DropdownProps> = ({
         })()}
       </select>
 
-      {describedOptions.length > 0 && (
+      {selectedWithDescription && (
         <span className="absolute top-1/2 right-12 z-30 -translate-y-1/2">
-          <InformationButton title={title} description={optionsDescription} isMarkdown />
+          <InformationButton
+            title={selectedWithDescription.label}
+            description={selectedWithDescription.description}
+            isMarkdown
+          />
         </span>
       )}
 

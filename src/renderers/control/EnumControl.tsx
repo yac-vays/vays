@@ -41,8 +41,8 @@ export const EnumControl = ({
   }
 
   // Per-option descriptions only exist on oneOf-const schemas (plain `enum`
-  // has no place for them); SelectStatic shows them in an (i)-panel aligned
-  // at the right border of the box.
+  // has no place for them); SelectStatic shows the selected option's one in
+  // an (i)-panel aligned at the right border of the box.
   const optionsWithDescription = (options || []).map((opt) => ({
     ...opt,
     description: schema.oneOf?.find((sub) => sub.const === opt.value)?.description,
@@ -73,7 +73,6 @@ export const EnumControl = ({
         <ErrorRing errors={errors}>
           <SelectStatic
             options={optionsWithDescription}
-            title={label}
             onChange={(v: string | number | undefined) => handleChange(path, v)}
             initValue={data}
             disabled={!enabled}

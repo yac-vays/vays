@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import useOutsideClick from '../hooks/useOutsideClick';
 
 import { showError, showSuccess } from '../../controller/global/notification';
-import ErrorBox from '../thirdparty/components/ifc/Label/ErrorBox';
 import ErrorRing from './Form/ErrorRing';
 
 interface SSHKeyProps {
@@ -15,9 +14,12 @@ interface SSHKeyProps {
   defaultv?: string;
   data?: string;
   enabled?: boolean;
-  /** Validation error(s) from the renderer; draws the red ring around the
-   * input row only, so the ErrorBox below stays outside of it. */
+  /** Validation error(s) from the renderer (local error, or server errors if
+   * local validation passes); draws the red ring around the input row. */
   errors?: string;
+  /** Reports this input's own (client-side) validation error, so the renderer
+   * can surface it through the standard label indicator + ring. */
+  onLocalErrorChange?: (err: string) => void;
   onChange: (v: string | undefined) => void;
 }
 
@@ -58,6 +60,7 @@ const SSHKeyInput = ({
   data,
   enabled,
   errors,
+  onLocalErrorChange,
   onChange,
 }: SSHKeyProps) => {
   // Do not use handleChange, this is the version that is not debounced.
@@ -137,6 +140,12 @@ const SSHKeyInput = ({
     if (!inputRef.current) return;
     inputRef.current.value = value;
   }, [value]);
+
+  // Hand the local validation error to the renderer, which folds it into the
+  // standard error affordance (label indicator + ring).
+  useEffect(() => {
+    onLocalErrorChange?.(error);
+  }, [error, onLocalErrorChange]);
 
   return (
     <>
@@ -249,7 +258,6 @@ const SSHKeyInput = ({
             </label>
           </div>
         </ErrorRing>
-        <ErrorBox displayError={error} />
       </div>
     </>
   );

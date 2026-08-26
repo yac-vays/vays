@@ -1,5 +1,6 @@
 import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
+import { useState } from 'react';
 
 import SSHKeyInput from '../../../view/components/SSHKeyInput';
 import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
@@ -20,6 +21,11 @@ export const SSHKeyRenderer = ({
   schema,
   enabled,
 }: ControlProps) => {
+  // Client-side validation from the input (invalid/multiple keys) is folded
+  // into the same error affordance as server errors: the label's error
+  // indicator plus the red ring.
+  const [localError, setLocalError] = useState<string>('');
+
   if (!visible) return <></>;
 
   /// data check
@@ -29,6 +35,10 @@ export const SSHKeyRenderer = ({
   }
   ///
 
+  // The local message is more precise than the server's, so it wins; server
+  // errors only show once local validation passes.
+  const displayErrors = localError || errors;
+
   return (
     <div className="p-1">
       <div className="flex flex-row">
@@ -37,10 +47,10 @@ export const SSHKeyRenderer = ({
             title={label}
             required={required || false}
             description={description}
-            errors={errors}
+            errors={displayErrors}
           />
-          {/* The error ring is drawn inside SSHKeyInput (around the input row
-              only), so it does not enclose the ErrorBox below it. */}
+          {/* The error ring is drawn inside SSHKeyInput, around the input row
+              only. */}
           <SSHKeyInput
             data={data as string | undefined}
             id={id}
@@ -48,7 +58,8 @@ export const SSHKeyRenderer = ({
             placeholder={uischema?.options?.initial as string | undefined}
             placeholderEditable={uischema?.options?.initial_editable as boolean | undefined}
             enabled={enabled}
-            errors={errors}
+            errors={displayErrors}
+            onLocalErrorChange={setLocalError}
             onChange={(v) => handleChange(path, v)}
           />
         </div>

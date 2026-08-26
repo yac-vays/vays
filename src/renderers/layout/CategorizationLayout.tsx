@@ -40,9 +40,7 @@ export const CategorizationTester: RankedTester = withIncreasedRank(
 
 // Adapted from Json Forms, as they did not make this available from the library...(COME ON WHY)
 export interface CategorizationLayoutRendererProps
-  extends StatePropsOfLayout,
-    AjvProps,
-    TranslateProps {
+  extends StatePropsOfLayout, AjvProps, TranslateProps {
   selected?: number;
   ownState?: boolean;
   data?: any;
@@ -167,8 +165,9 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
         )}
         {/* <div className='bg-white w-full h-5 static mb-6 flex gap-4 border-b border-stroke sm:gap-10'></div> */}
         {/* 0.5em */}
+        {/* pr-2 keeps the controls clear of this container's scrollbar. */}
         <div
-          className={`flex flex-col rounded grow overflow-auto pb-12 h-full ${
+          className={`flex flex-col rounded grow overflow-auto pr-2 pb-12 h-full ${
             showTabs ? 'mt-4' : ''
           }`}
         >

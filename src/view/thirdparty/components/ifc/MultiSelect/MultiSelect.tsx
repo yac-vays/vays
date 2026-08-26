@@ -93,7 +93,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
 
   return (
     <div
-      className="relative p-1"
+      className="relative"
       onClick={() =>
         setTimeout(() => {
           inputRef.current?.focus();
@@ -119,7 +119,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
               >
                 <div
                   id="inputfieldSelect"
-                  className={`relative mb-2 flex rounded border  py-2 pl-3 pr-3 outline-none transition  dark:bg-form-input ${
+                  className={`relative flex rounded border  py-2 pl-3 pr-3 outline-none transition  dark:bg-form-input ${
                     isOpen()
                       ? 'border-primary border-primary'
                       : 'border-stroke dark:border-form-strokedark'
@@ -215,9 +215,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
                               <div className="mx-2 leading-6 select-none">
                                 {option.label}
                                 {(function () {
-                                  const numOcc = selected.filter(
-                                    (x) => x === option.value,
-                                  ).length;
+                                  const numOcc = selected.filter((x) => x === option.value).length;
                                   if (numOcc <= 1) return <></>;
 
                                   return (

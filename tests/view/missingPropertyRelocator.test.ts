@@ -1,10 +1,12 @@
 /**
  * relocateMissingPropertyMarkers: monaco-yaml anchors "Missing property"
- * diagnostics on the object node (visually the FIRST property); the editor
- * relocates them to the phantom last line, where the property would actually
- * be added. The `null` return for the already-relocated case is load-bearing:
- * re-setting unchanged markers would re-fire the marker-change listener and
- * loop forever.
+ * diagnostics on the object node (visually its FIRST property); the editor
+ * relocates ROOT-LEVEL ones (anchored at column 1) to the phantom last line,
+ * where the property would actually be added. Nested objects (e.g. list
+ * elements) are indented, so their markers already point at the right object
+ * and stay put. The `null` return for the already-relocated case is
+ * load-bearing: re-setting unchanged markers would re-fire the marker-change
+ * listener and loop forever.
  */
 import { describe, expect, it } from 'vitest';
 import { relocateMissingPropertyMarkers } from '../../src/view/pages/Edit/ExpertMode/EditorPlugins/missingPropertyRelocator';
@@ -45,6 +47,27 @@ describe('relocateMissingPropertyMarkers', () => {
     };
     expect(relocateMissingPropertyMarkers([inPlace], 42, 1)).toBeNull();
     expect(relocateMissingPropertyMarkers([marker('Value must be true.', 3)], 42, 1)).toBeNull();
+  });
+
+  it('keeps nested missing-property markers (e.g. in list elements) in place', () => {
+    // Anchored at column 5: a key inside a list-element object, not the root.
+    const nested = {
+      message: 'Missing property "port".',
+      startLineNumber: 5,
+      startColumn: 5,
+      endLineNumber: 5,
+      endColumn: 9,
+    };
+    expect(relocateMissingPropertyMarkers([nested], 42, 1)).toBeNull();
+
+    // Mixed: only the root-level marker moves.
+    const out = relocateMissingPropertyMarkers(
+      [nested, marker('Missing property "users_ou".', 1)],
+      42,
+      1,
+    );
+    expect(out?.[0]).toStrictEqual(nested);
+    expect(out?.[1].startLineNumber).toBe(42);
   });
 
   it('re-moves markers when the document grew (target line changed)', () => {

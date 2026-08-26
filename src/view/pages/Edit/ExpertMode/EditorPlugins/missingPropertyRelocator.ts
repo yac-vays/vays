@@ -4,10 +4,15 @@ import { RequestEditContext } from '../../../../../utils/types/internal/request'
 
 /**
  * monaco-yaml anchors a "Missing property" diagnostic on the object node,
- * which visually lands on the FIRST property of the document — even though
- * the natural place to add the missing property is at its end. This plugin
- * relocates such markers to the (phantom) last line of the document, where
- * the user would type the property.
+ * which for the document root visually lands on the FIRST property of the
+ * document — even though the natural place to add the missing property is at
+ * its end. This plugin relocates such markers to the (phantom) last line of
+ * the document, where the user would type the property.
+ *
+ * Only root-level diagnostics are relocated: their anchor (the document's
+ * first property) sits at column 1, whereas nested objects — e.g. elements
+ * of a list — are always indented, so their markers already point at the
+ * right object and must stay where they are.
  */
 
 /** monaco-yaml's fixed wording for a violated `required` (VAYS does not localize). */
@@ -23,9 +28,10 @@ interface MarkerRange {
 }
 
 /**
- * Rewrite every missing-property marker to the target (last) line. Returns
- * null when nothing needed to change — the caller MUST then not re-set the
- * markers, otherwise the resulting marker-change event would loop forever.
+ * Rewrite every root-level missing-property marker to the target (last) line.
+ * Returns null when nothing needed to change — the caller MUST then not
+ * re-set the markers, otherwise the resulting marker-change event would loop
+ * forever.
  */
 export function relocateMissingPropertyMarkers<T extends MarkerRange>(
   markers: T[],
@@ -34,9 +40,11 @@ export function relocateMissingPropertyMarkers<T extends MarkerRange>(
 ): T[] | null {
   const needsMove = (m: MarkerRange) =>
     MISSING_PROPERTY.test(m.message) &&
+    // Column 1 = anchored on a root-level property; indented (nested) object
+    // markers are already in the right place.
+    m.startColumn === 1 &&
     (m.startLineNumber !== targetLine ||
       m.endLineNumber !== targetLine ||
-      m.startColumn !== 1 ||
       m.endColumn !== targetMaxColumn);
   if (!markers.some(needsMove)) return null;
   return markers.map((m) =>

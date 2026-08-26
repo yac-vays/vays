@@ -20,7 +20,9 @@ const FormComponentTitle = ({
 }) => {
   return (
     <>
-      <div className="relative flex flex-row w-full items-center">
+      {/* min-h-8 fits the 32px (+) button, so it is not clipped when the
+          title is the first element of a scroll container. */}
+      <div className="relative flex flex-row w-full items-center min-h-8">
         <h4 className={`mb-0 ${large ? 'text-2xl' : 'text-xl'} text-plainfont`}>
           {label} {required ? <span className="text-danger pr-2"> *</span> : <></>}
         </h4>

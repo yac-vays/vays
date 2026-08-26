@@ -82,15 +82,23 @@ export const MacAddressRenderer = (props: ControlProps) => {
     }
   };
 
+  // Local validation uses the same error affordance as server errors: the
+  // label's error indicator plus the red ring (no text below the box). The
+  // local message is more precise than the server's, so it wins; server
+  // errors only show once local validation passes.
+  const localError =
+    mac.length > 0 && !MAC_ADDRESS_REGEX.test(mac) ? 'Invalid MAC address format' : '';
+  const displayErrors = localError || errors;
+
   return (
     <div className="p-1" ref={rootRef} onBlur={onBlur}>
       <OverheadLabel
         title={props.label ?? props.schema.title}
         required={props.required || false}
         description={props.description}
-        errors={errors}
+        errors={displayErrors}
       />
-      <ErrorRing errors={errors || (!MAC_ADDRESS_REGEX.test(mac) && mac.length > 0 ? ' ' : '')}>
+      <ErrorRing errors={displayErrors}>
         <TextInput
           enabled={props.enabled}
           defaultv={props.schema.default}
@@ -100,9 +108,6 @@ export const MacAddressRenderer = (props: ControlProps) => {
           onChange={onChange}
         />
       </ErrorRing>
-      {!MAC_ADDRESS_REGEX.test(mac) && mac.length > 0 && (
-        <em className="text-[#d32f2f]">Invalid MAC address format</em>
-      )}
     </div>
   );
 };

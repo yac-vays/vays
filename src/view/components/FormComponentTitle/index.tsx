@@ -44,8 +44,8 @@ const FormComponentTitle = ({
         {hideAddButton ? (
           <></>
         ) : (
-          <div className="text-[#98A6AD] hover:text-plainfont">
-            <button className="absolute" style={{ right: 0 }} onClick={onClick}>
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 text-[#98A6AD] hover:text-plainfont">
+            <button onClick={onClick}>
               <svg
                 className="fill-current mr-3"
                 xmlns="http://www.w3.org/2000/svg"

@@ -114,7 +114,7 @@ export class Table extends React.Component<
           required={this.props.required}
         /> */}
         {this.props.data == 0 ? (
-          <div className="w-full items-center justify-center text-center py-8">No data...</div>
+          <div className="w-full items-center justify-center text-center py-8">None</div>
         ) : (
           Array(this.props.data)
             .fill(0)

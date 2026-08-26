@@ -82,7 +82,7 @@ const SelectStatic: React.FC<DropdownProps> = ({
           setSelectedOption(e.target.value);
           changeTextColor();
         }}
-        className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-5 outline-none focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary ${
+        className={`relative z-20 w-full appearance-none rounded-md border border-stroke bg-transparent py-2.5 px-5 outline-none focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary ${
           selectedWithDescription ? 'pr-20' : ''
         } ${placeholder ? 'text-reducedfont' : isOptionSelected ? 'text-plainfont' : ''}`}
       >

@@ -57,16 +57,20 @@ export const ArrayControlRenderer = (
   return (
     <>
       <div className="mb-2">
-        <FormComponentTitle
-          label={props.label}
-          onClick={() => {
-            props.addItem(props.path, createDefaultValue(props.schema, props.rootSchema))();
-          }}
-          description={props.description}
-          required={props.required}
-          errors={props.errors ? [...new Set(props.errors.split('\n'))].join('\n') : ''}
-          hideAddButton={!props.enabled}
-        />
+        {/* px-1 aligns the title (and its (+) button) with the item boxes,
+            which get the same inset from their own controls' p-1 wrappers. */}
+        <div className="px-1">
+          <FormComponentTitle
+            label={props.label}
+            onClick={() => {
+              props.addItem(props.path, createDefaultValue(props.schema, props.rootSchema))();
+            }}
+            description={props.description}
+            required={props.required}
+            errors={props.errors ? [...new Set(props.errors.split('\n'))].join('\n') : ''}
+            hideAddButton={!props.enabled}
+          />
+        </div>
 
         <Table {...props} openDeleteDialog={openDeleteDialog} translations={translations} />
       </div>

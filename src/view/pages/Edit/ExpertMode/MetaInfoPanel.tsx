@@ -110,7 +110,8 @@ const MetaInfoPanel = ({
             </ErrorRing>
           </>
         )}
-        <div className="flex flex-col">
+        {/* mt-3 keeps the checkboxes clear of the name box's error ring. */}
+        <div className={`flex flex-col ${showNameField ? 'mt-3' : ''}`}>
           {(function () {
             const jsx = acts.map((act, idx) => {
               return (

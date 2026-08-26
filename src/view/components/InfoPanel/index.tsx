@@ -11,22 +11,31 @@ const InfoPanel = ({
   title,
   description,
   isMarkdown = false,
+  isError = false,
 }: {
   /** The trigger. */
   children: React.ReactNode;
   title?: string;
   description?: string;
   isMarkdown?: boolean;
+  /** Error styling: red body text (used by the error indicator's panel). */
+  isError?: boolean;
 }) => {
   return (
     <Popover anchor={children} openOnHover role="dialog" maxWidth={350} maxHeight={300}>
-      <div className="p-3">
-        <h4 className="text-center text-title-sm font-bold text-solid text-plainfont hyphens-auto">
-          {title}
-        </h4>
-      </div>
-      <div className="px-5 pt-1 pb-5 text-left">
-        <p className="font-medium whitespace-pre-line hyphens-auto break-words text-reducedfont">
+      {title ? (
+        <div className="p-3">
+          <h4 className="text-center text-title-sm font-bold text-solid text-plainfont hyphens-auto">
+            {title}
+          </h4>
+        </div>
+      ) : null}
+      <div className={`px-5 pb-5 text-left ${title ? 'pt-1' : 'pt-4'}`}>
+        <p
+          className={`font-medium whitespace-pre-line hyphens-auto break-words ${
+            isError ? 'text-[#d32f2f]' : 'text-reducedfont'
+          }`}
+        >
           {isMarkdown ? <MarkdownRender text={description} /> : description}
         </p>
       </div>

@@ -6,6 +6,7 @@ import {
   trackedDebounce,
   registerDebouncedCommit,
 } from '../../controller/local/EditController/debounceRegistry';
+import ErrorButton from '../../view/components/Buttons/ErrorButton';
 import ErrorRing from '../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import TextInput from '../../view/thirdparty/components/ifc/TextInput/TextInput';
@@ -59,23 +60,37 @@ export const TextControl = (props: ControlProps) => {
   }
   ///
 
+  // Label-less usage (e.g. items of a string array): there is no overhead row
+  // to host the error indicator, so it is shown inside the box instead.
+  const title = props.label ?? props.schema.title;
+  const hasOverhead = !!(title || props.description);
+
   return (
     <div className="p-1">
-      <OverheadLabelWithMarkdownDescr
-        title={props.label ?? props.schema.title}
-        required={props.required || false}
-        description={props.description}
-        errors={errors}
-      />
-      <ErrorRing errors={errors}>
-        <TextInput
-          onChange={onChange}
-          data={data}
-          enabled={props.enabled}
-          defaultv={props.schema.default}
-          placeholder={props.uischema.options?.initial}
-          placeholderEditable={props.uischema.options?.initial_editable}
+      {hasOverhead && (
+        <OverheadLabelWithMarkdownDescr
+          title={title}
+          required={props.required || false}
+          description={props.description}
+          errors={errors}
         />
+      )}
+      <ErrorRing errors={errors}>
+        <div className="relative">
+          <TextInput
+            onChange={onChange}
+            data={data}
+            enabled={props.enabled}
+            defaultv={props.schema.default}
+            placeholder={props.uischema.options?.initial}
+            placeholderEditable={props.uischema.options?.initial_editable}
+          />
+          {!hasOverhead && errors ? (
+            <span className="absolute top-1/2 right-3 z-10 -translate-y-1/2">
+              <ErrorButton content={errors} />
+            </span>
+          ) : null}
+        </div>
       </ErrorRing>
     </div>
   );

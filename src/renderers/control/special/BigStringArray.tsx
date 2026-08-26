@@ -34,7 +34,7 @@ export const BigStringArray = (props: ControlProps) => {
   // TODO: include integer handling.
   return (
     <>
-      <div className="pb-4">
+      <div className="p-1 pb-4">
         <FormComponentTitle
           hideAddButton
           label={props.label}

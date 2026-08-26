@@ -26,7 +26,7 @@ export const ListAsStringRenderer = (props: ControlProps) => {
 
   return (
     <>
-      <div className="pb-4">
+      <div className="p-1 pb-4">
         <FormComponentTitle
           hideAddButton
           label={props.label}

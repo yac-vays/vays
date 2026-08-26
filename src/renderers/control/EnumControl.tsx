@@ -62,7 +62,7 @@ export const EnumControl = ({
 
   return (
     <>
-      <div className="p-1 mb-4.5">
+      <div className="p-1">
         <OverheadLabelWithMarkdownDescr
           title={label}
           required={required || false}

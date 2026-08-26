@@ -62,7 +62,7 @@ export const MultipleChoiceRenderer = ({
   }
 
   return (
-    <div>
+    <div className="p-1">
       <FormComponentTitle
         label={label}
         description={description}

@@ -6,7 +6,7 @@ import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTester
 
 export const InfoBoxControl = (props: ControlProps) => {
   return (
-    <div className="mt-4 mb-6 pr-4 p-1">
+    <div className="mt-4 mb-6 p-1">
       {/* Displaying the description IS this renderer's purpose, so it stays
           inline as body text (as markdown, like everywhere else) instead of
           behind the title's info-button. */}

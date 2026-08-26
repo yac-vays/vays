@@ -12,7 +12,7 @@ import {
   setInitialEntityYAML,
 } from '../../../../../controller/local/EditController/shared';
 import { seedCanonical } from '../../../../../controller/local/EditController/sync';
-import { getDefaultsAsYAML } from '../../../../../utils/schema/defaultsHandling';
+import { getInitialCreateYAML } from '../../../../../utils/schema/defaultsHandling';
 import { patchSchemaForMonaco } from '../../../../../utils/schema/monacoSchemaFix';
 import { RequestEditContext } from '../../../../../utils/types/internal/request';
 import { setBackendValidationMarkers } from './backendMarkers';
@@ -44,13 +44,16 @@ export default async function editorInitializeSchema(
     return;
   }
   if (requestEditContext.mode === 'create') {
-    const str = getDefaultsAsYAML(v.json_schema);
+    // Serialize the loaded DATA (defaults + load-time generated values, e.g.
+    // `random_string`) — the canonical yaml must match the canonical data or
+    // the generated values miss the save payload until the first form edit.
+    const str = getInitialCreateYAML(v.data);
     // Seed before setValue so the resulting change event is recognized as
     // already-canonical (no redundant validate, no bounce to the form pane).
     seedCanonical(v.data, str);
-    // Use the defaults template as the diff baseline: in create mode the green
-    // highlight then shows what the user added beyond the generated defaults
-    // (rather than the whole document). This is the exact text shown below.
+    // Use the generated document as the diff baseline: in create mode the
+    // green highlight then shows what the user added beyond it (rather than
+    // the whole document). This is the exact text shown below.
     setInitialEntityYAML(str);
     ed.setValue(str);
   } else {

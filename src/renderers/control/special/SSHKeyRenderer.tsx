@@ -42,7 +42,9 @@ export const SSHKeyRenderer = ({
   return (
     <div className="p-1">
       <div className="flex flex-row">
-        <div className="grow">
+        {/* min-w-0: allow the input row to shrink below its intrinsic width in
+            narrow panes. */}
+        <div className="grow min-w-0">
           <OverheadLabelWithMarkdownDescr
             title={label}
             required={required || false}

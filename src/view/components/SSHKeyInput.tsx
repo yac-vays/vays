@@ -171,7 +171,7 @@ const SSHKeyInput = ({
               onChange={(e) => loadFile(e)}
             />
             <div
-              className={`grow flex flex-row w-full rounded-r-md border bg-bg pl-5 pr-2 py-2.5 outline-none ${
+              className={`grow min-w-0 flex flex-row w-full rounded-r-md border bg-bg pl-5 pr-2 py-2.5 outline-none ${
                 isEditable && enabled ? 'focus:border-primary' : 'border-stroke'
               }`}
             >
@@ -179,7 +179,7 @@ const SSHKeyInput = ({
                 ref={inputRef}
                 type={'text'}
                 disabled={!isEditable || !enabled}
-                className="border-none grow bg-transparent focus:border-none focus:outline-none"
+                className="border-none grow min-w-0 bg-transparent focus:border-none focus:outline-none"
                 defaultValue={value}
                 placeholder={ph}
                 onChange={(e) => {

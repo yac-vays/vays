@@ -220,7 +220,13 @@ const StandardEditMode = memo(
               <></>
             ) : (
               <>
-                <div className="relative">
+                {/* h-full: stretch the form content to the whole pane height
+                    even when it is naturally shorter, so dropdowns opening
+                    below the last controls have room instead of being cut off
+                    at the content edge (with tabs, this also hands the
+                    scrolling to CategorizationLayout's own overflow-auto
+                    content box, keeping the tab bar pinned). */}
+                <div className="relative h-full">
                   <FormsErrorBoundary>
                     <JsonForms
                       schema={jsonSchema}

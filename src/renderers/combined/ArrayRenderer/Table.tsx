@@ -78,7 +78,10 @@ const TableRow = withCustomProps((props: ItemRendererProps) => {
           elements.length > 1 ? 'border border-[#c9c9c9] rounded p-2 my-2' : ''
         }`}
       >
-        <div className="grow">{itemsToRender}</div>
+        {/* min-w-0: allow the item's controls to shrink below their intrinsic
+            width in narrow panes (a flex item's min-width defaults to its
+            content size, which would push the row wider than the box). */}
+        <div className="grow min-w-0">{itemsToRender}</div>
 
         <ItemDeleteButton
           callback={(e) => {

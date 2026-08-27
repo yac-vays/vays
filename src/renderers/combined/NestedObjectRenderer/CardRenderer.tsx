@@ -48,7 +48,9 @@ export const CardRenderer = (props: CardRendererProps) => {
   return (
     <Accordion title={title}>
       <div className="group flex flex-row w-full">
-        <div className="grow">{itemsToRender}</div>
+        {/* min-w-0: see ArrayRenderer/Table.tsx — lets controls shrink in
+            narrow panes. */}
+        <div className="grow min-w-0">{itemsToRender}</div>
 
         <ItemDeleteButton
           callback={(e) => {

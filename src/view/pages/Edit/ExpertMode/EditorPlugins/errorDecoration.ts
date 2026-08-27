@@ -13,12 +13,17 @@ export function disposeErrorMarkersListener() {
 
 export default async function editorErrorDecoration(
   ed: monaco.editor.IStandaloneCodeEditor,
-  _: RequestEditContext,
+  requestEditContext: RequestEditContext,
   reInvoked: boolean = false,
 ) {
   if (reInvoked) return;
   // Never stack listeners: the previous editor's listener (if any) is gone.
   disposeErrorMarkersListener();
+  // Read mode: the editor is read-only and Monaco already hides its own
+  // validation squiggles there — don't paint our marker-derived line/glyph
+  // decorations either (the stored file is shown without injected defaults,
+  // so schema findings are expected and not actionable).
+  if (requestEditContext.mode === 'read') return;
   const decorations = ed.createDecorationsCollection([]);
 
   markersListener = monaco.editor.onDidChangeMarkers(([resource]) => {

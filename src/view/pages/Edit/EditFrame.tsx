@@ -372,18 +372,19 @@ const EditFrame = ({
           className="relative flex group w-full shrink-0 mt-1 border-t"
           style={{ height: 55, borderColor: '#ddddddaa' }}
         >
+          {/* Hidden entirely in read mode (not just the text): the stored file is
+              shown verbatim, so validation findings are expected there and a
+              blocked Commit — what this box explains — does not exist. */}
           <div
             className={`relative flex flex-col grow  mt-4 p-1.5 rounded duration-1000 opacity-0 overflow-x-hidden border-l-4 ${
-              isDisplayingYACError && 'opacity-100'
+              isDisplayingYACError && !isReadOnly ? 'opacity-100' : ''
             }`}
             style={{
               backgroundColor: 'rgb(211 47 47 / 0.08)',
               borderColor: '#d32f2f',
             }}
           >
-            <span className={`text-wrap text-[#d32f2f] ${isReadOnly ? 'opacity-0' : ''}`}>
-              {yacErrorMsg}
-            </span>
+            <span className="text-wrap text-[#d32f2f]">{yacErrorMsg}</span>
           </div>
           {isReadOnly ? (
             <></>

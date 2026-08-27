@@ -71,6 +71,13 @@ export const Editor = ({
       const model = getModel(update);
       for (const plugin of editorSetupPlugins) plugin();
       const [ed, newEditor] = getEditor(model, monacoEl);
+      // Read mode is a pure view: lock the text. This also suppresses the
+      // schema-validation squiggles (Monaco's `renderValidationDecorations`
+      // defaults to 'editable', i.e. hidden in read-only editors) — the stored
+      // file is shown verbatim, without the defaults edit mode would inject,
+      // so schema findings are expected and not actionable here. Set on every
+      // session (not at construction) because the editor instance is reused.
+      ed.updateOptions({ readOnly: requestEditContext.mode === 'read' });
       setEditor(ed);
 
       (async () => {

@@ -115,6 +115,16 @@ const StandardEditMode = memo(
         resp.ui_schema,
         located.additionalErrors,
       );
+      // Re-derive the form's local validity from the response itself (the same
+      // check as useInitializeState's migration detection). The onChange event
+      // this write triggers is suppressed, so when the render was caused by a
+      // YAML edit nothing else refreshes `isValidLocal` — a stale `false` from
+      // the load-time migration check would keep the Commit button disabled
+      // even after the user fixed the data in the YAML pane.
+      const validate = getAJV().compile(resp.json_schema);
+      validate(structuredClone(resp.data));
+      setLocalValidity((validate.errors?.length ?? 0) === 0);
+      emitValidity();
     };
 
     // Register this form as the "form pane" so YAML edits can be projected back

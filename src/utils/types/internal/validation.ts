@@ -15,10 +15,10 @@ export type ValidateResponse = {
     elements: {
       type: string;
       label: string;
-      elements: any[];
+      elements: unknown[];
     }[];
   };
-  data: { [key: string]: any; };
+  data: { [key: string]: unknown; };
   valid: boolean;
   detail: string;
   usages?: LimitUsage[];

@@ -37,8 +37,12 @@ export const EntityListPagination = ({
       {(function (): ReactNode[] {
         const maxPages = Math.ceil(totalNumResults.valueOf() / numResultsPerPage.valueOf());
         const page = currPage.valueOf();
-        const rangeElt: [string, number, any] = ['...', PagingButtonType.RANGEGAP, () => {}];
-        let buttonLayout: [string, number, any][] = [];
+        const rangeElt: [string, number, () => void] = [
+          '...',
+          PagingButtonType.RANGEGAP,
+          () => {},
+        ];
+        let buttonLayout: [string, number, () => void][] = [];
 
         // Edge 1
         if (maxPages <= 7) {

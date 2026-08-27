@@ -2,7 +2,7 @@ interface TabProps {
   index: number;
   label?: string;
   currentTab: number;
-  onClick: (_event: any, value: number) => void;
+  onClick: (_event: React.SyntheticEvent, value: number) => void;
   hasError?: boolean;
 }
 

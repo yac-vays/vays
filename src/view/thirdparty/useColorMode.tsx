@@ -35,10 +35,18 @@ const useColorMode = () => {
     const className = 'dark';
     const bodyClass = window.document.body.classList;
 
-    colorMode === 'dark' ? bodyClass.add(className) : bodyClass.remove(className);
+    if (colorMode === 'dark') {
+      bodyClass.add(className);
+    } else {
+      bodyClass.remove(className);
+    }
     // TODO: Do better than this.
     window.dispatchEvent(new Event('theme-switch'));
-    colorMode === 'dark' ? enableDarkMode() : disableDarkMode();
+    if (colorMode === 'dark') {
+      enableDarkMode();
+    } else {
+      disableDarkMode();
+    }
   }, [colorMode]);
 
   return [colorMode, setColorMode];

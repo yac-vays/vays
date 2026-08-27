@@ -61,8 +61,9 @@ describe('injectEagerRandomStrings', () => {
       }),
     ]);
     injectEagerRandomStrings(r);
-    expect(r.data.identity.uuid).toMatch(UUID_RE);
-    expect(r.data.identity.hostname).toBeUndefined();
+    const identity = r.data.identity as { uuid?: string; hostname?: string };
+    expect(identity.uuid).toMatch(UUID_RE);
+    expect(identity.hostname).toBeUndefined();
     expect(consumeEagerGenerated('identity.uuid')).toBe(true);
   });
 

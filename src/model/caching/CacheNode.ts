@@ -6,10 +6,10 @@ export interface CacheFetchResult<T = unknown> {
 }
 
 class CacheNode<T = unknown> {
-  _cache: { [key: string]: T } = {};
-  _hooks: { [key: string]: () => void } = {};
-  _isWrittenTo: { [key: string]: boolean } = {};
-  _cacheTime: { [key: string]: number } = {};
+  _cache = new Map<string, T>();
+  _hooks = new Map<string, () => void>();
+  _isWrittenTo = new Map<string, boolean>();
+  _cacheTime = new Map<string, number>();
   ttl: number = 0; // 0 is off
 
   /**
@@ -27,39 +27,39 @@ class CacheNode<T = unknown> {
    * @param hook
    */
   cache(id: string, value: T, hook: Nullable<() => void>): void {
-    this._cache[id] = value;
-    if (hook) this._hooks[id] = hook;
-    this._isWrittenTo[id] = false;
+    this._cache.set(id, value);
+    if (hook) this._hooks.set(id, hook);
+    this._isWrittenTo.set(id, false);
     if (this.ttl > 0) {
-      this._cacheTime[id] = new Date().getTime();
+      this._cacheTime.set(id, new Date().getTime());
     }
   }
 
   isCached(id: string): boolean {
-    return id in this._cache;
+    return this._cache.has(id);
   }
 
   registerInvHook(id: string, hook: () => void): void {
-    this._hooks[id] = hook;
+    this._hooks.set(id, hook);
   }
 
   hasRegistration(id: string): boolean {
-    return this._isWrittenTo[id] ?? false;
+    return this._isWrittenTo.get(id) ?? false;
   }
 
   /**
    * @param id
    */
   register(id: string): boolean {
-    if (!this._isWrittenTo[id]) {
-      this._isWrittenTo[id] = true;
+    if (!this._isWrittenTo.get(id)) {
+      this._isWrittenTo.set(id, true);
       return true;
     }
     return false;
   }
 
   unregister(id: string) {
-    this._isWrittenTo[id] = false;
+    this._isWrittenTo.set(id, false);
   }
 
   /**
@@ -68,13 +68,14 @@ class CacheNode<T = unknown> {
    * @returns
    */
   fetch(id: string): CacheFetchResult<T> {
-    if (id in this._cache) {
-      if (this.ttl > 0 && new Date().getTime() - this._cacheTime[id] >= this.ttl) {
+    if (this._cache.has(id)) {
+      if (this.ttl > 0 && new Date().getTime() - (this._cacheTime.get(id) ?? 0) >= this.ttl) {
         this.invalidate(id);
       } else {
         return {
           found: true,
-          value: this._cache[id],
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          value: this._cache.get(id)!,
         };
       }
     }
@@ -87,15 +88,13 @@ class CacheNode<T = unknown> {
    * @returns
    */
   invalidate(id: string): boolean {
-    const ret = this._cache[id] != undefined;
-    delete this._cache[id];
-    if (id in this._cacheTime) delete this._cacheTime[id];
+    const ret = this._cache.get(id) != undefined;
+    this._cache.delete(id);
+    this._cacheTime.delete(id);
 
-    this._isWrittenTo[id] = false;
+    this._isWrittenTo.set(id, false);
 
-    if (id in this._hooks) {
-      this._hooks[id]();
-    }
+    this._hooks.get(id)?.();
 
     return ret;
   }

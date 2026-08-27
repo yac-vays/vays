@@ -1,4 +1,4 @@
-FROM node:22.22.3-alpine3.22 AS build
+FROM node:22.23.2-alpine3.23 AS build
 
 WORKDIR /code
 
@@ -32,7 +32,7 @@ RUN npm run build
 # listens on 8080 by default — no root required.
 #
 
-FROM nginxinc/nginx-unprivileged:1.30-alpine AS production
+FROM nginxinc/nginx-unprivileged:1.31.4-alpine3.24 AS production
 
 # Copy the built files from the build stage
 COPY --from=build /code/dist /usr/share/nginx/html

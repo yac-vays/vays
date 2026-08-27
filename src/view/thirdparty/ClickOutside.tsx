@@ -34,7 +34,7 @@ const ClickOutside: React.FC<Props> = ({ children, exceptionRef, onClick, classN
 
   useEffect(() => {
     const handleClickListener = (event: MouseEvent) => {
-      let clickedInside: null | boolean = false;
+      let clickedInside: null | boolean;
       if (exceptionRef) {
         clickedInside =
           (wrapperRef.current && wrapperRef.current.contains(event.target as Node)) ||

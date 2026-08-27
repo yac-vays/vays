@@ -115,9 +115,9 @@ export async function sendYAMLData(requestContext: RequestEditContext) {
         );
         return;
       }
-      let success = false;
+      let success: boolean;
       // Remember the affected entity so we can scroll to it in the overview.
-      let entityName: Nullable<string> = null;
+      let entityName: Nullable<string>;
       if (requestContext.mode === 'create') {
         const res = await sendCreateNewEntity(getEntityYAML() ?? '', requestContext.rc);
         success = res.success;

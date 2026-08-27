@@ -14,6 +14,20 @@ const hasLocalCerts = existsSync('cert/private-key.pem') && existsSync('cert/cer
 export default defineConfig({
   plugins: [react(), ...(hasLocalCerts ? [] : [basicSsl()])],
   build: { sourcemap: false },
+  resolve: {
+    // monaco-editor 0.53+ moved its public ESM specifiers from
+    // `monaco-editor/esm/vs/*` to `monaco-editor/*`; the old specifiers no
+    // longer pass its `exports` map, which Rolldown resolves strictly. Map the
+    // legacy specifiers — used throughout src/ and by monaco-worker-manager
+    // (monaco-yaml's worker glue) — straight onto the on-disk esm/vs tree
+    // (absolute path, so the alias result needs no further resolution).
+    alias: [
+      {
+        find: /^monaco-editor\/esm\/vs\//,
+        replacement: new URL('./node_modules/monaco-editor/esm/vs/', import.meta.url).pathname,
+      },
+    ],
+  },
   // Pre-bundle Monaco + monaco-yaml so the dev server serves them as a few
   // chunks instead of thousands of native-ESM module requests (otherwise the
   // first editor load takes tens of seconds).

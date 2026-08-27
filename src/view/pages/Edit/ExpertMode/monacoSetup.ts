@@ -36,7 +36,8 @@ import 'monaco-editor/esm/vs/editor/browser/coreCommands.js';
 import 'monaco-editor/esm/vs/editor/browser/widget/codeEditor/codeEditorWidget.js';
 import 'monaco-editor/esm/vs/editor/contrib/tokenization/browser/tokenization.js';
 // Codicon glyph font + styles used by the widgets (hover, suggest, glyph margin).
-import 'monaco-editor/esm/vs/base/browser/ui/codicons/codiconStyles.js';
+// (0.53+ moved this from base/browser/ui/codicons/codiconStyles.js.)
+import 'monaco-editor/esm/vs/features/codicon/register.js';
 // Localized labels for the widgets we keep (find, suggest, context menu, …).
 import 'monaco-editor/esm/vs/editor/common/standaloneStrings.js';
 
@@ -71,7 +72,8 @@ import 'monaco-editor/esm/vs/editor/contrib/readOnlyMessage/browser/contribution
 // The Monarch grammar is NOT provided by monaco-yaml (which only adds
 // diagnostics/completion/hover), so without this the editor loses all
 // highlighting. It must register onto this same Monaco instance.
-import 'monaco-editor/esm/vs/basic-languages/yaml/yaml.contribution.js';
+// (0.53+ moved this from basic-languages/yaml/yaml.contribution.js.)
+import 'monaco-editor/esm/vs/languages/definitions/yaml/register.js';
 
 declare global {
   interface Window {

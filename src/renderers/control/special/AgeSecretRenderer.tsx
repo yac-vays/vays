@@ -98,7 +98,7 @@ export const AgeSecretRenderer = (props: ControlProps) => {
   const dataLooksValid = !hasData || looksLikeAgeArmor(data);
   const showRegenerate = props.enabled && !specError && plaintext === null && hasData;
 
-  let displayValue = '';
+  let displayValue: string;
   if (plaintext !== null) displayValue = plaintext;
   else if (!hasData) displayValue = '';
   else if (looksLikeAgeArmor(data)) displayValue = '*'.repeat(length);

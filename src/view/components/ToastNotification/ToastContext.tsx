@@ -1,5 +1,3 @@
-import 'react-toastify/dist/ReactToastify.css';
-
 import { createContext, useContext } from 'react';
 import SuccessNotification from './SuccessNotification';
 import { toast, ToastContainer } from 'react-toastify';

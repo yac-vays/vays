@@ -5,7 +5,7 @@
  */
 
 import { Buffer } from 'buffer';
-import { sha512 } from '@noble/hashes/sha2';
+import { sha512 } from '@noble/hashes/sha2.js';
 
 const vocab = './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 

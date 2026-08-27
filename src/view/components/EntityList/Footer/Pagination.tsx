@@ -46,7 +46,6 @@ export const EntityListPagination = ({
 
         // Edge 1
         if (maxPages <= 7) {
-          buttonLayout = [];
           for (let i: number = 1; i <= maxPages; i++) {
             buttonLayout.push([
               `${i}`,

@@ -146,6 +146,8 @@ describe('RandomStringRenderer', () => {
       json_schema: schema,
       ui_schema: uischemaFor(options),
       data: {},
+      valid: true,
+      detail: '',
     } as ValidateResponse;
     injectEagerRandomStrings(valResp);
     const initial = valResp.data.token as string;

@@ -503,7 +503,7 @@ function handleDefaults(
   valResp: ValidateResponse,
   requestEditContext: RequestEditContext,
 ) {
-  let didChange = false;
+  let didChange: boolean;
 
   if (requestEditContext.mode === 'edit') {
     valResp.data = previousData; //frontData;

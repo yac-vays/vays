@@ -27,7 +27,10 @@ import 'monaco-editor/esm/vs/editor/editor.api';
 
 // --- Web workers (bundled + served by Vite; no MonacoEnvironment global needed
 //     beyond getWorker) -------------------------------------------------------
-import EditorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+// New-style specifier (0.53+ exports map; NOT the legacy esm/vs path): the
+// legacy form would go through the vite alias and trip the dep optimizer's
+// worker handling in dev.
+import EditorWorker from 'monaco-editor/editor/editor.worker.js?worker';
 // Local wrapper (not `monaco-yaml/yaml.worker?worker` directly) — see yaml.worker.js.
 import YamlWorker from './yaml.worker.js?worker';
 

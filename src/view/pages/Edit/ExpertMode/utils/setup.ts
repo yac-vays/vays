@@ -33,6 +33,44 @@ import {
   setActivePane,
 } from '../../../../../controller/local/EditController/sync';
 
+/**
+ * monaco-editor 0.53+ changed `editor.createWebWorker` (as exposed by the
+ * curated editor.api entry we use) to a new low-level signature that takes the
+ * Worker itself (`{worker, host, keepIdleModels}`). The old plugin-facing
+ * signature (`{moduleId, label, createData}`) — which monaco-worker-manager,
+ * monaco-yaml's worker glue, still calls — only survives as a compat shim in
+ * the full-package entry (esm/vs/internal/common/workers.js), and importing
+ * THAT drags in every editor feature and language, defeating monacoSetup's
+ * curated bundle. So replicate the shim: create the worker via our
+ * MonacoEnvironment, replay monaco's two-message handshake ('ignore' arms the
+ * worker-side initialize; the second message delivers createData), and wrap it
+ * in the new-style createWebWorker. Without this the yaml worker never starts
+ * and ALL monaco-yaml features (diagnostics/markers, hover, completion) fail
+ * silently — see https://github.com/remcohaszing/monaco-yaml/issues/272.
+ */
+function createWebWorkerCompat<T extends object>(opts: {
+  moduleId: string;
+  label?: string;
+  createData?: unknown;
+  host?: monaco.editor.IInternalWebWorkerOptions['host'];
+  keepIdleModels?: boolean;
+}): monaco.editor.MonacoWebWorker<T> {
+  const env = window.MonacoEnvironment;
+  if (env == null) throw new Error('MonacoEnvironment is not configured');
+  const worker = Promise.resolve(
+    env.getWorker('workerMain.js', opts.label ?? 'monaco-editor-worker'),
+  ).then((w) => {
+    w.postMessage('ignore');
+    w.postMessage(opts.createData);
+    return w;
+  });
+  return monaco.editor.createWebWorker<T>({
+    worker,
+    host: opts.host,
+    keepIdleModels: opts.keepIdleModels,
+  });
+}
+
 export function setupMonacoYAMLPlugin() {
   const defaultSchema: SchemasSettings = {
     uri: 'inmemory://schema.json',
@@ -40,7 +78,14 @@ export function setupMonacoYAMLPlugin() {
     fileMatch: ['*'],
   };
 
-  const monacoYaml = configureMonacoYaml(monaco, {
+  // Hand monaco-yaml a monaco namespace whose createWebWorker speaks the old
+  // signature its worker glue expects (see createWebWorkerCompat above).
+  const monacoWithLegacyWorkers = {
+    ...monaco,
+    editor: { ...monaco.editor, createWebWorker: createWebWorkerCompat },
+  } as unknown as typeof monaco;
+
+  const monacoYaml = configureMonacoYaml(monacoWithLegacyWorkers, {
     enableSchemaRequest: false,
     schemas: [defaultSchema],
     validate: true,

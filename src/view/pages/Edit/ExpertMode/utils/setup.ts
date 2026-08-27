@@ -49,6 +49,26 @@ export function setupMonacoYAMLPlugin() {
   return monacoYaml;
 }
 
+// Home for Monaco's overflowing widgets (hover, suggest, ...), appended to
+// <body> so they escape the pane's `isolate` stacking context — otherwise the
+// frame's dim overlay (z-10) paints over the part of a popup that overlaps the
+// pane while the part sticking out past it stays uncovered. The `monaco-editor`
+// class is required for the (globally injected) editor/theme CSS to style them.
+let overflowWidgetsDomNode: HTMLDivElement | null = null;
+
+function getOverflowWidgetsDomNode(): HTMLDivElement {
+  if (overflowWidgetsDomNode == null) {
+    overflowWidgetsDomNode = document.createElement('div');
+    overflowWidgetsDomNode.className = 'monaco-editor';
+    overflowWidgetsDomNode.style.position = 'fixed';
+    overflowWidgetsDomNode.style.top = '0';
+    overflowWidgetsDomNode.style.left = '0';
+    overflowWidgetsDomNode.style.zIndex = '60';
+    document.body.appendChild(overflowWidgetsDomNode);
+  }
+  return overflowWidgetsDomNode;
+}
+
 export default function getEditorSettings(
   model: monaco.editor.ITextModel,
 ): monaco.editor.IStandaloneEditorConstructionOptions {
@@ -64,6 +84,7 @@ export default function getEditorSettings(
     formatOnType: false,
     fontSize: 18,
     fixedOverflowWidgets: true,
+    overflowWidgetsDomNode: getOverflowWidgetsDomNode(),
     glyphMargin: true,
     // No code minimap / side overview pane — the documents are short and the
     // side-by-side layout is tight on width.

@@ -5,6 +5,63 @@
 
 .markdown-body {
   font-size: 1.1rem;
+  /* Markdown owns its own line-break semantics (soft breaks collapse, blank
+     lines make paragraphs). Shield the rendered HTML from any wrapper that
+     sets whitespace-pre-*, which would render every source newline. */
+  white-space: normal;
+}
+
+/* Paragraphs: Tailwind's preflight zeroes the margins, which makes multiple
+   paragraphs run together as one block. Restore the usual spacing (but not
+   around the whole body — the surrounding box's padding handles that). */
+.markdown-body p {
+  margin: 0.5rem 0;
+}
+
+.markdown-body > p:first-child {
+  margin-top: 0;
+}
+
+.markdown-body > p:last-child {
+  margin-bottom: 0;
+}
+
+/* Lists: preflight strips the bullets/numbers and indentation entirely,
+   leaving list items looking like plain lines. Restore the standard look. */
+.markdown-body ul,
+.markdown-body ol {
+  margin: 0.25rem 0;
+  padding-left: 1.5rem;
+}
+
+.markdown-body ul {
+  list-style-type: disc;
+}
+
+.markdown-body ul ul {
+  list-style-type: circle;
+}
+
+.markdown-body ol {
+  list-style-type: decimal;
+}
+
+.markdown-body li {
+  margin: 0.125rem 0;
+}
+
+/* Blockquotes and thematic breaks, also flattened by preflight. */
+.markdown-body blockquote {
+  border-left: 3px solid var(--color-stroke);
+  padding-left: 0.75rem;
+  margin: 0.5rem 0;
+  opacity: 0.85;
+}
+
+.markdown-body hr {
+  border: 0;
+  border-top: 1px solid var(--color-stroke);
+  margin: 0.75rem 0;
 }
 
 /* Headings: Tailwind's preflight strips the browser heading styles, which

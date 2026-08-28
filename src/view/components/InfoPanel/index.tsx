@@ -31,13 +31,27 @@ const InfoPanel = ({
         </div>
       ) : null}
       <div className={`px-5 pb-5 text-left ${title ? 'pt-1' : 'pt-4'}`}>
-        <p
-          className={`font-medium whitespace-pre-line hyphens-auto break-words ${
-            isError ? 'text-[#d32f2f]' : 'text-reducedfont'
-          }`}
-        >
-          {isMarkdown ? <MarkdownRender text={description} /> : description}
-        </p>
+        {isMarkdown ? (
+          // No whitespace-pre-line here: markdown has its own line-break
+          // semantics (a single newline is a soft break, a blank line starts a
+          // new paragraph) — pre-line would leak into the rendered HTML and
+          // show every source newline literally.
+          <div
+            className={`font-medium hyphens-auto break-words ${
+              isError ? 'text-[#d32f2f]' : 'text-reducedfont'
+            }`}
+          >
+            <MarkdownRender text={description} />
+          </div>
+        ) : (
+          <p
+            className={`font-medium whitespace-pre-line hyphens-auto break-words ${
+              isError ? 'text-[#d32f2f]' : 'text-reducedfont'
+            }`}
+          >
+            {description}
+          </p>
+        )}
       </div>
     </Popover>
   );

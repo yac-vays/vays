@@ -28,8 +28,11 @@ const ControlBar = ({ children }: ControlBarProps) => {
     updateScrollability();
   }, [updateScrollability, width, children]);
 
-  const scrollBtn =
-    'absolute inset-y-0 cursor-pointer bg-white dark:bg-boxdark flex items-center px-1';
+  // The chevrons FLOAT over the tab strip (they are overlays, not part of the
+  // scrollable content): the strip's layout never changes with the scroll
+  // state, so reaching an edge just fades the chevron away without the tabs
+  // jumping. The gradient keeps the tab underneath readable.
+  const scrollBtn = 'absolute inset-y-0 cursor-pointer flex items-center px-1';
   const chevron = (path: string) => (
     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="grey">
       <path d={path} />
@@ -46,29 +49,19 @@ const ControlBar = ({ children }: ControlBarProps) => {
         onScroll={updateScrollability}
       >
         {children}
-        {canScrollRight ? (
-          // Invisible spacer so the last tab can be scrolled clear of the
-          // right chevron overlay.
-          <div className="border-b-2 py-4 text-sm font-medium md:text-base border-transparent opacity-0">
-            {' '}
-            .........
-          </div>
-        ) : (
-          <></>
-        )}
       </div>
       {canScrollLeft && (
         <div
-          className={`${scrollBtn} left-0`}
-          onClick={() => cbar.current?.scrollBy({ left: -SCROLL_STEP })}
+          className={`${scrollBtn} left-0 bg-gradient-to-r from-white via-white/70 to-transparent dark:from-boxdark dark:via-boxdark/70`}
+          onClick={() => cbar.current?.scrollBy({ left: -SCROLL_STEP, behavior: 'smooth' })}
         >
           {chevron('M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z')}
         </div>
       )}
       {canScrollRight && (
         <div
-          className={`${scrollBtn} right-0`}
-          onClick={() => cbar.current?.scrollBy({ left: SCROLL_STEP })}
+          className={`${scrollBtn} right-0 bg-gradient-to-l from-white via-white/70 to-transparent dark:from-boxdark dark:via-boxdark/70`}
+          onClick={() => cbar.current?.scrollBy({ left: SCROLL_STEP, behavior: 'smooth' })}
         >
           {chevron('M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z')}
         </div>

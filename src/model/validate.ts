@@ -78,6 +78,9 @@ async function _validate(
       valid: dat.request.valid && dat.schemas.valid,
       detail: dat.request.message ?? dat.schemas.message ?? '',
       usages: dat.usages ?? [],
+      // Only carried when the backend reports it (older YACs do not), so
+      // "no perms" stays distinguishable from "backend too old to say".
+      ...(dat.perms ? { perms: dat.perms } : {}),
       // Canonical YAML the backend would write for this data (comments
       // preserved). Lets the YAML editor mirror the form without us having to
       // re-implement YAC's ruamel serialization. Only carried when present, so

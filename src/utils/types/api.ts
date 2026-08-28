@@ -43,7 +43,8 @@ export const TYPE_CHECK_VALIDATE_RESP = `{
     valid: Boolean,
     message: Maybe String
   },
-  usages: Maybe [${TYPE_CHECK_LIMIT_USAGE}]
+  usages: Maybe [${TYPE_CHECK_LIMIT_USAGE}],
+  perms: Maybe [String]
 }`;
 
 export interface APIValidateResponse {
@@ -75,6 +76,9 @@ export interface APIValidateResponse {
   };
 
   usages?: LimitUsage[];
+
+  /** The user's (expanded) permissions for this entity (e.g. offers "adm"). */
+  perms?: string[];
 }
 
 export enum NameGeneratedCond {

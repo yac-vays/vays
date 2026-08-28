@@ -31,6 +31,21 @@ class EditControlState {
   public isValidLocal: boolean = false;
 
   /**
+   * The user's (expanded) permissions for the edited entity, as reported by
+   * the most recent validation (`ValidationResult.perms`). Used to decide
+   * whether to offer the admin override; the backend re-checks on commit.
+   */
+  public entityPerms: string[] = [];
+
+  /**
+   * Admin override ("admin mode"): when unlocked (requires the "adm"
+   * permission), the commit is sent with `force=true` and the Commit button
+   * ignores validation errors. Reset on every new session and after each
+   * successful commit — the override is per-commit intent, not a mode.
+   */
+  public adminOverride: boolean = false;
+
+  /**
    * The Ajv object used for inserting the defaults.
    */
   readonly ajv = new Ajv({ allErrors: true, useDefaults: true, strict: false });

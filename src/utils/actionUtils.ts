@@ -26,9 +26,20 @@ export function isTriggable(ctx: 'create' | 'edit' | 'delete', act: ActionDecl) 
 }
 
 export function actions2URLQuery(actions: ActionDecl[]): string {
-  if (actions.length == 0) return '';
+  return commitURLQuery(actions, false);
+}
 
-  return '?' + actions.map((v) => `run=${v.name}`).join('&');
+/**
+ * Query string for a write request: the selected actions plus, when the admin
+ * override is unlocked, the `force` flag (commit past a failing schema
+ * validation; requires the "adm" permission, which YAC enforces).
+ */
+export function commitURLQuery(actions: ActionDecl[], force: boolean): string {
+  const parts = actions.map((v) => `run=${v.name}`);
+  if (force) parts.push('force=true');
+  if (parts.length == 0) return '';
+
+  return '?' + parts.join('&');
 }
 
 export function getActionNames(actions: ActionDecl[]): string[] {

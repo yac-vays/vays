@@ -1,6 +1,6 @@
 import { diffToastLink } from '../controller/global/diffViewer';
 import { showError, showSuccess } from '../controller/global/notification';
-import { actions2URLQuery } from '../utils/actionUtils';
+import { commitURLQuery } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
 import { entityToastTitle, operationSuccessText } from '../utils/toastUtils';
 import { ActionDecl } from '../utils/types/api';
@@ -21,6 +21,8 @@ export async function putYAMLEntity(
   yaml_old: string,
   requestEditContext: RequestEditContext,
   acts: ActionDecl[],
+  // Admin override: commit past a failing schema validation (requires "adm").
+  force: boolean = false,
 ): Promise<boolean> {
   if (requestEditContext.entityName == null) {
     showError('Frontend error', 'The name is missing. Please file a bug report!');
@@ -33,7 +35,7 @@ export async function putYAMLEntity(
   const resp = await sendRequest(
     joinUrl(
       url,
-      `/entity/${requestEditContext.rc.entityTypeName}/${requestEditContext.entityName}${actions2URLQuery(acts)}`,
+      `/entity/${requestEditContext.rc.entityTypeName}/${requestEditContext.entityName}${commitURLQuery(acts, force)}`,
     ),
     'PUT',
     JSON.stringify({ name: name, yaml_old: yaml_old, yaml_new: yaml }),

@@ -1,7 +1,7 @@
 import { stringify } from 'yaml';
 import { diffToastLink } from '../controller/global/diffViewer';
 import { showError, showSuccess } from '../controller/global/notification';
-import { actions2URLQuery } from '../utils/actionUtils';
+import { commitURLQuery } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
 import { entityToastTitle, operationSuccessText } from '../utils/toastUtils';
 import { ActionDecl } from '../utils/types/api';
@@ -16,12 +16,14 @@ export async function createNewEntity(
   requestContext: RequestContext,
   yaml?: string,
   acts: ActionDecl[] = [],
+  // Admin override: create past a failing schema validation (requires "adm").
+  force: boolean = false,
 ): Promise<{ success: boolean; name: Nullable<string> }> {
   const url = requestContext.yacURL;
   if (url == null || url == undefined) return { success: false, name: null };
 
   const resp = await sendRequest(
-    joinUrl(url, `/entity/${requestContext.entityTypeName}${actions2URLQuery(acts)}`),
+    joinUrl(url, `/entity/${requestContext.entityTypeName}${commitURLQuery(acts, force)}`),
     'POST',
     JSON.stringify({
       // The key must be present (null instead of omitted), otherwise YAC

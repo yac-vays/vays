@@ -12,7 +12,15 @@ import { buildOverviewHighlightURL, navigateToURL } from '../../../global/url';
 import editingState from '../../../state/EditCtrlState';
 import { flushPendingDebouncedCommits } from '../debounceRegistry';
 import { isStaleValidation, whenValidationIdle } from '../session';
-import { beginPaneSession, clearEditDirty, getInitialEntityYAML, setYACStatus } from '../shared';
+import {
+  beginPaneSession,
+  clearEditDirty,
+  getInitialEntityYAML,
+  isAdminOverride,
+  setAdminOverride,
+  setEntityPerms,
+  setYACStatus,
+} from '../shared';
 import {
   getActivatedActions,
   getEntityName,
@@ -60,6 +68,7 @@ export async function updateYAMLschema(
   if (valResp == null) return null;
   if (seq === undefined || !isStaleValidation(seq)) {
     setYACStatus(valResp.valid, valResp.detail, valResp.usages);
+    if (valResp.perms) setEntityPerms(valResp.perms);
   }
 
   return valResp;
@@ -82,8 +91,9 @@ export async function sendYAMLData(requestContext: RequestEditContext) {
   await new Promise((resolve) => setTimeout(resolve, 80));
   await whenValidationIdle();
   // Validity may have changed with the just-settled validations; the Commit
-  // button state predates them.
-  if (!editingState.isValidYAC) {
+  // button state predates them. An unlocked admin override commits anyway
+  // (the backend then skips schema enforcement via `force`).
+  if (!editingState.isValidYAC && !isAdminOverride()) {
     return;
   }
   // No-op guard (edit only): the backend rejects a PUT whose content equals
@@ -95,6 +105,13 @@ export async function sendYAMLData(requestContext: RequestEditContext) {
   }
   const modalEntityName = getEntityName() ?? requestContext.entityName;
   const typeTitle = requestContext.rc.accessedEntityType?.title;
+  // Spell the override out in the confirm dialog: the user is about to store
+  // a document that fails validation.
+  const overrideNote =
+    isAdminOverride() && !editingState.isValidYAC
+      ? '**Admin override:** this document fails validation and will be committed anyway.'
+      : '';
+  const actionsNote = describeActivatedActions(getActivatedActions());
   showModalMessage(
     requestContext.mode === 'create'
       ? modalEntityName
@@ -103,12 +120,12 @@ export async function sendYAMLData(requestContext: RequestEditContext) {
           ? `Create new ${typeTitle}?`
           : 'Create?'
       : `Commit changes to ${modalEntityName}?`,
-    describeActivatedActions(getActivatedActions()),
+    [overrideNote, actionsNote].filter(Boolean).join('\n\n'),
     async () => {
       // A validation may have been dispatched while the modal was open (e.g.
       // the editor's debounce fired); its response updates the payload.
       await whenValidationIdle();
-      if (!editingState.isValidYAC) {
+      if (!editingState.isValidYAC && !isAdminOverride()) {
         showError(
           'Not saved: the document changed and is no longer valid',
           'Please fix the reported error and commit again.',
@@ -131,6 +148,8 @@ export async function sendYAMLData(requestContext: RequestEditContext) {
         // Saved: the session is no longer dirty, so leaving the page (the
         // navigation below) must not trigger the unsaved-changes warning.
         clearEditDirty();
+        // The admin override is per-commit intent: auto-relock after use.
+        setAdminOverride(false);
         invalidateEntityListCache(requestContext.rc.yacURL, requestContext.rc.entityTypeName);
         navigateToURL(
           buildOverviewHighlightURL(
@@ -158,7 +177,14 @@ async function sendCreateNewEntity(
   requestContext: RequestContext,
 ): Promise<{ success: boolean; name: Nullable<string> }> {
   const name: Nullable<string> = getEntityName();
-  const res = await createNewEntity(name, {}, requestContext, yaml, getActivatedActions());
+  const res = await createNewEntity(
+    name,
+    {},
+    requestContext,
+    yaml,
+    getActivatedActions(),
+    isAdminOverride(),
+  );
   // Only a successful create ends the session (navigation follows). On failure
   // the session continues and the panel still displays the name — clearing the
   // global would make every subsequent validate/retry send name=null.
@@ -189,6 +215,7 @@ async function sendPutEntity(
     getInitialEntityYAML(),
     requestEditContext,
     getActivatedActions(),
+    isAdminOverride(),
   );
 }
 

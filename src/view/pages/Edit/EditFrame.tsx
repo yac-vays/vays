@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { FaChevronLeft, FaChevronRight, FaGripLinesVertical } from 'react-icons/fa';
+import {
+  FaChevronLeft,
+  FaChevronRight,
+  FaGripLinesVertical,
+  FaLock,
+  FaLockOpen,
+} from 'react-icons/fa';
 import { useBlocker } from 'react-router-dom';
 import { showModalMessage } from '../../../controller/global/modal';
 import {
@@ -12,6 +18,9 @@ import {
   clearEditDirty,
   isEditDirty,
   isFormValid,
+  setAdminOverride,
+  setAdminOverrideListener,
+  setEntityPermsListener,
   setUsagesListener,
   setValidityListener,
 } from '../../../controller/local/EditController/shared';
@@ -66,6 +75,12 @@ const EditFrame = ({
   // Whether the save payload differs from the stored file (see access.ts's
   // hasUncommittedChanges); kept current via setChangeListener below.
   const [hasChanges, setHasChanges] = useState<boolean>(false);
+  // The user's permissions for this entity (from the validation responses) and
+  // the admin-override ("admin mode") state. Both owned by the controller and
+  // mirrored here via listeners: the override auto-relocks on new sessions and
+  // after a successful commit.
+  const [entityPerms, setEntityPerms] = useState<string[]>([]);
+  const [adminUnlocked, setAdminUnlocked] = useState<boolean>(false);
   // Every mount of the edit frame is a new editing view: the panes' session
   // activations (beginPaneSession) key off this, so returning to the SAME
   // entity still starts a fresh session. Render-time on purpose — the panes'
@@ -173,10 +188,14 @@ const EditFrame = ({
     // Tracks whether the payload differs from the stored file (edit mode's
     // no-op guard on the Commit button; registering pushes the current state).
     setChangeListener(setHasChanges);
+    setEntityPermsListener(setEntityPerms);
+    setAdminOverrideListener(setAdminUnlocked);
     return () => {
       setUsagesListener(null);
       setValidityListener(null);
       setChangeListener(null);
+      setEntityPermsListener(null);
+      setAdminOverrideListener(null);
     };
   }, []);
 
@@ -233,7 +252,13 @@ const EditFrame = ({
   // the backend would reject the PUT as a no-op (400). Injected defaults or
   // any pane edit make the payload differ and re-enable the button.
   const nothingToCommit = requestEditContext.mode === 'edit' && !hasChanges;
-  const saveDisabled = isValidating || !isValid || nothingToCommit;
+  // Admin override: with "adm" the user may unlock committing past validation
+  // errors (the backend then only enforces YAML syntax, name rules, perms and
+  // limits — see the `force` parameter of the write endpoints).
+  const hasAdminPerm = entityPerms.includes('adm');
+  const showAdminLock = !isReadOnly && hasAdminPerm && (!isValid || adminUnlocked);
+  const saveDisabled = isValidating || (!isValid && !adminUnlocked) || nothingToCommit;
+  const commitOverridden = adminUnlocked && !isValid;
   // With no data changes, a combined "Commit + Action" button would be dead
   // even though the selected actions could run on their own — they act on the
   // STORED entity, exactly like running them from the overview list. Split
@@ -241,14 +266,30 @@ const EditFrame = ({
   const actionsRunAlone =
     nothingToCommit && activeActions.length > 0 && requestEditContext.entityName != null;
   const commitLabel =
-    !actionsRunAlone && activeActions.length
+    (!actionsRunAlone && activeActions.length
       ? `Commit + ${activeActions.map((a) => a.title || a.name).join(' + ')}`
-      : 'Commit';
+      : 'Commit') + (commitOverridden ? ' (admin)' : '');
   const btnBase =
     'inline-flex items-center justify-center rounded border py-1.5 px-4 text-center font-medium';
   const btnEnabled =
     'cursor-pointer border-black dark:border-meta-4 text-plainfont hover:bg-opacity-90 hover:bg-primary hover:text-white dark:bg-meta-4 dark:hover:bg-white dark:hover:text-black';
   const btnDisabled = 'cursor-not-allowed border-stroke text-reducedfont opacity-50';
+  // The overridden Commit is unmistakably a warning-styled action.
+  const btnOverride =
+    'cursor-pointer border-[#d32f2f] text-[#d32f2f] hover:bg-[#d32f2f] hover:text-white';
+
+  const unlockAdminMode = () => {
+    showModalMessage(
+      'Unlock admin mode?',
+      'You will be able to commit this document although it fails validation. ' +
+        'YAC will still check the YAML syntax, the name, your permissions and ' +
+        'the limits — but **not** the schema. The commit is recorded as an ' +
+        'admin override, and the mode locks again after one commit.',
+      async () => setAdminOverride(true),
+      async () => {},
+      'Unlock',
+    );
+  };
 
   const setEditErrorMsg = (msg: string) => {
     if (msg === '') {
@@ -413,22 +454,43 @@ const EditFrame = ({
             <></>
           ) : (
             <div className="flex flex-wrap items-center justify-end gap-2 h-full px-4">
+              {adminUnlocked && (
+                <span className="text-sm font-medium text-[#d32f2f]">Admin override active</span>
+              )}
+              {showAdminLock && (
+                <button
+                  type="button"
+                  title={
+                    adminUnlocked
+                      ? 'Lock admin mode again (commits then require valid data).'
+                      : 'Unlock admin mode: commit although validation fails (adm permission).'
+                  }
+                  onClick={() => (adminUnlocked ? setAdminOverride(false) : unlockAdminMode())}
+                  className={`${btnBase} ${adminUnlocked ? btnOverride : btnEnabled}`}
+                >
+                  {adminUnlocked ? <FaLockOpen size={14} /> : <FaLock size={14} />}
+                </button>
+              )}
               <button
                 type="button"
                 disabled={saveDisabled}
                 title={
-                  !isValid && !isValidating
-                    ? 'Resolve the highlighted errors before saving.'
-                    : nothingToCommit && !isValidating
-                      ? 'Nothing to commit: the document matches what is stored.'
-                      : undefined
+                  commitOverridden && !saveDisabled
+                    ? 'Admin override: commits although the document fails validation.'
+                    : !isValid && !adminUnlocked && !isValidating
+                      ? 'Resolve the highlighted errors before saving.'
+                      : nothingToCommit && !isValidating
+                        ? 'Nothing to commit: the document matches what is stored.'
+                        : undefined
                 }
                 onClick={() => {
                   // Unified save: the canonical YAML (kept current no matter which
                   // pane was edited) is PUT, preserving comments/order.
                   sendYAMLData(requestEditContext);
                 }}
-                className={`${btnBase} ${saveDisabled ? btnDisabled : btnEnabled}`}
+                className={`${btnBase} ${
+                  saveDisabled ? btnDisabled : commitOverridden ? btnOverride : btnEnabled
+                }`}
               >
                 {isValidating ? (
                   <div

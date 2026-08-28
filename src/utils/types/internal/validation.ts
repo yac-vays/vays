@@ -22,6 +22,8 @@ export type ValidateResponse = {
   valid: boolean;
   detail: string;
   usages?: LimitUsage[];
+  /** The user's (expanded) permissions for this entity (offers e.g. "adm"). */
+  perms?: string[];
   yaml?: string;
   /**
    * Location of a schema-validation error inside the data, as reported by YAC

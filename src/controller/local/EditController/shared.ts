@@ -45,6 +45,9 @@ export function clearYACStatus() {
   setYACValidStatus(true);
   setLocalValidity(true);
   setYACUsages([]);
+  setEntityPerms([]);
+  // The admin override is per-commit intent: a fresh session starts locked.
+  setAdminOverride(false);
   emitValidity();
   // A fresh editing session starts clean (called on both panes' init).
   clearEditDirty();
@@ -146,6 +149,46 @@ export function setUsagesListener(cb: ((usages: LimitUsage[]) => void) | null) {
 export function setYACUsages(usages: LimitUsage[]) {
   editingState.yacUsages = usages;
   usagesListener?.(usages);
+}
+
+/**
+ * Reactive bridge for the entity permissions reported by validations, mirroring
+ * `usagesListener`. The edit view uses them to decide whether to OFFER the
+ * admin override ("adm" permission); the backend re-checks on commit anyway.
+ * Registering immediately pushes the current state.
+ */
+let entityPermsListener: ((perms: string[]) => void) | null = null;
+
+export function setEntityPermsListener(cb: ((perms: string[]) => void) | null) {
+  entityPermsListener = cb;
+  cb?.(editingState.entityPerms);
+}
+
+export function setEntityPerms(perms: string[]) {
+  editingState.entityPerms = perms;
+  entityPermsListener?.(perms);
+}
+
+/**
+ * Reactive bridge for the admin override ("admin mode") state. Owned by the
+ * controller (not the view) so the save path can auto-relock after a
+ * successful commit and the session reset can relock on navigation.
+ * Registering immediately pushes the current state.
+ */
+let adminOverrideListener: ((active: boolean) => void) | null = null;
+
+export function setAdminOverrideListener(cb: ((active: boolean) => void) | null) {
+  adminOverrideListener = cb;
+  cb?.(editingState.adminOverride);
+}
+
+export function setAdminOverride(active: boolean) {
+  editingState.adminOverride = active;
+  adminOverrideListener?.(active);
+}
+
+export function isAdminOverride(): boolean {
+  return editingState.adminOverride;
 }
 
 // The form pane and the (lazily loaded) Monaco editor both request the schema
@@ -460,6 +503,7 @@ export async function coreUpdate(
   if (seq !== undefined && isStaleValidation(seq)) return valResp;
 
   setYACStatus(valResp.valid, valResp.detail, valResp.usages);
+  if (valResp.perms) setEntityPerms(valResp.perms);
   const didChange = handleDefaults(entityData, valResp, requestEditContext);
 
   // do revalidation here!

@@ -444,7 +444,7 @@ const EditFrame = ({
                   <button
                     key={act.name}
                     type="button"
-                    title={`Run ${act.title || act.name} on the stored entity (nothing is committed).`}
+                    title={`${act.title || act.name} (nothing is committed).`}
                     onClick={() => {
                       // Same flow as running the action from the overview list:
                       // dangerous-action confirm, toasts, backend permission

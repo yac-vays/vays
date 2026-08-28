@@ -7,7 +7,7 @@ import {
   instancePathToDotted,
 } from '../../../../utils/schema/locatedErrors';
 import editingState from '../../../state/EditCtrlState';
-import { getAJV } from '../shared';
+import { getValidationAJV } from '../shared';
 
 export function registerOnUpdateCategoryErrors(f: (v: boolean[]) => void) {
   editingState.onUpdateCategoryErrors = f;
@@ -55,7 +55,7 @@ export function updateTabsErrorNotification(
   uischema: UISchemaElement,
   additionalErrors: ErrorObject[] = [],
 ) {
-  const errs = getAllErrors(data, jsonSchema, getAJV());
+  const errs = getAllErrors(data, jsonSchema, getValidationAJV());
   if (errs == null) return;
   const allErrs = [...errs, ...additionalErrors];
   const [categories, struct] = assembleStructure(uischema);

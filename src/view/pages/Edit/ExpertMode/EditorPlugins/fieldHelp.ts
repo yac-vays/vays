@@ -1,8 +1,12 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 import { getCurrentJsonSchema } from '../../../../../controller/local/EditController/ExpertMode/access';
-import { fieldHelpHoverMarkdown, subschemaAtPath } from '../../../../../utils/schema/fieldHelp';
-import { yamlPathAtOffset } from '../../../../../utils/schema/yamlPathLocator';
+import {
+  exampleValueForSchema,
+  fieldHelpHoverMarkdown,
+  subschemaAtPath,
+} from '../../../../../utils/schema/fieldHelp';
+import { setValueInYaml, yamlPathAtOffset } from '../../../../../utils/schema/yamlPathLocator';
 import { RequestEditContext } from '../../../../../utils/types/internal/request';
 
 /**
@@ -52,6 +56,37 @@ export default async function editorFieldHelp(
     contextMenuOrder: 1,
     run: (editor) => {
       editor.trigger('vays.showFieldHelp', 'editor.action.showHover', null);
+    },
+  });
+
+  ed.addAction({
+    id: 'vays.fillExampleValue',
+    label: 'Fill with Example Value',
+    contextMenuGroupId: 'navigation',
+    contextMenuOrder: 2,
+    keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyE],
+    run: (editor) => {
+      const model = editor.getModel();
+      const position = editor.getPosition();
+      if (model == null || position == null) return;
+      const text = model.getValue();
+      const path = yamlPathAtOffset(text, model.getOffsetAt(position));
+      const schema = getCurrentJsonSchema();
+      if (path == null || path.length === 0 || schema == null) return;
+      const sub = subschemaAtPath(schema, path);
+      if (sub == null) return;
+      const value = exampleValueForSchema(sub);
+      if (value === undefined) return;
+      // The yaml document round-trip keeps comments/order and produces correct
+      // block indentation for nested structures; applied as ONE undoable edit.
+      const updated = setValueInYaml(text, path, value);
+      if (updated == null || updated === text) return;
+      editor.pushUndoStop();
+      editor.executeEdits('vays.fillExampleValue', [
+        { range: model.getFullModelRange(), text: updated },
+      ]);
+      editor.pushUndoStop();
+      editor.setPosition(position);
     },
   });
 }

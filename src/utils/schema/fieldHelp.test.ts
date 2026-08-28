@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { fieldHelpHoverMarkdown, subschemaAtPath } from './fieldHelp';
-import { yamlPathAtOffset } from './yamlPathLocator';
+import { exampleValueForSchema, fieldHelpHoverMarkdown, subschemaAtPath } from './fieldHelp';
+import { setValueInYaml, yamlPathAtOffset } from './yamlPathLocator';
 
 const schema = {
   type: 'object',
@@ -89,5 +89,68 @@ describe('yamlPathAtOffset', () => {
 
   it('returns null outside any entry and for broken documents', () => {
     expect(yamlPathAtOffset('\n\n', 1)).toBeNull();
+  });
+});
+
+describe('exampleValueForSchema', () => {
+  it('prefers example, then default, then first enum value', () => {
+    expect(exampleValueForSchema({ type: 'string', examples: ['ex'], default: 'def' })).toBe('ex');
+    expect(exampleValueForSchema({ type: 'string', default: 'def' })).toBe('def');
+    expect(exampleValueForSchema({ type: 'string', enum: ['a', 'b'] })).toBe('a');
+  });
+
+  it('stubs objects with required properties and defaulted optionals, recursively', () => {
+    const s = {
+      type: 'object',
+      required: ['name'],
+      properties: {
+        name: { type: 'string' },
+        port: { type: 'integer', default: 8080 },
+        note: { type: 'string' },
+        nested: {
+          type: 'object',
+          required: ['ip'],
+          default: undefined,
+          properties: { ip: { type: 'string', examples: ['10.0.0.1'] } },
+        },
+      },
+    };
+    expect(exampleValueForSchema(s)).toEqual({ name: '', port: 8080 });
+  });
+
+  it('stubs arrays with one item from the item schema', () => {
+    expect(
+      exampleValueForSchema({
+        type: 'array',
+        items: { type: 'object', required: ['key'], properties: { key: { type: 'string' } } },
+      }),
+    ).toEqual([{ key: '' }]);
+  });
+
+  it('uses primitive zero values and oneOf first branches', () => {
+    expect(exampleValueForSchema({ type: 'boolean' })).toBe(false);
+    expect(exampleValueForSchema({ oneOf: [{ const: 'linux' }] })).toBe('linux');
+    expect(exampleValueForSchema({})).toBeUndefined();
+  });
+});
+
+describe('setValueInYaml', () => {
+  it('replaces a value while preserving comments and order', () => {
+    const src = '# header\nowner: alice # keep me\nother: 1\n';
+    const out = setValueInYaml(src, ['owner'], 'bob');
+    expect(out).toContain('# header');
+    expect(out).toContain('owner: bob # keep me');
+    expect(out).toContain('other: 1');
+  });
+
+  it('writes nested structures with block indentation', () => {
+    const out = setValueInYaml('name: x\n', ['networking'], { ip: '10.0.0.1', vlans: [1] });
+    expect(out).toContain('networking:');
+    expect(out).toContain('  ip: 10.0.0.1');
+    expect(out).toContain('  vlans:');
+  });
+
+  it('returns null for unparseable documents', () => {
+    expect(setValueInYaml('a: [unclosed', ['a'], 1)).toBeNull();
   });
 });

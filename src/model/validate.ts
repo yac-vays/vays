@@ -77,6 +77,7 @@ async function _validate(
       data: dat.schemas.data,
       valid: dat.request.valid && dat.schemas.valid,
       detail: dat.request.message ?? dat.schemas.message ?? '',
+      ...(dat.schemas.validator ? { validator: dat.schemas.validator } : {}),
       usages: dat.usages ?? [],
       // Only carried when the backend reports it (older YACs do not), so
       // "no perms" stays distinguishable from "backend too old to say".

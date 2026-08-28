@@ -62,14 +62,43 @@ export function relocateMissingPropertyMarkers<T extends MarkerRange>(
 
 // Global (monaco-level) listener, disposed on editor teardown (see Editor.tsx).
 let relocatorListener: monaco.IDisposable | null = null;
+let relocatorSafetyInterval: number | null = null;
 
 export function disposeMissingPropertyRelocator() {
   relocatorListener?.dispose();
   relocatorListener = null;
+  if (relocatorSafetyInterval != null) {
+    window.clearInterval(relocatorSafetyInterval);
+    relocatorSafetyInterval = null;
+  }
+}
+
+/** Run one relocation pass for the model behind `resource` (no-op when clean). */
+function relocateForResource(resource: monaco.Uri) {
+  const model = monaco.editor.getModel(resource);
+  if (model == null) return;
+  const targetLine = model.getLineCount();
+  const targetMaxColumn = model.getLineMaxColumn(targetLine);
+
+  // Markers are owned per validation source (monaco-yaml, yac-backend, ...);
+  // rewrite within each owner group so no source's markers are dropped.
+  const byOwner = new Map<string, monaco.editor.IMarker[]>();
+  for (const marker of monaco.editor.getModelMarkers({ resource })) {
+    const group = byOwner.get(marker.owner);
+    if (group) group.push(marker);
+    else byOwner.set(marker.owner, [marker]);
+  }
+  for (const [owner, markers] of byOwner) {
+    const relocated = relocateMissingPropertyMarkers(markers, targetLine, targetMaxColumn);
+    // `null` = already in place; re-setting would re-fire the listener forever.
+    if (relocated != null) {
+      monaco.editor.setModelMarkers(model, owner, relocated);
+    }
+  }
 }
 
 export default async function editorMissingPropertyRelocator(
-  _ed: monaco.editor.IStandaloneCodeEditor,
+  ed: monaco.editor.IStandaloneCodeEditor,
   _ctx: RequestEditContext,
   reInvoked: boolean = false,
 ) {
@@ -78,26 +107,18 @@ export default async function editorMissingPropertyRelocator(
   // Never stack listeners: the previous editor's listener (if any) is gone.
   disposeMissingPropertyRelocator();
 
-  relocatorListener = monaco.editor.onDidChangeMarkers(([resource]) => {
-    const model = monaco.editor.getModel(resource);
-    if (model == null) return;
-    const targetLine = model.getLineCount();
-    const targetMaxColumn = model.getLineMaxColumn(targetLine);
-
-    // Markers are owned per validation source (monaco-yaml, yac-backend, ...);
-    // rewrite within each owner group so no source's markers are dropped.
-    const byOwner = new Map<string, monaco.editor.IMarker[]>();
-    for (const marker of monaco.editor.getModelMarkers({ resource })) {
-      const group = byOwner.get(marker.owner);
-      if (group) group.push(marker);
-      else byOwner.set(marker.owner, [marker]);
-    }
-    for (const [owner, markers] of byOwner) {
-      const relocated = relocateMissingPropertyMarkers(markers, targetLine, targetMaxColumn);
-      // `null` = already in place; re-setting would re-fire this listener forever.
-      if (relocated != null) {
-        monaco.editor.setModelMarkers(model, owner, relocated);
-      }
-    }
+  relocatorListener = monaco.editor.onDidChangeMarkers((resources) => {
+    // Every changed resource, not just the first: batches can carry several.
+    for (const resource of resources) relocateForResource(resource);
   });
+
+  // Safety net: marker writes race around rapid schema updates + worker
+  // restarts (monaco-yaml revalidates on its own debounce AND on every app
+  // validation round-trip), and coalesced change events have been observed to
+  // leave the LAST write un-relocated. Re-assert periodically — the pass is a
+  // few marker compares and writes nothing when everything is in place.
+  relocatorSafetyInterval = window.setInterval(() => {
+    const model = ed.getModel();
+    if (model != null) relocateForResource(model.uri);
+  }, 500);
 }

@@ -177,3 +177,63 @@ describe('dropLocallyDuplicatedErrors', () => {
     expect(kept).toHaveLength(1);
   });
 });
+
+describe('dropLocallyDuplicatedErrors (required-error normalization)', () => {
+  it('drops a backend error located AT the property when the local required error sits on its parent', () => {
+    const backendAtProperty: ErrorObject = {
+      instancePath: '/users_root',
+      schemaPath: '/required',
+      keyword: 'yac',
+      params: {},
+      message: "'users_root' is a required property",
+    };
+    const localRequired: ErrorObject = {
+      instancePath: '',
+      schemaPath: '#/required',
+      keyword: 'required',
+      params: { missingProperty: 'users_root' },
+      message: "must have required property 'users_root'",
+    };
+    expect(dropLocallyDuplicatedErrors([backendAtProperty], [localRequired])).toEqual([]);
+  });
+
+  it('keeps a backend error when the local required error names another property', () => {
+    const backendAtProperty: ErrorObject = {
+      instancePath: '/users_root',
+      schemaPath: '',
+      keyword: 'yac',
+      params: {},
+      message: 'x',
+    };
+    const localRequired: ErrorObject = {
+      instancePath: '',
+      schemaPath: '',
+      keyword: 'required',
+      params: { missingProperty: 'other_prop' },
+      message: 'y',
+    };
+    expect(dropLocallyDuplicatedErrors([backendAtProperty], [localRequired])).toHaveLength(1);
+  });
+});
+
+describe('footerErrorMessage (required errors)', () => {
+  it('suppresses a located required error: form shows the control, monaco-yaml the marker', () => {
+    const message = footerErrorMessage(
+      resp({
+        data_loc: '#/users_root',
+        validator: 'required',
+        detail: "'users_root' is a required property",
+        // The property is MISSING from the yaml (that is the point).
+        yaml: 'other: 1\n',
+      }),
+    );
+    expect(message).toBe('');
+  });
+
+  it('keeps a required error for a property without a rendered control', () => {
+    const message = footerErrorMessage(
+      resp({ data_loc: '#/unrendered', validator: 'required', yaml: 'other: 1\n' }),
+    );
+    expect(message).toContain('unrendered');
+  });
+});

@@ -3,7 +3,7 @@ import { getActivatedActions } from '../../../../controller/local/EditController
 import {
   beginPaneSession,
   emitValidity,
-  getAJV,
+  getValidationAJV,
   retreiveSchema,
   setLocalValidity,
 } from '../../../../controller/local/EditController/shared';
@@ -98,7 +98,7 @@ const useInitializeForm = (
       // longer validates against the current schema (e.g. the spec changed).
       let localErrors: ErrorObject[] = [];
       if (requestEditContext.mode === 'edit') {
-        const validate = getAJV().compile(resp.json_schema);
+        const validate = getValidationAJV().compile(resp.json_schema);
         validate(structuredClone(resp.data));
         localErrors = validate.errors ?? [];
       }

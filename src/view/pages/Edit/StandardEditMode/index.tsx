@@ -21,7 +21,7 @@ import { RequestEditContext } from '../../../../utils/types/internal/request';
 // import { Nullable } from '../../../../utils/typeUtils';
 import {
   emitValidity,
-  getAJV,
+  getValidationAJV,
   setEditDirty,
   setLocalValidity,
 } from '../../../../controller/local/EditController/shared';
@@ -105,7 +105,7 @@ const StandardEditMode = memo(
       // Local (AJV) validation of the response data: it feeds the Commit gate
       // below AND dedupes the backend error on fields the local validation
       // already flags (the control would otherwise show the same problem twice).
-      const validate = getAJV().compile(resp.json_schema);
+      const validate = getValidationAJV().compile(resp.json_schema);
       validate(structuredClone(resp.data));
       const localErrors = validate.errors ?? [];
       const located = locateBackendError(resp);
@@ -237,7 +237,7 @@ const StandardEditMode = memo(
                       renderers={renderers}
                       cells={materialCells}
                       onChange={onChangeCallback}
-                      ajv={getAJV()}
+                      ajv={getValidationAJV()}
                       additionalErrors={additionalErrors}
                       readonly={requestEditContext.mode === 'read'}
                     />

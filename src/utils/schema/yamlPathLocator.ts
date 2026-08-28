@@ -98,3 +98,22 @@ export function yamlPathAtOffset(yamlText: string, offset: number): (string | nu
 
   return path.length > 0 ? path : null;
 }
+
+/**
+ * Set the value at `path` in a YAML document, preserving comments, key order
+ * and formatting of everything else (the `yaml` document round-trip). Returns
+ * the updated text, or null when the document cannot be parsed.
+ */
+export function setValueInYaml(
+  yamlText: string,
+  path: (string | number)[],
+  value: unknown,
+): string | null {
+  try {
+    const doc = parseDocument(yamlText);
+    doc.setIn(path, value);
+    return String(doc);
+  } catch {
+    return null;
+  }
+}

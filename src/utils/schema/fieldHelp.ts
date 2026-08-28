@@ -128,3 +128,59 @@ export function fieldHelpHoverMarkdown(
 
   return parts.join('\n\n');
 }
+
+/** Whether a schema carries its own concrete value (example/default/const). */
+function hasOwnValue(schema: any): boolean {
+  return (
+    schema != null &&
+    typeof schema === 'object' &&
+    ((Array.isArray(schema.examples) && schema.examples.length > 0) ||
+      schema.default !== undefined ||
+      schema.const !== undefined)
+  );
+}
+
+/**
+ * A plausible value for a schema, for the editor's "Fill with Example Value"
+ * action: the first example, else the default/const, else the first enum
+ * value, else an empty structure — objects get their required properties (and
+ * any property carrying its own example/default) stubbed recursively, arrays
+ * one stub item. Returns undefined when the schema gives nothing to go on.
+ */
+export function exampleValueForSchema(schema: any): unknown {
+  if (schema == null || typeof schema !== 'object') return undefined;
+  if (Array.isArray(schema.examples) && schema.examples.length > 0) return schema.examples[0];
+  if (schema.default !== undefined) return schema.default;
+  if (schema.const !== undefined) return schema.const;
+  if (Array.isArray(schema.enum) && schema.enum.length > 0) return schema.enum[0];
+
+  const type = Array.isArray(schema.type) ? schema.type[0] : schema.type;
+  if (type === 'object' || schema.properties != null) {
+    const out: { [key: string]: unknown } = {};
+    const required: unknown[] = Array.isArray(schema.required) ? schema.required : [];
+    for (const [key, sub] of Object.entries(schema.properties ?? {})) {
+      if (required.includes(key) || hasOwnValue(sub)) {
+        const v = exampleValueForSchema(sub);
+        out[key] = v === undefined ? null : v;
+      }
+    }
+    return out;
+  }
+  if (type === 'array' || schema.items != null) {
+    const item = exampleValueForSchema(
+      Array.isArray(schema.items) ? schema.items[0] : schema.items,
+    );
+    return item === undefined ? [] : [item];
+  }
+  if (type === 'string') return '';
+  if (type === 'number' || type === 'integer') return 0;
+  if (type === 'boolean') return false;
+  if (type === 'null') return null;
+
+  for (const comb of ['oneOf', 'anyOf', 'allOf']) {
+    if (Array.isArray(schema[comb]) && schema[comb].length > 0) {
+      return exampleValueForSchema(schema[comb][0]);
+    }
+  }
+  return undefined;
+}

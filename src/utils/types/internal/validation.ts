@@ -21,6 +21,8 @@ export type ValidateResponse = {
   data: { [key: string]: unknown; };
   valid: boolean;
   detail: string;
+  /** The failed jsonschema keyword (e.g. 'required', 'type'), when reported. */
+  validator?: string;
   usages?: LimitUsage[];
   /** The user's (expanded) permissions for this entity (offers e.g. "adm"). */
   perms?: string[];

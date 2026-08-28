@@ -96,6 +96,20 @@ export function locateBackendError(resp: ValidateResponse): LocatedBackendError 
 }
 
 /**
+ * The path of the control an AJV error is DISPLAYED on. Errors of the
+ * `required` / `dependencies` / `additionalProperties` keywords are anchored
+ * on the parent object but rendered by JSON Forms on the property named in
+ * their params (see JSON Forms' `getControlPath`) — normalize to that, so
+ * they compare against backend errors located at the property itself.
+ */
+function effectiveErrorPath(error: ErrorObject): string {
+  const params = error.params as { missingProperty?: string; additionalProperty?: string };
+  const property = params?.missingProperty ?? params?.additionalProperty;
+  if (property !== undefined) return `${error.instancePath}/${property}`;
+  return error.instancePath;
+}
+
+/**
  * Drop backend-located errors that the form's own (AJV) validation already
  * reports on the same field: the local error is rendered on the control
  * anyway, so keeping the backend copy would show the same problem twice.
@@ -106,7 +120,8 @@ export function dropLocallyDuplicatedErrors(
   localErrors: ErrorObject[],
 ): ErrorObject[] {
   return additionalErrors.filter(
-    (ae) => !localErrors.some((le) => le.instancePath === ae.instancePath && le.message),
+    (ae) =>
+      !localErrors.some((le) => effectiveErrorPath(le) === effectiveErrorPath(ae) && le.message),
   );
 }
 
@@ -130,9 +145,12 @@ export function footerErrorMessage(resp: ValidateResponse): string {
   const { shownInForm } = locateBackendError(resp);
   // The canonical YAML of the response is what the editor displays after this
   // validation round-trip, so locating against it tells whether the editor
-  // marker (backendMarkers.ts) can anchor the error.
+  // marker (backendMarkers.ts) can anchor the error. `required` violations are
+  // yaml-displayable even though the missing property has no range: monaco-yaml
+  // itself reports them (relocated to the last line, see the relocator plugin).
   const shownInYaml =
-    resp.yaml != null && locateInstancePathInYaml(resp.yaml, instancePath) != null;
+    resp.validator === 'required' ||
+    (resp.yaml != null && locateInstancePathInYaml(resp.yaml, instancePath) != null);
   if (shownInForm && shownInYaml) return '';
   return `${instancePathToDotted(instancePath)}: ${resp.detail}`;
 }

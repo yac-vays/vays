@@ -46,9 +46,20 @@ class EditControlState {
   public adminOverride: boolean = false;
 
   /**
-   * The Ajv object used for inserting the defaults.
+   * The Ajv object used for inserting the defaults (`useDefaults` MUTATES the
+   * validated data!). Only for the defaults machinery (defaultsHandling.ts,
+   * coreUpdate's cleanData) — never for display validation.
    */
   readonly ajv = new Ajv({ allErrors: true, useDefaults: true, strict: false });
+
+  /**
+   * The Ajv object for DISPLAY validation (the form, tab error dots, the
+   * Commit gate). Without `useDefaults`: the defaults-inserting instance
+   * silently "heals" a missing-but-defaulted required property while
+   * validating, so the form would neither show the error on the control nor
+   * count it — while the backend and the YAML editor do report it.
+   */
+  readonly ajvValidate = new Ajv({ allErrors: true, strict: false });
 
   /**
    * The object containing all defaults for the schema of the most recent validation.

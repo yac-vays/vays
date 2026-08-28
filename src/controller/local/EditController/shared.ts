@@ -419,6 +419,11 @@ export function getAJV(): Ajv {
   return editingState.ajv;
 }
 
+/** Display-validation Ajv (no `useDefaults`) — see EditCtrlState.ajvValidate. */
+export function getValidationAJV(): Ajv {
+  return editingState.ajvValidate;
+}
+
 /**
  * Safety net for `coreUpdate`'s stabilization loop: deep nesting can
  * legitimately need many passes, but a pass count this high means the

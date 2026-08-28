@@ -12,6 +12,19 @@ export function getMonacoYaml() {
   return editingState.monacoyaml;
 }
 
+/**
+ * The (unpatched) JSON schema of the most recent validation. Kept for the
+ * editor's schema-driven features (context-menu field help); refreshed
+ * whenever monaco-yaml's schema is updated.
+ */
+export function setCurrentJsonSchema(schema: any) {
+  editingState.currentJsonSchema = schema;
+}
+
+export function getCurrentJsonSchema(): any {
+  return editingState.currentJsonSchema;
+}
+
 export function setCurrentContext(e: RequestEditContext) {
   editingState.currentEditContext = e;
 }

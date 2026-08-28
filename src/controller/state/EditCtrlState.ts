@@ -165,6 +165,12 @@ class EditControlState {
   /** The configured monaco-yaml instance. */
   public monacoyaml: any = null;
 
+  /**
+   * The (unpatched) JSON schema of the most recent validation — for the
+   * editor's schema-driven features (context-menu field help).
+   */
+  public currentJsonSchema: any = null;
+
   /** The YAML currently held by the editor (also the save payload). */
   public entityYAML: string | undefined = undefined;
 

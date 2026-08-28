@@ -25,6 +25,11 @@
 // import, so they apply to every editor created afterwards.
 import 'monaco-editor/esm/vs/editor/editor.api';
 
+// Internal module (no public typings): the menu registry, used below to prune
+// useless code-navigation entries from the context menu.
+// @ts-expect-error -- monaco-internal module without type declarations
+import { MenuId, MenuRegistry } from 'monaco-editor/esm/vs/platform/actions/common/actions.js';
+
 // --- Web workers (bundled + served by Vite; no MonacoEnvironment global needed
 //     beyond getWorker) -------------------------------------------------------
 // New-style specifier (0.53+ exports map; NOT the legacy esm/vs path): the
@@ -96,3 +101,34 @@ window.MonacoEnvironment = {
     return new EditorWorker();
   },
 };
+
+// --- Context-menu curation ----------------------------------------------------
+// Code-navigation entries — "Go to Definition", the "Peek" submenu, "Change All
+// Occurrences" — are meaningless for a single YAML document, but they ride in
+// with contributions we DO want (hover transitively pulls in gotoSymbol,
+// multicursor registers changeAll). Monaco has no public API to remove built-in
+// context-menu items, so filter them out of the menu registry's read path.
+// Internal API, pinned by the bundled monaco version; guarded so a future
+// restructure degrades to the stock context menu instead of breaking the editor.
+const REMOVED_CONTEXT_MENU_COMMANDS = new Set([
+  'editor.action.revealDefinition', // "Go to Definition"
+  'editor.action.revealDeclaration',
+  'editor.action.goToReferences',
+  'editor.action.changeAll', // "Change All Occurrences"
+]);
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const keepContextMenuItem = (item: any) =>
+  !REMOVED_CONTEXT_MENU_COMMANDS.has(item?.command?.id) &&
+  item?.submenu !== MenuId.EditorContextPeek;
+
+try {
+  const originalGetMenuItems = MenuRegistry.getMenuItems.bind(MenuRegistry);
+  MenuRegistry.getMenuItems = (id: unknown) => {
+    const items = originalGetMenuItems(id);
+    if (id !== MenuId.EditorContext) return items;
+    return items.filter(keepContextMenuItem);
+  };
+} catch {
+  // Menu internals moved: keep the stock context menu rather than fail.
+}

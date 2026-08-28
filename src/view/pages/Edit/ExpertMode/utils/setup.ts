@@ -6,6 +6,7 @@ import {
   getCurrentContext,
   getEntityName,
   getMonacoYaml,
+  setCurrentJsonSchema,
   setEntityYAML,
   setErrorMessage,
   setIsValidating,
@@ -190,6 +191,7 @@ export function getUpdateCallback(): EditorUpdateCallback {
       setIsValidating(false);
 
       if (rep == null) return;
+      setCurrentJsonSchema(rep.json_schema);
       await getMonacoYaml().update({
         schemas: [
           {

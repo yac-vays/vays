@@ -1,4 +1,4 @@
-import { isNode, parseDocument } from 'yaml';
+import { isMap, isNode, isScalar, isSeq, parseDocument } from 'yaml';
 
 /** Character-offset range in a YAML text. */
 export interface TextRange {
@@ -40,4 +40,61 @@ export function locateInstancePathInYaml(yamlText: string, instancePath: string)
     }
   }
   return null;
+}
+
+/**
+ * The inverse of `locateInstancePathInYaml`: the data path (as segments, e.g.
+ * `['ssh_keys', 0, 'key']`) of the innermost map entry / sequence item at the
+ * given character offset. An offset on a map KEY resolves to that key's path
+ * (not into its value), which is what field-level help wants. Returns null for
+ * unparseable documents or offsets outside any entry (e.g. blank lines).
+ */
+export function yamlPathAtOffset(yamlText: string, offset: number): (string | number)[] | null {
+  let doc;
+  try {
+    doc = parseDocument(yamlText);
+  } catch {
+    return null;
+  }
+
+  const path: (string | number)[] = [];
+  let node: unknown = doc.contents;
+
+  for (;;) {
+    if (isMap(node)) {
+      const pair = node.items.find((p) => {
+        const start = isNode(p.key) && p.key.range ? p.key.range[0] : null;
+        // The pair spans from its key to the end of its value (or the key
+        // itself for empty values). range[2] includes trailing space/comments.
+        const end =
+          isNode(p.value) && p.value.range
+            ? p.value.range[2]
+            : isNode(p.key) && p.key.range
+              ? p.key.range[2]
+              : null;
+        return start != null && end != null && offset >= start && offset <= end;
+      });
+      if (pair == null || !isScalar(pair.key)) break;
+      path.push(String(pair.key.value));
+      // Descend only when the offset is inside the VALUE of the pair; on the
+      // key itself this entry is the innermost result.
+      if (isNode(pair.value) && pair.value.range && offset >= pair.value.range[0]) {
+        node = pair.value;
+        continue;
+      }
+      break;
+    }
+    if (isSeq(node)) {
+      const idx = node.items.findIndex(
+        (item) => isNode(item) && item.range && offset >= item.range[0] && offset <= item.range[2],
+      );
+      if (idx < 0) break;
+      path.push(idx);
+      node = node.items[idx];
+      continue;
+    }
+    break;
+  }
+
+  return path.length > 0 ? path : null;
 }

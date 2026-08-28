@@ -10,6 +10,7 @@ import { memo, useEffect, useRef, useState } from 'react';
 
 import {
   getMonacoYaml,
+  setCurrentJsonSchema,
   setMonacoYaml,
 } from '../../../../controller/local/EditController/ExpertMode/access';
 import { getInitialEntityYAML } from '../../../../controller/local/EditController/shared';
@@ -125,6 +126,7 @@ export const Editor = ({
       const scrollTop = editor.getScrollTop();
       editor.setValue(resp.yaml);
       editor.setScrollTop(scrollTop);
+      setCurrentJsonSchema(resp.json_schema);
       getMonacoYaml()?.update({
         schemas: [
           {

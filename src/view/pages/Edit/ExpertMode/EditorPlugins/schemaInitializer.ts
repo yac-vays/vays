@@ -2,6 +2,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import {
   getCurrentContext,
   getMonacoYaml,
+  setCurrentJsonSchema,
 } from '../../../../../controller/local/EditController/ExpertMode/access';
 import {
   currentSession,
@@ -62,6 +63,7 @@ export default async function editorInitializeSchema(
     ed.setValue(initialYaml);
   }
 
+  setCurrentJsonSchema(v.json_schema);
   await getMonacoYaml().update({
     schemas: [
       {

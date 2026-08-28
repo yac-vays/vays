@@ -76,6 +76,7 @@ export function beginPaneSession(requestEditContext: RequestEditContext): number
     editingState.canonicalYAML = '';
     editingState.canonicalSeeded = false;
     editingState.entityYAML = undefined;
+    editingState.currentJsonSchema = null;
     editingState.previousDefaultsObject = null;
     editingState.suppressNextFormChange = false;
     editingState.suppressNextYamlChange = false;

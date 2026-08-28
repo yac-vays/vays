@@ -2,6 +2,7 @@
 import { toDataPath } from '@jsonforms/core';
 import { ErrorObject } from 'ajv';
 import { ValidateResponse } from '../types/internal/validation';
+import { locateInstancePathInYaml } from './yamlPathLocator';
 
 /**
  * Bridges a YAC (backend) schema-validation error onto the JSON Forms UI.
@@ -95,12 +96,28 @@ export function locateBackendError(resp: ValidateResponse): LocatedBackendError 
 }
 
 /**
- * The message for the always-visible footer status bar. Inline control errors
- * only show when the offending field's tab is open *and* the control is rendered
- * (JSON Forms mounts only the active categorization tab), so an inline-only error
- * is invisible whenever the user is on another tab — yet the commit stays
- * blocked. The footer is tab-independent, so it is the reliable explainer: show
- * the reason here whenever the response is invalid.
+ * Drop backend-located errors that the form's own (AJV) validation already
+ * reports on the same field: the local error is rendered on the control
+ * anyway, so keeping the backend copy would show the same problem twice.
+ * A backend error on a field without any local finding is kept.
+ */
+export function dropLocallyDuplicatedErrors(
+  additionalErrors: ErrorObject[],
+  localErrors: ErrorObject[],
+): ErrorObject[] {
+  return additionalErrors.filter(
+    (ae) => !localErrors.some((le) => le.instancePath === ae.instancePath && le.message),
+  );
+}
+
+/**
+ * The message for the footer status bar. The footer is ONLY for errors that
+ * cannot be displayed inline in BOTH panes: an error that has a rendered form
+ * control *and* a locatable spot in the YAML document is already visible
+ * wherever the user works, so repeating it in the footer is noise. If only one
+ * pane can show it (or none — request-level errors, document root, unrendered
+ * controls), the footer carries it: we never know which pane the user is
+ * actually looking at.
  *
  * For a locatable schema error the field path is prefixed (e.g.
  * `monitoring_enabled: 'no' is not of type 'boolean'`) so the user knows where to
@@ -110,5 +127,12 @@ export function footerErrorMessage(resp: ValidateResponse): string {
   if (resp.valid) return '';
   const instancePath = dataLocToInstancePath(resp.data_loc);
   if (instancePath === '') return resp.detail;
+  const { shownInForm } = locateBackendError(resp);
+  // The canonical YAML of the response is what the editor displays after this
+  // validation round-trip, so locating against it tells whether the editor
+  // marker (backendMarkers.ts) can anchor the error.
+  const shownInYaml =
+    resp.yaml != null && locateInstancePathInYaml(resp.yaml, instancePath) != null;
+  if (shownInForm && shownInYaml) return '';
   return `${instancePathToDotted(instancePath)}: ${resp.detail}`;
 }

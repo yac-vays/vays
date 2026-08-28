@@ -38,7 +38,11 @@ import {
   registerFormWriter,
   setActivePane,
 } from '../../../../controller/local/EditController/sync';
-import { footerErrorMessage, locateBackendError } from '../../../../utils/schema/locatedErrors';
+import {
+  dropLocallyDuplicatedErrors,
+  footerErrorMessage,
+  locateBackendError,
+} from '../../../../utils/schema/locatedErrors';
 import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import NoDataIndicator from '../../../components/NoDataIndicator';
 import useInitializeForm from './useInitializeState';
@@ -98,32 +102,30 @@ const StandardEditMode = memo(
     const applyRespToForm = (resp: ValidateResponse, errors?: any[]) => {
       setJsonSchema(resp.json_schema);
       setUISchema(resp.ui_schema);
+      // Local (AJV) validation of the response data: it feeds the Commit gate
+      // below AND dedupes the backend error on fields the local validation
+      // already flags (the control would otherwise show the same problem twice).
+      const validate = getAJV().compile(resp.json_schema);
+      validate(structuredClone(resp.data));
+      const localErrors = validate.errors ?? [];
       const located = locateBackendError(resp);
-      setAdditionalErrors(located.additionalErrors);
-      // Always explain a blocked commit in the (tab-independent) footer. Inline
-      // control errors only render on the active categorization tab, so a
-      // locatable error on another tab — or one that maps to no rendered control
-      // (e.g. a `required` object reported at the document root) — would
-      // otherwise leave the user with a disabled Commit and no visible reason.
+      const additional = dropLocallyDuplicatedErrors(located.additionalErrors, localErrors);
+      setAdditionalErrors(additional);
+      // The footer only carries errors that cannot be displayed inline in both
+      // panes (see footerErrorMessage) — e.g. request-level errors, document
+      // root, or a control that is not rendered.
       setEditErrorMsg(footerErrorMessage(resp));
       setLocalData(resp.data);
       setIsEmpty(false);
       setFormData(resp.data, errors);
-      updateTabsErrorNotification(
-        resp.data,
-        resp.json_schema,
-        resp.ui_schema,
-        located.additionalErrors,
-      );
+      updateTabsErrorNotification(resp.data, resp.json_schema, resp.ui_schema, additional);
       // Re-derive the form's local validity from the response itself (the same
       // check as useInitializeState's migration detection). The onChange event
       // this write triggers is suppressed, so when the render was caused by a
       // YAML edit nothing else refreshes `isValidLocal` — a stale `false` from
       // the load-time migration check would keep the Commit button disabled
       // even after the user fixed the data in the YAML pane.
-      const validate = getAJV().compile(resp.json_schema);
-      validate(structuredClone(resp.data));
-      setLocalValidity((validate.errors?.length ?? 0) === 0);
+      setLocalValidity(localErrors.length === 0);
       emitValidity();
     };
 

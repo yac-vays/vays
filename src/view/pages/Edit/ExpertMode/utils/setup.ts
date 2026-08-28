@@ -24,6 +24,7 @@ import {
   getYACValidateResponse,
   setEditDirty,
 } from '../../../../../controller/local/EditController/shared';
+import { footerErrorMessage } from '../../../../../utils/schema/locatedErrors';
 import { patchSchemaForMonaco } from '../../../../../utils/schema/monacoSchemaFix';
 import { setBackendValidationMarkers } from '../EditorPlugins/backendMarkers';
 import {
@@ -182,7 +183,10 @@ export function getUpdateCallback(): EditorUpdateCallback {
       // A newer edit (in either pane) has since been dispatched; drop this stale
       // response so it cannot overwrite the latest state.
       if (isStaleValidation(seq)) return;
-      setErrorMessage(getYACValidateResponse());
+      // Footer policy: an error that both panes display inline is suppressed
+      // there (see footerErrorMessage); without a response (network failure)
+      // fall back to the raw stored detail.
+      setErrorMessage(rep == null ? getYACValidateResponse() : footerErrorMessage(rep));
       setIsValidating(false);
 
       if (rep == null) return;

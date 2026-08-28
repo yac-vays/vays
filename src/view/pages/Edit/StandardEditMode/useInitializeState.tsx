@@ -17,7 +17,11 @@ import { RequestEditContext } from '../../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import { Nullable } from '../../../../utils/types/typeUtils';
 import { ErrorObject } from 'ajv';
-import { footerErrorMessage, locateBackendError } from '../../../../utils/schema/locatedErrors';
+import {
+  dropLocallyDuplicatedErrors,
+  footerErrorMessage,
+  locateBackendError,
+} from '../../../../utils/schema/locatedErrors';
 
 /**
  * Custom hook to initialize the form state for the edit page.
@@ -92,44 +96,38 @@ const useInitializeForm = (
 
       // Detect a "migration" situation: an existing entity whose stored data no
       // longer validates against the current schema (e.g. the spec changed).
-      let migrationError = false;
+      let localErrors: ErrorObject[] = [];
       if (requestEditContext.mode === 'edit') {
         const validate = getAJV().compile(resp.json_schema);
         validate(structuredClone(resp.data));
-        migrationError = (validate.errors?.length ?? 0) > 0;
+        localErrors = validate.errors ?? [];
       }
+      const migrationError = localErrors.length > 0;
 
       setSetupDone(true);
       setJsonSchema(resp.json_schema);
       setUISchema(resp.ui_schema);
       setLocalData(resp.data);
-      // Show a located schema error on its control; the offending fields/tabs
-      // are highlighted by `updateTabsErrorNotification` + JSON Forms inline.
-      // The footer status bar (red) carries the explanatory/global message:
-      // a migration note when applicable, else the backend detail when it has
-      // no in-form location.
+      // Show a located schema error on its control — unless the local (AJV)
+      // validation already flags the same field, which would render the same
+      // problem twice. The offending fields/tabs are highlighted by
+      // `updateTabsErrorNotification` + JSON Forms inline.
       const located = locateBackendError(resp);
-      setAdditionalErrors(located.additionalErrors);
+      const additional = dropLocallyDuplicatedErrors(located.additionalErrors, localErrors);
+      setAdditionalErrors(additional);
       if (migrationError) {
         onYacError(
           'There are validation errors — possibly because the specification changed ' +
             '(migration). Please fix the highlighted fields before saving.',
         );
       } else {
-        // Always explain a blocked commit in the (tab-independent) footer:
-        // inline control errors only render on the active categorization tab, so
-        // relying on them leaves the user with no visible reason when the error
-        // is on another tab. See the matching comment in StandardEditMode.
+        // Footer policy: only errors that cannot be displayed inline in BOTH
+        // panes land here (see footerErrorMessage).
         onYacError(footerErrorMessage(resp));
       }
       setLocalValidity(!migrationError);
       emitValidity();
-      updateTabsErrorNotification(
-        resp.data,
-        resp.json_schema,
-        resp.ui_schema,
-        located.additionalErrors,
-      );
+      updateTabsErrorNotification(resp.data, resp.json_schema, resp.ui_schema, additional);
 
       setLoading(false);
 

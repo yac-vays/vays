@@ -1,11 +1,3 @@
-.error-glyph{
-    background-image: url('../../../../../rsc/error.svg');
-    background-color: transparent;
-    background-repeat: no-repeat;
-    background-position: center center;
-    cursor: pointer;
-}
-
 .error-line{
     background-color: rgb(darkviolet/ 0.2) ;
 }
@@ -30,3 +22,24 @@
     cursor: help;
 }
 
+/* AFTER .diff-removed-glyph on purpose: when Monaco merges both classes onto
+   one glyph element (error marker on a line where lines were also removed),
+   the error icon must win the background over the removal bar. */
+.error-glyph{
+    background-image: url('../../../../../rsc/error.svg');
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: center center;
+    cursor: pointer;
+}
+
+/* Both indicators on the same line: layer the error icon ON TOP of the
+   removal bar so neither is lost. */
+.error-glyph.diff-removed-glyph{
+    background-image:
+        url('../../../../../rsc/error.svg'),
+        linear-gradient(to bottom, transparent 40%, #f85149 40%, #f85149 60%, transparent 60%);
+    background-repeat: no-repeat, no-repeat;
+    background-position: center center, center center;
+    cursor: pointer;
+}

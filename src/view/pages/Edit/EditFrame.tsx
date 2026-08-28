@@ -277,6 +277,12 @@ const EditFrame = ({
   // The overridden Commit is unmistakably a warning-styled action.
   const btnOverride =
     'cursor-pointer border-[#d32f2f] text-[#d32f2f] hover:bg-[#d32f2f] hover:text-white';
+  // Inside the lock+Commit pair the border must be ONE color — the lock's. A
+  // disabled Commit keeps its grey text but adopts the pair border and drops
+  // the element-wide opacity (which would fade its border half away).
+  const btnDisabledInPair = `cursor-not-allowed text-reducedfont ${
+    adminUnlocked ? 'border-[#d32f2f]' : 'border-black dark:border-meta-4'
+  }`;
 
   const unlockAdminMode = () => {
     showModalMessage(
@@ -495,7 +501,13 @@ const EditFrame = ({
                     sendYAMLData(requestEditContext);
                   }}
                   className={`${btnBase} ${showAdminLock ? 'rounded-l-none' : ''} ${
-                    saveDisabled ? btnDisabled : commitOverridden ? btnOverride : btnEnabled
+                    saveDisabled
+                      ? showAdminLock
+                        ? btnDisabledInPair
+                        : btnDisabled
+                      : commitOverridden
+                        ? btnOverride
+                        : btnEnabled
                   }`}
                 >
                   {isValidating ? (

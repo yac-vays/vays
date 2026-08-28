@@ -89,18 +89,19 @@ function possibleValues(schema: any): string[] {
 }
 
 /**
- * Markdown help text for a field. `fieldName` is the last path segment (used
- * when the schema has no title); `parentSchema` (optional) provides the
- * required-ness.
+ * The schema FACTS of a field as markdown, for the editor's hover: type +
+ * required-ness, default, pattern/format, possible values and examples.
+ * Deliberately WITHOUT the title/description — monaco-yaml's own hover section
+ * already shows those, and both sections appear in the same hover widget.
+ * Returns '' when the schema holds no facts (the hover then shows only the
+ * monaco-yaml section).
  */
-export function fieldHelpMarkdown(
+export function fieldHelpHoverMarkdown(
   fieldName: string | number,
   schema: any,
   parentSchema?: any,
 ): string {
   const parts: string[] = [];
-
-  if (schema.description) parts.push(String(schema.description));
 
   const facts: string[] = [];
   if (schema.type) {
@@ -125,13 +126,5 @@ export function fieldHelpMarkdown(
     parts.push('**Examples:**\n\n' + schema.examples.map((e: any) => `- ${asCode(e)}`).join('\n'));
   }
 
-  if (parts.length === 0) {
-    return 'The schema has no further information about this field.';
-  }
   return parts.join('\n\n');
-}
-
-/** The modal title for a field: its schema title, else the field name itself. */
-export function fieldHelpTitle(fieldName: string | number, schema: any): string {
-  return schema?.title ? String(schema.title) : String(fieldName);
 }

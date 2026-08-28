@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fieldHelpMarkdown, fieldHelpTitle, subschemaAtPath } from './fieldHelp';
+import { fieldHelpHoverMarkdown, subschemaAtPath } from './fieldHelp';
 import { yamlPathAtOffset } from './yamlPathLocator';
 
 const schema = {
@@ -41,30 +41,29 @@ describe('subschemaAtPath', () => {
   });
 });
 
-describe('fieldHelpMarkdown / fieldHelpTitle', () => {
-  it('renders description, type and required-ness', () => {
-    const md = fieldHelpMarkdown('owner', schema.properties.owner, schema);
-    expect(md).toContain('The responsible user.');
+describe('fieldHelpHoverMarkdown', () => {
+  it('renders type and required-ness, but NOT the description (monaco-yaml shows it)', () => {
+    const md = fieldHelpHoverMarkdown('owner', schema.properties.owner, schema);
     expect(md).toContain('**Type:** string (required)');
-    expect(fieldHelpTitle('owner', schema.properties.owner)).toBe('Owner');
+    expect(md).not.toContain('The responsible user.');
   });
 
   it('collects possible values from oneOf consts with their titles', () => {
-    const md = fieldHelpMarkdown('os', schema.properties.os, schema);
+    const md = fieldHelpHoverMarkdown('os', schema.properties.os, schema);
     expect(md).toContain('**Possible values:**');
     expect(md).toContain('`"linux"`');
     expect(md).toContain('`"windows"` — Windows (special)');
   });
 
   it('renders pattern and examples', () => {
-    const md = fieldHelpMarkdown('ip', schema.properties.networking.properties.ip);
+    const md = fieldHelpHoverMarkdown('ip', schema.properties.networking.properties.ip);
     expect(md).toContain('**Pattern:** `^\\d+\\.`');
     expect(md).toContain('`"10.0.0.1"`');
   });
 
-  it('falls back to the field name and a no-info message', () => {
-    expect(fieldHelpTitle('bare', {})).toBe('bare');
-    expect(fieldHelpMarkdown('bare', {})).toContain('no further information');
+  it('is empty when the schema holds no facts (hover section is then omitted)', () => {
+    expect(fieldHelpHoverMarkdown('bare', {})).toBe('');
+    expect(fieldHelpHoverMarkdown('bare', { description: 'only prose' })).toBe('');
   });
 });
 

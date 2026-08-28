@@ -34,12 +34,15 @@
 }
 
 /* Both indicators on the same line: layer the error icon ON TOP of the
-   removal bar so neither is lost. */
+   removal bar, with an editor-background disc between them — the icon's
+   interior is transparent and the bar shares its red, so without the disc the
+   symbol would drown in the bar. */
 .error-glyph.diff-removed-glyph{
     background-image:
         url('../../../../../rsc/error.svg'),
+        radial-gradient(circle closest-side, var(--vscode-editor-background, #ffffff) 0 100%, transparent 100%),
         linear-gradient(to bottom, transparent 40%, #f85149 40%, #f85149 60%, transparent 60%);
-    background-repeat: no-repeat, no-repeat;
-    background-position: center center, center center;
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-position: center center, center center, center center;
     cursor: pointer;
 }

@@ -8,7 +8,7 @@ import { registerDiffViewerCallback } from '../../../controller/global/diffViewe
  */
 function diffLineClass(line: string): string {
   if (line.startsWith('+++') || line.startsWith('---')) return 'font-semibold text-plainfont';
-  if (line.startsWith('@@')) return 'text-primary';
+  if (line.startsWith('@@')) return 'text-reducedfont font-medium';
   if (line.startsWith('+')) return 'bg-[#1EA779]/10 text-[#1EA779]';
   if (line.startsWith('-')) return 'bg-[#d32f2f]/10 text-[#d32f2f]';
   return 'text-reducedfont';
@@ -48,7 +48,9 @@ const DiffViewer = () => {
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-xl font-bold text-plainfont sm:text-2xl mt-0 pb-4">{content.title}</h3>
-        <pre className="max-h-[60vh] overflow-auto rounded border border-stroke bg-primary-5 p-4 text-sm leading-6 dark:border-form-strokedark dark:bg-form-input">
+        {/* Neutral (grey) background on purpose: the diff carries its own
+            red/green semantics, mixing in the theme color looks off. */}
+        <pre className="max-h-[60vh] overflow-auto rounded border border-stroke bg-[#f5f5f5] p-4 text-sm leading-6 dark:border-form-strokedark dark:bg-form-input">
           {content.patch.split('\n').map((line, i) => (
             <div key={i} className={`px-1 ${diffLineClass(line)}`}>
               {/* Keep empty lines from collapsing to zero height. */}

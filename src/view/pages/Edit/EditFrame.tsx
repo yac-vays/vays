@@ -270,7 +270,7 @@ const EditFrame = ({
       ? `Commit + ${activeActions.map((a) => a.title || a.name).join(' + ')}`
       : 'Commit') + (commitOverridden ? ' (admin)' : '');
   const btnBase =
-    'inline-flex items-center justify-center rounded border py-1.5 px-4 text-center font-medium';
+    'inline-flex items-center justify-center whitespace-nowrap rounded border py-1.5 px-4 text-center font-medium';
   const btnEnabled =
     'cursor-pointer border-black dark:border-meta-4 text-plainfont hover:bg-opacity-90 hover:bg-primary hover:text-white dark:bg-meta-4 dark:hover:bg-white dark:hover:text-black';
   const btnDisabled = 'cursor-not-allowed border-stroke text-reducedfont opacity-50';
@@ -426,14 +426,16 @@ const EditFrame = ({
         </div>
 
         <div
-          className="relative flex group w-full shrink-0 mt-1 border-t"
+          className="relative flex items-center gap-2 group w-full shrink-0 mt-1 border-t"
           style={{ height: 55, borderColor: '#ddddddaa' }}
         >
           {/* Hidden entirely in read mode (not just the text): the stored file is
               shown verbatim, so validation findings are expected there and a
-              blocked Commit — what this box explains — does not exist. */}
+              blocked Commit — what this box explains — does not exist. The
+              message stays on ONE (truncated) line so the box never grows past
+              the footer; the full text is in the (native) hover tooltip. */}
           <div
-            className={`relative flex flex-col grow  mt-4 p-1.5 rounded duration-1000 opacity-0 overflow-x-hidden border-l-4 ${
+            className={`grow min-w-0 p-1.5 rounded duration-1000 opacity-0 overflow-hidden border-l-4 ${
               isDisplayingYACError && !isReadOnly ? 'opacity-100' : ''
             }`}
             style={{
@@ -441,66 +443,71 @@ const EditFrame = ({
               borderColor: '#d32f2f',
             }}
           >
-            <span className="text-wrap text-[#d32f2f]">{yacErrorMsg}</span>
+            <span className="block truncate text-[#d32f2f]" title={yacErrorMsg}>
+              {yacErrorMsg}
+            </span>
           </div>
           {isReadOnly ? (
             <></>
           ) : (
-            <div className="flex items-center px-2">
+            <div className="flex flex-none items-center px-2">
               <UsageIndicator usages={usages} />
             </div>
           )}
           {isReadOnly ? (
             <></>
           ) : (
-            <div className="flex flex-wrap items-center justify-end gap-2 h-full px-4">
-              {adminUnlocked && (
-                <span className="text-sm font-medium text-[#d32f2f]">Admin override active</span>
-              )}
-              {showAdminLock && (
+            <div className="flex flex-none items-center justify-end gap-2 pr-2">
+              {/* Lock + Commit render as ONE visual button pair: the lock
+                  drops its right rounding/border, the commit its left. */}
+              <div className="inline-flex items-stretch">
+                {showAdminLock && (
+                  <button
+                    type="button"
+                    title={
+                      adminUnlocked
+                        ? 'Lock admin mode again (commits then require valid data).'
+                        : 'Unlock admin mode: commit although validation fails (adm permission).'
+                    }
+                    onClick={() => (adminUnlocked ? setAdminOverride(false) : unlockAdminMode())}
+                    className={`${btnBase} rounded-r-none border-r-0 ${
+                      adminUnlocked ? btnOverride : btnEnabled
+                    }`}
+                  >
+                    {adminUnlocked ? <FaLockOpen size={14} /> : <FaLock size={14} />}
+                  </button>
+                )}
                 <button
                   type="button"
+                  disabled={saveDisabled}
                   title={
-                    adminUnlocked
-                      ? 'Lock admin mode again (commits then require valid data).'
-                      : 'Unlock admin mode: commit although validation fails (adm permission).'
+                    commitOverridden && !saveDisabled
+                      ? 'Admin override: commits although the document fails validation.'
+                      : !isValid && !adminUnlocked && !isValidating
+                        ? 'Resolve the highlighted errors before saving.'
+                        : nothingToCommit && !isValidating
+                          ? 'Nothing to commit: the document matches what is stored.'
+                          : undefined
                   }
-                  onClick={() => (adminUnlocked ? setAdminOverride(false) : unlockAdminMode())}
-                  className={`${btnBase} ${adminUnlocked ? btnOverride : btnEnabled}`}
+                  onClick={() => {
+                    // Unified save: the canonical YAML (kept current no matter which
+                    // pane was edited) is PUT, preserving comments/order.
+                    sendYAMLData(requestEditContext);
+                  }}
+                  className={`${btnBase} ${showAdminLock ? 'rounded-l-none' : ''} ${
+                    saveDisabled ? btnDisabled : commitOverridden ? btnOverride : btnEnabled
+                  }`}
                 >
-                  {adminUnlocked ? <FaLockOpen size={14} /> : <FaLock size={14} />}
+                  {isValidating ? (
+                    <div
+                      style={{ borderWidth: 3, right: 10 }}
+                      className=" h-4 w-4 animate-spin rounded-full border-2 border-solid border-grey border-t-transparent z-10"
+                    ></div>
+                  ) : (
+                    commitLabel
+                  )}
                 </button>
-              )}
-              <button
-                type="button"
-                disabled={saveDisabled}
-                title={
-                  commitOverridden && !saveDisabled
-                    ? 'Admin override: commits although the document fails validation.'
-                    : !isValid && !adminUnlocked && !isValidating
-                      ? 'Resolve the highlighted errors before saving.'
-                      : nothingToCommit && !isValidating
-                        ? 'Nothing to commit: the document matches what is stored.'
-                        : undefined
-                }
-                onClick={() => {
-                  // Unified save: the canonical YAML (kept current no matter which
-                  // pane was edited) is PUT, preserving comments/order.
-                  sendYAMLData(requestEditContext);
-                }}
-                className={`${btnBase} ${
-                  saveDisabled ? btnDisabled : commitOverridden ? btnOverride : btnEnabled
-                }`}
-              >
-                {isValidating ? (
-                  <div
-                    style={{ borderWidth: 3, right: 10 }}
-                    className=" h-4 w-4 animate-spin rounded-full border-2 border-solid border-grey border-t-transparent z-10"
-                  ></div>
-                ) : (
-                  commitLabel
-                )}
-              </button>
+              </div>
               {actionsRunAlone &&
                 activeActions.map((act) => (
                   <button

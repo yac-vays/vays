@@ -16,7 +16,9 @@ import {
   setValidityListener,
 } from '../../../controller/local/EditController/shared';
 import { revalidateMeta } from '../../../controller/local/EditController/sync';
+import { getActionCallback } from '../../../model/action';
 import { getCachedConfig } from '../../../model/config';
+import { ActionDecl } from '../../../utils/types/api';
 import iLocalStorage from '../../../session/persistent/LocalStorage';
 import { LimitUsage } from '../../../utils/types/api';
 import { EditorLayout } from '../../../utils/types/config';
@@ -75,11 +77,11 @@ const EditFrame = ({
   const [formLoading, setFormLoading] = useState<boolean>(true);
   const [yamlLoading, setYamlLoading] = useState<boolean>(true);
   const isLoading = formLoading || yamlLoading;
-  // Titles of the actions the user has selected (in the MetaInfoPanel), shown on
-  // the Commit button. Refreshed whenever the panel reports a change.
-  const [actionTitles, setActionTitles] = useState<string[]>([]);
-  const refreshActionTitles = () =>
-    setActionTitles(getActivatedActions().map((a) => a.title || a.name));
+  // The actions the user has selected (in the MetaInfoPanel): shown on the
+  // Commit button, or as standalone buttons when there is nothing to commit.
+  // Refreshed whenever the panel reports a change (copied so React re-renders).
+  const [activeActions, setActiveActions] = useState<ActionDecl[]>([]);
+  const refreshActionTitles = () => setActiveActions([...getActivatedActions()]);
   // Whether the YAML editor currently has focus. Used to dim the inactive pane:
   // YAML focused -> dim the form; otherwise (form focused or nothing -> default)
   // -> dim the YAML editor.
@@ -220,7 +222,7 @@ const EditFrame = ({
 
   // Reset the selected-action labels when switching to another entity.
   useEffect(() => {
-    setActionTitles([]);
+    setActiveActions([]);
   }, [
     requestEditContext.entityName,
     requestEditContext.mode,
@@ -232,7 +234,21 @@ const EditFrame = ({
   // any pane edit make the payload differ and re-enable the button.
   const nothingToCommit = requestEditContext.mode === 'edit' && !hasChanges;
   const saveDisabled = isValidating || !isValid || nothingToCommit;
-  const commitLabel = actionTitles.length ? `Commit + ${actionTitles.join(' + ')}` : 'Commit';
+  // With no data changes, a combined "Commit + Action" button would be dead
+  // even though the selected actions could run on their own — they act on the
+  // STORED entity, exactly like running them from the overview list. Split
+  // them into standalone buttons next to the (disabled) Commit instead.
+  const actionsRunAlone =
+    nothingToCommit && activeActions.length > 0 && requestEditContext.entityName != null;
+  const commitLabel =
+    !actionsRunAlone && activeActions.length
+      ? `Commit + ${activeActions.map((a) => a.title || a.name).join(' + ')}`
+      : 'Commit';
+  const btnBase =
+    'inline-flex items-center justify-center rounded border py-1.5 px-4 text-center font-medium';
+  const btnEnabled =
+    'cursor-pointer border-black dark:border-meta-4 text-plainfont hover:bg-opacity-90 hover:bg-primary hover:text-white dark:bg-meta-4 dark:hover:bg-white dark:hover:text-black';
+  const btnDisabled = 'cursor-not-allowed border-stroke text-reducedfont opacity-50';
 
   const setEditErrorMsg = (msg: string) => {
     if (msg === '') {
@@ -396,10 +412,7 @@ const EditFrame = ({
           {isReadOnly ? (
             <></>
           ) : (
-            <div
-              className=" grid place-items-center align-middle h-full"
-              style={{ right: 0, bottom: 0 }}
-            >
+            <div className="flex flex-wrap items-center justify-end gap-2 h-full px-4">
               <button
                 type="button"
                 disabled={saveDisabled}
@@ -415,11 +428,7 @@ const EditFrame = ({
                   // pane was edited) is PUT, preserving comments/order.
                   sendYAMLData(requestEditContext);
                 }}
-                className={`inline-flex items-center justify-center rounded border py-1.5 px-4 m-4 text-center font-medium ${
-                  saveDisabled
-                    ? 'cursor-not-allowed border-stroke text-reducedfont opacity-50'
-                    : 'cursor-pointer border-black dark:border-meta-4 text-plainfont hover:bg-opacity-90 hover:bg-primary hover:text-white dark:bg-meta-4 dark:hover:bg-white dark:hover:text-black'
-                }`}
+                className={`${btnBase} ${saveDisabled ? btnDisabled : btnEnabled}`}
               >
                 {isValidating ? (
                   <div
@@ -430,6 +439,27 @@ const EditFrame = ({
                   commitLabel
                 )}
               </button>
+              {actionsRunAlone &&
+                activeActions.map((act) => (
+                  <button
+                    key={act.name}
+                    type="button"
+                    title={`Run ${act.title || act.name} on the stored entity (nothing is committed).`}
+                    onClick={() => {
+                      // Same flow as running the action from the overview list:
+                      // dangerous-action confirm, toasts, backend permission
+                      // check — none of it involves the editor document.
+                      getActionCallback(
+                        requestEditContext.rc,
+                        requestEditContext.entityName as string,
+                        act,
+                      )();
+                    }}
+                    className={`${btnBase} ${btnEnabled}`}
+                  >
+                    {act.title || act.name}
+                  </button>
+                ))}
             </div>
           )}
         </div>

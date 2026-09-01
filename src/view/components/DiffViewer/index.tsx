@@ -9,7 +9,7 @@ import { registerDiffViewerCallback } from '../../../controller/global/diffViewe
 function diffLineClass(line: string): string {
   if (line.startsWith('+++') || line.startsWith('---')) return 'font-semibold text-plainfont';
   if (line.startsWith('@@')) return 'text-reducedfont font-medium';
-  if (line.startsWith('+')) return 'bg-[#1EA779]/10 text-[#1EA779]';
+  if (line.startsWith('+')) return 'bg-[#388e3c]/10 text-[#388e3c]';
   if (line.startsWith('-')) return 'bg-[#d32f2f]/10 text-[#d32f2f]';
   return 'text-reducedfont';
 }
@@ -52,7 +52,9 @@ const DiffViewer = () => {
             red/green semantics, mixing in the theme color looks off. */}
         <pre className="max-h-[60vh] overflow-auto rounded border border-stroke bg-[#f5f5f5] p-4 text-sm leading-6 dark:border-form-strokedark dark:bg-form-input">
           {content.patch.split('\n').map((line, i) => (
-            <div key={i} className={`px-1 ${diffLineClass(line)}`}>
+            // w-fit min-w-full: span the full scroll width, so the line
+            // background is not cut off when the text overflows the box.
+            <div key={i} className={`w-fit min-w-full px-1 ${diffLineClass(line)}`}>
               {/* Keep empty lines from collapsing to zero height. */}
               {line === '' ? ' ' : line}
             </div>

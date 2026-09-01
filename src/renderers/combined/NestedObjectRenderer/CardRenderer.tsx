@@ -6,7 +6,7 @@ import {
   withJsonFormsContext,
 } from '@jsonforms/react';
 import _ from 'lodash';
-import React, { ComponentType } from 'react';
+import React, { ComponentType, useState } from 'react';
 import Accordion from '../../../view/components/Accordion';
 import ItemDeleteButton from './ItemDeleteButton';
 
@@ -16,6 +16,8 @@ interface DispatchPropsOfCardRenderer {
 
 interface CardRendererProps extends LayoutProps, DispatchPropsOfCardRenderer {
   index: number;
+  /** Mount-time only: a freshly added item starts with its accordion open. */
+  expanded?: boolean;
 }
 
 export const CardRenderer = (props: CardRendererProps) => {
@@ -37,6 +39,11 @@ export const CardRenderer = (props: CardRendererProps) => {
       />
     );
   });
+  // Freeze `expanded` at mount: it only encodes "this item was just added, so
+  // start it open". Later re-renders (e.g. schema updates from validation
+  // responses, or another item becoming the freshly-added one) must not
+  // re-sync the accordion and override how the user has since toggled it.
+  const [initialExpanded] = useState(props.expanded);
   const labelProp = props.uischema.options?.renderer_options?.item_label_prop;
   const ctx = useJsonForms();
   let title = (props.index + 1).toString();
@@ -46,7 +53,7 @@ export const CardRenderer = (props: CardRendererProps) => {
   }
 
   return (
-    <Accordion title={title}>
+    <Accordion title={title} expanded={initialExpanded}>
       <div className="group flex flex-row w-full">
         {/* min-w-0: see ArrayRenderer/Table.tsx — lets controls shrink in
             narrow panes. */}

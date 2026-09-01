@@ -12,7 +12,7 @@ import {
   withJsonFormsArrayLayoutProps,
   withTranslateProps,
 } from '@jsonforms/react';
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { showModalMessage } from '../../../controller/global/modal';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
 import CardRenderer from './CardRenderer';
@@ -39,6 +39,11 @@ export const NestedObjectRenderer = ({
 }: ArrayLayoutProps & { translations: ArrayTranslations }) => {
   // No type checking since the data is only the lenght of the array.
   // But yea, it does give you a heads up if the type is not correct.
+
+  // Index of the item the user just added via the (+) button: that item's
+  // accordion mounts expanded (so the new, empty fields are right there to
+  // fill in) instead of requiring a manual click to open it.
+  const [addedIndex, setAddedIndex] = useState<number | null>(null);
 
   const addItemCb = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,6 +85,7 @@ export const NestedObjectRenderer = ({
           cells={cells}
           onRemove={openDeleteDialog}
           enabled={enabled}
+          expanded={i === addedIndex}
         />
       );
     });
@@ -88,7 +94,8 @@ export const NestedObjectRenderer = ({
       <FormComponentTitle
         label={label}
         onClick={() => {
-          // createDefaultValue(this.props.schema, this.props.rootSchema)
+          // `data` is the current array length, i.e. the new item's index.
+          setAddedIndex(data);
           addItemCb(path, createDefaultValue(schema, rootSchema))();
         }}
         description={description}

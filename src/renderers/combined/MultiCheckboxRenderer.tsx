@@ -77,7 +77,9 @@ export const MultiCheckboxRenderer = ({
   };
 
   return (
-    <div>
+    // p-1 like the other controls' wrappers: gives the ErrorRing (drawn
+    // outside the box) room, so it is not clipped by the scrolling form pane.
+    <div className="p-1">
       <FormComponentTitle
         label={label}
         description={description}

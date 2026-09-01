@@ -99,8 +99,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, backendList }: SidebarProps) => 
           aria-expanded={sidebarOpen}
           className="block lg:hidden"
         >
+          {/* bodydark1 = the same #dee4ee the sidebar's (+) buttons use. */}
           <svg
-            className="fill-current"
+            className="fill-bodydark1"
             width="20"
             height="18"
             viewBox="0 0 20 18"

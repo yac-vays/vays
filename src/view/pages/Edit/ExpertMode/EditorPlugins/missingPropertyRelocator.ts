@@ -117,6 +117,43 @@ function relocateForResource(resource: monaco.Uri) {
   }
 }
 
+/**
+ * Rebuild the marker DECORATIONS when they no longer agree with the marker
+ * data. Monaco stores markers as plain data but renders them through
+ * decorations that move with text edits — a full-text replace (the pane sync's
+ * `setValue`) clears or strands those decorations WITHOUT a marker event, and
+ * monaco only rebuilds them when the markers change. The result in the field:
+ * `getModelMarkers` correctly reports the relocated marker on the phantom last
+ * line while the visible squiggle sits somewhere else entirely (or nowhere).
+ * Detect the divergence (a squiggle on a line no marker occupies, or markers
+ * without any squiggle) and force a rebuild by re-setting each owner's list.
+ */
+function repairStaleMarkerDecorations(model: monaco.editor.ITextModel) {
+  const markers = monaco.editor.getModelMarkers({ resource: model.uri });
+  const severe = markers.filter((m) => m.severity >= monaco.MarkerSeverity.Warning);
+  if (severe.length === 0) return;
+  const markerLines = new Set(severe.map((m) => m.startLineNumber));
+
+  const squiggles = model
+    .getAllDecorations()
+    .filter((d) => String(d.options.className ?? '').startsWith('squiggly'));
+  const stale =
+    squiggles.length === 0 || squiggles.some((d) => !markerLines.has(d.range.startLineNumber));
+  if (!stale) return;
+
+  const byOwner = new Map<string, monaco.editor.IMarker[]>();
+  for (const marker of markers) {
+    const group = byOwner.get(marker.owner);
+    if (group) group.push(marker);
+    else byOwner.set(marker.owner, [marker]);
+  }
+  for (const [owner, list] of byOwner) {
+    // Clear + re-set: an identical single re-set may be treated as a no-op.
+    monaco.editor.setModelMarkers(model, owner, []);
+    monaco.editor.setModelMarkers(model, owner, list);
+  }
+}
+
 export default async function editorMissingPropertyRelocator(
   ed: monaco.editor.IStandaloneCodeEditor,
   _ctx: RequestEditContext,
@@ -134,11 +171,14 @@ export default async function editorMissingPropertyRelocator(
 
   // Safety net: marker writes race around rapid schema updates + worker
   // restarts (monaco-yaml revalidates on its own debounce AND on every app
-  // validation round-trip), and coalesced change events have been observed to
-  // leave the LAST write un-relocated. Re-assert periodically — the pass is a
-  // few marker compares and writes nothing when everything is in place.
+  // validation round-trip), and full-text replaces detach the rendered
+  // squiggles from the marker data without any event. Re-assert both
+  // periodically — the passes are a few compares and write nothing when
+  // everything is in place.
   relocatorSafetyInterval = window.setInterval(() => {
     const model = ed.getModel();
-    if (model != null) relocateForResource(model.uri);
+    if (model == null) return;
+    relocateForResource(model.uri);
+    repairStaleMarkerDecorations(model);
   }, 500);
 }

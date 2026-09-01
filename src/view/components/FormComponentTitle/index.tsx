@@ -1,5 +1,6 @@
 import ErrorButton from '../Buttons/ErrorButton';
 import InformationButton from '../Buttons/InformationButton';
+import { FormFieldLimitChips } from '../LimitChips';
 
 const FormComponentTitle = ({
   label,
@@ -9,6 +10,7 @@ const FormComponentTitle = ({
   hideAddButton,
   required,
   errors,
+  path,
 }: {
   label?: string;
   large?: boolean;
@@ -17,6 +19,8 @@ const FormComponentTitle = ({
   hideAddButton?: boolean;
   required?: boolean;
   errors?: string;
+  /** The control's data path; anchors matching `limits` usage chips here. */
+  path?: string;
 }) => {
   return (
     <>
@@ -39,6 +43,13 @@ const FormComponentTitle = ({
           <div className="relative pl-1.5">
             <ErrorButton content={errors} />
           </div>
+        ) : (
+          <></>
+        )}
+        {path != null ? (
+          <span className="relative pl-1.5 flex items-center">
+            <FormFieldLimitChips path={path} />
+          </span>
         ) : (
           <></>
         )}

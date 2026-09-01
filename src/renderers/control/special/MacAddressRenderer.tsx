@@ -97,6 +97,7 @@ export const MacAddressRenderer = (props: ControlProps) => {
         required={props.required || false}
         description={props.description}
         errors={displayErrors}
+        path={props.path}
       />
       <ErrorRing errors={displayErrors}>
         <TextInput

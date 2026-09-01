@@ -137,19 +137,28 @@ export function emitValidity() {
 }
 
 /**
- * Reactive bridge for the `limits` usage indicator. Both edit modes funnel
- * their validation results through `setYACStatus`, so a single listener
- * registered by the edit view (`EditFrame`) receives every update for free.
+ * Reactive bridge for the `limits` usage indicators. Both edit modes funnel
+ * their validation results through `setYACStatus`, so every subscriber
+ * receives every update for free. Multiple subscribers exist (per-field
+ * chips, the meta-panel chips next to the name, the editor's gutter glyphs),
+ * hence a subscription set rather than the single-listener bridges around it.
+ * Subscribing immediately pushes the current state.
  */
-let usagesListener: ((usages: LimitUsage[]) => void) | null = null;
+const usagesListeners = new Set<(usages: LimitUsage[]) => void>();
 
-export function setUsagesListener(cb: ((usages: LimitUsage[]) => void) | null) {
-  usagesListener = cb;
+export function subscribeToUsages(cb: (usages: LimitUsage[]) => void): () => void {
+  usagesListeners.add(cb);
+  cb(editingState.yacUsages);
+  return () => usagesListeners.delete(cb);
+}
+
+export function getYACUsages(): LimitUsage[] {
+  return editingState.yacUsages;
 }
 
 export function setYACUsages(usages: LimitUsage[]) {
   editingState.yacUsages = usages;
-  usagesListener?.(usages);
+  for (const cb of usagesListeners) cb(usages);
 }
 
 /**

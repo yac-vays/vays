@@ -85,6 +85,7 @@ export const MultiCheckboxRenderer = ({
         required={required}
         errors={errors}
         hideAddButton
+        path={path}
       />
 
       {/* The group description lives on the title above; repeating it on

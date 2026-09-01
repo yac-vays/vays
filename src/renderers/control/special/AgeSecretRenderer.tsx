@@ -147,6 +147,7 @@ export const AgeSecretRenderer = (props: ControlProps) => {
         required={props.required || false}
         description={props.description}
         errors={errorMsg}
+        path={props.path}
       />
       <ErrorRing errors={errorMsg}>
         <div className="flex flex-row gap-2 items-stretch">

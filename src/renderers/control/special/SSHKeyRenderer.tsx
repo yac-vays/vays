@@ -50,6 +50,7 @@ export const SSHKeyRenderer = ({
             required={required || false}
             description={description}
             errors={displayErrors}
+            path={path}
           />
           {/* The error ring is drawn inside SSHKeyInput, around the input row
               only. */}

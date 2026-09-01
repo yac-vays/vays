@@ -1,5 +1,6 @@
 import ErrorButton from '../../../../components/Buttons/ErrorButton';
 import InformationButton from '../../../../components/Buttons/InformationButton';
+import { FormFieldLimitChips } from '../../../../components/LimitChips';
 
 interface OverheadLabelProps {
   required: boolean;
@@ -7,6 +8,8 @@ interface OverheadLabelProps {
   description?: string;
   /** Validation error(s) for this control; shown via a red info-button. */
   errors?: string;
+  /** The control's data path; anchors matching `limits` usage chips here. */
+  path?: string;
 }
 
 /**
@@ -18,6 +21,7 @@ const OverheadLabelWithMarkdownDescr = ({
   title,
   description,
   errors,
+  path,
 }: OverheadLabelProps) => {
   return (
     <label className="mb-2.5 block text-plainfont flex flex-row">
@@ -34,6 +38,13 @@ const OverheadLabelWithMarkdownDescr = ({
         <div className="relative ml-1">
           <ErrorButton content={errors} />
         </div>
+      ) : (
+        <></>
+      )}
+      {path != null ? (
+        <span className="relative ml-1 flex items-center">
+          <FormFieldLimitChips path={path} />
+        </span>
       ) : (
         <></>
       )}

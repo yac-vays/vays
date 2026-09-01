@@ -15,13 +15,18 @@ export type APIOperation = 'create' | 'edit' | 'delete';
  * by the backend in the `/validate` response. `used` already includes the
  * entity being created/changed (see the YAC `limits` docs).
  */
-export const TYPE_CHECK_LIMIT_USAGE = '{title: String, used: Number, max: Number, ok: Boolean}';
+export const TYPE_CHECK_LIMIT_USAGE =
+  '{title: String, used: Number, max: Number, ok: Boolean, path: Maybe String}';
 
 export interface LimitUsage {
   title: string;
   used: number;
   max: number;
   ok: boolean;
+  /** Data-loc of the entity-data property this limit relates to (a UI hint
+   * from the limit spec, in YAC's usual `#/key/subkey` syntax like
+   * `data_loc`); null/absent when the limit is not tied to a field. */
+  path?: Nullable<string>;
 }
 
 export const TYPE_CHECK_VALIDATE_RESP = `{

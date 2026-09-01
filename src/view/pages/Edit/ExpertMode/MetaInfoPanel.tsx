@@ -8,6 +8,7 @@ import { getTriggerableActions } from '../../../../utils/actionUtils';
 import { isNameGeneratedByYAC, isNameOptionalByYAC } from '../../../../utils/nameUtils';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 import ErrorRing from '../../../components/Form/ErrorRing';
+import { MetaLimitChips } from '../../../components/LimitChips';
 import Checkbox from '../../../thirdparty/components/ifc/CheckBox/CheckBox';
 import OverheadLabelWithMarkdownDescr from '../../../thirdparty/components/ifc/Label/OverheadLabel';
 import TextInput from '../../../thirdparty/components/ifc/TextInput/TextInput';
@@ -69,14 +70,23 @@ const MetaInfoPanel = ({
   return (
     <div className="flex flex-row items-end gap-4 pb-2 border-b">
       <div className="grow">
+        {/* Limits without a field to anchor on (no `path`, or one that does
+            not resolve in the current schema) show as chips next to the name:
+            they usually concern the entity's existence itself. */}
+        {!showNameField && <MetaLimitChips />}
         {showNameField && (
           <>
-            <OverheadLabelWithMarkdownDescr
-              title="Name"
-              required={!nameOptional}
-              description=""
-              errors={nameErrorMessage || undefined}
-            />
+            <div className="flex flex-row items-center gap-2">
+              <OverheadLabelWithMarkdownDescr
+                title="Name"
+                required={!nameOptional}
+                description=""
+                errors={nameErrorMessage || undefined}
+              />
+              <span className="mb-2.5 flex items-center">
+                <MetaLimitChips />
+              </span>
+            </div>
             <ErrorRing errors={nameErrorMessage || undefined}>
               <TextInput
                 placeholder={namePlaceholder}

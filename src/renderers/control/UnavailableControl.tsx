@@ -22,7 +22,7 @@ const UnavailableControlComponent = (props: ControlProps) => {
 
   return (
     <div className="mb-3">
-      <OverheadLabelWithMarkdownDescr required title={props.label} />
+      <OverheadLabelWithMarkdownDescr required title={props.label} path={props.path} />
       <div
         className="rounded border-2 px-3 py-2"
         style={{

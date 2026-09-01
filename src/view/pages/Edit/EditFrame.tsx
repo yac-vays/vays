@@ -21,7 +21,6 @@ import {
   setAdminOverride,
   setAdminOverrideListener,
   setEntityPermsListener,
-  setUsagesListener,
   setValidityListener,
 } from '../../../controller/local/EditController/shared';
 import { revalidateMeta } from '../../../controller/local/EditController/sync';
@@ -29,7 +28,6 @@ import { getActionCallback } from '../../../model/action';
 import { getCachedConfig } from '../../../model/config';
 import { ActionDecl } from '../../../utils/types/api';
 import iLocalStorage from '../../../session/persistent/LocalStorage';
-import { LimitUsage } from '../../../utils/types/api';
 import { EditorLayout } from '../../../utils/types/config';
 import { RequestEditContext } from '../../../utils/types/internal/request';
 import SubLoader from '../../thirdparty/components/SubLoader';
@@ -37,7 +35,6 @@ import { useContainerDimensions } from '../../hooks/useContainerDimensions';
 import ExpertMode from './ExpertMode/ExpertMode';
 import MetaInfoPanel from './ExpertMode/MetaInfoPanel';
 import StandardEditMode from './StandardEditMode';
-import UsageIndicator from './UsageIndicator';
 
 /** Below this container width the split is unavailable: only one pane at a time. */
 const SIDE_BY_SIDE_MIN_WIDTH = 900;
@@ -70,7 +67,6 @@ const EditFrame = ({
   const [yacErrorMsg, setYACErrorMsg] = useState<string>('');
   const [isDisplayingYACError, setIsDisplayingYACError] = useState<boolean>(false);
   const [isReadOnly, setIsReadOnly] = useState<boolean>(requestEditContext.mode === 'read');
-  const [usages, setUsages] = useState<LimitUsage[]>([]);
   const [isValid, setIsValid] = useState<boolean>(isFormValid());
   // Whether the save payload differs from the stored file (see access.ts's
   // hasUncommittedChanges); kept current via setChangeListener below.
@@ -183,7 +179,6 @@ const EditFrame = ({
   }, []);
 
   useEffect(() => {
-    setUsagesListener(setUsages);
     setValidityListener(setIsValid);
     // Tracks whether the payload differs from the stored file (edit mode's
     // no-op guard on the Commit button; registering pushes the current state).
@@ -191,7 +186,6 @@ const EditFrame = ({
     setEntityPermsListener(setEntityPerms);
     setAdminOverrideListener(setAdminUnlocked);
     return () => {
-      setUsagesListener(null);
       setValidityListener(null);
       setChangeListener(null);
       setEntityPermsListener(null);
@@ -453,13 +447,6 @@ const EditFrame = ({
               {yacErrorMsg}
             </span>
           </div>
-          {isReadOnly ? (
-            <></>
-          ) : (
-            <div className="flex flex-none items-center px-2">
-              <UsageIndicator usages={usages} />
-            </div>
-          )}
           {isReadOnly ? (
             <></>
           ) : (

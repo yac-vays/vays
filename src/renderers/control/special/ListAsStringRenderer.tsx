@@ -34,6 +34,7 @@ export const ListAsStringRenderer = (props: ControlProps) => {
           description={props.description}
           required={props.required}
           errors={errors}
+          path={props.path}
         />
         {list.length > 0 ? (
           <p>

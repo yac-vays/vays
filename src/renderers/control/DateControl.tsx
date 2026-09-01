@@ -54,6 +54,7 @@ export const DateControl = ({
         required={required || false}
         description={description}
         errors={errors}
+        path={path}
       />
 
       <ErrorRing errors={errors}>

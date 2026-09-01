@@ -2,6 +2,7 @@ import { ControlProps, isBooleanControl, RankedTester, rankWith } from '@jsonfor
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import ErrorButton from '../../view/components/Buttons/ErrorButton';
 import ErrorRing from '../../view/components/Form/ErrorRing';
+import { FormFieldLimitChips } from '../../view/components/LimitChips';
 import Checkbox from '../../view/thirdparty/components/ifc/CheckBox/CheckBox';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
 import { resolveInitial } from '../utils/initialHandling';
@@ -58,6 +59,9 @@ export const BooleanControl = ({
           ) : (
             <></>
           )}
+          <span className="relative ml-2 flex items-center">
+            <FormFieldLimitChips path={path} />
+          </span>
         </div>
       </div>
     </>

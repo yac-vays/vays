@@ -1,6 +1,8 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 import { getCurrentJsonSchema } from '../../../../../controller/local/EditController/ExpertMode/access';
+import { getYACUsages } from '../../../../../controller/local/EditController/shared';
+import { formatLimitLong, limitMatchesYamlPath } from '../../../../../utils/limitUtils';
 import {
   exampleValueForSchema,
   fieldHelpHoverMarkdown,
@@ -37,11 +39,20 @@ export default async function editorFieldHelp(
         const path = yamlPathAtOffset(model.getValue(), model.getOffsetAt(position));
         if (path == null || path.length === 0) return null;
         const sub = subschemaAtPath(schema, path);
-        if (sub == null || typeof sub !== 'object') return null;
-        const parent = path.length > 1 ? subschemaAtPath(schema, path.slice(0, -1)) : schema;
-        const markdown = fieldHelpHoverMarkdown(path[path.length - 1], sub, parent);
-        if (markdown === '') return null;
-        return { contents: [{ value: markdown }] };
+        let markdown = '';
+        if (sub != null && typeof sub === 'object') {
+          const parent = path.length > 1 ? subschemaAtPath(schema, path.slice(0, -1)) : schema;
+          markdown = fieldHelpHoverMarkdown(path[path.length - 1], sub, parent);
+        }
+        // Live usage of the limits anchored on this field (matching the form's
+        // per-field chips and the gutter glyphs).
+        const limits = getYACUsages()
+          .filter((u) => u.path != null && limitMatchesYamlPath(u.path, path))
+          .map((u) => `**Limit** — ${formatLimitLong(u)}`)
+          .join('\n\n');
+        const value = [markdown, limits].filter((s) => s !== '').join('\n\n---\n\n');
+        if (value === '') return null;
+        return { contents: [{ value }] };
       },
     });
   }

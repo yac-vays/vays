@@ -69,6 +69,7 @@ export const ArrayControlRenderer = (
             required={props.required}
             errors={props.errors ? [...new Set(props.errors.split('\n'))].join('\n') : ''}
             hideAddButton={!props.enabled}
+            path={props.path}
           />
         </div>
 

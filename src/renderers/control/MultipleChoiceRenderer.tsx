@@ -70,6 +70,7 @@ export const MultipleChoiceRenderer = ({
         required={required}
         hideAddButton
         errors={errors}
+        path={path}
       />
 
       <ErrorRing errors={errors}>

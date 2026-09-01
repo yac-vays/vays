@@ -95,6 +95,7 @@ export const NestedObjectRenderer = ({
         required={required}
         errors={errors}
         hideAddButton={!enabled}
+        path={path}
       />
       {toRender}
     </>

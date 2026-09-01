@@ -54,6 +54,7 @@ export const MultiLineTextControlRenderer = (props: ControlProps) => {
         required={props.required || false}
         description={props.description}
         errors={errors}
+        path={props.path}
       />
       <ErrorRing errors={errors}>
         <TextArea

@@ -43,6 +43,26 @@ export function locateInstancePathInYaml(yamlText: string, instancePath: string)
 }
 
 /**
+ * The text range of the node at `segments`, with NO ancestor fallback (unlike
+ * `locateInstancePathInYaml`): a missing key yields null instead of pinning to
+ * its container. Used to anchor per-field decorations (the limit-usage gutter
+ * glyphs), where a wrong-line anchor is worse than no anchor.
+ */
+export function locateDataPathExact(
+  yamlText: string,
+  segments: (string | number)[],
+): TextRange | null {
+  if (segments.length === 0) return null;
+  try {
+    const doc = parseDocument(yamlText);
+    const node = doc.getIn(segments, true);
+    return isNode(node) && node.range ? { start: node.range[0], end: node.range[1] } : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * The inverse of `locateInstancePathInYaml`: the data path (as segments, e.g.
  * `['ssh_keys', 0, 'key']`) of the innermost map entry / sequence item at the
  * given character offset. An offset on a map KEY resolves to that key's path

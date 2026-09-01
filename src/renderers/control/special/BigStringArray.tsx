@@ -42,6 +42,7 @@ export const BigStringArray = (props: ControlProps) => {
           description={props.description}
           required={props.required}
           errors={errors}
+          path={props.path}
         />
         {hasItems ? (
           <p>

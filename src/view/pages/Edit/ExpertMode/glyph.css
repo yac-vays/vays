@@ -22,6 +22,27 @@
     cursor: help;
 }
 
+/* Limit-usage gutter dots (green / amber near cap / red exceeded). BEFORE
+   .error-glyph on purpose: when Monaco merges the classes onto one glyph
+   element, the error icon must win the background over the dot. */
+.limit-glyph{
+    background-repeat: no-repeat;
+    background-position: center center;
+    cursor: help;
+}
+
+.limit-glyph-ok{
+    background-image: radial-gradient(circle 4px at center, #2ea043 99%, transparent 100%);
+}
+
+.limit-glyph-near{
+    background-image: radial-gradient(circle 4px at center, #d29922 99%, transparent 100%);
+}
+
+.limit-glyph-over{
+    background-image: radial-gradient(circle 4px at center, #f85149 99%, transparent 100%);
+}
+
 /* AFTER .diff-removed-glyph on purpose: when Monaco merges both classes onto
    one glyph element (error marker on a line where lines were also removed),
    the error icon must win the background over the removal bar. */

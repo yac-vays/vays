@@ -65,6 +65,7 @@ export const PasswordRenderer = (props: ControlProps) => {
         required={props.required || false}
         description={props.description}
         errors={errors}
+        path={props.path}
       />
       <ErrorRing errors={errors}>
         <TextInput

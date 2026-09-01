@@ -29,6 +29,7 @@ import 'monaco-editor/esm/vs/editor/editor.api';
 // useless code-navigation entries from the context menu.
 // @ts-expect-error -- monaco-internal module without type declarations
 import { MenuId, MenuRegistry } from 'monaco-editor/esm/vs/platform/actions/common/actions.js';
+import * as monacoApi from 'monaco-editor/esm/vs/editor/editor.api';
 
 // --- Web workers (bundled + served by Vite; no MonacoEnvironment global needed
 //     beyond getWorker) -------------------------------------------------------
@@ -101,6 +102,12 @@ window.MonacoEnvironment = {
     return new EditorWorker();
   },
 };
+
+// Debugging aid: lets a deployed instance be inspected from the browser
+// console (e.g. `__VAYS_MONACO.editor.getModelMarkers({})` to see marker
+// owners/positions when investigating editor issues in the field).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(window as any).__VAYS_MONACO = monacoApi;
 
 // --- Context-menu curation ----------------------------------------------------
 // Code-navigation entries — "Go to Definition", the "Peek" submenu, "Change All

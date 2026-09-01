@@ -117,3 +117,20 @@ export function setValueInYaml(
     return null;
   }
 }
+
+/**
+ * The line-start offset of the document's root node (its first key for block
+ * maps). Used to decide whether a marker is anchored on the ROOT object:
+ * comparing by line (not exact position) tolerates markers whose column was
+ * shifted by edits (monaco tracks markers as decorations through edits).
+ * Returns null for unparseable or empty documents.
+ */
+export function yamlRootStartOffset(yamlText: string): number | null {
+  try {
+    const doc = parseDocument(yamlText);
+    const c = doc.contents;
+    return isNode(c) && c.range ? c.range[0] : null;
+  } catch {
+    return null;
+  }
+}

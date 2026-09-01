@@ -82,3 +82,32 @@ describe('relocateMissingPropertyMarkers', () => {
     expect(out?.[0].startLineNumber).toBe(50);
   });
 });
+
+describe('relocateMissingPropertyMarkers with an injected root-anchor check', () => {
+  it('moves a drifted marker (column shifted off 1) when the anchor check accepts it', () => {
+    const drifted = {
+      message: 'Missing property "zz_prop".',
+      startLineNumber: 1,
+      startColumn: 3, // shifted by an edit on the anchor line
+      endLineNumber: 1,
+      endColumn: 9,
+    };
+    const onRootLine = (m: { startLineNumber: number }) => m.startLineNumber === 1;
+    const out = relocateMissingPropertyMarkers([drifted], 42, 5, onRootLine);
+    expect(out).not.toBeNull();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    expect(out![0].startLineNumber).toBe(42);
+  });
+
+  it('leaves nested markers alone when the anchor check rejects them', () => {
+    const nested = {
+      message: 'Missing property "ip".',
+      startLineNumber: 5,
+      startColumn: 3,
+      endLineNumber: 5,
+      endColumn: 9,
+    };
+    const onRootLine = (m: { startLineNumber: number }) => m.startLineNumber === 1;
+    expect(relocateMissingPropertyMarkers([nested], 42, 5, onRootLine)).toBeNull();
+  });
+});

@@ -1,5 +1,6 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
+import { yamlRootStartOffset } from '../../../../../utils/schema/yamlPathLocator';
 import { RequestEditContext } from '../../../../../utils/types/internal/request';
 
 /**
@@ -37,12 +38,16 @@ export function relocateMissingPropertyMarkers<T extends MarkerRange>(
   markers: T[],
   targetLine: number,
   targetMaxColumn: number,
+  // Whether a marker is anchored on the ROOT object (vs. a nested one, which
+  // must stay in place). The default (column 1) is the plain-layout heuristic;
+  // the live listener passes an AST-based line check that also tolerates
+  // markers whose column drifted through edits (monaco tracks markers as
+  // decorations, so edits on the anchor line can shift them off column 1).
+  isRootAnchor: (m: MarkerRange) => boolean = (m) => m.startColumn === 1,
 ): T[] | null {
   const needsMove = (m: MarkerRange) =>
     MISSING_PROPERTY.test(m.message) &&
-    // Column 1 = anchored on a root-level property; indented (nested) object
-    // markers are already in the right place.
-    m.startColumn === 1 &&
+    isRootAnchor(m) &&
     (m.startLineNumber !== targetLine ||
       m.endLineNumber !== targetLine ||
       m.endColumn !== targetMaxColumn);
@@ -80,6 +85,16 @@ function relocateForResource(resource: monaco.Uri) {
   const targetLine = model.getLineCount();
   const targetMaxColumn = model.getLineMaxColumn(targetLine);
 
+  // Root anchor: on the LINE the document's root node starts on (per the yaml
+  // AST — tolerates markers shifted off column 1 by edits, since monaco moves
+  // markers with the text), OR at column 1 (the plain heuristic; also matches
+  // OUR already-relocated markers so they keep following a growing document).
+  // Nested objects are indented and start on other lines: untouched.
+  const rootOffset = yamlRootStartOffset(model.getValue());
+  const rootLine = rootOffset != null ? model.getPositionAt(rootOffset).lineNumber : null;
+  const isRootAnchor = (m: { startLineNumber: number; startColumn: number }) =>
+    m.startColumn === 1 || (rootLine != null && m.startLineNumber === rootLine);
+
   // Markers are owned per validation source (monaco-yaml, yac-backend, ...);
   // rewrite within each owner group so no source's markers are dropped.
   const byOwner = new Map<string, monaco.editor.IMarker[]>();
@@ -89,7 +104,12 @@ function relocateForResource(resource: monaco.Uri) {
     else byOwner.set(marker.owner, [marker]);
   }
   for (const [owner, markers] of byOwner) {
-    const relocated = relocateMissingPropertyMarkers(markers, targetLine, targetMaxColumn);
+    const relocated = relocateMissingPropertyMarkers(
+      markers,
+      targetLine,
+      targetMaxColumn,
+      isRootAnchor,
+    );
     // `null` = already in place; re-setting would re-fire the listener forever.
     if (relocated != null) {
       monaco.editor.setModelMarkers(model, owner, relocated);

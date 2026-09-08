@@ -1,4 +1,5 @@
 import React from 'react';
+import { useFormReadonly, visibleFormErrors } from './useFormReadonly';
 
 /**
  * Wraps a form control's input and draws a red ring around it when the control
@@ -8,17 +9,12 @@ import React from 'react';
  * This is the single, consistent error affordance for every renderer; the
  * accompanying error message is shown via the red info-button in the control's
  * label (see {@link OverheadLabelWithMarkdownDescr} / `FormComponentTitle`).
+ * Suppressed in a read-only form, except for "value the form cannot display"
+ * findings (see {@link visibleFormErrors}).
  */
-const ErrorRing = ({
-  errors,
-  children,
-}: {
-  errors?: string;
-  children: React.ReactNode;
-}) => {
-  return (
-    <div className={errors ? 'rounded-md ring-2 ring-[#d32f2f]' : ''}>{children}</div>
-  );
+const ErrorRing = ({ errors, children }: { errors?: string; children: React.ReactNode }) => {
+  const shown = visibleFormErrors(errors, useFormReadonly());
+  return <div className={shown ? 'rounded-md ring-2 ring-[#d32f2f]' : ''}>{children}</div>;
 };
 
 export default ErrorRing;

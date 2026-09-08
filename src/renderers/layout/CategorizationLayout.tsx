@@ -29,6 +29,7 @@ import {
   getCategoryErrs,
   registerOnUpdateCategoryErrors,
 } from '../../controller/local/EditController/StandardMode/tabs';
+import { useFormReadonly } from '../../view/components/Form/useFormReadonly';
 import ControlBar from '../../view/components/Tabs/ControlBar';
 import Tab from '../../view/components/Tabs/Tab';
 import { sanitizeCategory } from '../utils/dataSanitization';
@@ -75,6 +76,7 @@ function checkSchema(uischema: Categorization) {
  * @returns
  */
 export const CategorizationLayoutRenderer = (props: CategorizationLayoutRendererProps) => {
+  const readonly = useFormReadonly();
   const {
     path,
     schema,
@@ -156,7 +158,7 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
                     label={tabLabels[idx]}
                     currentTab={safeCategory}
                     onClick={onTabChange}
-                    hasError={catErrs[idx]}
+                    hasError={catErrs[idx] && !readonly}
                   />
                 ));
               })()}

@@ -1,3 +1,4 @@
+import { useFormReadonly, visibleFormErrors } from '../Form/useFormReadonly';
 import InfoPanel from '../InfoPanel';
 
 interface ErrorProps {
@@ -8,16 +9,19 @@ interface ErrorProps {
 /**
  * Error button, which is displayed in Form Component Titles, for displaying
  * errors. Opening/dismissal (hover, focus, tap, Escape) and placement are
- * handled by the InfoPanel/Popover underneath.
+ * handled by the InfoPanel/Popover underneath. Suppressed in a read-only form,
+ * except for "value the form cannot display" findings (see
+ * {@link visibleFormErrors}).
  *
  * @param title the title of the input field
  * @param description the description to display
  * @returns
  */
 const ErrorButton = ({ content }: ErrorProps) => {
-  if (!content) return <></>;
+  const shown = visibleFormErrors(content, useFormReadonly());
+  if (!shown) return <></>;
   return (
-    <InfoPanel description={content} isError>
+    <InfoPanel description={shown} isError>
       <div className="hover:scale-125 duration-300">
         <svg
           xmlns="http://www.w3.org/2000/svg"

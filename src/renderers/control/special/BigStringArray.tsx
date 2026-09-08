@@ -9,6 +9,7 @@ import {
   rankWith,
 } from '@jsonforms/core';
 
+import { useFormReadonly, visibleFormErrors } from '../../../view/components/Form/useFormReadonly';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
 import LargeStringList from '../../../view/thirdparty/components/ifc/LargeStringList/LargeStringList';
 import { withJsonFormsControlPropsAndArrayLevelErrors } from '../../utils/customPropsHandling';
@@ -17,6 +18,7 @@ import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
 
 export const BigStringArray = (props: ControlProps) => {
   const { visible } = props;
+  const readonly = useFormReadonly();
 
   if (!visible) {
     return null;
@@ -57,7 +59,7 @@ export const BigStringArray = (props: ControlProps) => {
           id={props.id}
           data={data}
           disabled={!props.enabled}
-          error={!!errors}
+          error={!!visibleFormErrors(errors, readonly)}
         />
       </div>
     </>

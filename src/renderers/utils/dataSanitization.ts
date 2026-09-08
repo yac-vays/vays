@@ -9,9 +9,21 @@ import { getCurrentTab } from '../../controller/local/EditController/StandardMod
  */
 export function reportBadData(data: unknown) {
   return (
-    `This field holds a value the form cannot display: '${JSON.stringify(data)}'. ` +
+    `${BAD_DATA_PREFIX}: '${JSON.stringify(data)}'. ` +
     'The field is shown empty; entering a new value will overwrite the stored one.'
   );
+}
+
+const BAD_DATA_PREFIX = 'This field holds a value the form cannot display';
+
+/**
+ * Whether an error line is a {@link reportBadData} message. These are kept
+ * visible even in a read-only form (where validation findings are otherwise
+ * suppressed): without them the reader would not know the empty field
+ * actually holds a value.
+ */
+export function isBadDataMessage(line: string): boolean {
+  return line.startsWith(BAD_DATA_PREFIX);
 }
 
 export function isOfTypeWeak(

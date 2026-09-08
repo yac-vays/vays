@@ -9,6 +9,7 @@ import {
 } from '../../../controller/global/url';
 import { YACBackend } from '../../../utils/types/config';
 import { EditViewMode, RequestEditContext } from '../../../utils/types/internal/request';
+import BackToListButton from '../../components/Buttons/BackToListButton';
 import PageHeaderTitle from '../../thirdparty/components/PageTitle/PageHeaderTitle';
 import EditFrame from './EditFrame';
 
@@ -88,7 +89,16 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
 
   return (
     <>
-      <PageHeaderTitle title={title} />
+      <PageHeaderTitle title={title}>
+        {/* Only an existing entity can be highlighted: while creating, the
+            name is not in the list yet (the list would bounce back to the
+            create form), so the button leads to the plain list instead. */}
+        <BackToListButton
+          backendName={backendName}
+          entityTypeName={entityTypeName}
+          entityName={mode === 'create' ? undefined : entityName}
+        />
+      </PageHeaderTitle>
 
       <EditFrame requestEditContext={requestContext} />
     </>

@@ -1,6 +1,6 @@
 import { createNewEntity } from '../../../../model/create';
 import { invalidateEntityListCache } from '../../../../model/entityList';
-import { putYAMLEntity } from '../../../../model/put';
+import { PutResult, putYAMLEntity } from '../../../../model/put';
 import { validateYAML } from '../../../../model/validate';
 import { ActionDecl } from '../../../../utils/types/api';
 import { RequestContext, RequestEditContext } from '../../../../utils/types/internal/request';
@@ -10,6 +10,7 @@ import { showModalMessage } from '../../../global/modal';
 import { showError } from '../../../global/notification';
 import { buildOverviewHighlightURL, navigateToURL } from '../../../global/url';
 import editingState from '../../../state/EditCtrlState';
+import { handleEditConflict } from '../conflict';
 import { flushPendingDebouncedCommits } from '../debounceRegistry';
 import { isStaleValidation, whenValidationIdle } from '../session';
 import {
@@ -141,7 +142,14 @@ export async function sendYAMLData(requestContext: RequestEditContext) {
         entityName = res.name;
       } else {
         entityName = requestContext.entityName ?? null;
-        success = await sendPutEntity(getEntityYAML() ?? getInitialEntityYAML(), requestContext);
+        const res = await sendPutEntity(getEntityYAML() ?? getInitialEntityYAML(), requestContext);
+        success = res.kind === 'ok';
+        if (res.kind === 'conflict') {
+          // Someone else committed meanwhile (or the 409 has another reason —
+          // the flow finds out). Not awaited: it opens its own dialog, which
+          // must not be hidden along with this one when the callback settles.
+          void handleEditConflict(requestContext, res.detail);
+        }
       }
 
       if (success) {
@@ -203,11 +211,11 @@ async function sendCreateNewEntity(
 async function sendPutEntity(
   yaml: string,
   requestEditContext: RequestEditContext,
-): Promise<boolean> {
+): Promise<PutResult> {
   const name: string | undefined = getEntityName() ?? requestEditContext.entityName;
   if (name == undefined) {
     showError('Could not send the update!', '');
-    return false;
+    return { kind: 'failed' };
   }
   return await putYAMLEntity(
     name,

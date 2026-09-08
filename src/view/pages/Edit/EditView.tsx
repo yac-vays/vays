@@ -7,6 +7,7 @@ import {
   isValidQueryEdit,
   navigateToURL,
 } from '../../../controller/global/url';
+import { registerEditorReloadHook } from '../../../controller/local/EditController/session';
 import { YACBackend } from '../../../utils/types/config';
 import { EditViewMode, RequestEditContext } from '../../../utils/types/internal/request';
 import BackToListButton from '../../components/Buttons/BackToListButton';
@@ -34,6 +35,14 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
   const { backendName, entityTypeName, entityName } = useParams();
   const [requestContext, setRequestContext] = useState<RequestEditContext>(getDefaultEditContext());
   const [title, setTitle] = useState<React.ReactNode>('Loading...');
+  // Bumped to remount the frame, i.e. start over from the stored entity (the
+  // edit-conflict flow's "Reload"). A remount is a new editing view/session.
+  const [reloadSeq, setReloadSeq] = useState<number>(0);
+
+  useEffect(() => {
+    registerEditorReloadHook(() => setReloadSeq((s) => s + 1));
+    return () => registerEditorReloadHook(null);
+  }, []);
 
   useEffect(() => {
     // Cancels a superseded run: the awaits below can resolve after the user
@@ -100,7 +109,7 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
         />
       </PageHeaderTitle>
 
-      <EditFrame requestEditContext={requestContext} />
+      <EditFrame key={reloadSeq} requestEditContext={requestContext} />
     </>
   );
 };

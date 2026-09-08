@@ -1,7 +1,7 @@
 import React, { Component, DetailedHTMLProps, InputHTMLAttributes } from 'react';
 import { logError } from '../../../utils/logger';
 import { ActionDecl } from '../../../utils/types/api';
-import { CallbackSuccessType } from '../../../utils/types/internal/modal';
+import { CallbackSuccessType, ModalExtraButton } from '../../../utils/types/internal/modal';
 import Checkbox from '../../thirdparty/components/ifc/CheckBox/CheckBox';
 import MarkdownRender from '../Markdown';
 
@@ -17,6 +17,7 @@ interface ConfirmationModalState {
   textInputPlaceholder: string;
   actions: ActionDecl[];
   actionsChoice: boolean[];
+  extraButtons: ModalExtraButton[];
 }
 
 type ConfirmationModalProps = object;
@@ -41,6 +42,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
       textInputPlaceholder: 'Enter Name...',
       actions: [],
       actionsChoice: [],
+      extraButtons: [],
     };
     this.ref = React.createRef();
     this.textInputRef = React.createRef();
@@ -104,6 +106,13 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
     });
   }
 
+  _extra(btn: ModalExtraButton) {
+    if (!btn.keepOpen) this.hide();
+    Promise.resolve(btn.onClick()).catch((error: unknown) => {
+      logError(`Modal extra button "${btn.label}" failed: ${error}`, 'ConfirmAlert._extra');
+    });
+  }
+
   show(
     title: string,
     text: string,
@@ -113,6 +122,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
     enableTextInput: boolean,
     actions?: ActionDecl[],
     textInputPlaceholder: string = 'Enter Name...',
+    extraButtons: ModalExtraButton[] = [],
   ): void {
     this.blockConfirm = false;
     if (actions == undefined) actions = [];
@@ -128,6 +138,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
       textInputPlaceholder: textInputPlaceholder,
       actions: actions,
       actionsChoice: actions.map(() => false),
+      extraButtons: extraButtons,
     });
     // Requires slight delay to take effect
     if (this.focusTimeout != null) clearTimeout(this.focusTimeout);
@@ -223,6 +234,21 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
               </div>
               <div className="h-4"></div>
             </>
+            {this.state.extraButtons.length > 0 && (
+              <div className="mb-3 flex flex-wrap gap-2">
+                {this.state.extraButtons.map((btn) => (
+                  <button
+                    key={btn.label}
+                    type="button"
+                    title={btn.title}
+                    className="rounded border border-stroke bg-primary-5 py-2 px-4 text-center font-medium text-plain transition hover:border-meta-4 hover:bg-meta-4 hover:text-white dark:bg-meta-4 dark:hover:bg-white dark:hover:text-black"
+                    onClick={() => this._extra(btn)}
+                  >
+                    {btn.label}
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="-mx-3 flex flex-wrap gap-y-2">
               <div className="w-1/2 h-full px-3">
                 <button

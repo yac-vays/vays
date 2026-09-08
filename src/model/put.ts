@@ -8,6 +8,18 @@ import { RequestEditContext } from '../utils/types/internal/request';
 import { joinUrl } from '../utils/urlUtils';
 import { handleYacResponse, yacErrorDetail } from './utils/handleYacResponse';
 
+export type PutResult =
+  | { kind: 'ok' }
+  /**
+   * HTTP 409. No toast has been shown: YAC answers 409 both for a stale
+   * `yaml_old` (someone else committed meanwhile — the caller runs the
+   * conflict flow) and for e.g. a rename onto an existing name. `detail` is
+   * the ready-made toast text for the latter case.
+   */
+  | { kind: 'conflict'; detail: string }
+  /** Any other failure; a toast has been shown. */
+  | { kind: 'failed' };
+
 /**
  * @param name
  * @param yaml
@@ -23,14 +35,14 @@ export async function putYAMLEntity(
   acts: ActionDecl[],
   // Admin override: commit past a failing schema validation (requires "adm").
   force: boolean = false,
-): Promise<boolean> {
+): Promise<PutResult> {
   if (requestEditContext.entityName == null) {
     showError('Frontend error', 'The name is missing. Please file a bug report!');
-    return false;
+    return { kind: 'failed' };
   }
   const url = requestEditContext.rc.yacURL;
   if (url == null || url == undefined) {
-    return false;
+    return { kind: 'failed' };
   }
   const resp = await sendRequest(
     joinUrl(
@@ -61,7 +73,17 @@ export async function putYAMLEntity(
       operationSuccessText(`Edit of ${name}`, acts),
       diffToastLink(`Changes to ${name}`, patch),
     );
-    return true;
+    return { kind: 'ok' };
+  } else if (result.kind === 'client-error' && result.status === 409) {
+    return {
+      kind: 'conflict',
+      detail: yacErrorDetail(
+        `Edit of ${name} failed`,
+        result.status,
+        result.body,
+        'Please try again.',
+      ),
+    };
   } else if (result.kind === 'invalid-request') {
     showError(
       'Frontend Error',
@@ -74,5 +96,5 @@ export async function putYAMLEntity(
     );
   }
 
-  return false;
+  return { kind: 'failed' };
 }

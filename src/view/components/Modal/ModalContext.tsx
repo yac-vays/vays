@@ -1,7 +1,7 @@
 import { createContext, useContext, useRef } from 'react';
 import ConfirmAlert from '.';
 import { ActionDecl } from '../../../utils/types/api';
-import { CallbackSuccessType } from '../../../utils/types/internal/modal';
+import { CallbackSuccessType, ModalExtraButton } from '../../../utils/types/internal/modal';
 
 /**
  * Mode is either
@@ -15,6 +15,7 @@ export type ModalCallback = (
   enableTextInput: boolean,
   actions?: ActionDecl[],
   textInputPlaceholder?: string,
+  extraButtons?: ModalExtraButton[],
 ) => void;
 
 // create context
@@ -35,6 +36,7 @@ export const ModalContextProvider = ({ children }: { children: React.ReactNode }
     enableTextInput,
     actions,
     textInputPlaceholder,
+    extraButtons,
   ) => {
     if (!modalRef.current) return;
     modalRef.current.show(
@@ -46,6 +48,7 @@ export const ModalContextProvider = ({ children }: { children: React.ReactNode }
       enableTextInput, // TODO: Allow setting this so you can do ... And put input into success.
       actions,
       textInputPlaceholder,
+      extraButtons,
     );
   };
 

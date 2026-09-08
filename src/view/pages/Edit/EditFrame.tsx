@@ -13,6 +13,10 @@ import {
   setChangeListener,
 } from '../../../controller/local/EditController/ExpertMode/access';
 import { sendYAMLData } from '../../../controller/local/EditController/ExpertMode';
+import {
+  handleEditConflict,
+  isConflictMessage,
+} from '../../../controller/local/EditController/conflict';
 import { newEditingView } from '../../../controller/local/EditController/session';
 import {
   clearEditDirty,
@@ -435,7 +439,7 @@ const EditFrame = ({
               message stays on ONE (truncated) line so the box never grows past
               the footer; the full text is in the (native) hover tooltip. */}
           <div
-            className={`grow min-w-0 p-1.5 rounded duration-1000 opacity-0 overflow-hidden border-l-4 ${
+            className={`flex grow min-w-0 items-center gap-2 p-1.5 rounded duration-1000 opacity-0 overflow-hidden border-l-4 ${
               isDisplayingYACError && !isReadOnly ? 'opacity-100' : ''
             }`}
             style={{
@@ -443,9 +447,22 @@ const EditFrame = ({
               borderColor: '#d32f2f',
             }}
           >
-            <span className="block truncate text-[#d32f2f]" title={yacErrorMsg}>
+            <span className="block grow min-w-0 truncate text-[#d32f2f]" title={yacErrorMsg}>
               {yacErrorMsg}
             </span>
+            {/* An edit conflict (someone else committed meanwhile) is the one
+                error the user cannot fix in the document: offer the conflict
+                dialog (their changes / keep mine / reload) right here. */}
+            {isDisplayingYACError && !isReadOnly && isConflictMessage(yacErrorMsg) && (
+              <button
+                type="button"
+                className="flex-none rounded border border-[#d32f2f] px-2 py-0.5 text-sm font-medium text-[#d32f2f] hover:bg-[#d32f2f] hover:text-white"
+                title="See what changed on the server and decide how to continue"
+                onClick={() => handleEditConflict(requestEditContext)}
+              >
+                Resolve…
+              </button>
+            )}
           </div>
           {isReadOnly ? (
             <></>

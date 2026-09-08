@@ -20,17 +20,29 @@ function diffLineClass(line: string): string {
  * (e.g. the "Show changes" link in the post-commit success toast).
  */
 const DiffViewer = () => {
-  const [content, setContent] = useState<{ title: string; patch: string } | null>(null);
+  const [content, setContent] = useState<{
+    title: string;
+    patch: string;
+    onClose?: () => void;
+  } | null>(null);
+
+  const close = () => {
+    const onClose = content?.onClose;
+    setContent(null);
+    onClose?.();
+  };
 
   useEffect(() => {
-    registerDiffViewerCallback((title: string, patch: string) => setContent({ title, patch }));
+    registerDiffViewerCallback((title: string, patch: string, onClose?: () => void) =>
+      setContent({ title, patch, onClose }),
+    );
     return () => registerDiffViewerCallback(null);
   }, []);
 
   useEffect(() => {
     if (content == null) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.code === 'Escape') setContent(null);
+      if (e.code === 'Escape') close();
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
@@ -41,7 +53,7 @@ const DiffViewer = () => {
   return (
     <div
       className="fixed left-0 top-0 z-99999 flex h-full min-h-screen w-full items-center justify-center bg-black/90 px-4 py-5"
-      onClick={() => setContent(null)}
+      onClick={close}
     >
       <div
         className="relative w-full max-w-180 rounded bg-white px-10 py-8 dark:bg-boxdark"
@@ -63,7 +75,7 @@ const DiffViewer = () => {
         <div className="flex justify-end pt-6">
           <button
             className="rounded border border-stroke bg-primary-5 py-2 px-6 text-center font-medium text-plainfont transition hover:border-meta-4 hover:bg-meta-4 hover:text-white dark:bg-meta-4 dark:hover:bg-white dark:hover:text-black"
-            onClick={() => setContent(null)}
+            onClick={close}
           >
             Close
           </button>

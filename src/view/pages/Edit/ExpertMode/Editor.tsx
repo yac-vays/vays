@@ -13,7 +13,10 @@ import {
   setCurrentJsonSchema,
   setMonacoYaml,
 } from '../../../../controller/local/EditController/ExpertMode/access';
-import { getInitialEntityYAML } from '../../../../controller/local/EditController/shared';
+import {
+  getInitialEntityYAML,
+  subscribeToBaseline,
+} from '../../../../controller/local/EditController/shared';
 import {
   registerYamlInputPendingProbe,
   registerYamlWriter,
@@ -164,7 +167,8 @@ export const Editor = ({
   }, [isSettingUp, setLoading]);
 
   // Highlight, in green, everything that differs from the original entity YAML.
-  // Recomputed on every content change (user edits *and* form -> YAML pushes).
+  // Recomputed on every content change (user edits *and* form -> YAML pushes)
+  // and whenever the baseline itself moves (edit-conflict "Keep my version").
   useEffect(() => {
     if (!editor) return;
     const collection = editor.createDecorationsCollection([]);
@@ -173,9 +177,11 @@ export const Editor = ({
         computeDiffDecorations(getInitialEntityYAML(), editor.getModel()?.getValue() ?? ''),
       );
     const sub = editor.onDidChangeModelContent(() => recompute());
+    const unsubscribeBaseline = subscribeToBaseline(() => recompute());
     recompute();
     return () => {
       sub.dispose();
+      unsubscribeBaseline();
       collection.clear();
     };
   }, [editor]);

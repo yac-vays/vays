@@ -8,7 +8,7 @@ import { ToastLink } from '../../view/components/ToastNotification/ToastContext'
  * (`patch`) that YAC returns from a successful create/edit.
  */
 
-export type DiffViewerCallback = (title: string, patch: string) => void;
+export type DiffViewerCallback = (title: string, patch: string, onClose?: () => void) => void;
 
 let diffViewerCallback: Nullable<DiffViewerCallback> = null;
 
@@ -16,9 +16,13 @@ export function registerDiffViewerCallback(callback: Nullable<DiffViewerCallback
   diffViewerCallback = callback;
 }
 
-/** Open the diff viewer overlay with the given unified diff. */
-export function showDiffViewer(title: string, patch: string) {
-  diffViewerCallback?.(title, patch);
+/**
+ * Open the diff viewer overlay with the given unified diff. `onClose` runs
+ * once the viewer is dismissed (e.g. to bring back the dialog it was opened
+ * from — the viewer and the modal are not stacked on top of each other).
+ */
+export function showDiffViewer(title: string, patch: string, onClose?: () => void) {
+  diffViewerCallback?.(title, patch, onClose);
 }
 
 /**

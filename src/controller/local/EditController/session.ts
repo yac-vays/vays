@@ -31,6 +31,20 @@ export function newEditingView() {
   viewSeq += 1;
 }
 
+// Remounts the edit frame (registered by the edit view). A remount is a new
+// editing view, i.e. both panes re-fetch the entity and start a fresh session —
+// the same as leaving the page and opening the entity again.
+let reloadHook: (() => void) | null = null;
+
+export function registerEditorReloadHook(hook: (() => void) | null) {
+  reloadHook = hook;
+}
+
+/** Discard the current session and reload the entity from the backend. */
+export function reloadEditingView() {
+  reloadHook?.();
+}
+
 /**
  * Whether two contexts describe the same editing target. The entity name is
  * part of the identity only outside create mode: while creating, typing a name

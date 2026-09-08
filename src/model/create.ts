@@ -38,7 +38,6 @@ export async function createNewEntity(
     title: entityToastTitle(requestContext, name),
     errorText,
     errorMessage: 'Please contact your admin on this issue.',
-    serverErrorSuffix: 'The data you entered is cached for now.',
     successStatus: 201,
   });
 

@@ -54,8 +54,6 @@ export interface YacResponseContext {
   errorText: string;
   /** Fallback explanation used when the envelope carries neither title nor message. */
   errorMessage?: string;
-  /** Appended to the server-error toast detail (e.g. a "data is cached" note). */
-  serverErrorSuffix?: string;
   /**
    * Custom composer for the error-toast detail, replacing the uniform
    * {@link yacErrorDetail} format in every toast branch. For call sites whose
@@ -83,12 +81,9 @@ export function yacErrorDetail(
   status: number,
   body: YacErrorBody,
   fallback: string,
-  suffix?: string,
 ): string {
   const explanation = [body.title, body.message ?? body.detail].filter(Boolean).join(': ');
-  return [`${errorText} (Status ${status}):`, explanation || fallback, suffix]
-    .filter(Boolean)
-    .join(' ');
+  return `${errorText} (Status ${status}): ${explanation || fallback}`;
 }
 
 /**
@@ -116,7 +111,6 @@ export async function handleYacResponse(
           status,
           body,
           ctx.errorMessage ?? 'Please contact your admin on this issue.',
-          ctx.serverErrorSuffix,
         ),
     );
     return { kind: 'server-error', status, body };

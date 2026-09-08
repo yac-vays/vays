@@ -45,7 +45,6 @@ export async function putYAMLEntity(
     title: entityToastTitle(requestEditContext.rc, name),
     errorText: `Edit of ${name} failed`,
     errorMessage: 'Please contact your admin on this issue.',
-    serverErrorSuffix: 'The data you entered is cached for now.',
   });
 
   if (result.kind === 'success') {

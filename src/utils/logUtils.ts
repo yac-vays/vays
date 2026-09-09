@@ -48,3 +48,34 @@ export function formatRelativeTime(time: string | null | undefined): string | nu
   if (hr < 24) return `${hr}h`;
   return `${Math.floor(hr / 24)}d`;
 }
+
+/** Red → orange → green anchors for the progress ring (same red/green as the bool indicator). */
+const PROGRESS_COLOR_STOPS: [number, [number, number, number]][] = [
+  [0, [0xdc, 0x35, 0x45]], // #DC3545 red
+  [50, [0xf5, 0x9e, 0x0b]], // #F59E0B orange
+  [100, [0x10, 0xb9, 0x81]], // #10B981 green
+];
+
+/**
+ * Maps a progress percentage (0-100) to a hex color: red at 0%, orange at 50%,
+ * green at 100%, with linear blending in between. Values outside 0-100 are
+ * clamped.
+ */
+export function progressColor(progress: number): string {
+  const p = Math.min(100, Math.max(0, isNaN(progress) ? 0 : progress));
+  let from = PROGRESS_COLOR_STOPS[0];
+  let to = PROGRESS_COLOR_STOPS[PROGRESS_COLOR_STOPS.length - 1];
+  for (let i = 0; i < PROGRESS_COLOR_STOPS.length - 1; i++) {
+    if (p <= PROGRESS_COLOR_STOPS[i + 1][0]) {
+      from = PROGRESS_COLOR_STOPS[i];
+      to = PROGRESS_COLOR_STOPS[i + 1];
+      break;
+    }
+  }
+  const t = to[0] === from[0] ? 0 : (p - from[0]) / (to[0] - from[0]);
+  const hex = (a: number, b: number) =>
+    Math.round(a + (b - a) * t)
+      .toString(16)
+      .padStart(2, '0');
+  return `#${hex(from[1][0], to[1][0])}${hex(from[1][1], to[1][1])}${hex(from[1][2], to[1][2])}`.toUpperCase();
+}

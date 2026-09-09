@@ -1,4 +1,5 @@
 import { CircularProgressbarWithChildren } from 'react-circular-progressbar';
+import { progressColor } from '../../../../utils/logUtils';
 import { Nullable } from '../../../../utils/types/typeUtils';
 
 const NumberLog = ({
@@ -128,7 +129,7 @@ const NumberLog = ({
               imageRendering: 'crisp-edges',
               transform: 'scale(1)',
             },
-            path: { stroke: '#10B981' },
+            path: { stroke: progressColor(progress) },
             text: {
             fontSize: 28,
             textRendering: 'optimizeLegibility',
@@ -147,7 +148,7 @@ const NumberLog = ({
               className="opacity-40"
               height="70%"
               viewBox="0 -960 960 960"
-              fill="#10B981"
+              fill={progressColor(progress)}
             >
               <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z" />
             </svg>

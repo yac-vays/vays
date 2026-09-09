@@ -214,7 +214,7 @@ async function sendPutEntity(
 ): Promise<PutResult> {
   const name: string | undefined = getEntityName() ?? requestEditContext.entityName;
   if (name == undefined) {
-    showError('Could not send the update!', '');
+    showError('Could not send the update', '');
     return { kind: 'failed' };
   }
   return await putYAMLEntity(

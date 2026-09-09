@@ -16,7 +16,7 @@ const NoDataIndicator = () => {
           className="pl-2 text-plainfont opacity-40"
           style={{ textAlign: 'center', verticalAlign: 'center' }}
         >
-          Sorry, no Data Found...
+          No data
         </p>
       </div>
     </div>

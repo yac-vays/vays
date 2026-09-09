@@ -55,8 +55,8 @@ function App(): JSX.Element {
   const [config, setConfig] = useState<AppConfig>({} as AppConfig);
   const [backendsList, setBackendsList] = useState<YACBackend[]>([
     {
-      name: 'Loading...',
-      title: 'Loading...',
+      name: 'Loading…',
+      title: 'Loading…',
       icon: '',
       url: '',
     },

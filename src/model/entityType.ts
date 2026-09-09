@@ -49,7 +49,7 @@ export async function getEntityTypes(yacBackend: YACBackend | null): Promise<Ent
   const result = await handleYacResponse(resp, {
     title: yacBackend.title,
     errorText: 'Fetching the available types failed',
-    errorMessage: 'Waking up the admin, please stand by...',
+    errorMessage: 'Please try again later or click on the help button (?) for support information.',
   });
 
   if (result.kind === 'success') {

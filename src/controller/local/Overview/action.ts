@@ -182,8 +182,7 @@ function __alertBadAction(name: string, yacURL: string | null | undefined) {
     `${name} is not defined in the Entity Type Definition.
     This is a configuration errror on the side of the YAC backend.
     Please contact the maintainer of the corresponding backend,
-    ${yacURL} in this case. Thank you very much and sorry
-    for any inconveniences caused by this.`,
+    ${yacURL} in this case.`,
     '__alertBadAction',
   );
 }

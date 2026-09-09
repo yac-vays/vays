@@ -157,7 +157,7 @@ export async function handleYacResponse(
           ctx.errorText,
           status,
           body,
-          ctx.errorMessage ?? 'Waking up the admin, please stand by...',
+          ctx.errorMessage ?? 'Please try again later or click on the help button (?) for support information.',
         ),
     );
   }

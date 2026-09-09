@@ -72,7 +72,7 @@ export async function getEntityLogs(
     return typeCheckLog(await result.resp.json(), entityName);
   } else if (result.kind === 'invalid-request') {
     // No validation error should happen here.
-    showError('Internal Error', 'Error ID-VAL-GEL-01. Please file a bug report!');
+    showError('Internal Error', 'Error ID-VAL-GEL-01. Please file a bug report.');
   } else if (result.kind === 'client-error') {
     showError(
       entityToastTitle(requestContext, entityName),

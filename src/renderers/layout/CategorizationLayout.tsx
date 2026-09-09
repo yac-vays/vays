@@ -59,7 +59,7 @@ function checkSchema(uischema: Categorization) {
         tsAddWarningMessage(
           2,
           'Potentially big category',
-          'It looks like there are more than 20 elements in this category. You may want to consider adding new ones. ' +
+          'This category has more than 20 elements. Consider splitting it into new categories ' +
             '(Adding them conditionally.)',
           cat.label ?? 'Category',
           getCurrentContext()?.rc.backendObject?.title ?? 'Unknown',

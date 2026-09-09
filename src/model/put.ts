@@ -37,7 +37,7 @@ export async function putYAMLEntity(
   force: boolean = false,
 ): Promise<PutResult> {
   if (requestEditContext.entityName == null) {
-    showError('Frontend error', 'The name is missing. Please file a bug report!');
+    showError('Frontend error', 'The name is missing. Please file a bug report.');
     return { kind: 'failed' };
   }
   const url = requestEditContext.rc.yacURL;

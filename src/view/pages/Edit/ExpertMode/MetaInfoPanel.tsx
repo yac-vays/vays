@@ -30,7 +30,7 @@ const MetaInfoPanel = ({
   const nameOptional = isNameOptionalByYAC(accessedEntityType);
   const namePlaceholder = nameOptional
     ? 'Generate Automatically'
-    : (accessedEntityType?.name_example ?? 'Enter name...');
+    : (accessedEntityType?.name_example ?? 'Enter name');
   const acts = getTriggerableActions(
     requestEditContext.rc.accessedEntityType?.actions ?? [],
     requestEditContext.mode,

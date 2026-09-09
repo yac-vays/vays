@@ -166,8 +166,8 @@ const EntityList = ({ requestContext, highlightEntityName }: EntityListProps) =>
                   <SubLoader
                     action={
                       requestContext.accessedEntityType?.title
-                        ? `Loading ${requestContext.accessedEntityType.title}...`
-                        : 'Loading...'
+                        ? `Loading ${requestContext.accessedEntityType.title}…`
+                        : 'Loading…'
                     }
                   />
                 ) : (

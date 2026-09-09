@@ -34,7 +34,7 @@ interface EditViewProps {
 const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): JSX.Element => {
   const { backendName, entityTypeName, entityName } = useParams();
   const [requestContext, setRequestContext] = useState<RequestEditContext>(getDefaultEditContext());
-  const [title, setTitle] = useState<React.ReactNode>('Loading...');
+  const [title, setTitle] = useState<React.ReactNode>('Loading…');
   // Bumped to remount the frame, i.e. start over from the stored entity (the
   // edit-conflict flow's "Reload"). A remount is a new editing view/session.
   const [reloadSeq, setReloadSeq] = useState<number>(0);

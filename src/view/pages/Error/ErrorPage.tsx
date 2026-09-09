@@ -11,7 +11,7 @@ const ErrorPage = () => {
           <h3 className="font-lg text-plainfont font-bold">404 Error</h3>
           <div className="pb-4 text-5xl font-black text-plainfont">Page not found</div>
           <p className="font-medium">
-            Sorry, the page you are looking for could not be found or has been removed.
+            The page you are looking for could not be found or has been removed.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <a

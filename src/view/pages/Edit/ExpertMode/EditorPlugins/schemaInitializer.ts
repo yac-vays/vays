@@ -29,7 +29,7 @@ export default async function editorInitializeSchema(
   // seed, save payload, the SINGLETON monaco-yaml schema) would land in the
   // next session — that session's own initializer takes care of it.
   if (isStaleSession(epoch)) return;
-  const defaultStr = "---\n\n# Please enter here... (btw couldn't fetch the data in time, sorry)";
+  const defaultStr = '---\n\n# The data could not be fetched in time. Enter the content here.';
 
   if (v == null) {
     ed.setValue(defaultStr);

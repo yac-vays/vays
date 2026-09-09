@@ -460,7 +460,7 @@ const EditFrame = ({
                 title="See what changed on the server and decide how to continue"
                 onClick={() => handleEditConflict(requestEditContext)}
               >
-                Resolve…
+                Resolve
               </button>
             )}
           </div>

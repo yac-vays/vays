@@ -3,7 +3,12 @@ import { withJsonFormsControlProps } from '@jsonforms/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { tsAddWarningMessage } from '../../../controller/global/troubleshoot';
 import { getCurrentContext } from '../../../controller/local/EditController/ExpertMode/access';
-import { ageEncrypt, looksLikeAgeArmor, randomSecret, SecretCharset } from '../../../utils/ageEncrypt';
+import {
+  ageEncrypt,
+  looksLikeAgeArmor,
+  randomSecret,
+  SecretCharset,
+} from '../../../utils/ageEncrypt';
 import ErrorRing from '../../../view/components/Form/ErrorRing';
 import { useModalContext } from '../../../view/components/Modal/ModalContext';
 import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
@@ -24,7 +29,9 @@ export const AgeSecretRenderer = (props: ControlProps) => {
   const ropts: RendererOptions = props.uischema?.options?.renderer_options ?? {};
   const recipient = ropts.age_public_key;
   const length =
-    typeof ropts.length === 'number' && ropts.length > 0 ? Math.floor(ropts.length) : DEFAULT_LENGTH;
+    typeof ropts.length === 'number' && ropts.length > 0
+      ? Math.floor(ropts.length)
+      : DEFAULT_LENGTH;
   const charset: SecretCharset =
     ropts.charset && VALID_CHARSETS.includes(ropts.charset) ? ropts.charset : DEFAULT_CHARSET;
 
@@ -114,7 +121,7 @@ export const AgeSecretRenderer = (props: ControlProps) => {
   const onRegenerateClick = () => {
     showModal(
       'Replace the existing secret?',
-      "This generates a new random secret and replaces the existing one. The previous secret will be overwritten.\n\nThe change is only effective after you save the form.",
+      'This generates a new random secret and replaces the existing one. The previous secret will be overwritten.\n\nThe change is only effective after you save the form.',
       async () => {
         await doGenerate();
       },
@@ -182,7 +189,8 @@ export const AgeSecretRenderer = (props: ControlProps) => {
       </ErrorRing>
       {plaintext !== null && (
         <em className="opacity-70 block mt-1 text-sm">
-          ⚠ Copy this secret now! Once you save the form, it will be encrypted and not readable anymore.
+          ⚠ Copy this secret now. Once you save the form, it will be encrypted and no longer
+          readable.
         </em>
       )}
     </div>

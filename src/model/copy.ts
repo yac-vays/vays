@@ -56,7 +56,7 @@ export async function createDerivedEntity(
   const result = await handleYacResponse(resp, {
     title: entityToastTitle(requestContext, sourceEntityName),
     errorText: `Create ${kind === 'copy' ? 'copy of' : 'link to'} ${sourceEntityName} failed`,
-    errorMessage: 'Waking up the admin, please stand by...',
+    errorMessage: 'Please try again later or click on the help button (?) for support information.',
     successStatus: 201,
     genericClientErrors: true,
   });

@@ -39,7 +39,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
       show: false,
       isSending: false,
       textInputEnabled: false,
-      textInputPlaceholder: 'Enter Name...',
+      textInputPlaceholder: 'Enter name',
       actions: [],
       actionsChoice: [],
       extraButtons: [],
@@ -121,7 +121,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
     confirmVerb: string,
     enableTextInput: boolean,
     actions?: ActionDecl[],
-    textInputPlaceholder: string = 'Enter Name...',
+    textInputPlaceholder: string = 'Enter name',
     extraButtons: ModalExtraButton[] = [],
   ): void {
     this.blockConfirm = false;
@@ -268,7 +268,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
                       <div className="relative">
                         <div className="absolute h-6 w-6 animate-spin rounded-full border-4 border-solid border-white border-t-transparent mt-0"></div>
                       </div>
-                      Sending...
+                      Sending…
                     </>
                   ) : (
                     this.state.confirmVerb

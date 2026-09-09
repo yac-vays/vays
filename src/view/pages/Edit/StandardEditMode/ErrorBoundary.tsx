@@ -42,10 +42,7 @@ class FormsErrorBoundary extends React.Component<
   componentDidCatch(_error: Error, info: ErrorInfo) {
     this.setState({ hasError: true });
 
-    showError(
-      'YAC Configuration Error: Faulty Schema',
-      'Please contact your admin. Sorry for any inconveniences.',
-    );
+    showError('YAC Configuration Error: Faulty Schema', 'Please contact your admin.');
     console.error(
       'EDIT VIEW CRITICAL: Forms could not be rendererd. The error log is \n\n' +
         (info.componentStack ?? '<no component stack>'),

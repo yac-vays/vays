@@ -65,10 +65,7 @@ export async function fetchEntityList(
   requestContext: RequestContext,
 ): Promise<{ ok: boolean; list: EntityObject[] }> {
   if (requestContext.backendObject?.url === undefined || requestContext.entityTypeName == null) {
-    logError(
-      `Backend Name ${requestContext.backendObject?.url} was undefined...`,
-      'getEntityTypes',
-    );
+    logError(`Backend Name ${requestContext.backendObject?.url} was undefined.`, 'getEntityTypes');
     return { ok: false, list: [] };
   }
 
@@ -84,7 +81,7 @@ export async function fetchEntityList(
   const result = await handleYacResponse(resp, {
     title: entityToastTitle(requestContext),
     errorText: 'Fetching the list failed',
-    errorMessage: 'Waking up the admin, please stand by...',
+    errorMessage: 'Please try again later or click on the help button (?) for support information.',
   });
 
   if (result.kind !== 'success') return { ok: false, list: [] };

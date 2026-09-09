@@ -89,7 +89,7 @@ const DatePicker = ({
           <input
             disabled={!enabled}
             className={`form-datepicker-${id} w-full rounded-md border border-stroke bg-transparent px-5 py-2.5 font-normal outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary`}
-            placeholder="Select date..."
+            placeholder="Select date"
             data-class="flatpickr-right"
             onInput={(e) => onChange(e.currentTarget.value)}
           />

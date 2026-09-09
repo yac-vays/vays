@@ -17,7 +17,7 @@ export function doStringTroubleShootCheck(props: ControlProps) {
       9,
       'Potentially unsafe handling of Passwords',
       'It seems that you are showing and storing a password in plaintext. Consider using the dedicated Password renderer. ' +
-        'It does not show the password and stores only the hash. If you still want to store the password in plain text or in another format, please contact me. ',
+        'It does not show the password and stores only the hash. If you still want to store the password in plain text or in another format, contact the VAYS maintainers. ',
       key,
       backend,
     );
@@ -36,7 +36,7 @@ export function doStringTroubleShootCheck(props: ControlProps) {
     tsAddWarningMessage(
       5,
       'Potentially incorrect type for default value',
-      'Looks like the default value has a type that the schema does not allow.',
+      'The default value has a type that the schema does not allow.',
       key,
       backend,
     );
@@ -48,7 +48,7 @@ export function doStringTroubleShootCheck(props: ControlProps) {
     tsAddWarningMessage(
       5,
       'Potentially incorrect type for rows option',
-      'Looks like the rows option has a type that the schema does not allow.',
+      'The rows option has a type that the schema does not allow.',
       key,
       backend,
     );
@@ -61,7 +61,7 @@ export function doStringTroubleShootCheck(props: ControlProps) {
     tsAddWarningMessage(
       2,
       'Potentially overshadowing editable default',
-      'It looks like the schema both specifies that the key has a default and in the vays_options, there is an editable. ' +
+      'The schema specifies both a default for this key and an editable ' +
         'default value (whose default value will not be written into the YAML). If this is the case, the latter is ignored',
       key,
       backend,
@@ -72,7 +72,7 @@ export function doStringTroubleShootCheck(props: ControlProps) {
     tsAddWarningMessage(
       6,
       'Potentially having a list as string',
-      'It looks like there are inputs which are enumerations, seperated by commas. If this is the case please check out ' +
+      'The inputs appear to be comma-separated enumerations. If this is the case, consider ' +
         'the custom renderer list_as_string. This improves the user experience significantly.',
       key,
       backend,
@@ -83,7 +83,7 @@ export function doStringTroubleShootCheck(props: ControlProps) {
     tsAddWarningMessage(
       1,
       'No description available',
-      'It looks like this key does not have a description. Providing one may improve user experience.',
+      'This key does not have a description. Providing one may improve the user experience.',
       key,
       backend,
     );

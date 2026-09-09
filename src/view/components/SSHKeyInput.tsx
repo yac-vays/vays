@@ -75,7 +75,7 @@ const SSHKeyInput = ({
 
   // Greyed-out placeholder shown while the field is empty (non-editable
   // `initial` is surfaced here, just like in the text renderer).
-  let ph = 'Edit or upload SSH Key...';
+  let ph = 'Edit or upload SSH key';
   if (!placeholderEditable) ph = placeholder ?? ph;
 
   const [key, setKey] = useState<string>(resolvedKey);
@@ -221,10 +221,10 @@ const SSHKeyInput = ({
                   onClick={() => {
                     navigator.clipboard.writeText(key).then(
                       function () {
-                        showSuccess('Copied to clipboard!', `Copied ${key}`);
+                        showSuccess('Copied to clipboard', `Copied ${key}`);
                       },
                       function (err) {
-                        showError('Cannot copy to clipboard!', err);
+                        showError('Cannot copy to clipboard', err);
                       },
                     );
                   }}

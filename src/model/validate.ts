@@ -17,7 +17,7 @@ export const defaultValidationResponse: ValidateResponse = {
   ui_schema: { type: 'VerticalLayout', elements: [] },
   data: {},
   valid: false,
-  detail: 'Sorry, there is no form to display (yet)...',
+  detail: 'No form to display.',
   usages: [],
 };
 
@@ -59,7 +59,7 @@ async function _validate(
   const result = await handleYacResponse(resp, {
     title: entityToastTitle(requestEditContext.rc, requestEditContext.entityName),
     errorText: 'Validation failed',
-    errorMessage: 'Waking up the admin, please stand by...',
+    errorMessage: 'Please contact the admin to resolve this issue.',
   });
 
   if (result.kind === 'success') {

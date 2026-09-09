@@ -1,5 +1,4 @@
 import {
-  ControlProps,
   JsonSchema,
   RankedTester,
   rankWith,
@@ -7,26 +6,14 @@ import {
   TesterContext,
   UISchemaElement,
 } from '@jsonforms/core';
-import { tsAddWarningMessage } from '../../controller/global/troubleshoot';
-import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/access';
 
 /**
  * Void schema renderer that renders false/null schemas
- * such that no error appears in these cases.
- * @param props
+ * such that no error appears in these cases. (The schema lint reports an
+ * unresolvable scope as "Empty schema to be rendered".)
  * @returns
  */
-export const VoidControl = (props: ControlProps) => {
-  //@ts-expect-error uischema is not sufficiently typed on the json form side
-  if (props.uischema.type !== 'VerticalLayout') {
-    tsAddWarningMessage(
-      9,
-      'Empty schema to be rendered',
-      'The schema has a subschema which is empty (undefined).',
-      props.id?.split('/').pop() ?? 'key',
-      getCurrentContext()?.rc.backendObject?.title ?? 'Unknown',
-    );
-  }
+export const VoidControl = () => {
   return <></>;
 };
 

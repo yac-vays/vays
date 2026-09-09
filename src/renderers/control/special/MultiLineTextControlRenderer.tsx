@@ -11,17 +11,10 @@ import OverheadLabel from '../../../view/thirdparty/components/ifc/Label/Overhea
 import TextArea from '../../../view/thirdparty/components/ifc/TextArea/TextAreaInput';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
 import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
-import { doStringTroubleShootCheck } from '../../utils/troubleshootChecks';
 
 const eventToValue = (ev: React.ChangeEvent<HTMLTextAreaElement>) => ev.target.value;
 
 export const MultiLineTextControlRenderer = (props: ControlProps) => {
-  // Troubleshooting checks update another component's state (the notification
-  // dropdown), so they must run after render, not during it.
-  useEffect(() => {
-    doStringTroubleShootCheck(props);
-  });
-
   let data = props.data;
   let errors = props.errors;
 

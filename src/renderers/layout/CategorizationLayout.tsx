@@ -19,8 +19,6 @@ import {
 } from '@jsonforms/material-renderers';
 import { TranslateProps, withJsonFormsLayoutProps, withTranslateProps } from '@jsonforms/react';
 import { useEffect, useMemo, useState } from 'react';
-import { tsAddWarningMessage } from '../../controller/global/troubleshoot';
-import { getCurrentContext } from '../../controller/local/EditController/ExpertMode/access';
 import {
   getCurrentTab,
   setCurrentTab,
@@ -46,27 +44,6 @@ export interface CategorizationLayoutRendererProps
   ownState?: boolean;
   data?: any;
   onChange?(selected: number, prevSelected: number): void;
-}
-
-/**
- * Checks which are for the admin (production: false, in the schema warnings.)
- * @param uischema
- */
-function checkSchema(uischema: Categorization) {
-  if (uischema.elements) {
-    for (const cat of uischema.elements) {
-      if (cat.elements.length > 20) {
-        tsAddWarningMessage(
-          2,
-          'Potentially big category',
-          'This category has more than 20 elements. Consider splitting it into new categories ' +
-            '(Adding them conditionally.)',
-          cat.label ?? 'Category',
-          getCurrentContext()?.rc.backendObject?.title ?? 'Unknown',
-        );
-      }
-    }
-  }
 }
 
 /**
@@ -112,12 +89,6 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
   useEffect(() => {
     setCurrentTab(getCurrentTab());
     setActiveCategory(getCurrentTab());
-  }, [categorization]);
-
-  // Admin schema checks update another component's state (the notification
-  // dropdown), so they must run after render, not during it.
-  useEffect(() => {
-    checkSchema(categorization);
   }, [categorization]);
 
   // Memoize since this changes hardly anytime (except if category is added or removed)

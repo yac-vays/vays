@@ -12,7 +12,6 @@ import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc
 import TextInput from '../../view/thirdparty/components/ifc/TextInput/TextInput';
 import { isUntypedStringInput } from '../utils/customTesterUtils';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
-import { doStringTroubleShootCheck } from '../utils/troubleshootChecks';
 
 const eventToValue = (ev: React.ChangeEvent<HTMLInputElement>) => ev.target.value;
 /**
@@ -26,12 +25,6 @@ const strictEventToValue = (ev: React.ChangeEvent<HTMLInputElement>) =>
 
 export const TextControl = (props: ControlProps) => {
   const sendTrivial = props.uischema.options?.renderer_options?.send_trivial ?? false;
-
-  // Troubleshooting checks update another component's state (the notification
-  // dropdown), so they must run after render, not during it.
-  useEffect(() => {
-    doStringTroubleShootCheck(props);
-  });
 
   const onChange = useCallback(
     trackedDebounce(

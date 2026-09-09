@@ -17,8 +17,12 @@ const DropdownNotification = () => {
   const [content, setContent] = useState<{ prop: TroubleShootMessageProps; msgKey: string }[]>([]);
   const [isProd, setIsProd] = useState<boolean>(true);
   troubleshootCtrlState.update = (showNotify: boolean = true) => {
-    setContent(getWarningMessageBuffer());
-    setNotifying(showNotify);
+    // The buffer is mutated in place; copy it so React does not bail out on
+    // the identical array reference and the open dropdown stays current.
+    setContent([...getWarningMessageBuffer()]);
+    // Low-priority warnings (e.g. missing descriptions) are listed but do not
+    // light up the dot, and must not switch off a dot lit by a higher one.
+    if (showNotify) setNotifying(true);
   };
   useEffect(() => {
     (async () => {

@@ -22,6 +22,7 @@ import { logError } from '../../../utils/logger';
 import { ValidateResponse } from '../../../utils/types/internal/validation';
 import { Nullable } from '../../../utils/types/typeUtils';
 import { showError } from '../../global/notification';
+import { reportSchemaWarnings } from '../../global/troubleshoot';
 import { navigateToURL } from '../../global/url';
 import editingState from '../../state/EditCtrlState';
 import { emitChangeState, seedCanonical } from './ExpertMode/access';
@@ -530,6 +531,7 @@ export async function coreUpdate(
 
   setYACStatus(valResp.valid, valResp.detail, valResp.usages);
   if (valResp.perms) setEntityPerms(valResp.perms);
+  reportSchemaWarnings(valResp, requestEditContext);
   const didChange = handleDefaults(entityData, valResp, requestEditContext);
 
   // do revalidation here!

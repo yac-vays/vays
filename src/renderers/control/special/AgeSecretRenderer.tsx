@@ -1,8 +1,6 @@
 import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { tsAddWarningMessage } from '../../../controller/global/troubleshoot';
-import { getCurrentContext } from '../../../controller/local/EditController/ExpertMode/access';
 import {
   ageEncrypt,
   looksLikeAgeArmor,
@@ -56,16 +54,6 @@ export const AgeSecretRenderer = (props: ControlProps) => {
     !recipient || typeof recipient !== 'string'
       ? "Spec error: renderer 'age_secret' requires `vays_options.renderer_options.age_public_key`."
       : null;
-
-  if (specError) {
-    tsAddWarningMessage(
-      9,
-      "Missing age_public_key for renderer 'age_secret'",
-      "The `age_secret` renderer requires `vays_options.renderer_options.age_public_key` to be set to an AGE recipient (e.g. 'age1...'). The field cannot generate or encrypt secrets until this is fixed.",
-      props.path.split('/').pop() ?? 'key',
-      getCurrentContext()?.rc.backendObject?.title ?? 'Unknown',
-    );
-  }
 
   const doGenerate = useCallback(async () => {
     if (!recipient) return;

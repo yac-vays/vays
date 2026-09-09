@@ -1,6 +1,26 @@
-import { isInjectedNameKey } from '../../utils/schema/injectName';
+import { getCachedConfig } from '../../model/config';
 import { hashCode } from '../../utils/hashUtils';
+import { isInjectedNameKey } from '../../utils/schema/injectName';
+import { lintSchema } from '../../utils/schema/schemaLint';
+import { RequestEditContext } from '../../utils/types/internal/request';
+import { ValidateResponse } from '../../utils/types/internal/validation';
 import troubleshootCtrlState from '../state/TroubleShootState';
+
+/**
+ * Run the schema lint over a validate response and file every finding as a
+ * schema warning. No-op on production instances (the bell is hidden there
+ * anyway, so the work would only fill a buffer nobody sees).
+ */
+export function reportSchemaWarnings(
+  valResp: ValidateResponse,
+  requestEditContext: RequestEditContext,
+) {
+  if (getCachedConfig()?.production !== false) return;
+  const backend = requestEditContext.rc.backendObject?.title ?? 'Unknown';
+  for (const f of lintSchema(valResp.json_schema, valResp.ui_schema, valResp.data)) {
+    tsAddWarningMessage(f.priority, f.title, f.message, f.key, backend);
+  }
+}
 
 export function tsAddWarningMessage(
   priority: number,
@@ -35,7 +55,9 @@ export function tsAddWarningMessage(
     });
     troubleshootCtrlState.messageBuffer.sort((a, b) => -(a.prop.priority - b.prop.priority));
   }
-  if (priority > 1) troubleshootCtrlState.update();
+  // Always push the new buffer to the dropdown; only priorities above 1
+  // light up the "new warnings" dot in the header.
+  troubleshootCtrlState.update(priority > 1);
 }
 
 export function getWarningMessageBuffer() {

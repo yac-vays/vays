@@ -8,6 +8,7 @@ import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import { Nullable } from '../../../../utils/types/typeUtils';
 import { showModalMessage } from '../../../global/modal';
 import { showError } from '../../../global/notification';
+import { reportSchemaWarnings } from '../../../global/troubleshoot';
 import { buildOverviewHighlightURL, navigateToURL } from '../../../global/url';
 import editingState from '../../../state/EditCtrlState';
 import { handleEditConflict } from '../conflict';
@@ -70,6 +71,7 @@ export async function updateYAMLschema(
   if (seq === undefined || !isStaleValidation(seq)) {
     setYACStatus(valResp.valid, valResp.detail, valResp.usages);
     if (valResp.perms) setEntityPerms(valResp.perms);
+    reportSchemaWarnings(valResp, requestEditContext);
   }
 
   return valResp;

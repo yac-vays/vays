@@ -49,17 +49,15 @@ export function formatRelativeTime(time: string | null | undefined): string | nu
   return `${Math.floor(hr / 24)}d`;
 }
 
-/** Red → orange → green anchors for the progress ring (same red/green as the bool indicator). */
+/** Yellow → green anchors for the progress ring (same green as the bool indicator). */
 const PROGRESS_COLOR_STOPS: [number, [number, number, number]][] = [
-  [0, [0xdc, 0x35, 0x45]], // #DC3545 red
-  [50, [0xf5, 0x9e, 0x0b]], // #F59E0B orange
+  [0, [0xea, 0xb3, 0x08]], // #EAB308 yellow
   [100, [0x10, 0xb9, 0x81]], // #10B981 green
 ];
 
 /**
- * Maps a progress percentage (0-100) to a hex color: red at 0%, orange at 50%,
- * green at 100%, with linear blending in between. Values outside 0-100 are
- * clamped.
+ * Maps a progress percentage (0-100) to a hex color: yellow at 0%, green at
+ * 100%, with linear blending in between. Values outside 0-100 are clamped.
  */
 export function progressColor(progress: number): string {
   const p = Math.min(100, Math.max(0, isNaN(progress) ? 0 : progress));

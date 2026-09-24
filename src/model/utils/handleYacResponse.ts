@@ -32,7 +32,13 @@ export type YacResponseResult =
   | { kind: 'auth-expired'; status: number; body: YacErrorBody }
   /** 403 — valid session but missing permission; an error toast was shown. */
   | { kind: 'forbidden'; status: number; body: YacErrorBody }
-  /** >= 500 — an error toast was shown. */
+  /**
+   * 503 — the backend's git repository is unavailable (typically in
+   * maintenance). No toast: the availability banner of the page shows the
+   * backend's title/message instead (see `controller/global/availability`).
+   */
+  | { kind: 'unavailable'; status: number; body: YacErrorBody }
+  /** >= 500 (other than 503) — an error toast was shown. */
   | { kind: 'server-error'; status: number; body: YacErrorBody }
   /**
    * Any other non-success status (mostly the remaining 4xx). No toast shown
@@ -102,6 +108,10 @@ export async function handleYacResponse(
   const status = resp.status;
   const body = await decodeErrorBody(resp);
 
+  if (status === 503) {
+    return { kind: 'unavailable', status, body };
+  }
+
   if (status >= 500) {
     showError(
       ctx.title,
@@ -157,7 +167,8 @@ export async function handleYacResponse(
           ctx.errorText,
           status,
           body,
-          ctx.errorMessage ?? 'Please try again later or click on the help button (?) for support information.',
+          ctx.errorMessage ??
+            'Please try again later or click on the help button (?) for support information.',
         ),
     );
   }

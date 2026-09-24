@@ -1,5 +1,6 @@
 import { createNewEntity } from '../../../../model/create';
 import { invalidateEntityListCache } from '../../../../model/entityList';
+import { LOG_REFRESH_DELAY_MS, refreshEntityLogs } from '../../../../model/logs';
 import { PutResult, putYAMLEntity } from '../../../../model/put';
 import { validateYAML } from '../../../../model/validate';
 import { ActionDecl } from '../../../../utils/types/api';
@@ -161,6 +162,9 @@ export async function sendYAMLData(requestContext: RequestEditContext) {
         // The admin override is per-commit intent: auto-relock after use.
         setAdminOverride(false);
         invalidateEntityListCache(requestContext.rc.yacURL, requestContext.rc.entityTypeName);
+        // The overview mounts next; its row for this entity refetches the
+        // logs once the write's hooks had a moment to run.
+        if (entityName) refreshEntityLogs(entityName, requestContext.rc, LOG_REFRESH_DELAY_MS);
         navigateToURL(
           buildOverviewHighlightURL(
             requestContext.rc.backendObject?.name,

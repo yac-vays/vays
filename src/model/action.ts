@@ -18,6 +18,7 @@ import { copyEntity } from './copy';
 import { deleteEntity } from './delete';
 import { invalidateEntityListCache } from './entityList';
 import { linkEntity } from './link';
+import { LOG_REFRESH_DELAY_MS, refreshEntityLogs } from './logs';
 import { handleYacResponse } from './utils/handleYacResponse';
 
 /**
@@ -28,6 +29,7 @@ import { handleYacResponse } from './utils/handleYacResponse';
  */
 function reloadOverviewAtEntity(requestContext: RequestContext, entityName?: Nullable<string>) {
   invalidateEntityListCache(requestContext.yacURL, requestContext.entityTypeName);
+  if (entityName) refreshEntityLogs(entityName, requestContext, LOG_REFRESH_DELAY_MS);
   navigateToURL(
     buildOverviewHighlightURL(
       requestContext.backendObject?.name,
@@ -45,6 +47,9 @@ export function getActionCallback(
   return async () => {
     const doAction = async () => {
       const successfullySubmitted = await sendAction(requestContext, entityName, actionObj);
+      // Whatever the outcome, the action (or its failure) is likely to have
+      // produced log entries: show them without waiting for the next poll.
+      refreshEntityLogs(entityName, requestContext, LOG_REFRESH_DELAY_MS);
       if (successfullySubmitted) {
         showSuccess(
           entityToastTitle(requestContext, entityName),
@@ -53,10 +58,7 @@ export function getActionCallback(
       } else if (successfullySubmitted == null) {
         // Skip, the error was printed
       } else {
-        showError(
-          entityToastTitle(requestContext, entityName),
-          `${actionObj.title} failed!`,
-        );
+        showError(entityToastTitle(requestContext, entityName), `${actionObj.title} failed!`);
       }
     };
     if (actionObj.dangerous) {

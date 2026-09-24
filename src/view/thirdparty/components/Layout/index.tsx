@@ -4,6 +4,7 @@ import { registerErrorNotifyCallback } from '../../../../controller/global/notif
 import { YACBackend } from '../../../../utils/types/config';
 import { useModalContext } from '../../../components/Modal/ModalContext';
 import { useToastContext } from '../../../components/ToastNotification/ToastContext';
+import AvailabilityBanner from '../../../components/AvailabilityBanner';
 import Header from '../../components/Header/index';
 import { HeaderSlotsProvider } from '../../components/Header/HeaderSlots';
 import Sidebar from '../Sidebar/index';
@@ -34,7 +35,11 @@ const DefaultLayout: React.FC<{ children: ReactNode; backendList: YACBackend[] }
             <main>
               {/* No max width: the side-by-side editor (and wide tables) should be
                   free to use all available horizontal space. */}
-              <div className="p-4 md:p-6 2xl:p-10">{children}</div>
+              <div className="p-4 md:p-6 2xl:p-10">
+                {/* Maintenance / stale-data notice for the current page's backend. */}
+                <AvailabilityBanner backendList={backendList} />
+                {children}
+              </div>
             </main>
           </HeaderSlotsProvider>
         </div>

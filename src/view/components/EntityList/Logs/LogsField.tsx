@@ -1,5 +1,10 @@
 import { useEffect, useState } from 'react';
-import { getEntityLogs, isLogCached } from '../../../../model/logs';
+import {
+  getEntityLogID,
+  getEntityLogs,
+  invalidateLogCache,
+  subscribeLogRefresh,
+} from '../../../../model/logs';
 import { EntityLog } from '../../../../utils/types/api';
 import { RequestContext } from '../../../../utils/types/internal/request';
 import RichInfoPanel from '../../RichInfoPanel';
@@ -13,6 +18,11 @@ import NumberLog from './NumberLog';
 // kept in line with log-less rows by trimming the cell's vertical padding in
 // EntityListRow, not by shrinking the symbol — see the Logs <td> there.
 const LOG_ITEM_CLASS = 'max-w-[44px] min-w-[34px] 2xl:max-w-[50px]';
+
+// Base interval between two background polls of an entity's logs (a little
+// random jitter is added so the rows don't all fire at once). Note that
+// responses are cached (LOGS_CACHE_TTL), so not every poll hits the network.
+const POLL_INTERVAL_MS = 10_000;
 
 const LogsField = ({
   requestContext,
@@ -36,36 +46,61 @@ const LogsField = ({
   }, [requestContext.entityTypeName, requestContext.yacURL]);
   useEffect(() => {
     let mounted = true;
-    let firstIteration = true;
+    // Resolves the sleep the poll loop is currently in (if any), so a refresh
+    // request can cut the wait short.
+    let wake: (() => void) | null = null;
+    // A refresh request arrived while a fetch was running: fetch again right
+    // after it, since the running one may predate the change.
+    let refreshPending = false;
+    // When the last fetch started (epoch ms); see LogRefreshRequest.since.
+    let lastFetchStart = 0;
+
+    const sleep = (ms: number) =>
+      new Promise<void>((res) => {
+        const timer = setTimeout(() => {
+          wake = null;
+          res();
+        }, ms);
+        wake = () => {
+          clearTimeout(timer);
+          wake = null;
+          res();
+        };
+      });
+
+    const logID = getEntityLogID(entityName, requestContext);
+    const unsubscribe = subscribeLogRefresh((request) => {
+      if (request.logID !== null && request.logID !== logID) return;
+      if (lastFetchStart >= request.since) return; // already done
+      invalidateLogCache(entityName, requestContext);
+      refreshPending = true;
+      if (wake) wake(); // sleeping: fetch now; otherwise a fetch is running and repeats
+    });
 
     (async () => {
-      while (true) {
-        if (firstIteration) {
-          firstIteration = false;
-          setIsLoading(true);
-        }
-
-        if (!firstIteration && !isLogCached(entityName, requestContext)) {
-          await new Promise((res) =>
-            setTimeout(res, Math.min(2000, 1000 + Math.round(2000 * Math.random()))),
-          );
-          // if the tab is not active, then do not actually request the logs.
-          if (document.hidden) {
-            continue;
-          }
-        }
-
-        if (!mounted) {
-          return;
-        }
-
+      setIsLoading(true);
+      let forced = true; // the initial load always fetches, even when hidden
+      while (mounted) {
         if (
           !requestContext.accessedEntityType?.logs ||
           requestContext.accessedEntityType.logs.length == 0
         ) {
           return;
         }
+
+        // Background polling is paused while the tab is not visible; explicit
+        // refreshes (initial load, after an action, table reload) still run.
+        if (!forced && document.hidden) {
+          await sleep(POLL_INTERVAL_MS);
+          forced = refreshPending;
+          refreshPending = false;
+          continue;
+        }
+        refreshPending = false;
+        lastFetchStart = Date.now();
+
         const logs = await getEntityLogs(entityName, requestContext);
+        if (!mounted) return;
         if (logs === null) {
           setLogObject({});
         } else {
@@ -83,16 +118,23 @@ const LogsField = ({
           }
           setLogObject(log);
         }
-        if (!mounted) {
-          return;
-        }
         setIsLoading(false);
-        await new Promise((res) => setTimeout(res, 10_000 + Math.round(2000 * Math.random())));
+
+        if (refreshPending) {
+          forced = true;
+          continue;
+        }
+        await sleep(POLL_INTERVAL_MS + Math.round(2000 * Math.random()));
+        // Woken by a refresh request (rather than the timer): fetch even if
+        // the tab is hidden.
+        forced = refreshPending;
       }
     })();
 
     return () => {
       mounted = false;
+      unsubscribe();
+      if (wake) wake();
     };
   }, [entityName]);
   // opacity-60

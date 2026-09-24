@@ -33,6 +33,92 @@ export function invalidateLogCache(entityName: string, requestContext: RequestCo
   VAYS_CACHE.invalidate(LOGS_CACHE_KEY, getLogID(url, requestContext.entityTypeName, entityName));
 }
 
+/**
+ * A request to refetch logs, delivered to every mounted log field (see
+ * {@link subscribeLogRefresh}).
+ */
+export interface LogRefreshRequest {
+  /**
+   * The log ID (see `getLogID`) of the one entity to refresh, or null for
+   * every entity currently shown.
+   */
+  logID: string | null;
+  /**
+   * The moment (epoch ms) of the event that motivated the refresh. A log field
+   * whose last fetch started after this moment has already picked up the
+   * change and skips the refetch (so e.g. the refresh button's immediate
+   * reload and the list-invalidation hook's delayed one don't fetch twice).
+   */
+  since: number;
+}
+
+/**
+ * How long after a write or action VAYS waits before refetching the affected
+ * logs: YAC answers as soon as the operation is done, but the hooks producing
+ * the log entries may still be finishing.
+ */
+export const LOG_REFRESH_DELAY_MS = 1000;
+
+type LogRefreshListener = (request: LogRefreshRequest) => void;
+const logRefreshListeners = new Set<LogRefreshListener>();
+
+/**
+ * Subscribe to log refresh requests. Returns the unsubscribe function.
+ */
+export function subscribeLogRefresh(listener: LogRefreshListener): () => void {
+  logRefreshListeners.add(listener);
+  return () => {
+    logRefreshListeners.delete(listener);
+  };
+}
+
+function notifyLogRefresh(logID: string | null, since: number) {
+  for (const listener of [...logRefreshListeners]) {
+    listener({ logID, since });
+  }
+}
+
+/**
+ * Drop the cached logs of one entity and make its (mounted) log field refetch
+ * them right away instead of at the next poll tick.
+ *
+ * @param delayMs Wait this long before refreshing: after an action or write,
+ * the hooks that produce the log entries may still be running when YAC
+ * answers, so give them a moment.
+ * @param since See {@link LogRefreshRequest.since}. Defaults to the moment the
+ * refresh fires, i.e. the refetch is never skipped.
+ */
+export function refreshEntityLogs(
+  entityName: string,
+  requestContext: RequestContext,
+  delayMs: number = 0,
+  since?: number,
+) {
+  const logID = getLogID(requestContext.yacURL, requestContext.entityTypeName, entityName);
+  const fire = () => {
+    invalidateLogCache(entityName, requestContext);
+    notifyLogRefresh(logID, since ?? Date.now());
+  };
+  if (delayMs > 0) setTimeout(fire, delayMs);
+  else fire();
+}
+
+/**
+ * Like {@link refreshEntityLogs}, but for every entity whose log field is
+ * currently mounted (i.e. the whole visible table). Each field invalidates
+ * its own cache entry when it receives the request.
+ */
+export function refreshAllLogs(delayMs: number = 0, since?: number) {
+  const fire = () => notifyLogRefresh(null, since ?? Date.now());
+  if (delayMs > 0) setTimeout(fire, delayMs);
+  else fire();
+}
+
+/** The refresh-request ID of an entity's logs (see {@link LogRefreshRequest.logID}). */
+export function getEntityLogID(entityName: string, requestContext: RequestContext): string {
+  return getLogID(requestContext.yacURL, requestContext.entityTypeName, entityName);
+}
+
 export async function getEntityLogs(
   entityName: string,
   requestContext: RequestContext,

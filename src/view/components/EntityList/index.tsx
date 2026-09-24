@@ -1,7 +1,7 @@
 import { RefObject, useEffect, useRef } from 'react';
 import { reload } from '../../../controller/local/Overview/list';
 import { registerEntityListInvalidationHook } from '../../../model/entityList';
-import { invalidateLogCache } from '../../../model/logs';
+import { LOG_REFRESH_DELAY_MS, refreshAllLogs } from '../../../model/logs';
 import iLocalStorage from '../../../session/persistent/LocalStorage';
 import { hasLogsDefined } from '../../../utils/logUtils';
 import { RequestContext } from '../../../utils/types/internal/request';
@@ -117,11 +117,12 @@ const EntityList = ({ requestContext, highlightEntityName }: EntityListProps) =>
   useEffect(() => {
     registerEntityListInvalidationHook(requestContext.yacURL, requestContext.entityTypeName, () => {
       setReloadCount(reloadCount + 1);
-      setTimeout(() => {
-        for (const entity of tableEntries) {
-          invalidateLogCache(entity.elt[0].value, requestContext);
-        }
-      }, 1000);
+      // The list is reloaded because something changed (a write, or the user
+      // asked for a refresh): reload the logs of every row as well, after a
+      // short grace period for the hooks of a write. Rows whose logs were
+      // already refetched since the invalidation (e.g. by the refresh button)
+      // are skipped.
+      refreshAllLogs(LOG_REFRESH_DELAY_MS, Date.now());
     });
   }, [requestContext.yacURL, requestContext.entityTypeName, reloadCount]);
 

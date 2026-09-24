@@ -8,6 +8,7 @@ import {
   navigateToURL,
 } from '../../../controller/global/url';
 import { invalidateEntityListCache } from '../../../model/entityList';
+import { refreshAllLogs } from '../../../model/logs';
 import iLocalStorage from '../../../session/persistent/LocalStorage';
 import { YACBackend } from '../../../utils/types/config';
 import { RequestOverviewContext } from '../../../utils/types/internal/request';
@@ -105,9 +106,11 @@ const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) 
         <button
           className={circleBtn}
           title="Refresh table"
-          onClick={() =>
-            invalidateEntityListCache(requestContext.rc.yacURL, requestContext.rc.entityTypeName)
-          }
+          onClick={() => {
+            invalidateEntityListCache(requestContext.rc.yacURL, requestContext.rc.entityTypeName);
+            // Reload every row's logs right away, not just at the next poll.
+            refreshAllLogs();
+          }}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

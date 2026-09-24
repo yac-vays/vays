@@ -1,3 +1,4 @@
+import { reportResponse } from '../controller/global/availability';
 import { showError } from '../controller/global/notification';
 import VAYS_CACHE from '../model/caching';
 import { getTokenFromStorage, isStoredTokenExpired } from '../session/login/tokenHandling';
@@ -122,6 +123,11 @@ export async function sendRequest(
   if (cacheContext) {
     VAYS_CACHE.cache(cacheContext, url, resp.clone());
   }
+
+  // Keep the per-backend availability (maintenance / stale data banner) in
+  // sync with what the backend just answered. Not awaited: it only needs the
+  // status, headers and (for a 503) a clone of the body.
+  void reportResponse(url, resp);
 
   return resp;
 }

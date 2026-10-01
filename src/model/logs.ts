@@ -114,6 +114,34 @@ export function refreshAllLogs(delayMs: number = 0, since?: number) {
   else fire();
 }
 
+/**
+ * Logs fetched less than this long ago are not refetched when the page comes
+ * back into view (see {@link refreshLogsOnResume}), so quickly switching tabs
+ * back and forth doesn't refetch the whole table every time.
+ */
+const RESUME_FRESH_MS = 10_000;
+
+/**
+ * Refresh the logs of every shown entity whenever the page becomes visible
+ * again (tab switched back to, phone app resumed, page restored from the
+ * back/forward cache). Background polling is paused while the page is hidden,
+ * and mobile browsers freeze timers altogether, so the logs are outdated by
+ * then and the next poll tick may still be a while away.
+ *
+ * Returns the function removing the listeners.
+ */
+export function refreshLogsOnResume(): () => void {
+  const onResume = () => {
+    if (!document.hidden) refreshAllLogs(0, Date.now() - RESUME_FRESH_MS);
+  };
+  document.addEventListener('visibilitychange', onResume);
+  window.addEventListener('pageshow', onResume);
+  return () => {
+    document.removeEventListener('visibilitychange', onResume);
+    window.removeEventListener('pageshow', onResume);
+  };
+}
+
 /** The refresh-request ID of an entity's logs (see {@link LogRefreshRequest.logID}). */
 export function getEntityLogID(entityName: string, requestContext: RequestContext): string {
   return getLogID(requestContext.yacURL, requestContext.entityTypeName, entityName);

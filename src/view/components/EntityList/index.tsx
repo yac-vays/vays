@@ -1,7 +1,7 @@
 import { RefObject, useEffect, useRef } from 'react';
 import { reload } from '../../../controller/local/Overview/list';
 import { registerEntityListInvalidationHook } from '../../../model/entityList';
-import { LOG_REFRESH_DELAY_MS, refreshAllLogs } from '../../../model/logs';
+import { LOG_REFRESH_DELAY_MS, refreshAllLogs, refreshLogsOnResume } from '../../../model/logs';
 import iLocalStorage from '../../../session/persistent/LocalStorage';
 import { hasLogsDefined } from '../../../utils/logUtils';
 import { RequestContext } from '../../../utils/types/internal/request';
@@ -125,6 +125,8 @@ const EntityList = ({ requestContext, highlightEntityName }: EntityListProps) =>
       refreshAllLogs(LOG_REFRESH_DELAY_MS, Date.now());
     });
   }, [requestContext.yacURL, requestContext.entityTypeName, reloadCount]);
+
+  useEffect(() => refreshLogsOnResume(), []);
 
   return (
     <>

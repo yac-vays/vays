@@ -1,8 +1,8 @@
-import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
+import { and, ControlProps, isControl, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
 import MarkdownRender from '../../../view/components/Markdown';
-import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
+import { isCustomRenderer } from '../../utils/customTesterUtils';
 
 export const InfoBoxControl = (props: ControlProps) => {
   return (
@@ -18,8 +18,10 @@ export const InfoBoxControl = (props: ControlProps) => {
   );
 };
 
+// Not gated on the schema type: the box never touches data, and the
+// documented shape (`not: {}`, no type) would otherwise match no renderer.
 export const InfoBoxTester: RankedTester = rankWith(
   22,
-  and(or(isStringControl, isUntypedStringInput), isCustomRenderer('info_box')),
+  and(isControl, isCustomRenderer('info_box')),
 );
 export default withJsonFormsControlProps(InfoBoxControl);

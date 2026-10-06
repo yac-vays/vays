@@ -43,7 +43,6 @@ export const EXPLICIT_RENDERERS = [
 /** Explicit renderers whose tester requires `type: string` (or no type). */
 const STRING_RENDERERS = new Set([
   'age_secret',
-  'info_box',
   'list_as_string',
   'mac_address',
   'password',

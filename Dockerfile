@@ -1,4 +1,8 @@
-FROM node:22.23.2-alpine3.23 AS build
+#
+# Base Image - dependencies and sources, shared by the test and build stages
+#
+
+FROM node:22.23.2-alpine3.23 AS base
 
 WORKDIR /code
 
@@ -17,12 +21,31 @@ COPY public ./public
 COPY rsc ./rsc
 COPY src ./src
 
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+#
+# Linting/Testing
+#
+
+FROM base AS test
+
+COPY eslint.config.mjs ./
+COPY tests ./tests
+RUN npx eslint src
+RUN npx vitest run
+RUN touch /tmp/tested
+
+#
+# Build
+#
+
+FROM base AS build
+
 ARG version=v0.0
 
 RUN echo 'export default "'${version#v}'";' > /code/rsc/version.tsx && \
     npm pkg set version=${version#v}
 
-ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build
 
 #
@@ -33,6 +56,9 @@ RUN npm run build
 #
 
 FROM nginxinc/nginx-unprivileged:1.31.4-alpine3.24 AS production
+
+# Enforce test run
+COPY --from=test /tmp/tested /dev/null
 
 # Copy the built files from the build stage
 COPY --from=build /code/dist /usr/share/nginx/html

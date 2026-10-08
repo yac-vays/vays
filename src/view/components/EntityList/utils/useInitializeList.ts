@@ -7,7 +7,7 @@ import {
   isStaleListGeneration,
   nextListGeneration,
 } from '../../../../controller/local/Overview/list';
-import { fetchEntityList } from '../../../../model/entityList';
+import { probeEntity } from '../../../../model/entityData';
 import iLocalStorage from '../../../../session/persistent/LocalStorage';
 import { QueryResponse, QueryResult } from '../../../../utils/types/internal/entityList';
 import { RequestContext } from '../../../../utils/types/internal/request';
@@ -41,6 +41,7 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
   const latestSearchTermsRef = useRef<(string | null)[]>(searchTerms);
   latestSearchTermsRef.current = searchTerms;
   const prevDataKeyRef = useRef<string>('');
+  const prevTargetRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
     let mounted = true;
@@ -65,6 +66,10 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
       const dataKey = `${requestContext.entityTypeName}|${requestContext.yacURL}|${numResultsPerPage}|${reloadCount}`;
       const dataChanged = dataKey !== prevDataKeyRef.current;
       prevDataKeyRef.current = dataKey;
+      // Did the user navigate to a (new) target entity, as opposed to a reload
+      // of the list while the same entity stays pinned in the URL?
+      const targetChanged = targetEntityName !== prevTargetRef.current;
+      prevTargetRef.current = targetEntityName;
 
       // Only the URL target changed and that entity is already on the current
       // page: just highlight it — no reload, no scroll.
@@ -103,16 +108,23 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
         if (!mounted || isStaleListGeneration(gen)) return;
         if (targetPage != null) {
           page = targetPage;
-        } else {
-          // The targeted entity is not in the list. Distinguish "doesn't exist
-          // yet" from "the list failed to load" (both yield an empty result):
-          // only on a confirmed-successful fetch do we forward the user to the
-          // create form, prefilled with the requested name. On a failed load we
-          // fall through and render the (empty) list — the error toast has
-          // already been shown by the fetch.
-          const { ok } = await fetchEntityList(requestContext);
+        } else if (targetChanged) {
+          // The targeted entity is not in the (filtered) list. Ask YAC whether
+          // it exists: only if it doesn't (404) do we forward the user to the
+          // create form, prefilled with the requested name. Otherwise we render
+          // the (filtered) list — the entity is hidden by the search filter, or
+          // the user may not see it (403, toast shown), or the check failed
+          // (toast shown).
+          // Only on navigation to the target: a reload (refresh button, page
+          // size, a write) keeps showing the list, even if the pinned entity
+          // got filtered out or was deleted elsewhere meanwhile.
+          const existence = await probeEntity(targetEntityName, requestContext);
           if (!mounted || isStaleListGeneration(gen)) return;
-          if (ok && requestContext.backendObject && requestContext.entityTypeName) {
+          if (
+            existence === 'missing' &&
+            requestContext.backendObject &&
+            requestContext.entityTypeName
+          ) {
             navigateToURL(
               buildCreateURL(
                 requestContext.backendObject,

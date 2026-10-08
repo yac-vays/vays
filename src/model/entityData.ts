@@ -106,6 +106,67 @@ export async function getStoredEntity(
   return { kind: 'error' };
 }
 
+export type EntityExistence =
+  /** HTTP 200: the entity exists and the user may see it. */
+  | 'exists'
+  /** HTTP 404: the entity does not exist. */
+  | 'missing'
+  /**
+   * HTTP 403: either the entity exists but the user may not see it, or it does
+   * not exist and the user's `see` permission depends on the entity data (YAC
+   * evaluates the roles on empty data then). A toast has been shown.
+   */
+  | 'hidden'
+  /** Any other failure (a toast or the availability banner has been shown). */
+  | 'error';
+
+/**
+ * Ask YAC whether an entity exists, without the read-failure toast of
+ * {@link getEntityData} for the expected 404.
+ */
+export async function probeEntity(
+  entityName: string,
+  requestContext: RequestContext,
+): Promise<EntityExistence> {
+  const url: string | null | undefined = requestContext.yacURL;
+  if (url == null || url == undefined) return 'error';
+
+  const resp: Nullable<Response> = await sendRequest(
+    joinUrl(url, `/entity/${requestContext.entityTypeName}/${encodeURIComponent(entityName)}`),
+    'GET',
+  );
+  const errorText = `Read of ${entityName} failed`;
+  const result = await handleYacResponse(resp, {
+    title: entityToastTitle(requestContext, entityName),
+    errorText,
+    errorDetail: (status, body) =>
+      status === 403
+        ? 'It does not exist or you lack the permission to see it.'
+        : yacErrorDetail(
+            errorText,
+            status,
+            body,
+            'Please contact the admin to resolve this issue.',
+          ),
+  });
+
+  if (result.kind === 'success') return 'exists';
+  if (result.kind === 'forbidden') return 'hidden';
+  if (result.kind === 'client-error' && result.status === 404) return 'missing';
+  if (result.kind === 'network-error') {
+    showError(
+      entityToastTitle(requestContext, entityName),
+      `${errorText}: the backend could not be reached.`,
+    );
+  } else if (result.kind === 'client-error' || result.kind === 'invalid-request') {
+    showError(
+      entityToastTitle(requestContext, entityName),
+      yacErrorDetail(errorText, result.status, result.body, 'Please try again.'),
+    );
+  }
+  return 'error';
+}
+
 function typeCheckEntityData(ed: unknown, entityName: string): Nullable<EntityData> {
   if (typeCheck(TYPE_CHECK_ENTITY_DATA, ed)) {
     return ed as EntityData;

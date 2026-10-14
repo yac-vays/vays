@@ -1,113 +1,127 @@
 /**
- * relocateMissingPropertyMarkers: monaco-yaml anchors "Missing property"
- * diagnostics on the object node (visually its FIRST property); the editor
- * relocates ROOT-LEVEL ones (anchored at column 1) to the phantom last line,
- * where the property would actually be added. Nested objects (e.g. list
- * elements) are indented, so their markers already point at the right object
- * and stay put. The `null` return for the already-relocated case is
- * load-bearing: re-setting unchanged markers would re-fire the marker-change
- * listener and loop forever.
+ * relocateMissingPropertyMarkers + missingPropertyPlacer: monaco-yaml anchors
+ * "Missing property" diagnostics on the line introducing the object — the KEY
+ * of an object that is a map entry's value (`mail:` + nested entries), the
+ * own first property of a list element — and both stay put. Only the ROOT
+ * object's marker (on the document's first property) is relocated to the
+ * phantom last line; a top-level key's marker sits at column 1 too but must
+ * never land there (it would read as a missing TOP-LEVEL property). The `null`
+ * return for the already-relocated case is load-bearing: re-setting unchanged
+ * markers would re-fire the marker-change listener and loop forever.
  */
 import { describe, expect, it } from 'vitest';
-import { relocateMissingPropertyMarkers } from '../../src/view/pages/Edit/ExpertMode/EditorPlugins/missingPropertyRelocator';
+import {
+  MarkerRange,
+  missingPropertyPlacer,
+  PlacementModel,
+  relocateMissingPropertyMarkers,
+} from '../../src/view/pages/Edit/ExpertMode/EditorPlugins/missingPropertyRelocator';
 
-const marker = (message: string, line: number) => ({
+/** Minimal stand-in for monaco's ITextModel (1-based lines and columns). */
+function fakeModel(text: string): PlacementModel {
+  const lines = text.split('\n');
+  const lineStart = (lineNumber: number) =>
+    lines.slice(0, lineNumber - 1).reduce((n, l) => n + l.length + 1, 0);
+  return {
+    getValue: () => text,
+    getLineCount: () => lines.length,
+    getLineMaxColumn: (lineNumber) => lines[lineNumber - 1].length + 1,
+    getPositionAt: (offset) => {
+      const before = text.slice(0, Math.max(0, Math.min(offset, text.length))).split('\n');
+      return { lineNumber: before.length, column: before[before.length - 1].length + 1 };
+    },
+    getOffsetAt: ({ lineNumber, column }) => lineStart(lineNumber) + column - 1,
+  };
+}
+
+const at = (message: string, line: number, startColumn: number, endColumn: number) => ({
   message,
   startLineNumber: line,
-  startColumn: 1,
+  startColumn,
   endLineNumber: line,
-  endColumn: 10,
+  endColumn,
 });
 
+const lineAndColumns = (m: MarkerRange) => [
+  m.startLineNumber,
+  m.startColumn,
+  m.endLineNumber,
+  m.endColumn,
+];
+
+/** Relocate `markers` against `text`, as the live listener does. */
+const relocate = (text: string, markers: MarkerRange[]) =>
+  relocateMissingPropertyMarkers(markers, missingPropertyPlacer(fakeModel(text)));
+
+// The systems_hacc case: `interval` missing below `monitoring_notification_mail`
+// (line 3), phantom last line 8.
+const hacc =
+  'users_restrict_login: false\n\nmonitoring_notification_mail:\n  period: 9to5\n\nmail_root:\n  - x\n';
+
 describe('relocateMissingPropertyMarkers', () => {
-  it('moves missing-property markers to the target line and keeps the rest', () => {
+  const placeOnLine42 = () => ({
+    startLineNumber: 42,
+    startColumn: 1,
+    endLineNumber: 42,
+    endColumn: 1,
+  });
+
+  it('moves missing-property markers only and keeps the rest', () => {
     const markers = [
-      marker('Missing property "firewall_enabled".', 1),
-      marker('Missing property "users_ou".', 1),
-      marker('String does not match the pattern of "^a$".', 7),
+      at('Missing property "users_ou".', 1, 1, 10),
+      at('String does not match the pattern of "^a$".', 7, 1, 10),
     ];
-    const out = relocateMissingPropertyMarkers(markers, 42, 1);
-    expect(out).not.toBeNull();
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const [a, b, other] = out!;
-    expect([a.startLineNumber, a.endLineNumber, a.startColumn, a.endColumn]).toStrictEqual([
-      42, 42, 1, 1,
-    ]);
-    expect(b.startLineNumber).toBe(42);
-    expect(other).toStrictEqual(markers[2]); // untouched
+    const out = relocateMissingPropertyMarkers(markers, placeOnLine42);
+    expect(out && lineAndColumns(out[0])).toStrictEqual([42, 1, 42, 1]);
+    expect(out?.[1]).toStrictEqual(markers[1]); // untouched
   });
 
   it('returns null when everything is already in place (loop protection)', () => {
-    const inPlace = {
-      message: 'Missing property "x".',
-      startLineNumber: 42,
-      startColumn: 1,
-      endLineNumber: 42,
-      endColumn: 1,
-    };
-    expect(relocateMissingPropertyMarkers([inPlace], 42, 1)).toBeNull();
-    expect(relocateMissingPropertyMarkers([marker('Value must be true.', 3)], 42, 1)).toBeNull();
-  });
-
-  it('keeps nested missing-property markers (e.g. in list elements) in place', () => {
-    // Anchored at column 5: a key inside a list-element object, not the root.
-    const nested = {
-      message: 'Missing property "port".',
-      startLineNumber: 5,
-      startColumn: 5,
-      endLineNumber: 5,
-      endColumn: 9,
-    };
-    expect(relocateMissingPropertyMarkers([nested], 42, 1)).toBeNull();
-
-    // Mixed: only the root-level marker moves.
-    const out = relocateMissingPropertyMarkers(
-      [nested, marker('Missing property "users_ou".', 1)],
-      42,
-      1,
-    );
-    expect(out?.[0]).toStrictEqual(nested);
-    expect(out?.[1].startLineNumber).toBe(42);
-  });
-
-  it('re-moves markers when the document grew (target line changed)', () => {
-    const oldTarget = {
-      message: 'Missing property "x".',
-      startLineNumber: 42,
-      startColumn: 1,
-      endLineNumber: 42,
-      endColumn: 1,
-    };
-    const out = relocateMissingPropertyMarkers([oldTarget], 50, 1);
-    expect(out?.[0].startLineNumber).toBe(50);
+    expect(
+      relocateMissingPropertyMarkers([at('Missing property "x".', 42, 1, 1)], placeOnLine42),
+    ).toBeNull();
+    expect(
+      relocateMissingPropertyMarkers([at('Value must be true.', 3, 1, 10)], placeOnLine42),
+    ).toBeNull();
+    expect(
+      relocateMissingPropertyMarkers([at('Missing property "x".', 3, 1, 10)], () => null),
+    ).toBeNull();
   });
 });
 
-describe('relocateMissingPropertyMarkers with an injected root-anchor check', () => {
-  it('moves a drifted marker (column shifted off 1) when the anchor check accepts it', () => {
-    const drifted = {
-      message: 'Missing property "zz_prop".',
-      startLineNumber: 1,
-      startColumn: 3, // shifted by an edit on the anchor line
-      endLineNumber: 1,
-      endColumn: 9,
-    };
-    const onRootLine = (m: { startLineNumber: number }) => m.startLineNumber === 1;
-    const out = relocateMissingPropertyMarkers([drifted], 42, 5, onRootLine);
-    expect(out).not.toBeNull();
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    expect(out![0].startLineNumber).toBe(42);
+describe('missingPropertyPlacer', () => {
+  it('moves a root-level marker to the phantom last line', () => {
+    // monaco-yaml: the root map's offset, length 1.
+    const out = relocate(hacc, [at('Missing property "users_ou".', 1, 1, 2)]);
+    expect(out && lineAndColumns(out[0])).toStrictEqual([8, 1, 8, 1]);
   });
 
-  it('leaves nested markers alone when the anchor check rejects them', () => {
-    const nested = {
-      message: 'Missing property "ip".',
-      startLineNumber: 5,
-      startColumn: 3,
-      endLineNumber: 5,
-      endColumn: 9,
-    };
-    const onRootLine = (m: { startLineNumber: number }) => m.startLineNumber === 1;
-    expect(relocateMissingPropertyMarkers([nested], 42, 5, onRootLine)).toBeNull();
+  it('moves a drifted root-level marker (column shifted off 1)', () => {
+    const out = relocate(hacc, [at('Missing property "users_ou".', 1, 3, 4)]);
+    expect(out?.[0].startLineNumber).toBe(8);
+  });
+
+  it('re-moves root markers when the document grew', () => {
+    const out = relocate(`${hacc}a: 1\n`, [at('Missing property "users_ou".', 8, 1, 1)]);
+    expect(out?.[0].startLineNumber).toBe(9);
+  });
+
+  it('keeps a nested-object marker on its key (never the document end)', () => {
+    // monaco-yaml anchors it on `monitoring_notification_mail` (line 3, col 1).
+    expect(relocate(hacc, [at('Missing property "interval".', 3, 1, 29)])).toBeNull();
+  });
+
+  it('tells a nested object as the first entry apart from the root object', () => {
+    const text = 'mail:\n  period: 9to5\n\nb: 2\n';
+    const nested = at('Missing property "interval".', 1, 1, 5); // key of `mail`
+    const out = relocate(text, [nested, at('Missing property "users_ou".', 1, 1, 2)]);
+    expect(out?.[0]).toStrictEqual(nested);
+    expect(out && lineAndColumns(out[1])).toStrictEqual([5, 1, 5, 1]);
+  });
+
+  it('keeps markers of list-element objects in place', () => {
+    // Anchored on the element's own first property (indented).
+    const text = 'a: 1\nl:\n  - ip: x\n';
+    expect(relocate(text, [at('Missing property "port".', 3, 5, 6)])).toBeNull();
   });
 });

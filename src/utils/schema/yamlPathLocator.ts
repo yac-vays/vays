@@ -1,4 +1,4 @@
-import { isMap, isNode, isScalar, isSeq, parseDocument } from 'yaml';
+import { isMap, isNode, isScalar, isSeq, parseDocument, visit } from 'yaml';
 
 /** Character-offset range in a YAML text. */
 export interface TextRange {
@@ -153,4 +153,43 @@ export function yamlRootStartOffset(yamlText: string): number | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * An object (YAML map) that is the value of a map entry, e.g. the value of
+ * `monitoring_notification_mail:`. monaco-yaml anchors a violated `required`
+ * of such an object on the entry's KEY (vscode-json-languageservice heritage)
+ * — for a top-level key that is column 1, just like the root object's anchor.
+ */
+export interface NestedObjectAnchor {
+  /** The entry's key: where monaco-yaml anchors "Missing property". */
+  key: TextRange;
+  /** The keys the object already has. */
+  keys: string[];
+}
+
+/**
+ * Every object that is the value of a map entry (at any depth, also inside
+ * sequence items), see `NestedObjectAnchor`. Returns [] for unparseable
+ * documents.
+ */
+export function nestedObjectAnchors(yamlText: string): NestedObjectAnchor[] {
+  let doc;
+  try {
+    doc = parseDocument(yamlText);
+  } catch {
+    return [];
+  }
+
+  const anchors: NestedObjectAnchor[] = [];
+  visit(doc, {
+    Pair(_, pair) {
+      if (!isScalar(pair.key) || !pair.key.range || !isMap(pair.value)) return;
+      anchors.push({
+        key: { start: pair.key.range[0], end: pair.key.range[1] },
+        keys: pair.value.items.flatMap((p) => (isScalar(p.key) ? [String(p.key.value)] : [])),
+      });
+    },
+  });
+  return anchors;
 }

@@ -1,26 +1,33 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
-import { yamlRootStartOffset } from '../../../../../utils/schema/yamlPathLocator';
+import {
+  nestedObjectAnchors,
+  yamlRootStartOffset,
+} from '../../../../../utils/schema/yamlPathLocator';
 import { RequestEditContext } from '../../../../../utils/types/internal/request';
 
 /**
- * monaco-yaml anchors a "Missing property" diagnostic on the object node,
- * which for the document root visually lands on the FIRST property of the
- * document — even though the natural place to add the missing property is at
- * its end. This plugin relocates such markers to the (phantom) last line of
- * the document, where the user would type the property.
+ * monaco-yaml anchors a "Missing property" diagnostic on the line that
+ * introduces the object lacking the property: the KEY of an object that is a
+ * map entry's value (`key:` + nested entries), the object's own first
+ * property for list elements (`- ip: x`). Only the ROOT object has no such
+ * line — its anchor visually lands on the FIRST property of the document,
+ * which has nothing to do with the error. This plugin relocates root-level
+ * markers to the (phantom) last line of the document, where the user would
+ * add the property; all others stay where monaco-yaml put them.
  *
- * Only root-level diagnostics are relocated: their anchor (the document's
- * first property) sits at column 1, whereas nested objects — e.g. elements
- * of a list — are always indented, so their markers already point at the
- * right object and must stay where they are.
+ * Root-level markers are recognized by sitting at column 1 / on the root's
+ * first line — which also holds for the key of a TOP-LEVEL nested object.
+ * Those are told apart by matching the key exactly (see `nestedObjectAnchors`);
+ * otherwise a nested object's missing property would land on the document end
+ * and read as a missing top-level property.
  */
 
 /** monaco-yaml's fixed wording for a violated `required` (VAYS does not localize). */
-const MISSING_PROPERTY = /^Missing property /;
+const MISSING_PROPERTY = /^Missing property "(.+)"\.$/;
 
 /** The marker fields the relocation rewrites. */
-interface MarkerRange {
+export interface MarkerRange {
   message: string;
   startLineNumber: number;
   startColumn: number;
@@ -28,41 +35,36 @@ interface MarkerRange {
   endColumn: number;
 }
 
+export type MarkerPlacement = Omit<MarkerRange, 'message'>;
+
+/** The property a monaco-yaml "Missing property" marker reports, or null. */
+export function missingPropertyName(message: string): string | null {
+  return MISSING_PROPERTY.exec(message)?.[1] ?? null;
+}
+
 /**
- * Rewrite every root-level missing-property marker to the target (last) line.
- * Returns null when nothing needed to change — the caller MUST then not
- * re-set the markers, otherwise the resulting marker-change event would loop
- * forever.
+ * Rewrite every missing-property marker for which `placementOf` returns a
+ * placement (null = leave it where it is). Returns null when nothing needed to
+ * change — the caller MUST then not re-set the markers, otherwise the
+ * resulting marker-change event would loop forever.
  */
 export function relocateMissingPropertyMarkers<T extends MarkerRange>(
   markers: T[],
-  targetLine: number,
-  targetMaxColumn: number,
-  // Whether a marker is anchored on the ROOT object (vs. a nested one, which
-  // must stay in place). The default (column 1) is the plain-layout heuristic;
-  // the live listener passes an AST-based line check that also tolerates
-  // markers whose column drifted through edits (monaco tracks markers as
-  // decorations, so edits on the anchor line can shift them off column 1).
-  isRootAnchor: (m: MarkerRange) => boolean = (m) => m.startColumn === 1,
+  placementOf: (m: T, property: string) => MarkerPlacement | null,
 ): T[] | null {
-  const needsMove = (m: MarkerRange) =>
-    MISSING_PROPERTY.test(m.message) &&
-    isRootAnchor(m) &&
-    (m.startLineNumber !== targetLine ||
-      m.endLineNumber !== targetLine ||
-      m.endColumn !== targetMaxColumn);
-  if (!markers.some(needsMove)) return null;
-  return markers.map((m) =>
-    needsMove(m)
-      ? {
-          ...m,
-          startLineNumber: targetLine,
-          startColumn: 1,
-          endLineNumber: targetLine,
-          endColumn: targetMaxColumn,
-        }
-      : m,
-  );
+  const moves = markers.map((m) => {
+    const property = missingPropertyName(m.message);
+    const p = property == null ? null : placementOf(m, property);
+    const moved =
+      p != null &&
+      (m.startLineNumber !== p.startLineNumber ||
+        m.startColumn !== p.startColumn ||
+        m.endLineNumber !== p.endLineNumber ||
+        m.endColumn !== p.endColumn);
+    return moved ? p : null;
+  });
+  if (moves.every((p) => p == null)) return null;
+  return markers.map((m, i) => (moves[i] ? { ...m, ...moves[i] } : m));
 }
 
 // Global (monaco-level) listener, disposed on editor teardown (see Editor.tsx).
@@ -78,38 +80,75 @@ export function disposeMissingPropertyRelocator() {
   }
 }
 
-/** Run one relocation pass for the model behind `resource` (no-op when clean). */
-function relocateForResource(resource: monaco.Uri) {
-  const model = monaco.editor.getModel(resource);
-  if (model == null) return;
+/** The slice of monaco's ITextModel the placement needs (fakeable in tests). */
+export interface PlacementModel {
+  getValue(): string;
+  getLineCount(): number;
+  getLineMaxColumn(lineNumber: number): number;
+  getPositionAt(offset: number): { lineNumber: number; column: number };
+  getOffsetAt(position: { lineNumber: number; column: number }): number;
+}
+
+/**
+ * The placement function for `relocateMissingPropertyMarkers` on the model's
+ * current text: where the "Missing property" marker `m` belongs, or null to
+ * leave it alone.
+ */
+export function missingPropertyPlacer(
+  model: PlacementModel,
+): (m: MarkerRange, property: string) => MarkerPlacement | null {
+  const text = model.getValue();
   const targetLine = model.getLineCount();
-  const targetMaxColumn = model.getLineMaxColumn(targetLine);
+  const rootPlacement: MarkerPlacement = {
+    startLineNumber: targetLine,
+    startColumn: 1,
+    endLineNumber: targetLine,
+    endColumn: model.getLineMaxColumn(targetLine),
+  };
 
   // Root anchor: on the LINE the document's root node starts on (per the yaml
   // AST — tolerates markers shifted off column 1 by edits, since monaco moves
   // markers with the text), OR at column 1 (the plain heuristic; also matches
   // OUR already-relocated markers so they keep following a growing document).
-  // Nested objects are indented and start on other lines: untouched.
-  const rootOffset = yamlRootStartOffset(model.getValue());
+  const rootOffset = yamlRootStartOffset(text);
   const rootLine = rootOffset != null ? model.getPositionAt(rootOffset).lineNumber : null;
-  const isRootAnchor = (m: { startLineNumber: number; startColumn: number }) =>
+  const isRootAnchor = (m: MarkerRange) =>
     m.startColumn === 1 || (rootLine != null && m.startLineNumber === rootLine);
+
+  const anchors = nestedObjectAnchors(text);
+
+  return (m, property) => {
+    const start = model.getOffsetAt({ lineNumber: m.startLineNumber, column: m.startColumn });
+    const end = model.getOffsetAt({ lineNumber: m.endLineNumber, column: m.endColumn });
+    // On the key of a nested object lacking the property: already in place
+    // (checked first — a top-level key passes the root heuristic too).
+    const onNestedKey = anchors.some(
+      (a) => a.key.start === start && a.key.end === end && !a.keys.includes(property),
+    );
+    if (onNestedKey) return null;
+    return isRootAnchor(m) ? rootPlacement : null;
+  };
+}
+
+/** Run one relocation pass for the model behind `resource` (no-op when clean). */
+function relocateForResource(resource: monaco.Uri) {
+  const model = monaco.editor.getModel(resource);
+  if (model == null) return;
+  const all = monaco.editor.getModelMarkers({ resource });
+  // Most passes (safety interval!) have nothing to do: skip the yaml parses.
+  if (!all.some((m) => missingPropertyName(m.message) != null)) return;
+  const placementOf = missingPropertyPlacer(model);
 
   // Markers are owned per validation source (monaco-yaml, yac-backend, ...);
   // rewrite within each owner group so no source's markers are dropped.
   const byOwner = new Map<string, monaco.editor.IMarker[]>();
-  for (const marker of monaco.editor.getModelMarkers({ resource })) {
+  for (const marker of all) {
     const group = byOwner.get(marker.owner);
     if (group) group.push(marker);
     else byOwner.set(marker.owner, [marker]);
   }
   for (const [owner, markers] of byOwner) {
-    const relocated = relocateMissingPropertyMarkers(
-      markers,
-      targetLine,
-      targetMaxColumn,
-      isRootAnchor,
-    );
+    const relocated = relocateMissingPropertyMarkers(markers, placementOf);
     // `null` = already in place; re-setting would re-fire the listener forever.
     if (relocated != null) {
       monaco.editor.setModelMarkers(model, owner, relocated);

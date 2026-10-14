@@ -19,16 +19,22 @@ const OWNER = 'yac-backend';
  * form (via `locateBackendError`) but not in the editor. Whenever a validate
  * response arrives, the located error (if any) is set as a Monaco marker at
  * the offending value; a valid response clears it.
+ *
+ * A violated `required` is skipped: monaco-yaml reports it itself (on the key
+ * of the object lacking it, see missingPropertyRelocator.ts),
+ * while the backend's location — the missing property — does not exist in
+ * the text, so the ancestor fallback would mark the parent object's existing
+ * (correct) entries instead.
  */
 export function setBackendValidationMarkers(
   model: monaco.editor.ITextModel | null,
-  resp: { valid: boolean; detail?: string; data_loc?: string },
+  resp: { valid: boolean; detail?: string; data_loc?: string; validator?: string },
 ) {
   if (model == null) return;
 
   const markers: monaco.editor.IMarkerData[] = [];
   const instancePath = dataLocToInstancePath(resp.data_loc);
-  if (!resp.valid && instancePath !== '') {
+  if (!resp.valid && instancePath !== '' && resp.validator !== 'required') {
     const range = locateInstancePathInYaml(model.getValue(), instancePath);
     if (range != null) {
       const start = model.getPositionAt(range.start);

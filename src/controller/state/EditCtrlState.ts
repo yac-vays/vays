@@ -26,6 +26,15 @@ class EditControlState {
   public yacUsages: LimitUsage[] = [];
 
   /**
+   * The entity data the `yacUsages` were measured for (a copy of the data of
+   * the same validation response; null when unknown). Lets a renderer tell its
+   * own share of a usage apart from the rest, e.g. `limit_bar_*`: the usage
+   * includes the field's value as it was validated, which may differ from the
+   * value currently shown while the user is still changing it.
+   */
+  public yacUsagesData: unknown = null;
+
+  /**
    * Whether the most recent local validation has worked out.
    */
   public isValidLocal: boolean = false;

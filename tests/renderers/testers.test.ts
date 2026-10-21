@@ -5,6 +5,10 @@ import { ArrayControlTester } from '../../src/renderers/combined/ArrayRenderer/A
 import { TextControlTester } from '../../src/renderers/control/TextControlRenderer';
 import { BigStringArrayTester } from '../../src/renderers/control/special/BigStringArray';
 import { InfoBoxTester } from '../../src/renderers/control/special/InfoBoxRenderer';
+import {
+  LimitBarFloatTester,
+  LimitBarIntTester,
+} from '../../src/renderers/control/special/LimitBarRenderer';
 import { PasswordRendererTester } from '../../src/renderers/control/special/PasswordRenderer';
 import { SSHKeyRendererTester } from '../../src/renderers/control/special/SSHKeyRenderer';
 import { customRenderers } from '../../src/renderers';
@@ -97,5 +101,26 @@ describe('renderer tester selection', () => {
     const ui = control('#/properties/tags');
     const { testers } = winners(ui);
     expect(testers).toEqual([ArrayControlTester]);
+  });
+});
+
+describe('limit bar tester selection', () => {
+  const schema: JsonSchema = {
+    type: 'object',
+    properties: { f: { type: 'number' }, i: { type: 'integer' }, s: { type: 'string' } },
+  };
+  it('limit_bar_float / limit_bar_int beat the number control', () => {
+    expect(
+      winners(control('#/properties/f', { renderer: 'limit_bar_float' }), schema).testers,
+    ).toEqual([LimitBarFloatTester]);
+    expect(
+      winners(control('#/properties/i', { renderer: 'limit_bar_int' }), schema).testers,
+    ).toEqual([LimitBarIntTester]);
+  });
+  it('do not apply to strings', () => {
+    const ui = control('#/properties/s', { renderer: 'limit_bar_int' });
+    expect(LimitBarIntTester(ui, schema, { rootSchema: schema, config: {} } as any)).toEqual(
+      NOT_APPLICABLE,
+    );
   });
 });

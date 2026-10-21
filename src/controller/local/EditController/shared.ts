@@ -100,10 +100,15 @@ export function isEditDirty(): boolean {
   return editingState.isDirty;
 }
 
-export function setYACStatus(valid: boolean, detail: string, usages: LimitUsage[] = []) {
+export function setYACStatus(
+  valid: boolean,
+  detail: string,
+  usages: LimitUsage[] = [],
+  usagesData: unknown = null,
+) {
   setYACValidateResponse(detail);
   setYACValidStatus(valid);
-  setYACUsages(usages);
+  setYACUsages(usages, usagesData);
   emitValidity();
 }
 
@@ -154,8 +159,18 @@ export function getYACUsages(): LimitUsage[] {
   return editingState.yacUsages;
 }
 
-export function setYACUsages(usages: LimitUsage[]) {
+/** The entity data the current usages were measured for (see `yacUsagesData`). */
+export function getYACUsagesData(): unknown {
+  return editingState.yacUsagesData;
+}
+
+/**
+ * @param usagesData The entity data of the validation the usages come from;
+ * copied, as the caller's response object is mutated afterwards (defaults).
+ */
+export function setYACUsages(usages: LimitUsage[], usagesData: unknown = null) {
   editingState.yacUsages = usages;
+  editingState.yacUsagesData = usagesData == null ? null : structuredClone(usagesData);
   for (const cb of usagesListeners) cb(usages);
 }
 
@@ -529,7 +544,7 @@ export async function coreUpdate(
   // and drops the returned response.
   if (seq !== undefined && isStaleValidation(seq)) return valResp;
 
-  setYACStatus(valResp.valid, valResp.detail, valResp.usages);
+  setYACStatus(valResp.valid, valResp.detail, valResp.usages, valResp.data);
   if (valResp.perms) setEntityPerms(valResp.perms);
   reportSchemaWarnings(valResp, requestEditContext);
   const didChange = handleDefaults(entityData, valResp, requestEditContext);

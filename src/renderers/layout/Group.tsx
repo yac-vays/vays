@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { GroupLayout } from '@jsonforms/core';
 import {
   MaterialLabelableLayoutRendererProps,
   MaterialLayoutRenderer,
 } from '@jsonforms/material-renderers';
+import { groupIntoRows } from './RowLayout';
 
 const GroupComponent = React.memo(function GroupComponent({
   visible,
@@ -12,6 +13,7 @@ const GroupComponent = React.memo(function GroupComponent({
   label,
   ...props
 }: MaterialLabelableLayoutRendererProps) {
+  const elements = useMemo(() => groupIntoRows((uischema as GroupLayout).elements), [uischema]);
   if (!visible) return <></>;
 
   return (
@@ -25,12 +27,7 @@ const GroupComponent = React.memo(function GroupComponent({
       ) : (
         <></>
       )}
-      <MaterialLayoutRenderer
-        {...props}
-        visible={true}
-        enabled={enabled}
-        elements={(uischema as GroupLayout).elements}
-      />
+      <MaterialLayoutRenderer {...props} visible={true} enabled={enabled} elements={elements} />
     </div>
   );
 });

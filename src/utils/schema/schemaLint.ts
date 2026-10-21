@@ -30,6 +30,8 @@ export const EXPLICIT_RENDERERS = [
   'age_secret',
   'big_string_list',
   'info_box',
+  'limit_bar_float',
+  'limit_bar_int',
   'list_as_string',
   'mac_address',
   'multi_checkbox',
@@ -53,6 +55,9 @@ const STRING_RENDERERS = new Set([
 
 /** Explicit renderers whose tester requires `type: array`. */
 const ARRAY_RENDERERS = new Set(['big_string_list', 'multi_checkbox']);
+
+/** Explicit renderers whose tester requires `type: number` / `integer`. */
+const NUMBER_RENDERERS = new Set(['limit_bar_float', 'limit_bar_int']);
 
 /**
  * Renderers documented to ignore `vays_options.initial` /
@@ -131,6 +136,7 @@ function lintLayout(uiSchema: any, findings: LintFinding[]) {
       key: 'Form',
     });
   }
+  lintRows(uiSchema, findings);
   for (const cat of categories) {
     if (countControls(cat) > MAX_FIELDS_PER_CATEGORY) {
       findings.push({
@@ -174,6 +180,45 @@ function lintUnrendered(schema: any, path: string[], seen: Set<string>, findings
       key: displayKey(subPath),
     });
   }
+}
+
+/**
+ * `vays_options.row` only groups CONSECUTIVE controls of the same category /
+ * group (see renderers/layout/RowLayout); a row value without such a
+ * neighbour has no effect.
+ */
+function lintRows(node: any, findings: LintFinding[]) {
+  const elements: any[] = Array.isArray(node?.elements) ? node.elements : [];
+  const rowOf = (e: any) => {
+    const r = e?.type === 'Control' ? e.options?.row : undefined;
+    return typeof r === 'string' || typeof r === 'number' ? r : undefined;
+  };
+  elements.forEach((e, i) => {
+    const row = rowOf(e);
+    const key = () => displayKey(scopeToPath(e.scope ?? ''));
+    if (e?.type === 'Control' && e.options?.row !== undefined && row === undefined) {
+      findings.push({
+        priority: 5,
+        title: 'Invalid row value',
+        message: 'vays_options.row must be a string or number (equal for all fields of the row).',
+        key: key(),
+      });
+    } else if (
+      row !== undefined &&
+      rowOf(elements[i - 1]) !== row &&
+      rowOf(elements[i + 1]) !== row
+    ) {
+      findings.push({
+        priority: 2,
+        title: 'Row with a single field',
+        message:
+          `No adjacent field of the same category/group has vays_options.row '${row}', so this ` +
+          'field is shown on its own line. Only consecutive fields (in schema order) form a row.',
+        key: key(),
+      });
+    }
+    if (e?.type !== 'Control') lintRows(e, findings);
+  });
 }
 
 function countControls(node: UiNode): number {
@@ -361,6 +406,19 @@ function lintField(f: Field, findings: LintFinding[]) {
         `The renderer '${renderer}' only applies to 'type: string' fields; on '${type}' it is silently ` +
           'ignored and the default renderer is used.',
       );
+    } else if (NUMBER_RENDERERS.has(renderer) && type !== 'number' && type !== 'integer') {
+      add(
+        9,
+        'Renderer does not match the type',
+        `The renderer '${renderer}' only applies to 'type: number' / 'type: integer' fields; here ` +
+          'it is silently ignored and the default renderer is used.',
+      );
+    } else if (renderer === 'limit_bar_float' && type === 'integer') {
+      add(
+        9,
+        "Renderer 'limit_bar_float' on an integer field",
+        "Dragging would produce fractional values the schema rejects; use 'limit_bar_int' instead.",
+      );
     } else if (ARRAY_RENDERERS.has(renderer) && type !== 'array') {
       add(
         9,
@@ -489,6 +547,32 @@ function lintField(f: Field, findings: LintFinding[]) {
           'renderer_options.save_password_as: plaintext writes the cleartext verbatim into the YAML ' +
             'file, which defeats the purpose of the password renderer. Only use it when the ' +
             'storing system genuinely cannot consume a hash.',
+        );
+      }
+      break;
+    case 'limit_bar_float':
+    case 'limit_bar_int':
+      if (
+        ropts.step !== undefined &&
+        !(
+          typeof ropts.step === 'number' &&
+          ropts.step > 0 &&
+          (renderer === 'limit_bar_float' || Number.isInteger(ropts.step))
+        )
+      ) {
+        add(
+          9,
+          `Invalid renderer_options for renderer '${renderer}'`,
+          `renderer_options.step must be a positive ${
+            renderer === 'limit_bar_int' ? 'integer' : 'number'
+          }.`,
+        );
+      }
+      if (ropts.unit !== undefined && typeof ropts.unit !== 'string') {
+        add(
+          5,
+          `Invalid renderer_options for renderer '${renderer}'`,
+          'renderer_options.unit must be a string.',
         );
       }
       break;

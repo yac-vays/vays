@@ -31,6 +31,7 @@ import { useFormReadonly } from '../../view/components/Form/useFormReadonly';
 import ControlBar from '../../view/components/Tabs/ControlBar';
 import Tab from '../../view/components/Tabs/Tab';
 import { sanitizeCategory } from '../utils/dataSanitization';
+import { groupIntoRows } from './RowLayout';
 
 export const CategorizationTester: RankedTester = withIncreasedRank(
   21,
@@ -147,7 +148,9 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
           {/* TODO: Check option of going multicolumn? */}
           {/* <div className='' style={{ height:"100%", flexGrow: 0, flexShrink: 0, flexBasis: 100, flexDirection:"row", flex:0 }}> */}
           <MaterialLayoutRenderer
-            elements={categories[safeCategory] ? categories[safeCategory].elements : []}
+            elements={
+              categories[safeCategory] ? groupIntoRows(categories[safeCategory].elements) : []
+            }
             schema={schema}
             path={path}
             direction="column"

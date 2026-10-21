@@ -240,7 +240,7 @@ async function revalidateAgainstBaseline(requestEditContext: RequestEditContext)
       getActivatedActions(),
     );
     if (rep == null || isStaleSession(epoch) || isStaleValidation(seq)) return;
-    setYACStatus(rep.valid, rep.detail, rep.usages);
+    setYACStatus(rep.valid, rep.detail, rep.usages, rep.data);
     if (rep.perms) setEntityPerms(rep.perms);
     setErrorMessage(footerErrorMessage(rep));
   } finally {

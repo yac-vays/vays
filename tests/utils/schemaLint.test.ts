@@ -602,3 +602,68 @@ describe('schemaLint', () => {
     });
   });
 });
+
+describe('schemaLint: limit bars and rows', () => {
+  it('Knows the limit bar renderers', () => {
+    expect(EXPLICIT_RENDERERS).toContain('limit_bar_float');
+    expect(EXPLICIT_RENDERERS).toContain('limit_bar_int');
+    expect(
+      form({ a: described({ type: 'number', vays_options: { renderer: 'limit_bar_float' } }) }),
+    ).toEqual([]);
+    expect(
+      form({ a: described({ type: 'integer', vays_options: { renderer: 'limit_bar_int' } }) }),
+    ).toEqual([]);
+  });
+
+  it('Flags a limit bar on a non-number type', () => {
+    const f = form({
+      a: described({ type: 'string', vays_options: { renderer: 'limit_bar_int' } }),
+    });
+    expect(titles(f)).toContain('Renderer does not match the type');
+  });
+
+  it('Flags limit_bar_float on an integer field', () => {
+    const f = form({
+      a: described({ type: 'integer', vays_options: { renderer: 'limit_bar_float' } }),
+    });
+    expect(titles(f)).toContain("Renderer 'limit_bar_float' on an integer field");
+  });
+
+  it('Flags an invalid step', () => {
+    const bad = (renderer: string, step: unknown) =>
+      titles(
+        form({
+          a: described({
+            type: 'number',
+            vays_options: { renderer, renderer_options: { step } },
+          }),
+        }),
+      );
+    expect(bad('limit_bar_float', 0)).toContain(
+      "Invalid renderer_options for renderer 'limit_bar_float'",
+    );
+    expect(bad('limit_bar_int', 0.5)).toContain(
+      "Invalid renderer_options for renderer 'limit_bar_int'",
+    );
+    expect(bad('limit_bar_float', 0.25)).toEqual([]);
+  });
+
+  it('Flags a row with a single field, accepts consecutive ones', () => {
+    const lonely = form({
+      a: described({ type: 'number', vays_options: { row: 'x' } }),
+      b: described({ type: 'number' }),
+      c: described({ type: 'number', vays_options: { row: 'x' } }),
+    });
+    expect(titles(lonely).filter((t) => t === 'Row with a single field')).toHaveLength(2);
+    const ok = form({
+      a: described({ type: 'number', vays_options: { row: 'x' } }),
+      b: described({ type: 'number', vays_options: { row: 'x' } }),
+    });
+    expect(ok).toEqual([]);
+  });
+
+  it('Flags an invalid row value', () => {
+    const f = form({ a: described({ type: 'number', vays_options: { row: ['x'] } }) });
+    expect(titles(f)).toContain('Invalid row value');
+  });
+});

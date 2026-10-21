@@ -17,6 +17,7 @@ import ErrorRing from '../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import NumberInput from '../../view/thirdparty/components/ifc/NumberInput/NumberInput';
 import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
+import { multipleOfStep } from '../utils/numberStep';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const eventToValue = (ev: any) =>
@@ -75,6 +76,7 @@ export const NumberControl = ({
           defaultv={schema.default}
           placeholder={uischema.options?.initial}
           placeholderEditable={uischema.options?.initial_editable}
+          step={multipleOfStep(schema)}
           enabled={enabled}
           onChange={onChange}
         />

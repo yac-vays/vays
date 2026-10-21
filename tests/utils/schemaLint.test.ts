@@ -621,16 +621,16 @@ describe('schemaLint: limit bars and rows', () => {
     expect(titles(f)).toContain('Renderer does not match the type');
   });
 
-  it('Hints at multipleOf, flags contradicting and inexact ones', () => {
+  it('Hints at multipleOf, flags contradicting ones', () => {
     const lint = (s: any) =>
       titles(form({ a: described({ ...s, vays_options: { renderer: 'limit_bar' } }) }));
     expect(lint({ type: 'number' })).toEqual(["Renderer 'limit_bar' without multipleOf"]);
     expect(lint({ type: 'integer', multipleOf: 0.5 })).toEqual([
       "Fractional multipleOf on an integer field for renderer 'limit_bar'",
     ]);
-    expect(lint({ type: 'number', multipleOf: 0.1 })).toEqual([
-      'multipleOf is not exact in binary',
-    ]);
+    // decimal steps are fine: YAC checks in decimal, Ajv with multipleOfPrecision
+    expect(lint({ type: 'number', multipleOf: 0.1 })).toEqual([]);
+    expect(lint({ type: 'number', multipleOf: 0.005 })).toEqual([]);
     expect(lint({ type: 'number', multipleOf: 0.25 })).toEqual([]);
     expect(lint({ type: 'number', multipleOf: 10 })).toEqual([]);
     expect(lint({ type: 'integer', multipleOf: 10 })).toEqual([]);

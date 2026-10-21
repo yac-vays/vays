@@ -14,6 +14,7 @@
  * while the user drags, `others` must not move until the next validation
  * reports a usage for the new value.
  */
+import { multipleOfStep } from '../renderers/utils/numberStep';
 import { limitLevel, LimitLevel } from './limitUtils';
 import { LimitUsage } from './types/api';
 
@@ -99,12 +100,7 @@ function snapDown(n: number, step: number): number {
  * integer field, only an integer `multipleOf` is used.
  */
 export function stepFor(schema: { type?: unknown; multipleOf?: unknown }): number {
-  const integer = schema.type === 'integer';
-  const m = schema.multipleOf;
-  if (typeof m === 'number' && Number.isFinite(m) && m > 0 && (!integer || Number.isInteger(m))) {
-    return m;
-  }
-  return integer ? 1 : 0.1;
+  return multipleOfStep(schema) ?? (schema.type === 'integer' ? 1 : 0.1);
 }
 
 /** Value at a JSON Forms dot path (`a.b.c`), undefined if absent. */

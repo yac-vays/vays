@@ -33,6 +33,7 @@ import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/
 import NumberInput from '../../../view/thirdparty/components/ifc/NumberInput/NumberInput';
 import { isCustomRenderer } from '../../utils/customTesterUtils';
 import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
+import { multipleOfStep } from '../../utils/numberStep';
 
 interface RendererOptions {
   unit?: unknown;
@@ -204,6 +205,7 @@ export const LimitBar = (props: ControlProps) => {
       defaultv={props.schema.default}
       placeholder={props.uischema.options?.initial}
       placeholderEditable={props.uischema.options?.initial_editable}
+      step={multipleOfStep(props.schema)}
       enabled={props.enabled}
       onChange={onInputChange}
     />

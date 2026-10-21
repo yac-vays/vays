@@ -4,6 +4,14 @@ import { ActionDecl, LimitUsage } from '../../utils/types/api';
 import { RequestEditContext } from '../../utils/types/internal/request';
 
 /**
+ * Options shared by the editor's Ajv instances. `multipleOfPrecision` makes
+ * `multipleOf` tolerate binary floating point noise: 0.035 / 0.005 is
+ * 7.000000000000001 in floats, so without it Ajv rejects valid decimals (YAC
+ * checks multipleOf in decimal arithmetic, see app/lib/schema.py).
+ */
+export const AJV_OPTIONS = { allErrors: true, strict: false, multipleOfPrecision: 9 } as const;
+
+/**
  * The single state of the entity editor. The editor has one form pane and one
  * YAML pane (previously separate "standard"/"expert" modes); their state is
  * unified here.
@@ -59,7 +67,7 @@ class EditControlState {
    * validated data!). Only for the defaults machinery (defaultsHandling.ts,
    * coreUpdate's cleanData) — never for display validation.
    */
-  readonly ajv = new Ajv({ allErrors: true, useDefaults: true, strict: false });
+  readonly ajv = new Ajv({ ...AJV_OPTIONS, useDefaults: true });
 
   /**
    * The Ajv object for DISPLAY validation (the form, tab error dots, the
@@ -68,7 +76,7 @@ class EditControlState {
    * validating, so the form would neither show the error on the control nor
    * count it — while the backend and the YAML editor do report it.
    */
-  readonly ajvValidate = new Ajv({ allErrors: true, strict: false });
+  readonly ajvValidate = new Ajv({ ...AJV_OPTIONS });
 
   /**
    * The object containing all defaults for the schema of the most recent validation.

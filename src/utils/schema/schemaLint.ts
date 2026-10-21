@@ -559,18 +559,6 @@ function lintField(f: Field, findings: LintFinding[]) {
           'The bar moves in steps of 0.1. Set multipleOf to choose the step (e.g. 0.5); it ' +
             'also lets YAC reject values off that grid.',
         );
-      } else if (
-        typeof m === 'number' &&
-        // binary-exact fractions (0.5, 0.25, 0.75, …) are fine, 0.1 / 0.2 / … are not
-        ![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].some((k) => Number.isInteger(m * 2 ** k))
-      ) {
-        add(
-          3,
-          'multipleOf is not exact in binary',
-          `With multipleOf ${m} validators may reject valid-looking values due to floating ` +
-            'point rounding (e.g. 0.3 is no exact multiple of 0.1). Prefer fractions like ' +
-            '0.5 or 0.25, or integers.',
-        );
       }
       if (ropts.unit !== undefined && typeof ropts.unit !== 'string') {
         add(

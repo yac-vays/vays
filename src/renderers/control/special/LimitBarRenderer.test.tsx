@@ -145,4 +145,16 @@ describe('LimitBarRenderer', () => {
     fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
     expect(screen.getByText('This: 11')).toBeTruthy();
   });
+
+  it('lets the number input step by multipleOf', () => {
+    act(() => setYACUsages([usage(8, 10)], { spec: { cpu: 2 } }));
+    const { container, unmount } = mount({ spec: { cpu: 2 } }, BAR, {
+      type: 'number',
+      multipleOf: 0.005,
+    });
+    expect(container.querySelector('input[type="number"]')?.getAttribute('step')).toBe('0.005');
+    unmount();
+    const plain = mount({ spec: { cpu: 2 } }, BAR, { type: 'number' });
+    expect(plain.container.querySelector('input[type="number"]')?.hasAttribute('step')).toBe(false);
+  });
 });

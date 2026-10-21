@@ -6,6 +6,8 @@ interface NumberProps {
   defaultv?: number | string;
   placeholder?: number | string;
   placeholderEditable?: boolean;
+  /** HTML `step`: what the up/down arrows add (the browser default is 1). */
+  step?: number;
   enabled: boolean;
   onChange: React.ChangeEventHandler<Element>;
 }
@@ -21,6 +23,7 @@ const NumberInput = ({
   defaultv,
   placeholder,
   placeholderEditable,
+  step,
   enabled,
   onChange,
 }: NumberProps) => {
@@ -57,6 +60,7 @@ const NumberInput = ({
       <input
         ref={inputRef}
         type="number"
+        step={step}
         disabled={!enabled}
         defaultValue={defValue}
         className="w-full rounded-md border border-stroke bg-transparent px-5 py-2.5 outline-none focus:border-primary  dark:bg-meta-4 dark:focus:border-primary"

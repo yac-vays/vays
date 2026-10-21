@@ -33,8 +33,12 @@ const usage = (used: number, max: number): LimitUsage => ({
   path: '#/spec/cpu',
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mount = (data: any, options: object, cpuSchema: object = { type: 'number' }) => {
+const mount = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data: any,
+  options: object,
+  cpuSchema: object = { type: 'number', multipleOf: 0.5 },
+) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const seen: { data?: any } = {};
   const utils = render(
@@ -52,14 +56,14 @@ const mount = (data: any, options: object, cpuSchema: object = { type: 'number' 
   return { seen, ...utils };
 };
 
-const FLOAT = { renderer: 'limit_bar_float', renderer_options: { step: 0.5, unit: 'Cores' } };
+const BAR = { renderer: 'limit_bar', renderer_options: { unit: 'Cores' } };
 
 afterEach(() => act(() => setYACUsages([])));
 
 describe('LimitBarRenderer', () => {
   it('shows the usage split into this field and the others, with numbers', () => {
     act(() => setYACUsages([usage(8, 10)], { spec: { cpu: 2 } }));
-    mount({ spec: { cpu: 2 } }, FLOAT);
+    mount({ spec: { cpu: 2 } }, BAR);
     expect(screen.getByTestId('limit-bar')).toBeTruthy();
     expect(screen.getByText('This: 2')).toBeTruthy();
     expect(screen.getByText('Others: 6')).toBeTruthy();
@@ -72,14 +76,14 @@ describe('LimitBarRenderer', () => {
 
   it('falls back to a plain number input without a matching usage', () => {
     act(() => setYACUsages([{ ...usage(8, 10), path: '#/other' }], { spec: { cpu: 2 } }));
-    const { container } = mount({ spec: { cpu: 2 } }, FLOAT);
+    const { container } = mount({ spec: { cpu: 2 } }, BAR);
     expect(screen.queryByTestId('limit-bar')).toBeNull();
     expect(container.querySelector('input[type="number"]')).toBeTruthy();
   });
 
   it('changes the value with the keyboard (step), committed after the debounce', async () => {
     act(() => setYACUsages([usage(8, 10)], { spec: { cpu: 2 } }));
-    const { seen } = mount({ spec: { cpu: 2 } }, FLOAT);
+    const { seen } = mount({ spec: { cpu: 2 } }, BAR);
     const slider = screen.getByRole('slider');
     fireEvent.keyDown(slider, { key: 'ArrowRight' });
     // shown right away, the others stay put
@@ -92,7 +96,7 @@ describe('LimitBarRenderer', () => {
 
   it('drags the end of the own share and commits on release, clamped to the cap', async () => {
     act(() => setYACUsages([usage(8, 10)], { spec: { cpu: 2 } }));
-    const { seen } = mount({ spec: { cpu: 2 } }, FLOAT);
+    const { seen } = mount({ spec: { cpu: 2 } }, BAR);
     const bar = screen.getByRole('slider').parentElement as HTMLElement;
     bar.getBoundingClientRect = () => ({ left: 0, width: 100 }) as DOMRect;
     fireEvent.pointerDown(bar, { clientX: 70, button: 0, pointerId: 1 });
@@ -105,7 +109,7 @@ describe('LimitBarRenderer', () => {
 
   it("never lets the value pass the field's own maximum and marks it on the bar", () => {
     act(() => setYACUsages([usage(8, 10)], { spec: { cpu: 2 } }));
-    mount({ spec: { cpu: 2 } }, FLOAT, { type: 'number', maximum: 3 });
+    mount({ spec: { cpu: 2 } }, BAR, { type: 'number', multipleOf: 0.5, maximum: 3 });
     expect(screen.getByTestId('limit-bar-field-max')).toBeTruthy();
     const slider = screen.getByRole('slider');
     expect(slider.getAttribute('aria-valuemax')).toBe('3');
@@ -117,7 +121,7 @@ describe('LimitBarRenderer', () => {
     act(() => setYACUsages([usage(8, 10)], { spec: {} }));
     const { seen } = mount(
       { spec: {} },
-      { renderer: 'limit_bar_int', initial: 2 },
+      { renderer: 'limit_bar', initial: 2 },
       { type: 'integer' },
     );
     expect(screen.getByText('This: 2')).toBeTruthy();
@@ -127,9 +131,18 @@ describe('LimitBarRenderer', () => {
     expect(seen.data?.spec?.cpu).toBeUndefined();
   });
 
-  it('reports limit_bar_float on an integer field as a spec error', () => {
-    act(() => setYACUsages([usage(8, 10)], { spec: { cpu: 2 } }));
-    mount({ spec: { cpu: 2 } }, { renderer: 'limit_bar_float' }, { type: 'integer' });
-    expect(screen.getByRole('slider').getAttribute('aria-disabled')).toBe('true');
+  it('steps by multipleOf, else by 1 for integers', async () => {
+    act(() => setYACUsages([usage(20, 100)], { spec: { cpu: 10 } }));
+    const { seen, unmount } = mount({ spec: { cpu: 10 } }, BAR, {
+      type: 'integer',
+      multipleOf: 10,
+    });
+    fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
+    expect(screen.getByText('This: 20')).toBeTruthy();
+    await waitFor(() => expect(seen.data?.spec?.cpu).toBe(20), { timeout: 2000 });
+    unmount();
+    mount({ spec: { cpu: 10 } }, BAR, { type: 'integer' });
+    fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
+    expect(screen.getByText('This: 11')).toBeTruthy();
   });
 });

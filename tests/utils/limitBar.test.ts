@@ -7,6 +7,7 @@ import {
   formatAmount,
   LimitBarInput,
   snap,
+  stepFor,
   valueAtFraction,
   valueAtPath,
 } from '../../src/utils/limitBar';
@@ -60,6 +61,15 @@ describe('limitBar helpers', () => {
       hi: 2.5,
     });
     expect(fieldBounds({ minimum: 0.3, maximum: 3.9 }, 0.5)).toEqual({ lo: 0.5, hi: 3.5 });
+  });
+
+  it('takes the step from multipleOf, else 1 for integers and 0.1 for numbers', () => {
+    expect(stepFor({ type: 'number', multipleOf: 0.5 })).toBe(0.5);
+    expect(stepFor({ type: 'integer', multipleOf: 10 })).toBe(10);
+    expect(stepFor({ type: 'number' })).toBe(0.1);
+    expect(stepFor({ type: 'integer' })).toBe(1);
+    expect(stepFor({ type: 'integer', multipleOf: 0.5 })).toBe(1); // contradicting: ignored
+    expect(stepFor({ type: 'number', multipleOf: -1 })).toBe(0.1);
   });
 
   it('formats with the step precision, at least two decimals, no trailing zeros', () => {

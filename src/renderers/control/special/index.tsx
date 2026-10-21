@@ -1,12 +1,7 @@
 import AgeSecretRenderer, { AgeSecretRendererTester } from './AgeSecretRenderer';
 import BigStringArray, { BigStringArrayTester } from './BigStringArray';
 import InfoBoxRenderer, { InfoBoxTester } from './InfoBoxRenderer';
-import {
-  LimitBarFloatRenderer,
-  LimitBarFloatTester,
-  LimitBarIntRenderer,
-  LimitBarIntTester,
-} from './LimitBarRenderer';
+import LimitBarRenderer, { LimitBarTester } from './LimitBarRenderer';
 import ListAsStringRenderer, { ListAsStringTester } from './ListAsStringRenderer';
 import MACAddressRenderer, { MacAddressRendererTester } from './MacAddressRenderer';
 import MultiLineTextControl, { MultiLineTextControlTester } from './MultiLineTextControlRenderer';
@@ -24,6 +19,5 @@ export const specialRenderers = [
   { tester: MacAddressRendererTester, renderer: MACAddressRenderer },
   { tester: AgeSecretRendererTester, renderer: AgeSecretRenderer },
   { tester: RandomStringRendererTester, renderer: RandomStringRenderer },
-  { tester: LimitBarFloatTester, renderer: LimitBarFloatRenderer },
-  { tester: LimitBarIntTester, renderer: LimitBarIntRenderer },
+  { tester: LimitBarTester, renderer: LimitBarRenderer },
 ];

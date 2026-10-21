@@ -604,48 +604,36 @@ describe('schemaLint', () => {
 });
 
 describe('schemaLint: limit bars and rows', () => {
-  it('Knows the limit bar renderers', () => {
-    expect(EXPLICIT_RENDERERS).toContain('limit_bar_float');
-    expect(EXPLICIT_RENDERERS).toContain('limit_bar_int');
+  it('Knows the limit bar renderer', () => {
+    expect(EXPLICIT_RENDERERS).toContain('limit_bar');
     expect(
-      form({ a: described({ type: 'number', vays_options: { renderer: 'limit_bar_float' } }) }),
+      form({
+        a: described({ type: 'number', multipleOf: 0.5, vays_options: { renderer: 'limit_bar' } }),
+      }),
     ).toEqual([]);
     expect(
-      form({ a: described({ type: 'integer', vays_options: { renderer: 'limit_bar_int' } }) }),
+      form({ a: described({ type: 'integer', vays_options: { renderer: 'limit_bar' } }) }),
     ).toEqual([]);
   });
 
   it('Flags a limit bar on a non-number type', () => {
-    const f = form({
-      a: described({ type: 'string', vays_options: { renderer: 'limit_bar_int' } }),
-    });
+    const f = form({ a: described({ type: 'string', vays_options: { renderer: 'limit_bar' } }) });
     expect(titles(f)).toContain('Renderer does not match the type');
   });
 
-  it('Flags limit_bar_float on an integer field', () => {
-    const f = form({
-      a: described({ type: 'integer', vays_options: { renderer: 'limit_bar_float' } }),
-    });
-    expect(titles(f)).toContain("Renderer 'limit_bar_float' on an integer field");
-  });
-
-  it('Flags an invalid step', () => {
-    const bad = (renderer: string, step: unknown) =>
-      titles(
-        form({
-          a: described({
-            type: 'number',
-            vays_options: { renderer, renderer_options: { step } },
-          }),
-        }),
-      );
-    expect(bad('limit_bar_float', 0)).toContain(
-      "Invalid renderer_options for renderer 'limit_bar_float'",
-    );
-    expect(bad('limit_bar_int', 0.5)).toContain(
-      "Invalid renderer_options for renderer 'limit_bar_int'",
-    );
-    expect(bad('limit_bar_float', 0.25)).toEqual([]);
+  it('Hints at multipleOf, flags contradicting and inexact ones', () => {
+    const lint = (s: any) =>
+      titles(form({ a: described({ ...s, vays_options: { renderer: 'limit_bar' } }) }));
+    expect(lint({ type: 'number' })).toEqual(["Renderer 'limit_bar' without multipleOf"]);
+    expect(lint({ type: 'integer', multipleOf: 0.5 })).toEqual([
+      "Fractional multipleOf on an integer field for renderer 'limit_bar'",
+    ]);
+    expect(lint({ type: 'number', multipleOf: 0.1 })).toEqual([
+      'multipleOf is not exact in binary',
+    ]);
+    expect(lint({ type: 'number', multipleOf: 0.25 })).toEqual([]);
+    expect(lint({ type: 'number', multipleOf: 10 })).toEqual([]);
+    expect(lint({ type: 'integer', multipleOf: 10 })).toEqual([]);
   });
 
   it('Flags a row with a single field, accepts consecutive ones', () => {

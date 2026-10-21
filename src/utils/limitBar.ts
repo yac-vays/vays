@@ -1,5 +1,5 @@
 /**
- * Pure model behind the `limit_bar_float` / `limit_bar_int` renderers: a bar
+ * Pure model behind the `limit_bar` renderer: a bar
  * showing a `limits` usage split into the share of *this* field's value and
  * the rest ("others", e.g. the other entities of the same group), with the
  * end of this field's share being draggable.
@@ -91,6 +91,20 @@ function snapUp(n: number, step: number): number {
 function snapDown(n: number, step: number): number {
   const s = snap(n, step);
   return s > n + 1e-9 ? Number((s - step).toFixed(decimalsOf(step))) : s;
+}
+
+/**
+ * The step of the bar from the JSON-Schema: `multipleOf` (so every value the
+ * bar produces is valid), else `1` for integers and `0.1` for numbers. On an
+ * integer field, only an integer `multipleOf` is used.
+ */
+export function stepFor(schema: { type?: unknown; multipleOf?: unknown }): number {
+  const integer = schema.type === 'integer';
+  const m = schema.multipleOf;
+  if (typeof m === 'number' && Number.isFinite(m) && m > 0 && (!integer || Number.isInteger(m))) {
+    return m;
+  }
+  return integer ? 1 : 0.1;
 }
 
 /** Value at a JSON Forms dot path (`a.b.c`), undefined if absent. */

@@ -30,8 +30,7 @@ export const EXPLICIT_RENDERERS = [
   'age_secret',
   'big_string_list',
   'info_box',
-  'limit_bar_float',
-  'limit_bar_int',
+  'limit_bar',
   'list_as_string',
   'mac_address',
   'multi_checkbox',
@@ -57,7 +56,7 @@ const STRING_RENDERERS = new Set([
 const ARRAY_RENDERERS = new Set(['big_string_list', 'multi_checkbox']);
 
 /** Explicit renderers whose tester requires `type: number` / `integer`. */
-const NUMBER_RENDERERS = new Set(['limit_bar_float', 'limit_bar_int']);
+const NUMBER_RENDERERS = new Set(['limit_bar']);
 
 /**
  * Renderers documented to ignore `vays_options.initial` /
@@ -413,12 +412,6 @@ function lintField(f: Field, findings: LintFinding[]) {
         `The renderer '${renderer}' only applies to 'type: number' / 'type: integer' fields; here ` +
           'it is silently ignored and the default renderer is used.',
       );
-    } else if (renderer === 'limit_bar_float' && type === 'integer') {
-      add(
-        9,
-        "Renderer 'limit_bar_float' on an integer field",
-        "Dragging would produce fractional values the schema rejects; use 'limit_bar_int' instead.",
-      );
     } else if (ARRAY_RENDERERS.has(renderer) && type !== 'array') {
       add(
         9,
@@ -550,32 +543,44 @@ function lintField(f: Field, findings: LintFinding[]) {
         );
       }
       break;
-    case 'limit_bar_float':
-    case 'limit_bar_int':
-      if (
-        ropts.step !== undefined &&
-        !(
-          typeof ropts.step === 'number' &&
-          ropts.step > 0 &&
-          (renderer === 'limit_bar_float' || Number.isInteger(ropts.step))
-        )
+    case 'limit_bar': {
+      // The step comes from multipleOf (see utils/limitBar stepFor).
+      const m = s.multipleOf;
+      if (type === 'integer' && typeof m === 'number' && !Number.isInteger(m)) {
+        add(
+          5,
+          "Fractional multipleOf on an integer field for renderer 'limit_bar'",
+          'A non-integer multipleOf contradicts type: integer; the bar moves in steps of 1.',
+        );
+      } else if (type === 'number' && m === undefined) {
+        add(
+          1,
+          "Renderer 'limit_bar' without multipleOf",
+          'The bar moves in steps of 0.1. Set multipleOf to choose the step (e.g. 0.5); it ' +
+            'also lets YAC reject values off that grid.',
+        );
+      } else if (
+        typeof m === 'number' &&
+        // binary-exact fractions (0.5, 0.25, 0.75, …) are fine, 0.1 / 0.2 / … are not
+        ![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].some((k) => Number.isInteger(m * 2 ** k))
       ) {
         add(
-          9,
-          `Invalid renderer_options for renderer '${renderer}'`,
-          `renderer_options.step must be a positive ${
-            renderer === 'limit_bar_int' ? 'integer' : 'number'
-          }.`,
+          3,
+          'multipleOf is not exact in binary',
+          `With multipleOf ${m} validators may reject valid-looking values due to floating ` +
+            'point rounding (e.g. 0.3 is no exact multiple of 0.1). Prefer fractions like ' +
+            '0.5 or 0.25, or integers.',
         );
       }
       if (ropts.unit !== undefined && typeof ropts.unit !== 'string') {
         add(
           5,
-          `Invalid renderer_options for renderer '${renderer}'`,
+          "Invalid renderer_options for renderer 'limit_bar'",
           'renderer_options.unit must be a string.',
         );
       }
       break;
+    }
     case 'random_string': {
       const format = ropts.format ?? DEFAULT_RANDOM_STRING_FORMAT;
       if (!(RANDOM_STRING_FORMATS as readonly string[]).includes(format)) {

@@ -23,6 +23,7 @@ import {
   LimitBarFieldSchema,
   LimitBarModel,
   percentOf,
+  stepFor,
   valueAtFraction,
 } from '../../../utils/limitBar';
 import { LIMIT_CHIP_STYLE, LimitLevel, usagesForFormPath } from '../../../utils/limitUtils';
@@ -34,7 +35,6 @@ import { isCustomRenderer } from '../../utils/customTesterUtils';
 import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
 
 interface RendererOptions {
-  step?: unknown;
   unit?: unknown;
 }
 
@@ -76,39 +76,16 @@ const Legend = ({ color, label, value }: { color?: string; label: string; value:
  * ("others") and this field's share, whose end can be dragged (or moved with
  * the keyboard) to change the value. A number input next to it allows exact
  * values. Without a matching usage, only the number input is shown.
+ *
+ * The step (dragging, keyboard) is the field's `multipleOf`, else 1 for
+ * integers and 0.1 for numbers (see `stepFor`).
  */
-export const LimitBar = ({ integer, ...props }: ControlProps & { integer: boolean }) => {
-  const name = integer ? 'limit_bar_int' : 'limit_bar_float';
+export const LimitBar = (props: ControlProps) => {
   const ropts: RendererOptions = props.uischema?.options?.renderer_options ?? {};
   const initial = numericInitial(props.uischema?.options?.initial);
   const unit = typeof ropts.unit === 'string' && ropts.unit !== '' ? ` ${ropts.unit}` : '';
 
-  const multipleOf = props.schema.multipleOf;
-  const defaultStep =
-    typeof multipleOf === 'number' && multipleOf > 0 && (!integer || Number.isInteger(multipleOf))
-      ? multipleOf
-      : integer
-        ? 1
-        : 0.1;
-  let step = defaultStep;
-  let specError = '';
-  if (ropts.step !== undefined) {
-    if (
-      typeof ropts.step === 'number' &&
-      ropts.step > 0 &&
-      (!integer || Number.isInteger(ropts.step))
-    ) {
-      step = ropts.step;
-    } else {
-      specError = `Spec error: renderer '${name}' needs a positive ${
-        integer ? 'integer' : 'number'
-      } as renderer_options.step.`;
-    }
-  }
-  if (!integer && props.schema.type === 'integer') {
-    specError =
-      "Spec error: renderer 'limit_bar_float' on an integer field, use 'limit_bar_int' instead.";
-  }
+  const step = stepFor(props.schema);
 
   /// data check (derived locally — props are shared and must not be mutated)
   let data: number | undefined = props.data;
@@ -160,7 +137,7 @@ export const LimitBar = ({ integer, ...props }: ControlProps & { integer: boolea
 
   const barRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<HTMLDivElement>(null);
-  const interactive = props.enabled && !specError && model != null;
+  const interactive = props.enabled && model != null;
 
   const fractionAt = (clientX: number) => {
     const rect = barRef.current?.getBoundingClientRect();
@@ -218,7 +195,7 @@ export const LimitBar = ({ integer, ...props }: ControlProps & { integer: boolea
   // After all hooks: rules of hooks forbid an early return before them.
   if (!props.visible) return <></>;
 
-  const errorMsg = specError || badDataError || props.errors || '';
+  const errorMsg = badDataError || props.errors || '';
   const fmt = (n: number) => formatAmount(n, step);
   const input = (
     <NumberInput
@@ -227,7 +204,7 @@ export const LimitBar = ({ integer, ...props }: ControlProps & { integer: boolea
       defaultv={props.schema.default}
       placeholder={props.uischema.options?.initial}
       placeholderEditable={props.uischema.options?.initial_editable}
-      enabled={props.enabled && !specError}
+      enabled={props.enabled}
       onChange={onInputChange}
     />
   );
@@ -362,17 +339,9 @@ export const LimitBar = ({ integer, ...props }: ControlProps & { integer: boolea
   }
 };
 
-const LimitBarFloat = (props: ControlProps) => <LimitBar integer={false} {...props} />;
-const LimitBarInt = (props: ControlProps) => <LimitBar integer={true} {...props} />;
-
-export const LimitBarFloatTester: RankedTester = rankWith(
+export const LimitBarTester: RankedTester = rankWith(
   23,
-  and(or(isNumberControl, isIntegerControl), isCustomRenderer('limit_bar_float')),
-);
-export const LimitBarIntTester: RankedTester = rankWith(
-  23,
-  and(or(isNumberControl, isIntegerControl), isCustomRenderer('limit_bar_int')),
+  and(or(isNumberControl, isIntegerControl), isCustomRenderer('limit_bar')),
 );
 
-export const LimitBarFloatRenderer = withJsonFormsControlProps(LimitBarFloat);
-export const LimitBarIntRenderer = withJsonFormsControlProps(LimitBarInt);
+export default withJsonFormsControlProps(LimitBar);

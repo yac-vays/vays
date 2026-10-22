@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router';
 import { getConfig } from '../../../../model/config';
 import { asImageSource } from '../../../../utils/imageUtils';
 import { YACBackend } from '../../../../utils/types/config';

@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router';
 
 /** Top-bar button linking to the help page (`/help`). */
 const HelpButton = () => {

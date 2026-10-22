@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { buildCreateURL } from '../../../controller/global/url';
 import { isModifiedClick } from '../../../utils/navClick';
 import { YACBackend } from '../../../utils/types/config';

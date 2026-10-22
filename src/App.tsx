@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { Route, Routes, useLocation, useNavigate } from 'react-router';
 
 import HomeView from './view/pages/Login/HomeView';
 import DefaultLayout from './view/thirdparty/components/Layout';

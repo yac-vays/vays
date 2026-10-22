@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router';
 import { EntityTypeDecl } from '../../../../utils/types/api';
 import { YACBackend } from '../../../../utils/types/config';
 import AddButton from '../../../components/Buttons/AddButton';

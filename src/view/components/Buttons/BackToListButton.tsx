@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { buildOverviewHighlightURL } from '../../../controller/global/url';
 import { isModifiedClick } from '../../../utils/navClick';
 

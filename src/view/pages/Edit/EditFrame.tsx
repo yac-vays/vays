@@ -6,7 +6,7 @@ import {
   FaLock,
   FaLockOpen,
 } from 'react-icons/fa';
-import { useBlocker } from 'react-router-dom';
+import { useBlocker } from 'react-router';
 import { showModalMessage } from '../../../controller/global/modal';
 import {
   getActivatedActions,

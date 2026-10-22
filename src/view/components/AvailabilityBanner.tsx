@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { getAvailability, subscribeAvailability } from '../../controller/global/availability';
 import { BackendAvailability } from '../../controller/state/AvailabilityState';
 import { formatLogTime } from '../../utils/logUtils';

@@ -2,7 +2,7 @@
 # Base Image - dependencies and sources, shared by the test and build stages
 #
 
-FROM node:22.23.2-alpine3.23 AS base
+FROM node:22.23.4-alpine3.23 AS base
 
 WORKDIR /code
 
@@ -55,7 +55,7 @@ RUN npm run build
 # listens on 8080 by default — no root required.
 #
 
-FROM nginxinc/nginx-unprivileged:1.31.4-alpine3.24 AS production
+FROM nginxinc/nginx-unprivileged:1.31.7-alpine3.24 AS production
 
 # Enforce test run
 COPY --from=test /tmp/tested /dev/null

@@ -1,6 +1,6 @@
 const TableFrame = ({ children }: { children: React.ReactNode }) => {
   return (
-    <section className="rounded-sm border border-stroke bg-white shadow-default py-2 dark:bg-boxdark">
+    <section className="rounded-xs border border-stroke bg-white shadow-default py-2 dark:bg-boxdark">
       {/* Must do two seperate divs to make sure the border is showing properly when scrolling... */}
       <div
         style={{

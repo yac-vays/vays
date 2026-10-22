@@ -54,7 +54,7 @@ const AvailabilityBanner = ({ backendList }: { backendList: YACBackend[] }) => {
   return (
     <div
       role="status"
-      className="mb-4 flex items-start gap-3 rounded-sm border border-primary bg-primary-10 p-4 text-plainfont shadow-default"
+      className="mb-4 flex items-start gap-3 rounded-xs border border-primary bg-primary-10 p-4 text-plainfont shadow-default"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

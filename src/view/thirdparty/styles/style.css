@@ -1,25 +1,49 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@config '../../../../tailwind.config.cjs';
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+
+  /* v3 preflight: pointer cursor on buttons, gray-400 placeholders. */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-gray-400);
+  }
+}
+
+@utility no-scrollbar {
+  &::-webkit-scrollbar {
+    /* Chrome, Safari and Opera */
+    display: none;
+  }
+  /* IE, Edge */
+  -ms-overflow-style: none;
+  /* Firefox */
+  scrollbar-width: none;
+}
 
 @layer base {
   body {
     @apply font-satoshi font-normal text-base text-reducedfont bg-background relative z-1;
-  }
-}
-
-@layer utilities {
- 
-  .no-scrollbar::-webkit-scrollbar {
-    /* Chrome, Safari and Opera */
-    display: none;
-  }
-
-  .no-scrollbar {
-    /* IE, Edge */
-    -ms-overflow-style: none; 
-    /* Firefox */
-    scrollbar-width: none; 
   }
 }
 
@@ -30,38 +54,38 @@
 }
 .flatpickr-months .flatpickr-prev-month:hover svg,
 .flatpickr-months .flatpickr-next-month:hover svg {
-  @apply !fill-primary;
+  @apply fill-primary!;
 }
 .flatpickr-calendar.arrowTop:before {
-  @apply dark:!border-b-boxdark;
+  @apply dark:border-b-boxdark!;
 }
 .flatpickr-calendar.arrowTop:after {
-  @apply dark:!border-b-boxdark;
+  @apply dark:border-b-boxdark!;
 }
 .flatpickr-calendar {
-  @apply !p-6 dark:!bg-boxdark dark:!text-reducedfont dark:!shadow-8 2xsm:!w-auto;
+  @apply p-6! dark:bg-boxdark! dark:text-reducedfont! dark:shadow-8! 2xsm:w-auto!;
 }
 .flatpickr-day {
-  @apply dark:!text-reducedfont dark:hover:!border-danger dark:hover:!bg-danger;
+  @apply dark:text-reducedfont! dark:hover:border-danger! dark:hover:bg-danger!;
 }
 .flatpickr-months .flatpickr-prev-month,
 .flatpickr-months .flatpickr-next-month {
-  @apply !top-7 dark:!fill-white dark:!text-white;
+  @apply top-7! dark:fill-white! dark:text-white!;
 }
 .flatpickr-months .flatpickr-prev-month.flatpickr-prev-month,
 .flatpickr-months .flatpickr-next-month.flatpickr-prev-month {
-  @apply !left-7;
+  @apply left-7!;
 }
 .flatpickr-months .flatpickr-prev-month.flatpickr-next-month,
 .flatpickr-months .flatpickr-next-month.flatpickr-next-month {
-  @apply !right-7;
+  @apply right-7!;
 }
 span.flatpickr-weekday,
 .flatpickr-months .flatpickr-month {
-  @apply dark:!fill-white dark:!text-white;
+  @apply dark:fill-white! dark:text-white!;
 }
 .flatpickr-day.inRange {
-  @apply dark:!shadow-7;
+  @apply dark:shadow-7!;
   box-shadow: -5px 0 0 #EFF4FB, 5px 0 0 #EFF4FB;
 }
 .flatpickr-day.inRange,
@@ -76,13 +100,13 @@ span.flatpickr-weekday,
 .flatpickr-day:focus,
 .flatpickr-day.prevMonthDay:focus,
 .flatpickr-day.nextMonthDay:focus {
-  @apply dark:!border-danger dark:!bg-danger;
+  @apply dark:border-danger! dark:bg-danger!;
 }
 .flatpickr-day.selected,
 .flatpickr-day.startRange,
 .flatpickr-day.selected,
 .flatpickr-day.endRange {
-  @apply dark:!text-white;
+  @apply dark:text-white!;
 }
 .flatpickr-day.selected,
 .flatpickr-day.startRange,
@@ -103,7 +127,7 @@ span.flatpickr-weekday,
 .flatpickr-day.startRange.nextMonthDay,
 .flatpickr-day.endRange.nextMonthDay {
   background: #3c50e0;
-  @apply !border-primary !bg-primary hover:!border-primary hover:!bg-primary;
+  @apply border-primary! bg-primary! hover:border-primary! hover:bg-primary!;
 }
 .flatpickr-day.selected.startRange + .endRange:not(:nth-child(7n + 1)),
 .flatpickr-day.startRange.startRange + .endRange:not(:nth-child(7n + 1)),

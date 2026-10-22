@@ -4,7 +4,7 @@ const DropdownButton = ({ open, showExpand }: { open: () => void; showExpand: bo
       <button
         type="button"
         onClick={open}
-        className={`h-6 w-6 cursor-pointer outline-none focus:outline-none ${
+        className={`h-6 w-6 cursor-pointer outline-hidden focus:outline-hidden ${
           showExpand ? 'rotate-180' : ''
         }`}
       >

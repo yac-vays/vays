@@ -268,9 +268,9 @@ const EditFrame = ({
       ? `Commit + ${activeActions.map((a) => a.title || a.name).join(' + ')}`
       : 'Commit') + (commitOverridden ? ' (admin)' : '');
   const btnBase =
-    'inline-flex items-center justify-center whitespace-nowrap rounded border py-1.5 px-4 text-center font-medium';
+    'inline-flex items-center justify-center whitespace-nowrap rounded-sm border py-1.5 px-4 text-center font-medium';
   const btnEnabled =
-    'cursor-pointer border-black dark:border-meta-4 text-plainfont hover:bg-opacity-90 hover:bg-primary hover:text-white dark:bg-meta-4 dark:hover:bg-white dark:hover:text-black';
+    'cursor-pointer border-black dark:border-meta-4 text-plainfont hover:bg-primary/90 hover:text-white dark:bg-meta-4 dark:hover:bg-white dark:hover:text-black';
   const btnDisabled = 'cursor-not-allowed border-stroke text-reducedfont opacity-50';
   // The overridden Commit is unmistakably a warning-styled action.
   const btnOverride =
@@ -305,11 +305,11 @@ const EditFrame = ({
   };
 
   const chevronBtn =
-    'rounded border border-stroke bg-white p-0.5 text-reducedfont enabled:hover:text-plainfont ' +
+    'rounded-sm border border-stroke bg-white p-0.5 text-reducedfont enabled:hover:text-plainfont ' +
     'enabled:hover:border-primary disabled:opacity-30 disabled:cursor-default dark:bg-boxdark dark:border-meta-4';
 
   return (
-    <section className="rounded-sm border border-stroke bg-white py-4 shadow-default dark:bg-boxdark">
+    <section className="rounded-xs border border-stroke bg-white py-4 shadow-default dark:bg-boxdark">
       <div
         ref={containerRef}
         className="relative px-4 overflow-hidden md:px-8 flex flex-col"
@@ -339,7 +339,7 @@ const EditFrame = ({
             instead of stretching the page. */}
         <div ref={panesRef} className="relative grow min-h-0 flex flex-row">
           {isLoading && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center bg-white bg-opacity-70 dark:bg-boxdark dark:bg-opacity-70">
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 dark:bg-boxdark/70">
               <SubLoader action="Loading editor" />
             </div>
           )}
@@ -456,7 +456,7 @@ const EditFrame = ({
             {isDisplayingYACError && !isReadOnly && isConflictMessage(yacErrorMsg) && (
               <button
                 type="button"
-                className="flex-none rounded border border-[#d32f2f] px-2 py-0.5 text-sm font-medium text-[#d32f2f] hover:bg-[#d32f2f] hover:text-white"
+                className="flex-none rounded-sm border border-[#d32f2f] px-2 py-0.5 text-sm font-medium text-[#d32f2f] hover:bg-[#d32f2f] hover:text-white"
                 title="See what changed on the server and decide how to continue"
                 onClick={() => handleEditConflict(requestEditContext)}
               >

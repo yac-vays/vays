@@ -24,7 +24,7 @@ const UnavailableControlComponent = (props: ControlProps) => {
     <div className="mb-3">
       <OverheadLabelWithMarkdownDescr required title={props.label} path={props.path} />
       <div
-        className="rounded border-2 px-3 py-2"
+        className="rounded-sm border-2 px-3 py-2"
         style={{
           borderColor: 'rgb(239 68 68 / 0.55)',
           backgroundColor: 'rgb(239 68 68 / 0.08)',

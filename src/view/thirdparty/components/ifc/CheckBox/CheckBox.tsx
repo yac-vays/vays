@@ -62,7 +62,7 @@ const Checkbox = ({
             <span
               className={`${
                 placeholder ? 'text-reducedfont' : 'text-primary dark:text-white'
-              } opacity-0 ${isChecked && '!opacity-100'}`}
+              } opacity-0 ${isChecked && 'opacity-100!'}`}
             >
               <svg
                 width="11"

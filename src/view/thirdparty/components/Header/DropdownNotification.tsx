@@ -80,7 +80,7 @@ const DropdownNotification = () => {
 
         {dropdownOpen && (
           <div
-            className={`absolute -right-27 mt-2.5 flex max-h-90 w-75 flex-col rounded-sm border border-stroke bg-white shadow-default dark:bg-boxdark sm:right-0 sm:w-80 drop-shadow-md`}
+            className={`absolute -right-27 mt-2.5 flex max-h-90 w-75 flex-col rounded-xs border border-stroke bg-white shadow-default dark:bg-boxdark sm:right-0 sm:w-80 drop-shadow-md`}
           >
             <div className="px-4.5 py-3 flex flex-row">
               <h5 className="text-medium font-bold grow">Schema Warnings</h5>

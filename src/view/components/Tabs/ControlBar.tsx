@@ -52,7 +52,7 @@ const ControlBar = ({ children }: ControlBarProps) => {
       </div>
       {canScrollLeft && (
         <div
-          className={`${scrollBtn} left-0 bg-gradient-to-r from-white via-white/70 to-transparent dark:from-boxdark dark:via-boxdark/70`}
+          className={`${scrollBtn} left-0 bg-linear-to-r from-white via-white/70 to-transparent dark:from-boxdark dark:via-boxdark/70`}
           onClick={() => cbar.current?.scrollBy({ left: -SCROLL_STEP, behavior: 'smooth' })}
         >
           {chevron('M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z')}
@@ -60,7 +60,7 @@ const ControlBar = ({ children }: ControlBarProps) => {
       )}
       {canScrollRight && (
         <div
-          className={`${scrollBtn} right-0 bg-gradient-to-l from-white via-white/70 to-transparent dark:from-boxdark dark:via-boxdark/70`}
+          className={`${scrollBtn} right-0 bg-linear-to-l from-white via-white/70 to-transparent dark:from-boxdark dark:via-boxdark/70`}
           onClick={() => cbar.current?.scrollBy({ left: SCROLL_STEP, behavior: 'smooth' })}
         >
           {chevron('M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z')}

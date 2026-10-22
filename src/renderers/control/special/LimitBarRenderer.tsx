@@ -60,10 +60,10 @@ function numericInitial(raw: unknown): number | undefined {
 const Legend = ({ color, label, value }: { color?: string; label: string; value: string }) => (
   <span className="inline-flex items-center gap-1 whitespace-nowrap">
     {color ? (
-      <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: color }} />
+      <span className="inline-block h-2.5 w-2.5 rounded-xs" style={{ backgroundColor: color }} />
     ) : (
       <span
-        className="inline-block h-2.5 w-2.5 rounded-sm border border-stroke"
+        className="inline-block h-2.5 w-2.5 rounded-xs border border-stroke"
         style={{ backgroundColor: TRACK_COLOR }}
       />
     )}
@@ -308,7 +308,7 @@ export const LimitBar = (props: ControlProps) => {
             aria-valuenow={m.own}
             aria-valuetext={`${fmt(m.own)}${unit}`}
             aria-disabled={!interactive}
-            className={`absolute top-1/2 h-5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-sm border border-stroke bg-white shadow outline-none focus:ring-2 focus:ring-primary ${
+            className={`absolute top-1/2 h-5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-xs border border-stroke bg-white shadow outline-hidden focus:ring-2 focus:ring-primary ${
               interactive ? 'cursor-ew-resize' : ''
             }`}
             style={{ left: `${percentOf(m, total)}%` }}

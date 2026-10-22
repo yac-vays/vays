@@ -56,13 +56,13 @@ const DiffViewer = () => {
       onClick={close}
     >
       <div
-        className="relative w-full max-w-180 rounded bg-white px-10 py-8 dark:bg-boxdark"
+        className="relative w-full max-w-180 rounded-sm bg-white px-10 py-8 dark:bg-boxdark"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-xl font-bold text-plainfont sm:text-2xl mt-0 pb-4">{content.title}</h3>
         {/* Neutral (grey) background on purpose: the diff carries its own
             red/green semantics, mixing in the theme color looks off. */}
-        <pre className="max-h-[60vh] overflow-auto rounded border border-stroke bg-[#f5f5f5] p-4 text-sm leading-6 dark:border-form-strokedark dark:bg-form-input">
+        <pre className="max-h-[60vh] overflow-auto rounded-sm border border-stroke bg-[#f5f5f5] p-4 text-sm leading-6 dark:border-form-strokedark dark:bg-form-input">
           {content.patch.split('\n').map((line, i) => (
             // w-fit min-w-full: span the full scroll width, so the line
             // background is not cut off when the text overflows the box.
@@ -74,7 +74,7 @@ const DiffViewer = () => {
         </pre>
         <div className="flex justify-end pt-6">
           <button
-            className="rounded border border-stroke bg-primary-5 py-2 px-6 text-center font-medium text-plainfont transition hover:border-meta-4 hover:bg-meta-4 hover:text-white dark:bg-meta-4 dark:hover:bg-white dark:hover:text-black"
+            className="rounded-sm border border-stroke bg-primary-5 py-2 px-6 text-center font-medium text-plainfont transition hover:border-meta-4 hover:bg-meta-4 hover:text-white dark:bg-meta-4 dark:hover:bg-white dark:hover:text-black"
             onClick={close}
           >
             Close

@@ -88,7 +88,7 @@ const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) 
       <PageHeaderTitle title={title} subText={subText}>
         {hasDescription && (
           <button
-            className={`${circleBtn} ${showDescription ? '!bg-primary !text-white' : ''}`}
+            className={`${circleBtn} ${showDescription ? 'bg-primary! text-white!' : ''}`}
             title={showDescription ? 'Hide description' : 'Show description'}
             onClick={toggleDescription}
           >
@@ -124,7 +124,7 @@ const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) 
         </button>
       </PageHeaderTitle>
       {hasDescription && showDescription && (
-        <div className="mb-4 rounded-sm border border-stroke bg-white p-4 text-medium shadow-default md:text-title-sm dark:bg-boxdark">
+        <div className="mb-4 rounded-xs border border-stroke bg-white p-4 text-medium shadow-default md:text-title-sm dark:bg-boxdark">
           <MarkdownRender text={description} />
         </div>
       )}

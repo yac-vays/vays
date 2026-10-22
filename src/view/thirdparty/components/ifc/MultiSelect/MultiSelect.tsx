@@ -119,7 +119,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
               >
                 <div
                   id="inputfieldSelect"
-                  className={`relative flex rounded border  py-2 pl-3 pr-3 outline-none transition  dark:bg-form-input ${
+                  className={`relative flex rounded border  py-2 pl-3 pr-3 outline-hidden transition  dark:bg-form-input ${
                     isOpen()
                       ? 'border-primary border-primary'
                       : 'border-stroke dark:border-form-strokedark'

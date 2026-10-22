@@ -51,9 +51,9 @@ const Help = () => {
   return (
     <>
       <PageHeaderTitle title="Help" />
-      <section className="rounded-sm border border-stroke bg-white py-4 shadow-default dark:bg-boxdark">
+      <section className="rounded-xs border border-stroke bg-white py-4 shadow-default dark:bg-boxdark">
         <div
-          className="max-w-screen-xl mx-4 flex md:mx-8"
+          className="max-w-(--breakpoint-xl) mx-4 flex md:mx-8"
           style={{
             height: 'calc(100vh - 250px)',
           }}

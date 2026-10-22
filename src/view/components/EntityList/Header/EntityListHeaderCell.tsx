@@ -112,7 +112,7 @@ const EntityListHeaderCell = ({
             onKeyDown={onButtonDownCallback}
             ref={inputBar}
             type="text"
-            className=" rounded-md border border-stroke px-3 py-1 outline-none focus:border-primary "
+            className=" rounded-md border border-stroke px-3 py-1 outline-hidden focus:border-primary "
             style={{
               //@ts-expect-error Ignore init
               maxWidth: headerEntryRef.current?.clientWidth - 30 - (firstField ? 30 : 0),

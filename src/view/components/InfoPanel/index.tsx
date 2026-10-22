@@ -37,7 +37,7 @@ const InfoPanel = ({
           // new paragraph) — pre-line would leak into the rendered HTML and
           // show every source newline literally.
           <div
-            className={`font-medium hyphens-auto break-words ${
+            className={`font-medium hyphens-auto wrap-break-word ${
               isError ? 'text-[#d32f2f]' : 'text-reducedfont'
             }`}
           >
@@ -45,7 +45,7 @@ const InfoPanel = ({
           </div>
         ) : (
           <p
-            className={`font-medium whitespace-pre-line hyphens-auto break-words ${
+            className={`font-medium whitespace-pre-line hyphens-auto wrap-break-word ${
               isError ? 'text-[#d32f2f]' : 'text-reducedfont'
             }`}
           >

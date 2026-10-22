@@ -190,7 +190,7 @@ export const Editor = ({
     // The frame shows a single unified loader while `isSettingUp`; keep the
     // editor container mounted (hidden) so Monaco can initialize underneath.
     <div className={`flex flex-col h-full relative grow ${isSettingUp ? 'hidden' : ''}`}>
-      <div className="relative overflow-visible rounded grow">
+      <div className="relative overflow-visible rounded-sm grow">
         <div className="absolute h-full w-full overflow-visible" ref={monacoEl}></div>
       </div>
     </div>

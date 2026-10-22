@@ -18,7 +18,7 @@ const LandingView: React.FC<LandingViewProps> = ({ config }) => {
   return (
     <>
       <PageHeaderTitle title={config.title} subText="" />
-      <div className="rounded-sm border border-stroke bg-white p-6 shadow-default dark:bg-boxdark">
+      <div className="rounded-xs border border-stroke bg-white p-6 shadow-default dark:bg-boxdark">
         <h3 className="mb-2.5 text-2xl font-black text-plainfont">Welcome, {getUserName()}!</h3>
         <div className="font-medium">
           <MarkdownRender text={config.welcomeText ?? `You are signed in to ${config.title}.`} />

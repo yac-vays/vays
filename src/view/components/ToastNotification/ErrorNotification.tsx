@@ -1,7 +1,7 @@
 const ErrorNotification = ({ title, detail }: { title: string; detail: string }) => {
   return (
     <>
-      <div className="flex flex-grow items-center gap-5">
+      <div className="flex grow items-center gap-5">
         <div className="flex h-10 w-full max-w-10 items-center justify-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"

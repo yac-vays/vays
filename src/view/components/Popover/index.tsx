@@ -143,7 +143,7 @@ const Popover = ({
     if (disabled && isOpen) setOpen(false);
   }, [disabled]);
 
-  const panelChrome = `border border-stroke rounded bg-bg drop-shadow-xl overflow-y-auto overflow-x-hidden ${panelClassName}`;
+  const panelChrome = `border border-stroke rounded-sm bg-bg drop-shadow-xl overflow-y-auto overflow-x-hidden ${panelClassName}`;
 
   return (
     <>

@@ -18,7 +18,7 @@ import InfoPanel from './InfoPanel';
 export const LimitChip = ({ usage }: { usage: LimitUsage }): JSX.Element => (
   <InfoPanel title={usage.title} description={`${usage.used} of ${usage.max} used`}>
     <span
-      className="inline-flex items-center whitespace-nowrap rounded px-1.5 text-xs font-medium cursor-help"
+      className="inline-flex items-center whitespace-nowrap rounded-sm px-1.5 text-xs font-medium cursor-help"
       style={LIMIT_CHIP_STYLE[limitLevel(usage)]}
     >
       {formatLimitShort(usage)}

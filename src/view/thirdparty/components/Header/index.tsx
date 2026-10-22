@@ -11,7 +11,7 @@ const Header = (props: {
   const { setTitleEl, setActionsEl } = useHeaderSlots();
   return (
     <header className="sticky top-0 z-50 flex w-full bg-white drop-shadow-1 dark:bg-boxdark dark:drop-shadow-none">
-      <div className="flex min-w-0 flex-grow items-center justify-between gap-4 px-4 py-2.5 shadow-2 md:px-6 2xl:px-11">
+      <div className="flex min-w-0 grow items-center justify-between gap-4 px-4 py-2.5 shadow-2 md:px-6 2xl:px-11">
         <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
           {/* <!-- Hamburger Toggle BTN (small screens only) --> */}
           <button
@@ -20,35 +20,35 @@ const Header = (props: {
               e.stopPropagation();
               props.setSidebarOpen(!props.sidebarOpen);
             }}
-            className="z-99999 block flex-shrink-0 rounded-sm border border-stroke bg-white p-1.5 shadow-sm  dark:bg-boxdark lg:hidden"
+            className="z-99999 block shrink-0 rounded-xs border border-stroke bg-white p-1.5 shadow-xs  dark:bg-boxdark lg:hidden"
           >
             <span className="relative block h-5.5 w-5.5 cursor-pointer">
               <span className="du-block absolute right-0 h-full w-full">
                 <span
-                  className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-sm bg-plainfont delay-[0] duration-200 ease-in-out ${
-                    !props.sidebarOpen && '!w-full delay-300'
+                  className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-xs bg-plainfont delay-[0] duration-200 ease-in-out ${
+                    !props.sidebarOpen && 'w-full! delay-300'
                   }`}
                 ></span>
                 <span
-                  className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-sm bg-plainfont delay-150 duration-200 ease-in-out ${
-                    !props.sidebarOpen && 'delay-400 !w-full'
+                  className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-xs bg-plainfont delay-150 duration-200 ease-in-out ${
+                    !props.sidebarOpen && 'delay-400 w-full!'
                   }`}
                 ></span>
                 <span
-                  className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-sm bg-plainfont delay-200 duration-200 ease-in-out ${
-                    !props.sidebarOpen && '!w-full delay-500'
+                  className={`relative left-0 top-0 my-1 block h-0.5 w-0 rounded-xs bg-plainfont delay-200 duration-200 ease-in-out ${
+                    !props.sidebarOpen && 'w-full! delay-500'
                   }`}
                 ></span>
               </span>
               <span className="absolute right-0 h-full w-full rotate-45">
                 <span
-                  className={`absolute left-2.5 top-0 block h-full w-0.5 rounded-sm bg-plainfont-inv delay-300 duration-200 ease-in-out ${
-                    !props.sidebarOpen && '!h-0 !delay-[0]'
+                  className={`absolute left-2.5 top-0 block h-full w-0.5 rounded-xs bg-plainfont-inv delay-300 duration-200 ease-in-out ${
+                    !props.sidebarOpen && 'h-0! delay-[0]!'
                   }`}
                 ></span>
                 <span
-                  className={`delay-400 absolute left-0 top-2.5 block h-0.5 w-full rounded-sm bg-plainfont-inv duration-200 ease-in-out ${
-                    !props.sidebarOpen && '!h-0 !delay-200'
+                  className={`delay-400 absolute left-0 top-2.5 block h-0.5 w-full rounded-xs bg-plainfont-inv duration-200 ease-in-out ${
+                    !props.sidebarOpen && 'h-0! delay-200!'
                   }`}
                 ></span>
               </span>
@@ -63,7 +63,7 @@ const Header = (props: {
           <div ref={setTitleEl} className="min-w-0 flex-1" />
         </div>
 
-        <div className="flex flex-shrink-0 items-center gap-2 2xsm:gap-4">
+        <div className="flex shrink-0 items-center gap-2 2xsm:gap-4">
           {/* Page action buttons slot (e.g. refresh, description toggle). */}
           <div ref={setActionsEl} className="flex items-center gap-2 2xsm:gap-4 empty:hidden" />
 

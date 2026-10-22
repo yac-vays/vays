@@ -38,7 +38,7 @@ export const ToastContextProvider = ({ children }: { children: React.ReactNode }
         toast(<SuccessNotification {...{ title, detail, link }} />, {
           icon: false,
           className:
-            'sm:w-full max-w-[490px] bg-white border-solid border-[1px] rounded py-2 pl-2 pr-3 shadow-2 dark:bg-meta-4',
+            'sm:w-full max-w-[490px] bg-white border-solid border rounded-sm py-2 pl-2 pr-3 shadow-2 dark:bg-meta-4',
           toastId: hashCode(title + detail),
         });
         break;
@@ -47,7 +47,7 @@ export const ToastContextProvider = ({ children }: { children: React.ReactNode }
         toast.error(<ErrorNotification {...{ title, detail }} />, {
           icon: false,
           className:
-            'sm:w-full max-w-[490px] bg-white border-solid border-[1px] rounded py-2 pl-2 pr-3 shadow-2 dark:bg-meta-4',
+            'sm:w-full max-w-[490px] bg-white border-solid border rounded-sm py-2 pl-2 pr-3 shadow-2 dark:bg-meta-4',
           toastId: hashCode(title),
         });
       }

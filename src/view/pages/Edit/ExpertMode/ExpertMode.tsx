@@ -33,7 +33,7 @@ const ExpertMode = ({
           visible={visible}
         />
       </Suspense>
-      {/* <div className={`absolute mx-4 md:mx-8 p-2 rounded duration-1000 opacity-0 ${isDisplayingYACError && "opacity-100"}`} 
+      {/* <div className={`absolute mx-4 md:mx-8 p-2 rounded-sm duration-1000 opacity-0 ${isDisplayingYACError && "opacity-100"}`} 
           style={{bottom:0, left:0, right:0, backgroundColor: "rgb(255 0 200/ 0.6)"}}>
           {yacErrorMsg}
         </div> */}

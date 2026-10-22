@@ -21,7 +21,7 @@ const InlineTextField = ({
       style={{ minWidth: numItemsInList > 0 ? 120 : '90%', minHeight: 36 }}
     >
       <label
-        className="outline-none border-none grow"
+        className="outline-hidden border-none grow"
         style={{
           position: 'absolute',
           minWidth: numItemsInList > 0 ? 80 : '90%',
@@ -31,7 +31,7 @@ const InlineTextField = ({
         <span style={{ whiteSpace: 'pre', padding: 0 }}>{currentInput}</span>
         <input
           ref={inputRef}
-          className="absolute grow focus:outline-none focus:border-none w-full bg-transparent"
+          className="absolute grow focus:outline-hidden focus:border-none w-full bg-transparent"
           style={{
             padding: 0,
             margin: 0,

@@ -40,7 +40,7 @@ const ActionDropdown = ({ actions, entityName }: ActionDropdownProps) => {
   const trigger = (
     <div
       className={
-        'inline-flex items-center justify-center border-t border-r border-b text-center gap-2.5 font-medium bg-[#f5f5f5] dark:bg-meta-4 rounded'
+        'inline-flex items-center justify-center border-t border-r border-b text-center gap-2.5 font-medium bg-[#f5f5f5] dark:bg-meta-4 rounded-sm'
       }
       style={{
         position: 'relative',
@@ -177,7 +177,7 @@ const ActionDropdown = ({ actions, entityName }: ActionDropdownProps) => {
                     style={{ width: '100%', top: 0, height: '100%' }}
                   >
                     <div
-                      className="absolute bg-gradient-to-r from-transparent via-white via-50% to-white dark:via-meta-4 dark:via-50% dark:to-meta-4"
+                      className="absolute bg-linear-to-r from-transparent via-white via-50% to-white dark:via-meta-4 dark:via-50% dark:to-meta-4"
                       style={{ right: 0, width: 40, height: '100%' }}
                     >
                       <div

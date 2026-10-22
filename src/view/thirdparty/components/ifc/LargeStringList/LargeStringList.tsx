@@ -104,7 +104,7 @@ const LargeStringList: React.FC<LargeStringProps> = ({
             <div className="relative flex flex-col items-center">
               <div ref={trigger} onClick={open} className="w-full">
                 <div
-                  className={`mb-2 flex rounded border  py-2 pl-3 pr-3 outline-none transition  dark:bg-form-input ${
+                  className={`mb-2 flex rounded border  py-2 pl-3 pr-3 outline-hidden transition  dark:bg-form-input ${
                     error
                       ? 'border-[#d32f2f]'
                       : isOpen()

@@ -61,7 +61,7 @@ const RowLayout = ({ uischema, schema, path, enabled, visible, renderers, cells 
   return (
     <div className="flex flex-row flex-wrap gap-x-3" data-testid="vays-row">
       {(uischema as RowLayoutElement).elements.map((child, idx) => (
-        <div key={`${path}-${idx}`} className="min-w-[14rem] flex-1 basis-0">
+        <div key={`${path}-${idx}`} className="min-w-56 flex-1 basis-0">
           <JsonFormsDispatch
             uischema={child}
             schema={schema}

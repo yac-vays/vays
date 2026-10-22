@@ -37,7 +37,7 @@ const SchemaWarningMessage = ({
             reduced
             expanded={affectedKeys.length > 10 ? false : true}
           >
-            <ul className="border rounded border-[#0000044] mt-1 p-0.5">
+            <ul className="border rounded-sm border-[#0000044] mt-1 p-0.5">
               {(() => {
                 const jsx = [];
                 let i = 0;

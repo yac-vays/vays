@@ -25,7 +25,7 @@ const PagingButton = ({ buttonType, content, callback }: PagingButtonProps) => {
           <>
             <button
               onClick={callback}
-              className="border-b-4 border-primary dark:border-primary-highlighted flex cursor-pointer items-center justify-center rounded p-1 px-3 hover:bg-primary-20 hover:dark:bg-primary-highlighted hover:text-white"
+              className="border-b-4 border-primary dark:border-primary-highlighted flex cursor-pointer items-center justify-center rounded-sm p-1 px-3 hover:bg-primary-20 dark:hover:bg-primary-highlighted hover:text-white"
             >
               {content}
             </button>
@@ -37,7 +37,7 @@ const PagingButton = ({ buttonType, content, callback }: PagingButtonProps) => {
           <>
             <button
               onClick={callback}
-              className="flex cursor-pointer items-center justify-center rounded p-1 px-3 hover:bg-primary-20 hover:dark:bg-primary-highlighted hover:text-white"
+              className="flex cursor-pointer items-center justify-center rounded-sm p-1 px-3 hover:bg-primary-20 dark:hover:bg-primary-highlighted hover:text-white"
             >
               {content}
             </button>
@@ -46,7 +46,7 @@ const PagingButton = ({ buttonType, content, callback }: PagingButtonProps) => {
       case PagingButtonType.RANGEGAP:
         return (
           <>
-            <span className="mx-1 flex cursor-pointer items-center justify-center rounded p-1 px-3">
+            <span className="mx-1 flex cursor-pointer items-center justify-center rounded-sm p-1 px-3">
               {content}
             </span>
           </>

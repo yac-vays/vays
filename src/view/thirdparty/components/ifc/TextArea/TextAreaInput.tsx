@@ -53,7 +53,7 @@ const TextAreaInput = ({
           ref={textAreaRef}
           disabled={!enabled}
           defaultValue={defValue}
-          className="w-full rounded-md border border-stroke bg-transparent py-3 px-5 text-plainfont outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
+          className="w-full rounded-md border border-stroke bg-transparent py-3 px-5 text-plainfont outline-hidden transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           placeholder={ph}
           rows={rows}
           onChange={(e) => {

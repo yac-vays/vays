@@ -18,7 +18,7 @@ const GroupComponent = React.memo(function GroupComponent({
 
   return (
     // mx-1 lines the group border up with sibling controls' boxes (p-1 wrappers).
-    <div className="my-4 mx-1 border border-[#c9c9c9] rounded p-2">
+    <div className="my-4 mx-1 border border-[#c9c9c9] rounded-sm p-2">
       {label ? (
         <>
           <h4 className="mb-0 text-2xl text-plainfont">{label}</h4>

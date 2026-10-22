@@ -139,7 +139,7 @@ const EntityList = ({ requestContext, highlightEntityName }: EntityListProps) =>
             {/* md:table-fixed                                                                                           xl or xl2?       md:table-fixed md:overflow-auto md:px-8  */}
             <table
               role="table"
-              className="entity-list w-full table-auto border-collapse  break-words px-4 xl:overflow-x-auto overflow-y-block xl:px-8"
+              className="entity-list w-full table-auto border-collapse  wrap-break-word px-4 xl:overflow-x-auto overflow-y-block xl:px-8"
               style={{ width: '100%' }}
             >
               <TableHeader
@@ -196,7 +196,7 @@ const EntityList = ({ requestContext, highlightEntityName }: EntityListProps) =>
             <select
               ref={selectorRef}
               value={numResultsPerPage}
-              className="bg-transparent ml-2 pl-1 rounded border border-grey"
+              className="bg-transparent ml-2 pl-1 rounded-sm border border-grey"
               onChange={(e) => {
                 const next = parseInt(e.target.value);
                 setNumResultsPerPage(next);

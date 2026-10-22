@@ -11,7 +11,7 @@ const DeleteButton = ({
         type="button"
         disabled={disabled}
         onClick={removeCallback}
-        className="h-6 w-6 cursor-pointer outline-none focus:outline-none"
+        className="h-6 w-6 cursor-pointer outline-hidden focus:outline-hidden"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

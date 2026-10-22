@@ -75,7 +75,7 @@ const TableRow = withCustomProps((props: ItemRendererProps) => {
     <div>
       <div
         className={`group flex flex-row w-full ${
-          elements.length > 1 ? 'border border-[#c9c9c9] rounded p-2 my-2' : ''
+          elements.length > 1 ? 'border border-[#c9c9c9] rounded-sm p-2 my-2' : ''
         }`}
       >
         {/* min-w-0: allow the item's controls to shrink below their intrinsic

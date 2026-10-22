@@ -1,8 +1,8 @@
 const ErrorPage = () => {
   return (
-    <section className="rounded-sm border border-stroke bg-white py-4 shadow-default dark:bg-boxdark">
+    <section className="rounded-xs border border-stroke bg-white py-4 shadow-default dark:bg-boxdark">
       <div
-        className="max-w-screen-xl px-4 flex items-center justify-start align-middle md:px-8"
+        className="max-w-(--breakpoint-xl) px-4 flex items-center justify-start align-middle md:px-8"
         style={{
           height: 'calc(100vh - 170px)',
         }}

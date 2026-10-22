@@ -14,7 +14,7 @@ const SidebarGroupEntry = ({ entityDecl, href, yacBackendObject }: SidebarGroupE
   return (
     <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
       <li>
-        <div className="group relative flex flex-row items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white !text-white">
+        <div className="group relative flex flex-row items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white text-white!">
           <NavLink
             className={`duration-100 grow ${active ? 'font-bold text-lg' : 'opacity-80'}`}
             to={href}

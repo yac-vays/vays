@@ -51,7 +51,7 @@ const SidebarGroup = ({ yacBackendObject, isOpen }: SidebarLinkGroupProps) => {
     <li>
       <React.Fragment>
         <div
-          className="group relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out 
+          className="group relative flex items-center gap-2.5 rounded-xs px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out 
           bg-primary-highlighted dark:bg-meta-4"
           style={{ cursor: 'pointer' }}
           onClick={(e) => {

@@ -15,7 +15,7 @@ export const EntityListPagination = ({
   return (
     <div className="flex">
       <button
-        className="duration-300 flex cursor-pointer items-center justify-center rounded p-1 pr-2 hover:scale-150"
+        className="duration-300 flex cursor-pointer items-center justify-center rounded-sm p-1 pr-2 hover:scale-150"
         disabled={false}
         onClick={() => {
           if (currPage > 1) {
@@ -113,7 +113,7 @@ export const EntityListPagination = ({
       })()}
       {/* TODO: Make this button a bit more performant by avoiding redundant computation. */}
       <button
-        className="duration-300 flex cursor-pointer items-center justify-center rounded p-1 px-2 hover:scale-150"
+        className="duration-300 flex cursor-pointer items-center justify-center rounded-sm p-1 px-2 hover:scale-150"
         onClick={() => {
           if (currPage < Math.ceil(totalNumResults.valueOf() / numResultsPerPage.valueOf())) {
             pageSwitch(currPage + 1)();

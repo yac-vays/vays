@@ -24,7 +24,7 @@ const LoginView: React.FC<LoginViewProps> = ({ config }) => {
           </p>
 
           <button
-            className="flex w-full justify-center rounded-md bg-primary p-4 font-bold text-plainfont-inv hover:bg-opacity-60"
+            className="flex w-full justify-center rounded-md bg-primary p-4 font-bold text-plainfont-inv hover:bg-primary/60"
             onClick={async () => {
               await startAuthentication(config);
             }}

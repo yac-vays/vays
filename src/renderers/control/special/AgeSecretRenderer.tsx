@@ -131,7 +131,7 @@ export const AgeSecretRenderer = (props: ControlProps) => {
   };
 
   const inputClasses =
-    'w-full rounded-md border bg-transparent px-5 py-2.5 outline-none ' +
+    'w-full rounded-md border bg-transparent px-5 py-2.5 outline-hidden ' +
     'border-stroke focus:border-primary ' +
     'dark:bg-meta-4 dark:focus:border-primary font-mono text-sm';
 

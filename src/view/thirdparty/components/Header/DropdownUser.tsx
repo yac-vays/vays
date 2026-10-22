@@ -55,7 +55,7 @@ const DropdownUser = () => {
 
       {/* <!-- Dropdown Start --> */}
       {dropdownOpen && loggedIn && (
-        <div className="absolute right-0 mt-2.5 flex w-64 flex-col rounded-sm border border-stroke bg-white shadow-default dark:bg-boxdark">
+        <div className="absolute right-0 mt-2.5 flex w-64 flex-col rounded-xs border border-stroke bg-white shadow-default dark:bg-boxdark">
           <div className="flex flex-col gap-0.5 border-b border-stroke px-4 py-3">
             <span className="text-sm font-medium text-plainfont">{userName}</span>
             {login && <span className="text-xs text-reducedfont">{login}</span>}

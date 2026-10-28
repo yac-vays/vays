@@ -95,7 +95,7 @@ function App(): JSX.Element {
         {/* While getting config and generating csp, do not proceed
       to load other data. */}
         {loading ? (
-          <Loader />
+          <Loader neutral />
         ) : (
           <ModalContextProvider>
             {/* Root-mounted like the toasts, so the "Show changes" link keeps

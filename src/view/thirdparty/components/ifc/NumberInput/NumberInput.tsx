@@ -12,6 +12,8 @@ interface NumberProps {
   onChange: React.ChangeEventHandler<Element>;
   /** Shows a small × in the box that removes the value (unset it), if given. */
   onReset?: () => void;
+  /** Hide the browser's up/down buttons (the arrow keys still step). */
+  hideSpinner?: boolean;
 }
 
 /**
@@ -29,6 +31,7 @@ const NumberInput = ({
   enabled,
   onChange,
   onReset,
+  hideSpinner,
 }: NumberProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -67,7 +70,11 @@ const NumberInput = ({
         disabled={!enabled}
         defaultValue={defValue}
         className={`w-full rounded-md border border-stroke bg-transparent py-2.5 pl-5 outline-hidden focus:border-primary  dark:bg-meta-4 dark:focus:border-primary ${
-          onReset ? 'pr-12' : 'pr-5'
+          onReset ? (hideSpinner ? 'pr-9' : 'pr-12') : 'pr-5'
+        } ${
+          hideSpinner
+            ? '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
+            : ''
         }`}
         placeholder={ph.toString()}
         onChange={onChange}
@@ -77,7 +84,7 @@ const NumberInput = ({
           type="button"
           aria-label="Reset to default"
           title="Reset to default"
-          className="absolute top-1/2 right-8 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-reducedfont hover:bg-stroke hover:text-plainfont focus:outline-hidden focus:ring-2 focus:ring-primary"
+          className={`absolute top-1/2 ${hideSpinner ? 'right-3' : 'right-8'} flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-reducedfont hover:bg-stroke hover:text-plainfont focus:outline-hidden focus:ring-2 focus:ring-primary`}
           onClick={onReset}
         >
           <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">

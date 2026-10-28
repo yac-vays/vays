@@ -98,6 +98,14 @@ describe('LimitBarRenderer', () => {
     expect(screen.queryByRole('button', { name: 'Reset to default' })).toBeNull();
   });
 
+  it('hides the spinner of the number input next to the bar (the bar steps)', () => {
+    act(() => setYACUsages([usage(8, 10)], { spec: { cpu: 2 } }));
+    const { container } = mount({ spec: { cpu: 2 } }, BAR);
+    expect(container.querySelector('input[type="number"]')?.className).toContain(
+      '[appearance:textfield]',
+    );
+  });
+
   it('falls back to a plain number input without a matching usage', () => {
     act(() => setYACUsages([{ ...usage(8, 10), path: '#/other' }], { spec: { cpu: 2 } }));
     const { container } = mount({ spec: { cpu: 2 } }, BAR);

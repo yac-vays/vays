@@ -209,6 +209,8 @@ export const LimitBar = (props: ControlProps) => {
       enabled={props.enabled}
       onChange={onInputChange}
       onReset={props.enabled && !props.required && shown !== undefined ? onReset : undefined}
+      // The bar is the stepper here; the spinner only crowds the small box.
+      hideSpinner={model != null}
     />
   );
 

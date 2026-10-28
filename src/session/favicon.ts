@@ -6,6 +6,11 @@ import { AppConfig } from '../utils/types/config';
  * be inline SVG markup, a `data:` URI, a same-origin path, or an absolute URL
  * whose origin is allow-listed in the CSP (see `generateCSP`). When unset, the
  * built-in default declared in `index.html` (the project favicon) is kept.
+ *
+ * Safari ignores favicon changes made from JavaScript. For it, the container
+ * entrypoint already serves the configured icon (except absolute URLs) at the
+ * static `/favicon.svg` from `index.html` (see `misc/favicon.js`); this runtime
+ * switch covers the dev server and absolute URLs in the other browsers.
  */
 export function setFavicon(config: AppConfig) {
   if (!config.favicon) return;
@@ -17,7 +22,4 @@ export function setFavicon(config: AppConfig) {
     document.head.appendChild(link);
   }
   link.href = asImageSource(config.favicon);
-  // Let the browser infer the image type (svg/png/ico) from the resource
-  // instead of forcing the svg+xml type declared in index.html.
-  link.removeAttribute('type');
 }

@@ -226,6 +226,7 @@ export const TYPE_CHECK_ENTITY_DATA = `{
   name: String,
   link: String | Null,
   options: Object,
+  links: Maybe Object,
   perms: [String],
   data: Object,
   yaml: String,
@@ -236,6 +237,8 @@ export interface EntityData {
   name: string;
   link: Nullable<string>;
   options: object;
+  /** See {@link EntityObject.links}. */
+  links?: Record<string, string>;
   perms: string[];
   data: { [key: string]: any };
   yaml: string;

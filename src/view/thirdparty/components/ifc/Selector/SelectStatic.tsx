@@ -12,6 +12,13 @@ interface DropdownProps {
   disabled?: boolean;
   canResetToUndefined?: boolean;
   /**
+   * The option an unset field counts as (`vays_options.initial`). With
+   * `canResetToUndefined`, the empty option is named after it ("Default: X")
+   * instead of "Not set", so unset (follows the default) and explicitly
+   * picked are distinguishable.
+   */
+  defaultOption?: string;
+  /**
    * Show `initValue` as a greyed-out placeholder value (`vays_options.initial`
    * with `initial_editable: false`): the shown selection is not real data yet.
    * The caller drops the flag once the user has picked an option.
@@ -34,6 +41,7 @@ const SelectStatic: React.FC<DropdownProps> = ({
   initValue,
   disabled,
   canResetToUndefined,
+  defaultOption,
   placeholder,
 }: DropdownProps) => {
   if (!isValidOption(initValue, options)) {
@@ -41,14 +49,22 @@ const SelectStatic: React.FC<DropdownProps> = ({
   }
   const [selectedOption, setSelectedOption] = useState<string | undefined>(initValue ?? '');
 
+  const defaultOpt =
+    canResetToUndefined && defaultOption !== undefined
+      ? options.find((opt) => String(opt.value) === defaultOption)
+      : undefined;
+
   // A native <select> cannot show per-option tooltips inside its popup list,
   // so the description of the currently selected option (oneOf consts) is
   // shown in an (i)-panel anchored at the right border of the box, next to
   // the chevron — all boxes of a form thus line their icons up in one column.
   // String coercion mirrors how the <select> itself matches its value.
-  const selectedWithDescription = options.find(
-    (opt) => opt.description && String(opt.value) === selectedOption,
-  );
+  // The empty option stands for the default one, so it shows its description.
+  const selectedOpt =
+    selectedOption === ''
+      ? defaultOpt
+      : options.find((opt) => String(opt.value) === selectedOption);
+  const selectedWithDescription = selectedOpt?.description ? selectedOpt : undefined;
   const [isOptionSelected, setIsOptionSelected] = useState<boolean>(initValue != undefined);
 
   const changeTextColor = () => {
@@ -91,7 +107,11 @@ const SelectStatic: React.FC<DropdownProps> = ({
           disabled={!canResetToUndefined}
           className="text-plainfont dark:text-reducedfont"
         >
-          {canResetToUndefined ? 'None (use default)' : 'Choose one'}
+          {canResetToUndefined
+            ? defaultOpt
+              ? `Default: ${defaultOpt.label}`
+              : 'Not set'
+            : 'Choose one'}
         </option>
         {(function enterOptions() {
           const jsx = [];

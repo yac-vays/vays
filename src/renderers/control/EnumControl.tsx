@@ -50,7 +50,17 @@ export const EnumControl = ({
 
   // `initial` is shown but is not data yet; with `initial_editable: false`
   // (the default) the pre-selected option is greyed out until the user picks.
-  const { data: resolvedData, isPlaceholder } = resolveInitial(data, uischema);
+  // An optional field instead keeps the empty option selected, named after
+  // the initial one ("Default: X"): picking X itself pins the value, picking
+  // the default option removes it again.
+  const initial = uischema.options?.initial;
+  const { data: resolvedData, isPlaceholder } = required
+    ? resolveInitial(data, uischema)
+    : {
+        data,
+        isPlaceholder:
+          data === undefined && initial !== undefined && !uischema.options?.initial_editable,
+      };
   data = resolvedData;
 
   //// bad data check
@@ -78,6 +88,7 @@ export const EnumControl = ({
             initValue={data}
             disabled={!enabled}
             canResetToUndefined={!required}
+            defaultOption={required || initial == null ? undefined : String(initial)}
             placeholder={isPlaceholder}
           />
         </ErrorRing>

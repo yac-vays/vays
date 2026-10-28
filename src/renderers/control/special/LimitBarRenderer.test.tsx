@@ -89,6 +89,15 @@ describe('LimitBarRenderer', () => {
     expect(screen.getByTestId('limit-bar-own').style.backgroundColor).toBe('rgb(245, 158, 11)');
   });
 
+  it('unsets the value with the × in the input (back to the initial value)', async () => {
+    act(() => setYACUsages([usage(8, 10)], { spec: { cpu: 2 } }));
+    const { seen } = mount({ spec: { cpu: 2 } }, { ...BAR, initial: 1 });
+    fireEvent.click(screen.getByRole('button', { name: 'Reset to default' }));
+    await waitFor(() => expect(seen.data?.spec).toEqual({}));
+    expect(own()).toBe('1');
+    expect(screen.queryByRole('button', { name: 'Reset to default' })).toBeNull();
+  });
+
   it('falls back to a plain number input without a matching usage', () => {
     act(() => setYACUsages([{ ...usage(8, 10), path: '#/other' }], { spec: { cpu: 2 } }));
     const { container } = mount({ spec: { cpu: 2 } }, BAR);

@@ -63,7 +63,8 @@ function numericInitial(raw: unknown): number | undefined {
  * limit's `path`): a bar of the whole usage, split into everything else
  * ("others") and this field's share, whose end can be dragged (or moved with
  * the keyboard) to change the value. A number input next to it allows exact
- * values. Without a matching usage, only the number input is shown.
+ * values, and a small × in it unsets the value again (optional fields only).
+ * Without a matching usage, only the number input is shown.
  *
  * Kept deliberately quiet: the only text is a live usage chip next to the
  * label (total / cap, colored like the other limit chips); the split into
@@ -179,6 +180,13 @@ export const LimitBar = (props: ControlProps) => {
     commit(v);
   };
 
+  // Unset the value again (it then counts with `initial`), see the × in the input.
+  const onReset = () => {
+    setDraft({ v: undefined });
+    commit(undefined);
+    commit.flush();
+  };
+
   const onInputChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
     const v = Number.isNaN(ev.target.valueAsNumber) ? undefined : ev.target.valueAsNumber;
     setDraft({ v });
@@ -200,6 +208,7 @@ export const LimitBar = (props: ControlProps) => {
       step={multipleOfStep(props.schema)}
       enabled={props.enabled}
       onChange={onInputChange}
+      onReset={props.enabled && !props.required && shown !== undefined ? onReset : undefined}
     />
   );
 
@@ -222,7 +231,7 @@ export const LimitBar = (props: ControlProps) => {
             <div className="grow min-w-0" data-testid="limit-bar">
               {renderBar(model)}
             </div>
-            <div className="w-28 shrink-0">{input}</div>
+            <div className="w-32 shrink-0">{input}</div>
           </div>
         )}
       </ErrorRing>

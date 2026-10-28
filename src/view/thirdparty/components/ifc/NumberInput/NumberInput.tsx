@@ -10,6 +10,8 @@ interface NumberProps {
   step?: number;
   enabled: boolean;
   onChange: React.ChangeEventHandler<Element>;
+  /** Shows a small × in the box that removes the value (unset it), if given. */
+  onReset?: () => void;
 }
 
 /**
@@ -26,6 +28,7 @@ const NumberInput = ({
   step,
   enabled,
   onChange,
+  onReset,
 }: NumberProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -56,17 +59,37 @@ const NumberInput = ({
   }, [defValue]);
 
   return (
-    <div id={id}>
+    <div id={id} className="relative">
       <input
         ref={inputRef}
         type="number"
         step={step}
         disabled={!enabled}
         defaultValue={defValue}
-        className="w-full rounded-md border border-stroke bg-transparent px-5 py-2.5 outline-hidden focus:border-primary  dark:bg-meta-4 dark:focus:border-primary"
+        className={`w-full rounded-md border border-stroke bg-transparent py-2.5 pl-5 outline-hidden focus:border-primary  dark:bg-meta-4 dark:focus:border-primary ${
+          onReset ? 'pr-12' : 'pr-5'
+        }`}
         placeholder={ph.toString()}
         onChange={onChange}
       />
+      {onReset && (
+        <button
+          type="button"
+          aria-label="Reset to default"
+          title="Reset to default"
+          className="absolute top-1/2 right-8 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-reducedfont hover:bg-stroke hover:text-plainfont focus:outline-hidden focus:ring-2 focus:ring-primary"
+          onClick={onReset}
+        >
+          <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+            <path
+              d="M1 1l8 8M9 1l-8 8"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
+      )}
     </div>
   );
 };

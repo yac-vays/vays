@@ -58,20 +58,35 @@ const mount = (
 
 const BAR = { renderer: 'limit_bar', renderer_options: { unit: 'Cores' } };
 
+const own = () => screen.getByRole('slider').getAttribute('aria-valuenow');
+const chip = () => screen.getByTestId('limit-bar-chip').textContent;
+
 afterEach(() => act(() => setYACUsages([])));
 
 describe('LimitBarRenderer', () => {
-  it('shows the usage split into this field and the others, with numbers', () => {
+  it('shows the usage as a chip, with the split in its popover', async () => {
     act(() => setYACUsages([usage(8, 10)], { spec: { cpu: 2 } }));
     mount({ spec: { cpu: 2 } }, BAR);
     expect(screen.getByTestId('limit-bar')).toBeTruthy();
-    expect(screen.getByText('This: 2')).toBeTruthy();
-    expect(screen.getByText('Others: 6')).toBeTruthy();
-    expect(screen.getByText('Free: 2')).toBeTruthy();
-    expect(screen.getByText('8 / 10 Cores')).toBeTruthy();
+    expect(chip()).toBe('8 / 10 Cores');
+    expect(screen.queryByText(/Others:/)).toBeNull(); // details only on demand
+    fireEvent.click(screen.getByTestId('limit-bar-chip'));
+    const details = await screen.findByText(/Others: 6 Cores/);
+    expect(details.textContent).toContain('This entity: 2 Cores');
+    expect(details.textContent).toContain('Free: 2 Cores');
     const slider = screen.getByRole('slider');
     expect(slider.getAttribute('aria-valuenow')).toBe('2');
     expect(slider.getAttribute('aria-valuemax')).toBe('4'); // room left in the cap
+  });
+
+  it("colors this entity's share by level", () => {
+    act(() => setYACUsages([usage(4, 10)], { spec: { cpu: 2 } }));
+    const { unmount } = mount({ spec: { cpu: 2 } }, BAR);
+    expect(screen.getByTestId('limit-bar-own').style.backgroundColor).toBe('rgb(34, 197, 94)');
+    unmount();
+    act(() => setYACUsages([usage(9, 10)], { spec: { cpu: 2 } }));
+    mount({ spec: { cpu: 2 } }, BAR);
+    expect(screen.getByTestId('limit-bar-own').style.backgroundColor).toBe('rgb(245, 158, 11)');
   });
 
   it('falls back to a plain number input without a matching usage', () => {
@@ -87,8 +102,8 @@ describe('LimitBarRenderer', () => {
     const slider = screen.getByRole('slider');
     fireEvent.keyDown(slider, { key: 'ArrowRight' });
     // shown right away, the others stay put
-    expect(screen.getByText('This: 2.5')).toBeTruthy();
-    expect(screen.getByText('Others: 6')).toBeTruthy();
+    expect(own()).toBe('2.5');
+    expect(chip()).toBe('8.5 / 10 Cores');
     await waitFor(() => expect(seen.data?.spec?.cpu).toBe(2.5), { timeout: 2000 });
     fireEvent.keyDown(slider, { key: 'End' });
     await waitFor(() => expect(seen.data?.spec?.cpu).toBe(4), { timeout: 2000 });
@@ -100,9 +115,9 @@ describe('LimitBarRenderer', () => {
     const bar = screen.getByRole('slider').parentElement as HTMLElement;
     bar.getBoundingClientRect = () => ({ left: 0, width: 100 }) as DOMRect;
     fireEvent.pointerDown(bar, { clientX: 70, button: 0, pointerId: 1 });
-    expect(screen.getByText('This: 1')).toBeTruthy(); // 7 - 6
+    expect(own()).toBe('1'); // 7 - 6
     fireEvent.pointerMove(bar, { clientX: 100, pointerId: 1 });
-    expect(screen.getByText('This: 4')).toBeTruthy(); // clamped: 10 - 6
+    expect(own()).toBe('4'); // clamped: 10 - 6
     fireEvent.pointerUp(bar, { clientX: 100, pointerId: 1 });
     await waitFor(() => expect(seen.data?.spec?.cpu).toBe(4));
   });
@@ -114,7 +129,7 @@ describe('LimitBarRenderer', () => {
     const slider = screen.getByRole('slider');
     expect(slider.getAttribute('aria-valuemax')).toBe('3');
     fireEvent.keyDown(slider, { key: 'End' });
-    expect(screen.getByText('This: 3')).toBeTruthy();
+    expect(own()).toBe('3');
   });
 
   it('counts an unset field with its initial value without writing it', async () => {
@@ -124,8 +139,8 @@ describe('LimitBarRenderer', () => {
       { renderer: 'limit_bar', initial: 2 },
       { type: 'integer' },
     );
-    expect(screen.getByText('This: 2')).toBeTruthy();
-    expect(screen.getByText('Others: 6')).toBeTruthy();
+    expect(own()).toBe('2');
+    expect(chip()).toBe('8 / 10');
     expect(screen.getByTestId('limit-bar-own').style.opacity).toBe('0.5');
     await new Promise((r) => setTimeout(r, 50));
     expect(seen.data?.spec?.cpu).toBeUndefined();
@@ -138,12 +153,12 @@ describe('LimitBarRenderer', () => {
       multipleOf: 10,
     });
     fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
-    expect(screen.getByText('This: 20')).toBeTruthy();
+    expect(own()).toBe('20');
     await waitFor(() => expect(seen.data?.spec?.cpu).toBe(20), { timeout: 2000 });
     unmount();
     mount({ spec: { cpu: 10 } }, BAR, { type: 'integer' });
     fireEvent.keyDown(screen.getByRole('slider'), { key: 'ArrowRight' });
-    expect(screen.getByText('This: 11')).toBeTruthy();
+    expect(own()).toBe('11');
   });
 
   it('lets the number input step by multipleOf', () => {

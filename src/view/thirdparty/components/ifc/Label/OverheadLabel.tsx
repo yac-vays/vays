@@ -10,6 +10,8 @@ interface OverheadLabelProps {
   errors?: string;
   /** The control's data path; anchors matching `limits` usage chips here. */
   path?: string;
+  /** Extra content after the indicators (e.g. a renderer's own live usage chip). */
+  adornment?: React.ReactNode;
 }
 
 /**
@@ -22,6 +24,7 @@ const OverheadLabelWithMarkdownDescr = ({
   description,
   errors,
   path,
+  adornment,
 }: OverheadLabelProps) => {
   return (
     <label className="mb-2.5 block text-plainfont flex flex-row">
@@ -45,6 +48,11 @@ const OverheadLabelWithMarkdownDescr = ({
         <span className="relative ml-1 flex items-center">
           <FormFieldLimitChips path={path} />
         </span>
+      ) : (
+        <></>
+      )}
+      {adornment != null ? (
+        <span className="relative ml-1 flex items-center">{adornment}</span>
       ) : (
         <></>
       )}

@@ -28,6 +28,7 @@ import {
 } from '../../../utils/limitBar';
 import { LIMIT_CHIP_STYLE, LimitLevel, usagesForFormPath } from '../../../utils/limitUtils';
 import ErrorRing from '../../../view/components/Form/ErrorRing';
+import InfoPanel from '../../../view/components/InfoPanel';
 import { useYACUsageSnapshot } from '../../../view/hooks/useYACUsages';
 import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import NumberInput from '../../../view/thirdparty/components/ifc/NumberInput/NumberInput';
@@ -41,7 +42,7 @@ interface RendererOptions {
 
 /** Solid colors of this field's share per level (the chips use translucent ones). */
 const OWN_COLOR: Record<LimitLevel, string> = {
-  ok: 'var(--color-primary)',
+  ok: 'rgb(34 197 94)',
   near: 'rgb(245 158 11)',
   over: 'rgb(239 68 68)',
 };
@@ -57,26 +58,17 @@ function numericInitial(raw: unknown): number | undefined {
   return undefined;
 }
 
-const Legend = ({ color, label, value }: { color?: string; label: string; value: string }) => (
-  <span className="inline-flex items-center gap-1 whitespace-nowrap">
-    {color ? (
-      <span className="inline-block h-2.5 w-2.5 rounded-xs" style={{ backgroundColor: color }} />
-    ) : (
-      <span
-        className="inline-block h-2.5 w-2.5 rounded-xs border border-stroke"
-        style={{ backgroundColor: TRACK_COLOR }}
-      />
-    )}
-    {label}: {value}
-  </span>
-);
-
 /**
  * A number field combined with the `limits` usage anchored on it (via the
  * limit's `path`): a bar of the whole usage, split into everything else
  * ("others") and this field's share, whose end can be dragged (or moved with
  * the keyboard) to change the value. A number input next to it allows exact
  * values. Without a matching usage, only the number input is shown.
+ *
+ * Kept deliberately quiet: the only text is a live usage chip next to the
+ * label (total / cap, colored like the other limit chips); the split into
+ * this entity / others / free and the field's own maximum are in the chip's
+ * popover and the bar's hover titles.
  *
  * The step (dragging, keyboard) is the field's `multipleOf`, else 1 for
  * integers and 0.1 for numbers (see `stepFor`).
@@ -218,8 +210,9 @@ export const LimitBar = (props: ControlProps) => {
         required={props.required || false}
         description={props.description}
         errors={errorMsg}
-        // The bar replaces the usage chips; without a usage, keep them.
+        // The bar replaces the usage chips (by its own live one); without a usage, keep them.
         path={model ? undefined : props.path}
+        adornment={model ? renderChip(model) : undefined}
       />
       <ErrorRing errors={errorMsg}>
         {model == null ? (
@@ -236,41 +229,55 @@ export const LimitBar = (props: ControlProps) => {
     </div>
   );
 
+  /** The live total / cap, with the breakdown in its popover. */
+  function renderChip(m: LimitBarModel) {
+    const total = clean(m.others + m.own, step);
+    const lines = [
+      `This entity: ${fmt(m.own)}${unit}${m.ownIsInitial ? ' (initial)' : ''}`,
+      `Others: ${fmt(m.others)}${unit}`,
+      m.free >= 0 ? `Free: ${fmt(m.free)}${unit}` : `Over by: ${fmt(-m.free)}${unit}`,
+    ];
+    if (m.fieldMax !== undefined) lines.push(`Max. per entity: ${fmt(m.fieldMax)}${unit}`);
+    return (
+      <InfoPanel title={m.usage.title} description={lines.join('\n')}>
+        <span
+          data-testid="limit-bar-chip"
+          className="inline-flex items-center whitespace-nowrap rounded-sm px-1.5 text-xs font-medium cursor-help"
+          style={LIMIT_CHIP_STYLE[m.level]}
+        >
+          {fmt(total)} / {fmt(m.max)}
+          {unit}
+        </span>
+      </InfoPanel>
+    );
+  }
+
   function renderBar(m: LimitBarModel) {
     const total = clean(m.others + m.own, step);
-    const ownColor = OWN_COLOR[m.level];
     const fieldMaxAt =
       m.fieldMax !== undefined && m.others + m.fieldMax < m.scaleMax
         ? percentOf(m, m.others + m.fieldMax)
         : undefined;
     return (
-      <>
-        {/* numbers above the bar: the parts (the unit is shown once, below) */}
-        <div className="mb-1 flex flex-wrap gap-x-3 text-xs text-plainfont">
-          <Legend color={ownColor} label="This" value={fmt(m.own)} />
-          <Legend color={OTHERS_COLOR} label="Others" value={fmt(m.others)} />
-          {m.free >= 0 ? (
-            <Legend label="Free" value={fmt(m.free)} />
-          ) : (
-            <Legend color={OWN_COLOR.over} label="Over" value={fmt(-m.free)} />
-          )}
-        </div>
-
-        {/* the bar */}
+      <div
+        ref={barRef}
+        className={`relative flex h-5 items-center select-none touch-none ${
+          interactive ? 'cursor-pointer' : 'opacity-60'
+        }`}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      >
+        {/* the track with the others' and this entity's share */}
         <div
-          ref={barRef}
-          className={`relative h-3 rounded select-none touch-none ${
-            interactive ? 'cursor-pointer' : 'opacity-60'
-          }`}
+          className="relative h-2 w-full overflow-hidden rounded-full"
           style={{ backgroundColor: TRACK_COLOR }}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
         >
           <div
-            className="absolute inset-y-0 left-0 rounded-l"
+            className="absolute inset-y-0 left-0"
             style={{ width: `${percentOf(m, m.others)}%`, backgroundColor: OTHERS_COLOR }}
+            title={`Others: ${fmt(m.others)}${unit}`}
           />
           <div
             data-testid="limit-bar-own"
@@ -278,65 +285,46 @@ export const LimitBar = (props: ControlProps) => {
             style={{
               left: `${percentOf(m, m.others)}%`,
               width: `${percentOf(m, total) - percentOf(m, m.others)}%`,
-              backgroundColor: ownColor,
+              backgroundColor: OWN_COLOR[m.level],
               // An unset field counts with its initial value: shown, but fainter.
               opacity: m.ownIsInitial ? 0.5 : 1,
             }}
+            title={`This entity: ${fmt(m.own)}${unit}`}
           />
-          {m.max < m.scaleMax && (
-            <div
-              className="absolute -inset-y-1 w-0.5"
-              style={{ left: `${percentOf(m, m.max)}%`, backgroundColor: OWN_COLOR.over }}
-              title={`Limit: ${fmt(m.max)}${unit}`}
-            />
-          )}
-          {fieldMaxAt !== undefined && (
-            <div
-              data-testid="limit-bar-field-max"
-              className="absolute -inset-y-1 border-l-2 border-dashed"
-              style={{ left: `${fieldMaxAt}%`, borderColor: 'rgb(75 85 99)' }}
-              title={`Maximum of this field: ${fmt(m.fieldMax as number)}${unit}`}
-            />
-          )}
+        </div>
+        {m.max < m.scaleMax && (
           <div
-            ref={handleRef}
-            role="slider"
-            tabIndex={interactive ? 0 : -1}
-            aria-label={props.label}
-            aria-valuemin={m.lo}
-            aria-valuemax={dragRange(m, m.own).hi}
-            aria-valuenow={m.own}
-            aria-valuetext={`${fmt(m.own)}${unit}`}
-            aria-disabled={!interactive}
-            className={`absolute top-1/2 h-5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-xs border border-stroke bg-white shadow outline-hidden focus:ring-2 focus:ring-primary ${
-              interactive ? 'cursor-ew-resize' : ''
-            }`}
-            style={{ left: `${percentOf(m, total)}%` }}
-            onKeyDown={onKeyDown}
+            className="absolute top-1/2 h-4 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
+            style={{ left: `${percentOf(m, m.max)}%`, backgroundColor: OWN_COLOR.over }}
+            title={`Limit: ${fmt(m.max)}${unit}`}
           />
-        </div>
-
-        {/* numbers below the bar: scale start, the field maximum, the total */}
-        <div className="relative mt-1 flex justify-between text-xs text-plainfont">
-          <span className="opacity-70">0</span>
-          {fieldMaxAt !== undefined && fieldMaxAt > 10 && fieldMaxAt < 65 && (
-            <span
-              className="absolute -translate-x-1/2 whitespace-nowrap opacity-70"
-              style={{ left: `${fieldMaxAt}%` }}
-            >
-              max. {fmt(m.fieldMax as number)}
-            </span>
-          )}
-          <span
-            className="whitespace-nowrap font-medium"
-            style={{ color: LIMIT_CHIP_STYLE[m.level].color }}
-            title={m.usage.title}
-          >
-            {fmt(total)} / {fmt(m.max)}
-            {unit}
-          </span>
-        </div>
-      </>
+        )}
+        {fieldMaxAt !== undefined && (
+          <div
+            data-testid="limit-bar-field-max"
+            className="absolute top-1/2 h-3 w-px -translate-x-1/2 -translate-y-1/2 bg-current text-plainfont opacity-40"
+            style={{ left: `${fieldMaxAt}%` }}
+            title={`Max. per entity: ${fmt(m.fieldMax as number)}${unit}`}
+          />
+        )}
+        <div
+          ref={handleRef}
+          role="slider"
+          tabIndex={interactive ? 0 : -1}
+          aria-label={props.label}
+          aria-valuemin={m.lo}
+          aria-valuemax={dragRange(m, m.own).hi}
+          aria-valuenow={m.own}
+          aria-valuetext={`${fmt(m.own)}${unit}`}
+          aria-disabled={!interactive}
+          className={`absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border border-stroke bg-white shadow outline-hidden focus:ring-2 focus:ring-primary ${
+            interactive ? 'cursor-ew-resize' : ''
+          }`}
+          style={{ left: `${percentOf(m, total)}%` }}
+          title={`This entity: ${fmt(m.own)}${unit}`}
+          onKeyDown={onKeyDown}
+        />
+      </div>
     );
   }
 };

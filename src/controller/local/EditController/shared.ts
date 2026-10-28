@@ -4,6 +4,7 @@ import { getEntityData } from '../../../model/entityData';
 import { getSchema, validate } from '../../../model/validate';
 import {
   extractPatch,
+  markRemovedKeys,
   getAllErrors,
   hasAtPath,
   removeOldData,
@@ -514,6 +515,12 @@ export async function coreUpdate(
         ? editingState.canonicalData
         : editingState.initialData;
     data = extractPatch(baseline, data);
+  } else if (yamlBase !== undefined && useCanonicalBaseline && editingState.canonicalSeeded) {
+    // Create sends the full data, but YAC merges it ADDITIVELY into
+    // `yaml_base` as well: a key the user removed in the form (e.g. reset to
+    // its initial) would survive in the merged YAML and bounce back into the
+    // form with the response. Unset what is gone since the canonical data.
+    data = markRemovedKeys(editingState.canonicalData, data);
   }
 
   // Re-emit session-stripped keys as `~undefined` so the additive YAML merge

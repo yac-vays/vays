@@ -147,4 +147,18 @@ describe('reverting a form edit', () => {
     expect(getEntityYAML()).not.toContain('comment');
     expect(getEntityYAML()).toBe(STORED_YAML);
   });
+
+  it('unsets a removed key in create mode too (full data, merged additively)', async () => {
+    const ctx = getTestEditRequestContext('https://yac_no_token.com', 'test', null, 't', 'create');
+    newEditingView();
+    beginPaneSession(ctx);
+    seedCanonical(parseDoc(STORED_YAML), STORED_YAML);
+
+    await formEdit(ctx, { owner: 'alice', role_docker: 'false', comment: 'hello' });
+    expect(getEntityYAML()).toContain('comment: hello');
+
+    const resp = await formEdit(ctx, { owner: 'alice', role_docker: 'false' });
+    expect(getEntityYAML()).toBe(STORED_YAML);
+    expect(resp?.data).toStrictEqual({ owner: 'alice', role_docker: 'false' });
+  });
 });

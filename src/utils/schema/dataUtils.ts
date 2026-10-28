@@ -120,6 +120,24 @@ export function deepDelete(data: any, instancePath: string[], key: Nullable<stri
 }
 
 /**
+ * `newData` plus `~undefined` for every (deep) object key of `oldData` it no
+ * longer has. For sending FULL data that YAC merges additively into
+ * `yaml_base` (create mode): without the markers, removed keys would survive
+ * in the merged YAML. Arrays are replaced as a whole by the merge anyway.
+ */
+export function markRemovedKeys(oldData: any, newData: any) {
+  const out: { [key: string]: any } = { ...newData };
+  for (const key of Object.keys(oldData ?? {})) {
+    if (!(key in newData)) {
+      out[key] = '~undefined';
+    } else if (_.isPlainObject(oldData[key]) && _.isPlainObject(newData[key])) {
+      out[key] = markRemovedKeys(oldData[key], newData[key]);
+    }
+  }
+  return out;
+}
+
+/**
  * Get a patch from old to new. This is required for the modify API call in the standard edit mode.
  * @param oldData
  * @param newData

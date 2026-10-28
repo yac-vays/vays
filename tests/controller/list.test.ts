@@ -133,6 +133,7 @@ const RESPONSE = {
       ],
       entityName: 'a-0',
       isLink: null,
+      links: {},
     },
     {
       actionPair: {
@@ -223,6 +224,7 @@ const RESPONSE = {
       ],
       entityName: 'a-1',
       isLink: null,
+      links: {},
     },
   ],
   totalNumberOfResults: 3,

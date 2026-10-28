@@ -30,6 +30,7 @@ const TableBody = ({
                   requestContext={requestContext}
                   link={tableEntries[i].isLink}
                   actionPair={tableEntries[i].actionPair}
+                  links={tableEntries[i].links}
                   highlight={tableEntries[i].entityName === highlightEntityName}
                   scroll={tableEntries[i].entityName === scrollTargetName}
                 />,

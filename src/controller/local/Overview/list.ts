@@ -10,6 +10,7 @@ import {
   QueryResponse,
   QueryResult,
 } from '../../../utils/types/internal/entityList';
+import { hasLinksDefined } from '../../../utils/columnUtils';
 import { hasLogsDefined } from '../../../utils/logUtils';
 import { RequestContext } from '../../../utils/types/internal/request';
 import { Nullable } from '../../../utils/types/typeUtils';
@@ -64,6 +65,7 @@ export async function fetchEntities(
       isLink: entity.link,
       elt: values,
       actionPair: getActions(requestContext, entity),
+      links: entity.links ?? {},
       entityName: entity.name,
     });
   }
@@ -117,7 +119,7 @@ export async function getEntityPage(
  * - If the value is found in the option's aliases, the alias is used.
  * - If the value is null, it adds '(None)' to the values array.
  * - The function ensures that commas in the values are properly spaced.
- * - Additional values such as 'Status' (logs) and 'Actions' are added to the end
+ * - Additional values such as 'Status' (logs), 'Links' and 'Actions' are added to the end
  *
  */
 function representEntity(
@@ -139,6 +141,9 @@ function representEntity(
   if (hasLogsDefined(requestContext)) {
     values.push({ value: 'Status', isMarkdown: false });
   }
+  if (hasLinksDefined(requestContext)) {
+    values.push({ value: 'Links', isMarkdown: false });
+  }
   values.push({ value: 'Actions', isMarkdown: false });
 
   return values;
@@ -155,6 +160,7 @@ function representEntity(
  * - 'Name': A default entry.
  * - Titles of the options from the accessed entity type.
  * - 'Status': A placeholder for the log indicators (needs further validation).
+ * - 'Links': Only if the entity type defines links.
  * - 'Actions': A default entry for actions.
  */
 export function getHeaderEntries(requestContext: RequestContext): string[] {
@@ -172,6 +178,9 @@ export function getHeaderEntries(requestContext: RequestContext): string[] {
   }
   if (hasLogsDefined(requestContext)) {
     header.push('Status');
+  }
+  if (hasLinksDefined(requestContext)) {
+    header.push('Links');
   }
   header.push('Actions');
   return header;

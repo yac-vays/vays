@@ -11,6 +11,8 @@ export interface QueryResult {
   isLink: Nullable<string>;
   elt: OverviewListCellEntry[];
   actionPair: ActionsColumnResults;
+  /** URLs of the type's links for this entity, keyed by link name. */
+  links: Record<string, string>;
 }
 
 export interface QueryResponse {

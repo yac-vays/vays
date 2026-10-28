@@ -107,6 +107,19 @@ export interface ActionDecl {
   hooks: string[];
 }
 
+export const TYPE_CHECK_LINK_DECL = '{name: String, title: String, icon: String}';
+
+/**
+ * An external link of an entity type; the per-entity URL comes with the
+ * entity ({@link EntityObject.links}).
+ */
+export interface LinkDecl {
+  name: string;
+  title: string;
+  /** SVG image, rendered like an action icon. */
+  icon: string;
+}
+
 export const TYPE_CHECK_FAVOP_OBJECT = '{name: String, action: Boolean}';
 
 export interface FavOpObject {
@@ -126,6 +139,7 @@ export const TYPE_CHECK_ENTITY_TYPE_DECL = `{
   edit: Boolean,
   options: [Object],
   logs: [{name: String, title: String, description: Maybe String, progress: Boolean, problem: Boolean}],
+  links: Maybe [${TYPE_CHECK_LINK_DECL}],
   actions: [${TYPE_CHECK_ACTION_DECL}],
   favorites: [${TYPE_CHECK_FAVOP_OBJECT}]
 }`;
@@ -158,6 +172,8 @@ export interface EntityTypeDecl {
     progress: boolean;
     problem: boolean;
   }[];
+  /** Missing on YAC versions before `links` were introduced. */
+  links?: LinkDecl[];
   actions: ActionDecl[];
   favorites: FavOpObject[];
 }
@@ -175,7 +191,7 @@ export type Permission =
   | 'adm';
 
 export const TYPE_CHECK_ENTITY_OBJECT =
-  '{name: String, link: String | Null, options: Object, perms: [String]}';
+  '{name: String, link: String | Null, options: Object, links: Maybe Object, perms: [String]}';
 
 export interface EntityObject {
   name: string;
@@ -186,6 +202,12 @@ export interface EntityObject {
    * or list type (or missing).
    */
   options: Record<string, unknown>;
+  /**
+   * The rendered URLs of the type's `links`, keyed by link name. Links that
+   * do not apply to this entity are missing (as is the whole field on YAC
+   * versions before `links` were introduced).
+   */
+  links?: Record<string, string>;
   perms: string[];
 }
 

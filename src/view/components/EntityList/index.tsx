@@ -3,7 +3,7 @@ import { reload } from '../../../controller/local/Overview/list';
 import { registerEntityListInvalidationHook } from '../../../model/entityList';
 import { LOG_REFRESH_DELAY_MS, refreshAllLogs, refreshLogsOnResume } from '../../../model/logs';
 import iLocalStorage from '../../../session/persistent/LocalStorage';
-import { hasLogsDefined } from '../../../utils/logUtils';
+import { numTrailingColumns } from '../../../utils/columnUtils';
 import { RequestContext } from '../../../utils/types/internal/request';
 import SubLoader from '../../thirdparty/components/SubLoader';
 import NoDataIndicator from '../NoDataIndicator';
@@ -145,7 +145,7 @@ const EntityList = ({ requestContext, highlightEntityName }: EntityListProps) =>
               <TableHeader
                 tableHeaderEntries={tableHeaderEntries}
                 searchCallback={searchCallback}
-                showStatusColumn={hasLogsDefined(requestContext)}
+                numTrailingCols={numTrailingColumns(requestContext)}
               />
               <TableBody
                 tableEntries={tableEntries}

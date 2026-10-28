@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useRef } from 'react';
 import 'react-circular-progressbar/dist/styles.css';
 import { buildOverviewHighlightURL, navigateToURL } from '../../../../controller/global/url';
+import { hasLinksDefined, numTrailingColumns } from '../../../../utils/columnUtils';
 import { hasLogsDefined } from '../../../../utils/logUtils';
 import { ActionsColumnResults } from '../../../../utils/types/internal/actions';
 import { OverviewListCellEntry } from '../../../../utils/types/internal/entityList';
@@ -8,6 +9,7 @@ import { RequestContext } from '../../../../utils/types/internal/request';
 import { Nullable } from '../../../../utils/types/typeUtils';
 import ActionDropdown from '../../ActionDropdown';
 import ActionButton from '../../Buttons/ActionButton';
+import LinkButton from '../../Buttons/LinkButton';
 import MarkdownRender from '../../Markdown';
 import LogsField from '../Logs/LogsField';
 
@@ -16,6 +18,7 @@ interface EntityListRow {
   requestContext: RequestContext;
   link: Nullable<string>;
   actionPair: ActionsColumnResults;
+  links: Record<string, string>;
   entityName: string;
   highlight?: boolean;
   scroll?: boolean;
@@ -26,6 +29,7 @@ const EntityListRow = ({
   requestContext,
   link,
   actionPair,
+  links,
   entityName,
   highlight = false,
   scroll = false,
@@ -83,9 +87,10 @@ const EntityListRow = ({
           const jsx = [];
 
           // The trailing placeholder entries are 'Actions' and, only when the
-          // entity type defines logs, 'Status'. Skip them in the data-column loop.
+          // entity type defines logs/links, 'Status'/'Links'. Skip them in the
+          // data-column loop.
           const showLogs = hasLogsDefined(requestContext);
-          const numTrailingCols = showLogs ? 2 : 1;
+          const numTrailingCols = numTrailingColumns(requestContext);
 
           for (let i = 0; i < entryValues.length - numTrailingCols; i++) {
             const entry = entryValues[i];
@@ -145,6 +150,22 @@ const EntityListRow = ({
                 role="cell"
               >
                 <LogsField requestContext={requestContext} entityName={entityName} />
+              </td>,
+            );
+          }
+          if (hasLinksDefined(requestContext)) {
+            jsx.push(
+              <td
+                key="links"
+                className="border-stroke"
+                style={{ width: '1px', whiteSpace: 'nowrap', paddingRight: 24 }}
+                role="cell"
+              >
+                <div className="items-center flex flex-row">
+                  {(requestContext.accessedEntityType?.links ?? []).map((link, i) => (
+                    <LinkButton key={link.name} link={link} url={links[link.name]} isLeft={i === 0} />
+                  ))}
+                </div>
               </td>,
             );
           }

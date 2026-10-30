@@ -130,9 +130,9 @@ const Overview: React.FC<OverviewPageProps> = ({ backends }: OverviewPageProps) 
       )}
 
       {/* Key on backend+type so switching either fully remounts the list: this
-          resets the (uncontrolled) per-column search inputs, the open-search
-          toggle, the search terms and pagination, which would otherwise
-          persist across backends and show stale, ineffective search text. */}
+          isolates per-column search inputs, the open-search toggle, and
+          pagination per backend/type (saved filters for that backend/type are
+          restored from sessionStorage on mount). */}
       <EntityList
         key={`${requestContext.rc.yacURL}/${requestContext.rc.entityTypeName}`}
         requestContext={requestContext.rc}

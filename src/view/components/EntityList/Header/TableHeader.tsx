@@ -2,10 +2,12 @@ import EntityListHeaderCell from './EntityListHeaderCell';
 
 const TableHeader = ({
   tableHeaderEntries,
+  searchTerms,
   searchCallback,
   numTrailingCols,
 }: {
   tableHeaderEntries: string[];
+  searchTerms?: (string | null)[];
   searchCallback: (index: number) => (newSearchTerm: string | null) => Promise<void>;
   /** Number of trailing meta columns: Status, Links, Actions (see numTrailingColumns). */
   numTrailingCols: number;
@@ -28,10 +30,12 @@ const TableHeader = ({
             // Trailing meta columns (Status, Links, Actions) are never searchable.
             // TODO: Searchable should be exited by the controller.
             for (const value of tableHeaderEntries) {
+              const colIdx = i++;
               jsx.push(
                 <EntityListHeaderCell
-                  key={`${value}-${i}`}
-                  searchCallback={searchCallback(i++)}
+                  key={`${value}-${colIdx}`}
+                  searchCallback={searchCallback(colIdx)}
+                  initialSearchTerm={searchTerms?.[colIdx] ?? ''}
                   title={value}
                   searchable={i <= len - numTrailingCols}
                   firstField={i === 1}

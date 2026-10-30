@@ -15,6 +15,7 @@ import { AppConfig, YACBackend } from './utils/types/config';
 import DiffViewer from './view/components/DiffViewer';
 import { ModalContextProvider } from './view/components/Modal/ModalContext';
 import { ToastContextProvider } from './view/components/ToastNotification/ToastContext';
+import Docs from './view/pages/Docs';
 import Help from './view/pages/Help';
 
 const Overview = lazy(() =>
@@ -147,6 +148,16 @@ function App(): JSX.Element {
                     <>
                       <Suspense fallback={<Loader bgTransparent />}>
                         <Help />
+                      </Suspense>
+                    </>
+                  }
+                />
+                <Route
+                  path="/docs"
+                  element={
+                    <>
+                      <Suspense fallback={<Loader bgTransparent />}>
+                        <Docs backends={backendsList} />
                       </Suspense>
                     </>
                   }

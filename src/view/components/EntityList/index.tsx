@@ -144,6 +144,7 @@ const EntityList = ({ requestContext, highlightEntityName }: EntityListProps) =>
             >
               <TableHeader
                 tableHeaderEntries={tableHeaderEntries}
+                searchTerms={searchTerms}
                 searchCallback={searchCallback}
                 numTrailingCols={numTrailingColumns(requestContext)}
               />

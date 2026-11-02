@@ -1,11 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { EditorLayout } from '../../utils/types/config';
 
+/**
+ * The signed-in user as the backend sees them (YAC `GET /me`), i.e. after the
+ * backend's own claim mapping (`auth.oidc.jwt` in the YAC specs).
+ */
+export interface UserIdentity {
+  name: string;
+  full_name: string;
+  email: string;
+}
+
 class ILocalStorage {
   public KEYS: readonly string[] = [
     'isSidebarGroupExpanded.*',
     'isLoggedIn',
     'token',
+    'refreshToken',
+    'identity',
     'isOverviewDescriptionShown',
     'editorLayout',
     'editorSplitRatio',
@@ -70,6 +82,30 @@ class ILocalStorage {
 
   public getToken(): string | undefined {
     return this.get('token');
+  }
+
+  public setRefreshToken(v: string) {
+    this.set('refreshToken', v);
+  }
+
+  public getRefreshToken(): string | undefined {
+    return this.get('refreshToken');
+  }
+
+  public clearRefreshToken() {
+    localStorage.removeItem('refreshToken');
+  }
+
+  public setIdentity(v: UserIdentity) {
+    this.set('identity', v);
+  }
+
+  public getIdentity(): UserIdentity | undefined {
+    return this.get('identity');
+  }
+
+  public clearIdentity() {
+    localStorage.removeItem('identity');
   }
 
   public setIsOverviewDescriptionShown(v: boolean) {

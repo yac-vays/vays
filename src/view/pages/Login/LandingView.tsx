@@ -1,6 +1,7 @@
 import { getUserName } from '../../../session/login/tokenHandling';
 import { AppConfig } from '../../../utils/types/config';
 import MarkdownRender from '../../components/Markdown';
+import { useIdentity } from '../../hooks/useIdentity';
 import PageHeaderTitle from '../../thirdparty/components/PageTitle/PageHeaderTitle';
 
 interface LandingViewProps {
@@ -15,6 +16,7 @@ interface LandingViewProps {
  * from the user menu in the top bar.
  */
 const LandingView: React.FC<LandingViewProps> = ({ config }) => {
+  useIdentity();
   return (
     <>
       <PageHeaderTitle title={config.title} subText="" />

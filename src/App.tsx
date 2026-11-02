@@ -8,8 +8,10 @@ import PageTitle from './view/thirdparty/components/PageTitle/PageTitle';
 
 import { registerNavigationHook } from './controller/global/url';
 import { getConfig } from './model/config';
+import { loadIdentity } from './model/identity';
 import { setColors } from './session/color';
 import { generateCSP } from './session/csp';
+import { startTokenRenewal } from './session/login/tokenRenewal';
 import { setFavicon } from './session/favicon';
 import { AppConfig, YACBackend } from './utils/types/config';
 import DiffViewer from './view/components/DiffViewer';
@@ -86,6 +88,9 @@ function App(): JSX.Element {
       setColors(conf);
       setFavicon(conf);
       setLoading(false);
+      // Signed in from an earlier visit: resolve the user if not done yet.
+      void loadIdentity();
+      startTokenRenewal();
     })();
   }, []);
 

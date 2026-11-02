@@ -1,12 +1,14 @@
 import * as client from 'openid-client';
 
 import { navigateToURL } from '../../controller/global/url';
+import { loadIdentity } from '../../model/identity';
 import { logError } from '../../utils/logger';
 import { AppConfig } from '../../utils/types/config';
 import { AuthDiscConfig } from '../../utils/types/internal/request';
 import { Nullable } from '../../utils/types/typeUtils';
 import { joinUrl } from '../../utils/urlUtils';
 import iLocalStorage from '../persistent/LocalStorage';
+import { discoverClient } from './oidcClient';
 import { setUserLoggedIn } from './tokenHandling';
 
 const LS_CONFIG_KEY = 'OIDC_DS_CONF';
@@ -21,11 +23,7 @@ export async function startAuthentication(appconf: AppConfig) {
 }
 
 async function performDiscovery(appconf: AppConfig): Promise<Nullable<URL>> {
-  const config = await client.discovery(
-    new URL(appconf.oidcConf.server),
-    appconf.oidcConf.clientID,
-    appconf.oidcConf.clientID,
-  );
+  const config = await discoverClient(appconf);
 
   const code_challenge_method = 'S256';
   /**
@@ -82,27 +80,26 @@ export async function finalizeAuthentication(appconf: AppConfig): Promise<boolea
 
   const currentUrl = new URL(window.location.href);
   try {
-    const tokens = await client.authorizationCodeGrant(
-      await client.discovery(
-        new URL(appconf.oidcConf.server),
-        appconf.oidcConf.clientID,
-        appconf.oidcConf.clientID,
-      ),
-
-      currentUrl,
-      {
-        pkceCodeVerifier: config.code_verifier,
-        ...(config.nonce ? { expectedNonce: config.nonce } : {}),
-        idTokenExpected: true,
-      },
-    );
+    const tokens = await client.authorizationCodeGrant(await discoverClient(appconf), currentUrl, {
+      pkceCodeVerifier: config.code_verifier,
+      ...(config.nonce ? { expectedNonce: config.nonce } : {}),
+      idTokenExpected: true,
+    });
 
     const { id_token } = tokens;
     if (id_token == undefined) return false;
 
     storeToken(id_token);
+    // Lets the renewal (tokenRenewal.ts) keep the short-lived id-token fresh;
+    // without one the session simply ends when the id-token expires.
+    if (tokens.refresh_token) {
+      iLocalStorage.setRefreshToken(tokens.refresh_token);
+    } else {
+      iLocalStorage.clearRefreshToken();
+    }
     setUserLoggedIn(true);
     window.dispatchEvent(new Event('sign-in'));
+    void loadIdentity();
     return true;
   } catch (e) {
     // openid-client throws here e.g. when the user cancelled at the IdP
@@ -119,6 +116,8 @@ function storeToken(token: string) {
   // HTTPS. Note that this needs seperate checking if all YAC URLS via https too.
   if (location.protocol === 'https:') {
     iLocalStorage.setToken(`Bearer ${token}`);
+    // The identity belongs to the previous token (if any): load it anew.
+    iLocalStorage.clearIdentity();
   }
 }
 

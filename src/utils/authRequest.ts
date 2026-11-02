@@ -2,6 +2,7 @@ import { reportResponse } from '../controller/global/availability';
 import { showError } from '../controller/global/notification';
 import VAYS_CACHE from '../model/caching';
 import { getTokenFromStorage, isStoredTokenExpired } from '../session/login/tokenHandling';
+import { renewToken } from '../session/login/tokenRenewal';
 import { Nullable } from './types/typeUtils';
 
 /**
@@ -80,6 +81,11 @@ export async function sendRequest(
   requestBody: Nullable<string> = null,
   cacheContext: Nullable<string> = null,
 ): Promise<Response | null> {
+  if (getTokenFromStorage() && isStoredTokenExpired()) {
+    // Normally renewed in the background before it expires, but timers of
+    // background tabs are throttled (or the machine slept): renew now.
+    await renewToken();
+  }
   if (getTokenFromStorage() && isStoredTokenExpired()) {
     // The stored token is already past its expiry: the backend would answer
     // 401 anyway. Skip the doomed round-trip (a page load fires many requests

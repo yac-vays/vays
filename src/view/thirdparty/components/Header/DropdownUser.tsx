@@ -7,11 +7,13 @@ import {
   getUserName,
   userIsLoggedIn,
 } from '../../../../session/login/tokenHandling';
+import { useIdentity } from '../../../hooks/useIdentity';
 import ClickOutside from '../../ClickOutside';
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [loggedIn, setLoggedIn] = useState<boolean>(!!userIsLoggedIn());
+  useIdentity();
 
   useEffect(() => {
     const onSignIn = () => setLoggedIn(true);

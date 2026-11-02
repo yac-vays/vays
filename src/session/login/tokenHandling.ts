@@ -83,8 +83,19 @@ function getTokenClaims(): any {
   }
 }
 
+/*
+ * The user getters below prefer the identity the backend resolved (YAC
+ * `GET /me`, see model/identity), so VAYS shows exactly the user the roles are
+ * evaluated for, whatever claims the OIDC provider issues. Guessing from the
+ * token claims is only the fallback until that identity has been loaded (or if
+ * the backend is unreachable).
+ */
+
 export function getUserName(): string {
   if (!userIsLoggedIn()) return 'Not Logged In';
+
+  const identity = iLocalStorage.getIdentity();
+  if (identity?.full_name) return identity.full_name;
 
   const { givenName, surname, name, mail } = getTokenClaims();
 
@@ -98,12 +109,18 @@ export function getUserName(): string {
 
 /** The user's email address from the token, or '' if none. */
 export function getUserEmail(): string {
+  const identity = iLocalStorage.getIdentity();
+  if (identity?.email) return identity.email;
+
   const { mail, email } = getTokenClaims();
   return mail ?? email ?? '';
 }
 
 /** The user's login / short username from the token, or '' if none. */
 export function getUserLogin(): string {
+  const identity = iLocalStorage.getIdentity();
+  if (identity?.name) return identity.name;
+
   const c = getTokenClaims();
   return c.username ?? c.preferred_username ?? c.uid ?? c.sub ?? '';
 }

@@ -6,8 +6,9 @@
  *  - concurrent requests share one renewal; a token another tab already
  *    renewed is not renewed again;
  *  - no refresh token / no id_token in the answer / invalid_grant => no
- *    renewal, the usual "session expired" 401; transient errors keep the
- *    refresh token for a retry;
+ *    renewal, the usual "session expired" 401; any other provider
+ *    rejection stops renewing too, transient errors keep the refresh token
+ *    for a retry;
  *  - an answer arriving after logout is dropped;
  *  - the background timer renews shortly before expiry.
  */
@@ -17,7 +18,10 @@ const BACKEND = 'https://yac.example.com';
 
 const refreshTokenGrant = vi.fn();
 class ResponseBodyError extends Error {
-  constructor(public error: string) {
+  constructor(
+    public error: string,
+    public error_description?: string,
+  ) {
     super(error);
   }
 }
@@ -135,6 +139,22 @@ describe('renewal impossible => the session ends as before', () => {
     refreshTokenGrant.mockRejectedValueOnce(new ResponseBodyError('invalid_grant'));
     expect(await renewToken()).toBe(false);
     expect(iLocalStorage.getRefreshToken()).toBeUndefined();
+  });
+
+  it('stops on other provider rejections (e.g. invalid_scope)', async () => {
+    signIn(-10);
+    refreshTokenGrant.mockRejectedValueOnce(
+      new ResponseBodyError('invalid_scope', 'Unknown request scope detected.'),
+    );
+    expect(await renewToken()).toBe(false);
+    expect(iLocalStorage.getRefreshToken()).toBeUndefined();
+  });
+
+  it("keeps the refresh token for a retry on the provider's transient errors", async () => {
+    signIn(-10);
+    refreshTokenGrant.mockRejectedValueOnce(new ResponseBodyError('temporarily_unavailable'));
+    expect(await renewToken()).toBe(false);
+    expect(iLocalStorage.getRefreshToken()).toBe('rt-1');
   });
 
   it('keeps the refresh token for a retry on transient errors', async () => {

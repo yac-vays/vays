@@ -27,6 +27,8 @@ const RENEW_BEFORE_S = 60;
 /** Wait before retrying after a renewal failed for a transient reason. */
 const RETRY_MS = 30_000;
 const LOCK_NAME = 'vays-token-renewal';
+/** OAuth error codes (RFC 6749 5.2 / 4.1.2.1) worth retrying. */
+const TRANSIENT_OAUTH_ERRORS = ['server_error', 'temporarily_unavailable'];
 /** setTimeout fires immediately for delays beyond a signed 32-bit int. */
 const MAX_DELAY_MS = 2 ** 31 - 1;
 
@@ -80,11 +82,19 @@ async function doRenew(): Promise<boolean> {
   try {
     tokens = await client.refreshTokenGrant(await getDiscovery(), refreshToken);
   } catch (e) {
-    logError(`Token renewal failed: ${e}`, 'renewToken');
-    // The refresh token is dead (expired, revoked, rotated away): stop trying.
-    // Anything else (network, IdP hiccup) is retried later.
-    if (e instanceof client.ResponseBodyError && e.error === 'invalid_grant') {
-      iLocalStorage.clearRefreshToken();
+    if (e instanceof client.ResponseBodyError) {
+      logError(
+        `Token renewal rejected by the OIDC provider: ${e.error} (${e.error_description ?? ''})`,
+        'renewToken',
+      );
+      // The provider's answer will not change on a retry (invalid_grant:
+      // refresh token expired/revoked/rotated away; invalid_scope or
+      // invalid_client: client misconfiguration): stop trying. Only its own
+      // transient errors are retried.
+      if (!TRANSIENT_OAUTH_ERRORS.includes(e.error)) iLocalStorage.clearRefreshToken();
+    } else {
+      // Network failure, provider unreachable, ...: retried later.
+      logError(`Token renewal failed: ${e}`, 'renewToken');
     }
     return false;
   }

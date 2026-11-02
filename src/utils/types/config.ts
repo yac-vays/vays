@@ -86,6 +86,13 @@ export interface AppConfig {
   oidcConf: {
     server: string;
     clientID: string;
+    /**
+     * Space-separated scopes requested at the authorization endpoint. Must
+     * yield the id-token claims the YAC backends' `auth.oidc.jwt` and roles
+     * use (e.g. `profile` for `preferred_username`/`name`, `groups`).
+     * Defaults to `openid email`.
+     */
+    scope?: string;
   };
   backends: YACBackend[];
 } /**

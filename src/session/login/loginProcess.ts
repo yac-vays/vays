@@ -44,7 +44,7 @@ async function performDiscovery(appconf: AppConfig): Promise<Nullable<URL>> {
      * Authorization Server.
      */
     redirect_uri: joinUrl(`https://${window.location.host}`, 'oauth2-redirect'),
-    scope: 'openid email',
+    scope: appconf.oidcConf.scope ?? 'openid email',
     code_challenge,
     code_challenge_method,
   };

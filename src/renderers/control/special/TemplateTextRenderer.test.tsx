@@ -10,6 +10,7 @@ const schema = {
   type: 'object',
   properties: {
     group: { type: 'string' },
+    legacy: { type: 'string' },
     username: { title: 'User Name', not: {} },
   },
 };
@@ -44,6 +45,22 @@ describe('template_text renderer', () => {
     const { container } = mount({}, TEMPLATE);
     expect(container.textContent).toContain('bkt-{group}-x');
     expect(screen.getByRole('button', { name: 'Copy' })).toBeDisabled();
+  });
+
+  const FALLBACK = {
+    renderer: 'template_text',
+    renderer_options: { template: ['{legacy}', 'bkt-{group}-x'] },
+  };
+
+  it('uses the first resolvable template of a list', () => {
+    const { container } = mount({ group: 'isg', legacy: 'old-name' }, FALLBACK);
+    expect(container.textContent).toContain('old-name');
+    expect(container.textContent).not.toContain('bkt-');
+  });
+
+  it('falls back to the next template of a list', () => {
+    const { container } = mount({ group: 'isg' }, FALLBACK);
+    expect(container.textContent).toContain('bkt-isg-x');
   });
 
   it('reports a missing template', () => {

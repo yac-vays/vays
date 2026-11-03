@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderTemplate, resolveRef } from './templateText';
+import { renderTemplate, renderTemplates, resolveRef } from './templateText';
 
 const data = {
   group: 'isg',
@@ -55,5 +55,25 @@ describe('renderTemplate', () => {
 
   it('keeps stray braces as text', () => {
     expect(text('a { b', 'users.0.username')).toBe('a { b');
+  });
+});
+
+describe('renderTemplates', () => {
+  const join = (templates: string[], path: string) =>
+    renderTemplates(templates, data, path)
+      .map((p) => (p.missing ? `<${p.text}>` : p.text))
+      .join('');
+
+  it('uses the first completely resolved template', () => {
+    expect(join(['{legacy}', '{basename}-{permissions}'], 'users.0.username')).toBe('usr1-admin');
+    expect(join(['{permissions}', '{basename}'], 'users.0.username')).toBe('admin');
+  });
+
+  it('falls back to the last template, unresolved', () => {
+    expect(join(['{legacy}', 'bkt-{basename}'], 'users.1.username')).toBe('bkt-<{basename}>');
+  });
+
+  it('renders nothing for an empty list', () => {
+    expect(renderTemplates([], data, 'users.0.username')).toEqual([]);
   });
 });

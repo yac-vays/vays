@@ -12,6 +12,9 @@
  * Only strings, numbers and booleans are substituted; anything else (missing,
  * `null`, `''`, objects, arrays) leaves the placeholder unresolved.
  *
+ * A list of templates is a fallback chain: the first one whose placeholders all
+ * resolve is used, else the last one (with its unresolved placeholders).
+ *
  * Note: in YAC specs the template is rendered by Jinja2 first, so `{{ ... }}`
  * never reaches VAYS and `{#` would open a Jinja comment.
  */
@@ -90,5 +93,19 @@ export function renderTemplate(
     else pushText(value);
   }
   pushText(template.slice(pos));
+  return parts;
+}
+
+/** The first template of `templates` that resolves completely, else the last one. */
+export function renderTemplates(
+  templates: string[],
+  data: unknown,
+  fieldPath: string | undefined,
+): TemplatePart[] {
+  let parts: TemplatePart[] = [];
+  for (const template of templates) {
+    parts = renderTemplate(template, data, fieldPath);
+    if (parts.every((p) => !p.missing)) break;
+  }
   return parts;
 }

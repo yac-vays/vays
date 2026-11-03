@@ -629,12 +629,20 @@ function lintField(f: Field, findings: LintFinding[]) {
       }
       break;
     case 'template_text':
-      if (typeof ropts.template !== 'string') {
+      if (
+        typeof ropts.template !== 'string' &&
+        !(
+          Array.isArray(ropts.template) &&
+          ropts.template.length > 0 &&
+          ropts.template.every((t: unknown) => typeof t === 'string')
+        )
+      ) {
         add(
           9,
           "Missing template for renderer 'template_text'",
           'The template_text renderer requires renderer_options.template (text with {key} ' +
-            'placeholders); without it, only an error is shown.',
+            'placeholders, or a non-empty list of such fallbacks); without it, only an error ' +
+            'is shown.',
         );
       }
       if (f.required) {

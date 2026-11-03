@@ -1,16 +1,16 @@
 import { and, ControlProps, isControl, RankedTester, rankWith } from '@jsonforms/core';
 import { useJsonForms, withJsonFormsControlProps } from '@jsonforms/react';
 import { useState } from 'react';
-import { renderTemplate } from '../../../utils/templateText';
+import { renderTemplates } from '../../../utils/templateText';
 import ErrorRing from '../../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import { isCustomRenderer } from '../../utils/customTesterUtils';
 
 /**
- * Read-only text assembled from a template and the current form data (see
- * utils/templateText for the placeholder syntax), e.g. a user name derived
- * from the entity name and fields of the current array item. Never touches
- * the field's own data.
+ * Read-only text assembled from a template (or the first resolvable one of a
+ * list) and the current form data (see utils/templateText), e.g. a user name
+ * derived from the entity name and fields of the current array item. Never
+ * touches the field's own data.
  */
 export const TemplateTextControl = (props: ControlProps) => {
   const ctx = useJsonForms();
@@ -19,11 +19,19 @@ export const TemplateTextControl = (props: ControlProps) => {
   if (!props.visible) return <></>;
 
   const template = props.uischema?.options?.renderer_options?.template;
-  const specError =
+  const templates: string[] | null =
     typeof template === 'string'
-      ? ''
-      : "Spec error: renderer 'template_text' requires `vays_options.renderer_options.template`.";
-  const parts = specError ? [] : renderTemplate(template, ctx.core?.data, props.path);
+      ? [template]
+      : Array.isArray(template) &&
+          template.length > 0 &&
+          template.every((t) => typeof t === 'string')
+        ? template
+        : null;
+  const specError = templates
+    ? ''
+    : "Spec error: renderer 'template_text' requires `vays_options.renderer_options.template` " +
+      '(a string or a non-empty list of strings).';
+  const parts = templates ? renderTemplates(templates, ctx.core?.data, props.path) : [];
   const complete = parts.every((p) => !p.missing);
   const text = parts.map((p) => p.text).join('');
 

@@ -22,6 +22,8 @@ import {
   clearEditDirty,
   isEditDirty,
   isFormValid,
+  isValidationFailedMessage,
+  retryValidation,
   setAdminOverride,
   setAdminOverrideListener,
   setEntityPermsListener,
@@ -255,8 +257,13 @@ const EditFrame = ({
   // limits — see the `force` parameter of the write endpoints).
   const hasAdminPerm = entityPerms.includes('adm');
   const showAdminLock = !isReadOnly && hasAdminPerm && (!isValid || adminUnlocked);
-  const saveDisabled = isValidating || (!isValid && !adminUnlocked) || nothingToCommit;
-  const commitOverridden = adminUnlocked && !isValid;
+  // The latest validation got no answer (network, 5xx): the footer offers
+  // "Retry", and Commit stays blocked — even in admin mode, as the save payload
+  // would miss the unvalidated edit.
+  const validationFailed = isDisplayingYACError && isValidationFailedMessage(yacErrorMsg);
+  const saveDisabled =
+    isValidating || (!isValid && !adminUnlocked) || nothingToCommit || validationFailed;
+  const commitOverridden = adminUnlocked && !isValid && !validationFailed;
   // With no data changes, a combined "Commit + Action" button would be dead
   // even though the selected actions could run on their own — they act on the
   // STORED entity, exactly like running them from the overview list. Split
@@ -463,6 +470,18 @@ const EditFrame = ({
                 Resolve
               </button>
             )}
+            {/* A failed validation (network, 5xx) left the document unvalidated:
+                re-send it without touching what the user has entered. */}
+            {isDisplayingYACError && !isReadOnly && validationFailed && (
+              <button
+                type="button"
+                className="flex-none rounded-sm border border-[#d32f2f] px-2 py-0.5 text-sm font-medium text-[#d32f2f] hover:bg-[#d32f2f] hover:text-white"
+                title="Validate the current document again"
+                onClick={() => retryValidation()}
+              >
+                Retry
+              </button>
+            )}
           </div>
           {isReadOnly ? (
             <></>
@@ -493,11 +512,13 @@ const EditFrame = ({
                   title={
                     commitOverridden && !saveDisabled
                       ? 'Admin override: commits although the document fails validation.'
-                      : !isValid && !adminUnlocked && !isValidating
-                        ? 'Resolve the highlighted errors before saving.'
-                        : nothingToCommit && !isValidating
-                          ? 'Nothing to commit: the document matches what is stored.'
-                          : undefined
+                      : validationFailed && !isValidating
+                        ? 'The document could not be validated: retry before committing.'
+                        : !isValid && !adminUnlocked && !isValidating
+                          ? 'Resolve the highlighted errors before committing.'
+                          : nothingToCommit && !isValidating
+                            ? 'Nothing to commit: the document matches what is stored.'
+                            : undefined
                   }
                   onClick={() => {
                     // Unified save: the canonical YAML (kept current no matter which

@@ -120,7 +120,7 @@ export const RandomStringRenderer = (props: ControlProps) => {
     }
     showModal(
       'Replace the existing value?',
-      'This generates a new random value and replaces the existing one.\n\nThe change is only effective after you save the form.',
+      'This generates a new random value and replaces the existing one.\n\nThe change only takes effect once you commit.',
       async () => {
         doGenerate();
       },

@@ -94,7 +94,7 @@ export async function handleEditConflict(
   if (stored.kind === 'gone') {
     showError(
       toastTitle,
-      `${name} was deleted on the server while you were editing. Nothing was saved. ` +
+      `${name} was deleted on the server while you were editing. Nothing was committed. ` +
         'Your document is still in the editor; copy it if you want to keep it.',
     );
     return;
@@ -132,7 +132,7 @@ function showConflictModal(
 ) {
   const body =
     `While you were editing, **${name}** was modified on the server. Nothing of yours ` +
-    'has been saved, and your document is unchanged.\n\n' +
+    'has been committed, and your document is unchanged.\n\n' +
     '- **Show their changes** displays what changed on the server since you opened the entity.\n' +
     '- **Keep my version** keeps your document and makes the stored version the new ' +
     'baseline: the YAML pane then highlights every line where your document differs ' +

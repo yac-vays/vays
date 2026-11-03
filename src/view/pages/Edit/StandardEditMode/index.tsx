@@ -22,13 +22,16 @@ import { RequestEditContext } from '../../../../utils/types/internal/request';
 import {
   emitValidity,
   getValidationAJV,
+  reportValidationFailed,
   setEditDirty,
   setLocalValidity,
+  VALIDATION_FAILED_DETAIL,
 } from '../../../../controller/local/EditController/shared';
 import { updateTabsErrorNotification } from '../../../../controller/local/EditController/StandardMode/tabs';
 import {
   beginValidationDispatch,
   endValidationDispatch,
+  reloadEditingView,
 } from '../../../../controller/local/EditController/session';
 import {
   applyCanonical,
@@ -159,9 +162,6 @@ const StandardEditMode = memo(
       setEditDirty();
 
       const didBlur = !IsCurrentlyEditingString();
-      if (didBlur) {
-        setPendingValidations((c) => c + 1);
-      }
 
       setLocalData(data);
 
@@ -170,6 +170,20 @@ const StandardEditMode = memo(
       setLocalValidity((errors ?? []).length === 0);
       emitValidity();
 
+      dispatchValidation(data, errors, didBlur);
+    };
+
+    // Validate the form data against the backend (merged into the YAML the user
+    // currently has in the editor) and render the canonical response.
+    const dispatchValidation = (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      data: any,
+      errors: JsonFormsCore['errors'],
+      didBlur: boolean,
+    ) => {
+      if (didBlur) {
+        setPendingValidations((c) => c + 1);
+      }
       setIsValidating(true);
       const seq = nextValidationSeq();
       // The save path awaits validation quiescence before reading the payload;
@@ -190,7 +204,12 @@ const StandardEditMode = memo(
             return;
           }
           if (resp == null) {
-            setIsEmpty(true);
+            // The backend did not answer (network, 5xx, ...). Keep the form as
+            // the user left it — it is still the document they are editing —
+            // but block Commit until a validation succeeds (see
+            // reportValidationFailed); "Retry" re-sends this very data.
+            reportValidationFailed(() => dispatchValidation(data, errors, true));
+            setEditErrorMsg(VALIDATION_FAILED_DETAIL);
           } else {
             applyRespToForm(resp, errors);
             // Project the canonical YAML into the (inactive) YAML pane.
@@ -215,7 +234,9 @@ const StandardEditMode = memo(
           >
             {isEmpty ? (
               <div className="w-full h-full items-center align-center">
-                <NoDataIndicator />
+                {/* The schema/entity load failed (network, 5xx, ...): there is
+                    nothing to edit yet, so retrying = loading the editor anew. */}
+                <NoDataIndicator onRetry={reloadEditingView} />
               </div>
             ) : loading ? (
               // The frame shows a single unified loader; render nothing here.

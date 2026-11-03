@@ -48,7 +48,7 @@ const AvailabilityBanner = ({ backendList }: { backendList: YACBackend[] }) => {
       : '';
     message =
       `Showing the last known state${from}. ` +
-      'Changes cannot be saved until the repository is reachable again.';
+      'Changes cannot be committed until the repository is reachable again.';
   }
 
   return (

@@ -1,4 +1,9 @@
-const NoDataIndicator = () => {
+interface NoDataIndicatorProps {
+  /** When set, a "Retry" button is offered below the indicator. */
+  onRetry?: () => void;
+}
+
+const NoDataIndicator = ({ onRetry }: NoDataIndicatorProps = {}) => {
   return (
     // <div className="flex flex-col items-center h-full align-middle">
     <div id="Loader" className="relative flex h-full items-center justify-center bg-transparent">
@@ -18,6 +23,15 @@ const NoDataIndicator = () => {
         >
           No data
         </p>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-3 rounded-sm border border-stroke px-4 py-1.5 text-sm font-medium text-plainfont hover:border-primary hover:bg-primary/90 hover:text-white dark:border-meta-4"
+          >
+            Retry
+          </button>
+        )}
       </div>
     </div>
   );

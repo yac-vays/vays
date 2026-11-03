@@ -10,6 +10,7 @@ import {
   isStaleValidation,
   nextValidationSeq,
 } from './session';
+import { reportValidationFailed } from './shared';
 import { updateSchema } from './StandardMode';
 
 /**
@@ -192,7 +193,13 @@ export async function revalidateMeta(requestEditContext: RequestEditContext) {
       getEntityYAML(),
       seq,
     );
-    if (resp == null || isStaleValidation(seq)) return;
+    if (isStaleValidation(seq)) return;
+    if (resp == null) {
+      // No answer (network, 5xx, ...): keep both panes, block Commit until a
+      // validation succeeds; "Retry" re-runs this meta validation.
+      reportValidationFailed(() => void revalidateMeta(requestEditContext));
+      return;
+    }
     writeBothPanes(resp);
   } finally {
     endValidationDispatch();

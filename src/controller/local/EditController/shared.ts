@@ -26,7 +26,7 @@ import { showError } from '../../global/notification';
 import { reportSchemaWarnings } from '../../global/troubleshoot';
 import { navigateToURL } from '../../global/url';
 import editingState from '../../state/EditCtrlState';
-import { emitChangeState, seedCanonical } from './ExpertMode/access';
+import { emitChangeState, seedCanonical, setErrorMessage } from './ExpertMode/access';
 import {
   activateEditingSession,
   currentSession,
@@ -40,6 +40,7 @@ import { updateSchema } from './StandardMode';
  * which is also displayed in the footer of the edit view)
  */
 export function clearYACStatus() {
+  validationRetry = null;
   setYACValidateResponse('');
   setYACValidStatus(true);
   setLocalValidity(true);
@@ -107,10 +108,61 @@ export function setYACStatus(
   usages: LimitUsage[] = [],
   usagesData: unknown = null,
 ) {
+  // Any answer from the backend supersedes an earlier failed validation.
+  validationRetry = null;
   setYACValidateResponse(detail);
   setYACValidStatus(valid);
   setYACUsages(usages, usagesData);
   emitValidity();
+}
+
+/**
+ * Footer status while the latest edit could not be validated (network error,
+ * 5xx, 503, bad response). The panes keep showing the user's document; only
+ * Commit is blocked, because the save payload (the canonical YAML) is produced
+ * by the validation round-trip and would miss the unvalidated edit.
+ */
+export const VALIDATION_FAILED_DETAIL =
+  'Your last change could not be validated (backend unreachable or error). ' +
+  'Your edits are kept — retry before committing.';
+
+// How to re-dispatch the validation that failed, with the session it belongs to.
+let validationRetry: { retry: () => void; epoch: number } | null = null;
+
+/**
+ * Record that a validation of the current document failed: block Commit, show
+ * {@link VALIDATION_FAILED_DETAIL} in the footer and remember `retry` for its
+ * "Retry" button. The last known usages/perms are kept (they still describe a
+ * very similar document) — only the verdict is unknown.
+ */
+export function reportValidationFailed(retry: () => void) {
+  validationRetry = { retry, epoch: currentSession() };
+  setYACValidateResponse(VALIDATION_FAILED_DETAIL);
+  setYACValidStatus(false);
+  emitValidity();
+  setErrorMessage(VALIDATION_FAILED_DETAIL);
+}
+
+/** Whether a footer message reports a failed validation (offers "Retry"). */
+export function isValidationFailedMessage(msg: string): boolean {
+  return msg === VALIDATION_FAILED_DETAIL;
+}
+
+/**
+ * Whether the latest validation failed without an answer. Blocks Commit even
+ * with the admin override: the save payload would miss the unvalidated edit.
+ */
+export function isValidationFailed(): boolean {
+  return validationRetry != null;
+}
+
+/**
+ * Re-dispatch the failed validation (no-op in another session). The failure
+ * stays recorded until a validation gets an answer (see setYACStatus).
+ */
+export function retryValidation() {
+  if (validationRetry == null || isStaleSession(validationRetry.epoch)) return;
+  validationRetry.retry();
 }
 
 /**

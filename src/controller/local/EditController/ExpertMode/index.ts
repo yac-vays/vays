@@ -21,6 +21,7 @@ import {
   clearEditDirty,
   getInitialEntityYAML,
   isAdminOverride,
+  isValidationFailed,
   setAdminOverride,
   setEntityPerms,
   setYACStatus,
@@ -98,7 +99,7 @@ export async function sendYAMLData(requestContext: RequestEditContext) {
   // Validity may have changed with the just-settled validations; the Commit
   // button state predates them. An unlocked admin override commits anyway
   // (the backend then skips schema enforcement via `force`).
-  if (!editingState.isValidYAC && !isAdminOverride()) {
+  if (isValidationFailed() || (!editingState.isValidYAC && !isAdminOverride())) {
     return;
   }
   // No-op guard (edit only): the backend rejects a PUT whose content equals
@@ -133,9 +134,16 @@ export async function sendYAMLData(requestContext: RequestEditContext) {
       // A validation may have been dispatched while the modal was open (e.g.
       // the editor's debounce fired); its response updates the payload.
       await whenValidationIdle();
+      if (isValidationFailed()) {
+        showError(
+          'Not committed: the document could not be validated',
+          'Retry the validation (footer) and commit again.',
+        );
+        return;
+      }
       if (!editingState.isValidYAC && !isAdminOverride()) {
         showError(
-          'Not saved: the document changed and is no longer valid',
+          'Not committed: the document changed and is no longer valid',
           'Please fix the reported error and commit again.',
         );
         return;

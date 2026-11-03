@@ -18,11 +18,12 @@ import {
 } from '../../../../../controller/local/EditController/debounceRegistry';
 import {
   beginValidationDispatch,
+  currentSession,
   endValidationDispatch,
   isStaleSession,
 } from '../../../../../controller/local/EditController/session';
 import {
-  getYACValidateResponse,
+  reportValidationFailed,
   setEditDirty,
 } from '../../../../../controller/local/EditController/shared';
 import { footerErrorMessage } from '../../../../../utils/schema/locatedErrors';
@@ -184,13 +185,20 @@ export function getUpdateCallback(): EditorUpdateCallback {
       // A newer edit (in either pane) has since been dispatched; drop this stale
       // response so it cannot overwrite the latest state.
       if (isStaleValidation(seq)) return;
-      // Footer policy: an error that both panes display inline is suppressed
-      // there (see footerErrorMessage); without a response (network failure)
-      // fall back to the raw stored detail.
-      setErrorMessage(rep == null ? getYACValidateResponse() : footerErrorMessage(rep));
       setIsValidating(false);
-
-      if (rep == null) return;
+      if (rep == null) {
+        // No answer (network, 5xx, ...): the text stays in the editor, Commit
+        // is blocked until a validation succeeds; "Retry" re-sends this text.
+        reportValidationFailed(() => {
+          const retry = getUpdateCallback();
+          retry(value, currentSession());
+          retry.flush();
+        });
+        return;
+      }
+      // Footer policy: an error that both panes display inline is suppressed
+      // there (see footerErrorMessage).
+      setErrorMessage(footerErrorMessage(rep));
       setCurrentJsonSchema(rep.json_schema);
       await getMonacoYaml().update({
         schemas: [

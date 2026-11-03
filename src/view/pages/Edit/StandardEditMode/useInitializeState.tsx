@@ -118,7 +118,7 @@ const useInitializeForm = (
       if (migrationError) {
         onYacError(
           'There are validation errors — possibly because the specification changed ' +
-            '(migration). Please fix the highlighted fields before saving.',
+            '(migration). Please fix the highlighted fields before committing.',
         );
       } else {
         // Footer policy: only errors that cannot be displayed inline in BOTH

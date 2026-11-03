@@ -101,7 +101,7 @@ export const AgeSecretRenderer = (props: ControlProps) => {
 
   const invalidValueError =
     hasData && !dataLooksValid && plaintext === null
-      ? "The current value is not an encrypted secret. Use 'Generate new' to overwrite it."
+      ? "The current value is not an encrypted secret. Use 'Regenerate' to overwrite it."
       : '';
 
   const errorMsg = specError || opError || invalidValueError || badDataError || props.errors || '';
@@ -109,7 +109,7 @@ export const AgeSecretRenderer = (props: ControlProps) => {
   const onRegenerateClick = () => {
     showModal(
       'Replace the existing secret?',
-      'This generates a new random secret and replaces the existing one. The previous secret will be overwritten.\n\nThe change is only effective after you save the form.',
+      'This generates a new random secret and replaces the existing one. The previous secret will be overwritten.\n\nThe change only takes effect once you commit.',
       async () => {
         await doGenerate();
       },
@@ -170,15 +170,15 @@ export const AgeSecretRenderer = (props: ControlProps) => {
               disabled={pending}
               className="rounded-md border border-stroke px-3 py-2 text-sm hover:bg-meta-4 hover:text-white whitespace-nowrap disabled:opacity-50"
             >
-              Generate new
+              Regenerate
             </button>
           )}
         </div>
       </ErrorRing>
       {plaintext !== null && (
         <em className="opacity-70 block mt-1 text-sm">
-          ⚠ Copy this secret now. Once you save the form, it will be encrypted and no longer
-          readable.
+          ⚠ Copy this secret now. Only its encrypted form is committed — once you leave this page,
+          it can no longer be shown.
         </em>
       )}
     </div>

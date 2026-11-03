@@ -166,13 +166,9 @@ const EntityList = ({ requestContext, highlightEntityName }: EntityListProps) =>
                 style={{ alignItems: 'center' }}
               >
                 {loading ? (
-                  <SubLoader
-                    action={
-                      requestContext.accessedEntityType?.title
-                        ? `Loading ${requestContext.accessedEntityType.title}…`
-                        : 'Loading…'
-                    }
-                  />
+                  // The page title already names the type; type titles are
+                  // free-form and don't fit into a sentence.
+                  <SubLoader action="Loading entries…" />
                 ) : (
                   <NoDataIndicator />
                 )}

@@ -7,6 +7,7 @@ import { ActionDecl } from '../../../../utils/types/api';
 import { RequestContext, RequestEditContext } from '../../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import { Nullable } from '../../../../utils/types/typeUtils';
+import { entityToastTitle } from '../../../../utils/toastUtils';
 import { showModalMessage } from '../../../global/modal';
 import { showError } from '../../../global/notification';
 import { reportSchemaWarnings } from '../../../global/troubleshoot';
@@ -108,7 +109,10 @@ export async function sendYAMLData(requestContext: RequestEditContext) {
     return;
   }
   const modalEntityName = getEntityName() ?? requestContext.entityName;
-  const typeTitle = requestContext.rc.accessedEntityType?.title;
+  // Type titles are free-form (plural "Hosts", singular "NaaS Cluster",
+  // labels like "Tier: Fast"), so never build a sentence around them: name
+  // the target as the `{backend} / {type}` breadcrumb, like the toasts do.
+  const typeBreadcrumb = entityToastTitle(requestContext.rc);
   // Spell the override out in the confirm dialog: the user is about to store
   // a document that fails validation.
   const overrideNote =
@@ -120,9 +124,9 @@ export async function sendYAMLData(requestContext: RequestEditContext) {
     requestContext.mode === 'create'
       ? modalEntityName
         ? `Create ${modalEntityName}?`
-        : typeTitle
-          ? `Create new ${typeTitle}?`
-          : 'Create?'
+        : typeBreadcrumb
+          ? `Create new entry in ${typeBreadcrumb}?`
+          : 'Create new entry?'
       : `Commit changes to ${modalEntityName}?`,
     [overrideNote, actionsNote].filter(Boolean).join('\n\n'),
     async () => {

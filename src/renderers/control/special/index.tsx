@@ -8,6 +8,7 @@ import MultiLineTextControl, { MultiLineTextControlTester } from './MultiLineTex
 import PasswordRenderer, { PasswordRendererTester } from './PasswordRenderer';
 import RandomStringRenderer, { RandomStringRendererTester } from './RandomStringRenderer';
 import SSHKeyRenderer, { SSHKeyRendererTester } from './SSHKeyRenderer';
+import TemplateTextRenderer, { TemplateTextTester } from './TemplateTextRenderer';
 
 export const specialRenderers = [
   { tester: InfoBoxTester, renderer: InfoBoxRenderer },
@@ -20,4 +21,5 @@ export const specialRenderers = [
   { tester: AgeSecretRendererTester, renderer: AgeSecretRenderer },
   { tester: RandomStringRendererTester, renderer: RandomStringRenderer },
   { tester: LimitBarTester, renderer: LimitBarRenderer },
+  { tester: TemplateTextTester, renderer: TemplateTextRenderer },
 ];

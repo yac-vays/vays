@@ -37,6 +37,7 @@ export const EXPLICIT_RENDERERS = [
   'password',
   'random_string',
   'ssh_key',
+  'template_text',
   'text_area',
   'unavailable',
 ] as const;
@@ -624,6 +625,30 @@ function lintField(f: Field, findings: LintFinding[]) {
           5,
           "'info_box' without description",
           'The info_box renders only title and description; without a description the box is empty.',
+        );
+      }
+      break;
+    case 'template_text':
+      if (typeof ropts.template !== 'string') {
+        add(
+          9,
+          "Missing template for renderer 'template_text'",
+          'The template_text renderer requires renderer_options.template (text with {key} ' +
+            'placeholders); without it, only an error is shown.',
+        );
+      }
+      if (f.required) {
+        add(
+          8,
+          "Required 'template_text' field",
+          'A template_text field never carries data, but the property is required, so the form ' +
+            "can never validate. Mark it 'yac_optional: true' (and add 'not: {}').",
+        );
+      } else if (!('not' in s)) {
+        add(
+          3,
+          "'template_text' without 'not: {}'",
+          "Add 'not: {}' so YAC rejects data stored under this purely informational property.",
         );
       }
       break;

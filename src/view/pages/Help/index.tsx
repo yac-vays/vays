@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import { getConfig } from '../../../model/config';
 import { YACBackend } from '../../../utils/types/config';
 import MarkdownRender from '../../components/Markdown';
@@ -69,6 +70,19 @@ const Help = () => {
             )}
 
             <div className="text-sm">
+              <div className="mb-6 rounded-xs border border-stroke bg-primary-5 p-4 dark:bg-meta-4">
+                <h3 className="mb-1 text-base font-bold text-plainfont">
+                  Configuration Reference
+                </h3>
+                <p className="mb-2 text-reducedfont">
+                  Browse all possible configuration fields, allowed values, and see which fields
+                  must be requested through the support group:
+                </p>
+                <Link to="/docs" className="font-semibold text-primary hover:underline">
+                  Open Configuration Field Reference (/docs)
+                </Link>
+              </div>
+
               <h3 className="mb-3 text-base font-bold text-plainfont">Developer Information</h3>
 
               <HelpLink

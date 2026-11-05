@@ -9,6 +9,7 @@ import {
 } from '../../../../controller/local/Overview/list';
 import { probeEntity } from '../../../../model/entityData';
 import iLocalStorage from '../../../../session/persistent/LocalStorage';
+import iSessionStorage from '../../../../session/storage/SessionStorage';
 import { QueryResponse, QueryResult } from '../../../../utils/types/internal/entityList';
 import { RequestContext } from '../../../../utils/types/internal/request';
 
@@ -18,7 +19,9 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
   //const tableEntries = useRef<QueryResult[]>([]);
   const [tableHeaderEntries, setTableHeaderEntries] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [searchTerms, setSearchTerms] = useState<(string | null)[]>([]);
+  const [searchTerms, setSearchTerms] = useState<(string | null)[]>(() =>
+    iSessionStorage.getEntityListFilters(requestContext.yacURL, requestContext.entityTypeName),
+  );
   // The entity to scroll to. Only set when we actually (re)load/page to it, so
   // that simply highlighting an already-visible entity does not scroll.
   const [scrollTargetName, setScrollTargetName] = useState<string | undefined>(undefined);
@@ -41,6 +44,9 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
   const latestSearchTermsRef = useRef<(string | null)[]>(searchTerms);
   latestSearchTermsRef.current = searchTerms;
   const prevDataKeyRef = useRef<string>('');
+  const prevListIdentityRef = useRef<string>(
+    `${requestContext.entityTypeName}|${requestContext.yacURL}`,
+  );
   const prevTargetRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
@@ -59,6 +65,19 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
       if (requestContext.accessedEntityType?.options == undefined) {
         setTableHeaderEntries([]);
         return;
+      }
+
+      // Restore persisted column filters whenever the backend/entity type
+      // identity changes (including when requestContext resolves asynchronously).
+      const listIdentity = `${requestContext.entityTypeName}|${requestContext.yacURL}`;
+      if (listIdentity !== prevListIdentityRef.current) {
+        prevListIdentityRef.current = listIdentity;
+        const storedFilters = iSessionStorage.getEntityListFilters(
+          requestContext.yacURL,
+          requestContext.entityTypeName,
+        );
+        latestSearchTermsRef.current = storedFilters;
+        setSearchTerms(storedFilters);
       }
 
       // Did the underlying data (type/backend/page size/explicit reload) change,

@@ -1,4 +1,4 @@
-import { DetailedHTMLProps, InputHTMLAttributes, useRef, useState } from 'react';
+import { DetailedHTMLProps, InputHTMLAttributes, useEffect, useRef, useState } from 'react';
 import useOutsideClick from '../../../hooks/useOutsideClick';
 
 export const MINWIDTH_COLUMN = 100; // px
@@ -8,6 +8,7 @@ interface ELHeaderCellProps {
   firstField: boolean;
   searchable: boolean;
   searchCallback: undefined | ((a: string) => void);
+  initialSearchTerm?: string;
   /**
    * If true, the column shrinks to its content width (used for the Actions
    * column) instead of claiming a minimum width and trailing padding.
@@ -27,11 +28,21 @@ const EntityListHeaderCell = ({
   firstField,
   searchable,
   searchCallback,
+  initialSearchTerm = '',
   shrink = false,
 }: ELHeaderCellProps) => {
-  const [openSearch, setOpenSearch] = useState(false);
+  const [openSearch, setOpenSearch] = useState(searchable && initialSearchTerm !== '');
   const headerEntryRef = useRef<HTMLTableCellElement>(null);
   const inputBar = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (searchable && initialSearchTerm !== '') {
+      setOpenSearch(true);
+      if (inputBar.current != null && inputBar.current.value !== initialSearchTerm) {
+        inputBar.current.value = initialSearchTerm;
+      }
+    }
+  }, [searchable, initialSearchTerm]);
 
   const toggleOpenSearch = () => {
     if (searchable) {
@@ -108,6 +119,7 @@ const EntityListHeaderCell = ({
           where the appearance of the input bar significantly reshapes the table columns. */}
         <div className={`flex items-left ${openSearch ? 'block' : 'hidden'}`}>
           <input
+            defaultValue={initialSearchTerm}
             onInput={onInput}
             onKeyDown={onButtonDownCallback}
             ref={inputBar}

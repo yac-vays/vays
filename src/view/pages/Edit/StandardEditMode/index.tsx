@@ -2,7 +2,7 @@ import { JsonFormsCore } from '@jsonforms/core';
 import { materialCells, materialRenderers } from '@jsonforms/material-renderers';
 import { JsonForms } from '@jsonforms/react';
 import _ from 'lodash';
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 
 import FormsErrorBoundary from './ErrorBoundary';
 
@@ -98,6 +98,18 @@ const StandardEditMode = memo(
     const [pendingValidations, setPendingValidations] = useState<number>(0);
     const formBlurred = pendingValidations > 0;
 
+    // The data the form last reported or was last given. `localData` is what
+    // is handed to <JsonForms data>, and it only changes on programmatic writes
+    // (load, validation response, YAML -> form). The form's own onChange data
+    // must NOT be fed back into it: every new `data` prop makes the provider
+    // re-dispatch updateCore with that snapshot, which wipes any change a
+    // renderer dispatched since the (debounced) emission — e.g. an async
+    // age_secret landing right after its array row was added.
+    const lastFormData = useRef<unknown>(localData);
+    useEffect(() => {
+      lastFormData.current = localData;
+    }, [localData]);
+
     // Render a (canonical) validation response into the form. Shared between the
     // user's own onChange flow and the cross-pane writer that the YAML editor
     // invokes (via `applyCanonical`) when the user edits YAML instead.
@@ -153,7 +165,7 @@ const StandardEditMode = memo(
       if (consumeFormSuppression()) {
         return;
       }
-      if (!setupDone || _.isEqual(data, localData)) {
+      if (!setupDone || _.isEqual(data, lastFormData.current)) {
         return;
       }
       // A genuine user edit in the form: it is now the active pane and the
@@ -163,7 +175,7 @@ const StandardEditMode = memo(
 
       const didBlur = !IsCurrentlyEditingString();
 
-      setLocalData(data);
+      lastFormData.current = data;
 
       // Reflect the form's own (JSON Forms) validation immediately for snappy
       // Commit-button feedback; the backend round-trip below confirms it.

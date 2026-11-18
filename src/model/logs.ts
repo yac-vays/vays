@@ -2,14 +2,19 @@ import { typeCheck } from 'type-check';
 import { showError } from '../controller/global/notification';
 import { sendRequest } from '../utils/authRequest';
 import { entityToastTitle } from '../utils/toastUtils';
-import { EntityLog, TYPE_CHECK_ENTITY_LOG } from '../utils/types/api';
+import {
+  EntityLog,
+  EntityLogContent,
+  TYPE_CHECK_ENTITY_LOG,
+  TYPE_CHECK_ENTITY_LOG_CONTENT,
+} from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
 import { joinUrl } from '../utils/urlUtils';
 import VAYS_CACHE from './caching';
 import { LOGS_CACHE_KEY } from './caching/cachekeys';
 import { invalidateEntityListCache } from './entityList';
-import { handleYacResponse, yacErrorDetail } from './utils/handleYacResponse';
+import { decodeErrorBody, handleYacResponse, yacErrorDetail } from './utils/handleYacResponse';
 
 function getLogID(
   url: string | null | undefined,
@@ -211,4 +216,46 @@ function typeCheckLog(logs: unknown, entityName: string): Nullable<EntityLog[]> 
   );
 
   return null;
+}
+
+/** The result of {@link getEntityLogContent}. */
+export type LogContentResult =
+  { kind: 'success'; content: EntityLogContent } | { kind: 'error'; message: string };
+
+/**
+ * Fetch the content document of a log (see `EntityLog.has_content`). Not
+ * cached and not polled: it is only fetched when the user opens it. Errors are
+ * returned (and shown where the document would be) instead of toasted.
+ */
+export async function getEntityLogContent(
+  entityName: string,
+  logName: string,
+  requestContext: RequestContext,
+): Promise<LogContentResult> {
+  const url: string | null | undefined = requestContext.yacURL;
+  if (url == null) return { kind: 'error', message: 'No backend selected.' };
+
+  const resp: Nullable<Response> = await sendRequest(
+    joinUrl(
+      url,
+      `/entity/${requestContext.entityTypeName}/${entityName}/logs/${encodeURIComponent(logName)}/content`,
+    ),
+    'GET',
+  );
+  if (resp == null) {
+    return { kind: 'error', message: 'The backend could not be reached. Please try again.' };
+  }
+  if (resp.status !== 200) {
+    const body = await decodeErrorBody(resp);
+    return {
+      kind: 'error',
+      message: yacErrorDetail('Loading failed', resp.status, body, 'Please try again.'),
+    };
+  }
+
+  const content: unknown = await resp.json().catch(() => null);
+  if (!typeCheck(TYPE_CHECK_ENTITY_LOG_CONTENT, content)) {
+    return { kind: 'error', message: 'Received bad data from the backend.' };
+  }
+  return { kind: 'success', content: content as EntityLogContent };
 }

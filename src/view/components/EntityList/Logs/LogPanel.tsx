@@ -1,4 +1,3 @@
-// import { useState } from 'react';
 import { EntityLog } from '../../../../utils/types/api';
 import { formatLogTime, formatRelativeTime } from '../../../../utils/logUtils';
 import MarkdownRender from '../../Markdown';
@@ -7,19 +6,15 @@ const LogPanel = ({
   logList,
   title,
   description,
-  showProgress,
 }: {
   logList: EntityLog[];
   title: string;
   /** The log's description from the specs (markdown), shown below the title. */
   description?: string;
-  /**
-   * Whether this log type declares the progress feature (`TypeLog.progress`).
-   * If so, every entry gets the percentage as the first column of the table.
-   */
-  showProgress?: boolean;
 }) => {
-  //   const [expand, setExpand] = useState<boolean>(false);
+  // Entries that report a progress get the percentage as the first column
+  // (and so do the others of the same log, with a dash).
+  const showProgress = logList.some((entry) => entry.progress != null);
   return (
     // `w-max` sizes the panel to its widest line so short logs stay compact.
     // Chrome (border/background/shadow), the size cap and scrolling come from
@@ -67,7 +62,19 @@ const LogPanel = ({
                   )}
                   {/* Message on the left. */}
                   <div className="p-2 pt-0 rounded-md text-gray-800 flex-1 dark:text-white">
-                    <p>{logEntry.message}</p>
+                    <p>
+                      {logEntry.problem === true && (
+                        <span
+                          className="mr-1 font-bold text-[#d32f2f]"
+                          role="img"
+                          aria-label="Problem"
+                          title="Problem"
+                        >
+                          !
+                        </span>
+                      )}
+                      {logEntry.message}
+                    </p>
                   </div>
                   {/* Relative time on the right. */}
                   <div className="text-gray-500 shrink-0 text-right" title={timeTitle}>

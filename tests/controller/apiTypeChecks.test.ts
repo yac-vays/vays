@@ -2,8 +2,11 @@ import { typeCheck } from 'type-check';
 import { expect, test } from 'vitest';
 import {
   TYPE_CHECK_ENTITY_DATA,
+  TYPE_CHECK_ENTITY_LOG,
+  TYPE_CHECK_ENTITY_LOG_CONTENT,
   TYPE_CHECK_ENTITY_OBJECT,
   TYPE_CHECK_LINK_DECL,
+  TYPE_CHECK_LOG_DECL,
 } from '../../src/utils/types/api';
 
 // type-check rejects unknown keys, so every field YAC sends must be declared.
@@ -30,4 +33,34 @@ test('entities from YAC versions without links still pass', () => {
 
 test('link declarations pass the check', () => {
   expect(typeCheck(TYPE_CHECK_LINK_DECL, { name: 'a', title: 'A', icon: '<svg/>' })).toBe(true);
+});
+
+test('logs as YAC sends them pass the checks', () => {
+  const decl = {
+    name: 'facts',
+    title: 'Facts',
+    description: '',
+    renderer: 'document',
+    options: { language: 'yaml' },
+  };
+  expect(typeCheck(TYPE_CHECK_LOG_DECL, decl)).toBe(true);
+  // the removed flags are not accepted anymore
+  expect(typeCheck(TYPE_CHECK_LOG_DECL, { ...decl, progress: true })).toBe(false);
+
+  const log = {
+    name: 'facts',
+    message: '',
+    time: 'Wed, 18 Nov 2026 13:12:55 GMT',
+    progress: null,
+    problem: false,
+    has_content: true,
+  };
+  expect(typeCheck(`[${TYPE_CHECK_ENTITY_LOG}]`, [log])).toBe(true);
+  const withoutContent: Partial<typeof log> = { ...log };
+  delete withoutContent.has_content;
+  expect(typeCheck(`[${TYPE_CHECK_ENTITY_LOG}]`, [withoutContent])).toBe(false);
+
+  expect(
+    typeCheck(TYPE_CHECK_ENTITY_LOG_CONTENT, { name: 'facts', time: '', content: 'a: 1\n' }),
+  ).toBe(true);
 });

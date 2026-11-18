@@ -314,7 +314,13 @@ const VAYS_LIGHT: monaco.editor.IStandaloneThemeData = {
 //   },
 // }
 
+// Themes are global to Monaco: define them (and the switch listener) once,
+// however many editors / viewers get created.
+let themesDefined = false;
+
 export default function editorTheme() {
+  if (themesDefined) return;
+  themesDefined = true;
   monaco.editor.defineTheme('vays-dark', VAYS_DARK);
   monaco.editor.defineTheme('vays-light', VAYS_LIGHT);
 

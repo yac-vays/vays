@@ -175,7 +175,7 @@ export async function handleYacResponse(
   return { kind, status, body };
 }
 
-async function decodeErrorBody(resp: Response): Promise<YacErrorBody> {
+export async function decodeErrorBody(resp: Response): Promise<YacErrorBody> {
   try {
     const body = await resp.json();
     if (body != null && typeof body === 'object') return body as YacErrorBody;

@@ -1,18 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   getEntityLogID,
   getEntityLogs,
   invalidateLogCache,
   subscribeLogRefresh,
 } from '../../../../model/logs';
-import { EntityLog } from '../../../../utils/types/api';
+import { EntityLog, LogDecl } from '../../../../utils/types/api';
 import { RequestContext } from '../../../../utils/types/internal/request';
 import RichInfoPanel from '../../RichInfoPanel';
-import BoolLog from './BoolLog';
 import LogPanel from './LogPanel';
-import MessageLog from './MessageLog';
 import NoDataLog from './NoDataLog';
-import NumberLog from './NumberLog';
+import { getLogRenderer } from './renderers';
 
 // Size of a single log indicator (equal across log types). The row height is
 // kept in line with log-less rows by trimming the cell's vertical padding in
@@ -137,7 +135,6 @@ const LogsField = ({
       if (wake) wake();
     };
   }, [entityName]);
-  // opacity-60
   return (
     <div
       className="flex flex-row flex-nowrap gap-1 px-1 py-0"
@@ -146,66 +143,91 @@ const LogsField = ({
         minWidth: Math.max(2, numLogElts) * 40,
       }}
     >
-      {(function () {
-        const jsx = [];
-        if (
-          !requestContext.accessedEntityType?.logs ||
-          requestContext.accessedEntityType.logs.length == 0
-        ) {
-          return <em className="opacity-80">No Logs Defined</em>;
-        }
-        for (const l of requestContext.accessedEntityType.logs) {
-          let problem = null;
-          let progress = null;
-          const hasLogs = logObject[l.name] && logObject[l.name].length > 0;
-          if (hasLogs) {
-            problem = logObject[l.name][0].problem ?? null;
-            progress = logObject[l.name][0].progress ?? null;
-          }
-
-          // The indicator shown once the log actually has data depends on the
-          // log's declared type. When there is no data, every type falls back to
-          // the same neutral placeholder (grey ring + question mark).
-          let indicator;
-          if (l.problem && !l.progress) {
-            indicator = <BoolLog problem={problem} loading={isLoading} />;
-          } else if (l.progress) {
-            indicator = <NumberLog problem={problem} progress={progress} loading={isLoading} />;
-          } else {
-            indicator = <MessageLog loading={isLoading} hasLogs={hasLogs} />;
-          }
-
-          jsx.push(
-            <div key={l.name} className={LOG_ITEM_CLASS}>
-              {isLoading ? (
-                // Still fetching: show the (non-clickable) spinner placeholder.
-                <NoDataLog loading />
-              ) : hasLogs ? (
-                <RichInfoPanel anchor={<div className="opacity-60">{indicator}</div>}>
-                  <LogPanel
-                    title={l.title}
-                    description={l.description}
-                    logList={logObject[l.name]}
-                    showProgress={l.progress}
-                  />
-                </RichInfoPanel>
-              ) : (
-                // No data: still openable, but the panel just states there are none.
-                <RichInfoPanel anchor={<NoDataLog loading={false} />}>
-                  <LogPanel
-                    title={l.title}
-                    description={l.description}
-                    logList={[]}
-                    showProgress={l.progress}
-                  />
-                </RichInfoPanel>
-              )}
-            </div>,
-          );
-        }
-        return jsx;
-      })()}
+      {!requestContext.accessedEntityType?.logs ||
+      requestContext.accessedEntityType.logs.length == 0 ? (
+        <em className="opacity-80">No Logs Defined</em>
+      ) : (
+        requestContext.accessedEntityType.logs.map((decl) => (
+          <div key={decl.name} className={LOG_ITEM_CLASS}>
+            <LogSlot
+              decl={decl}
+              entries={logObject[decl.name] ?? []}
+              loading={isLoading}
+              entityName={entityName}
+              requestContext={requestContext}
+            />
+          </div>
+        ))
+      )}
     </div>
+  );
+};
+
+/**
+ * One log of the entity: the indicator of its renderer and, on click, the
+ * renderer's view (a popover next to it or a window). While loading, and for a
+ * log without entries, every renderer looks the same.
+ */
+export const LogSlot = ({
+  decl,
+  entries,
+  loading,
+  entityName,
+  requestContext,
+}: {
+  decl: LogDecl;
+  entries: EntityLog[];
+  loading: boolean;
+  entityName: string;
+  requestContext: RequestContext;
+}) => {
+  const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
+
+  // Still fetching: the (non-clickable) spinner placeholder.
+  if (loading) return <NoDataLog loading />;
+
+  // No data: still openable, but the panel just states there are none.
+  if (entries.length === 0) {
+    return (
+      <RichInfoPanel anchor={<NoDataLog loading={false} />}>
+        <LogPanel title={decl.title} description={decl.description} logList={[]} />
+      </RichInfoPanel>
+    );
+  }
+
+  const renderer = getLogRenderer(decl);
+  const indicator = (
+    <div className="opacity-60">
+      <renderer.Indicator decl={decl} latest={entries[0]} />
+    </div>
+  );
+  const view = (
+    <renderer.View
+      decl={decl}
+      entries={entries}
+      entityName={entityName}
+      requestContext={requestContext}
+      onClose={close}
+    />
+  );
+
+  if (renderer.display === 'popover') {
+    return <RichInfoPanel anchor={indicator}>{view}</RichInfoPanel>;
+  }
+  return (
+    <>
+      <button
+        type="button"
+        className="block cursor-pointer appearance-none border-0 bg-transparent p-0 text-left"
+        aria-haspopup="dialog"
+        aria-label={decl.title}
+        onClick={() => setOpen(true)}
+      >
+        {indicator}
+      </button>
+      {open && view}
+    </>
   );
 };
 

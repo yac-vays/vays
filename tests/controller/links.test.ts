@@ -16,7 +16,7 @@ function linkedContext(withLogs: boolean) {
     { name: 'dash', title: 'Grafana', icon: '<svg/>' },
   ];
   if (withLogs) {
-    t.logs = [{ name: 'l', title: 'L', progress: false, problem: false }];
+    t.logs = [{ name: 'l', title: 'L', description: '', renderer: 'messages', options: {} }];
   }
   return rc;
 }

@@ -127,6 +127,24 @@ export interface FavOpObject {
   action: boolean;
 }
 
+export const TYPE_CHECK_LOG_DECL =
+  '{name: String, title: String, description: String, renderer: String, options: Object}';
+
+/**
+ * A log of an entity type, as declared in the YAC specs. Which UI renderer
+ * shows it (`renderer`) is independent of where YAC gets the entries from.
+ */
+export interface LogDecl {
+  name: string;
+  title: string;
+  /** Markdown description shown in the log details below the title. */
+  description: SafeSource<string>;
+  /** The log renderer, see `view/components/EntityList/Logs/renderers`. */
+  renderer: string;
+  /** Renderer-specific options from the specs. */
+  options: Record<string, unknown>;
+}
+
 export const TYPE_CHECK_ENTITY_TYPE_DECL = `{
   name: String,
   title: String,
@@ -138,7 +156,7 @@ export const TYPE_CHECK_ENTITY_TYPE_DECL = `{
   delete: Boolean,
   edit: Boolean,
   options: [Object],
-  logs: [{name: String, title: String, description: Maybe String, progress: Boolean, problem: Boolean}],
+  logs: [${TYPE_CHECK_LOG_DECL}],
   links: Maybe [${TYPE_CHECK_LINK_DECL}],
   actions: [${TYPE_CHECK_ACTION_DECL}],
   favorites: [${TYPE_CHECK_FAVOP_OBJECT}]
@@ -163,15 +181,7 @@ export interface EntityTypeDecl {
     default?: string;
     aliases: { [key: string]: SafeSource<string> };
   }[];
-  logs: {
-    name: string;
-    title: string;
-    /** Markdown description shown in the log details panel (YAC >= the
-     * version introducing `TypeLog.description`; older backends omit it). */
-    description?: SafeSource<string>;
-    progress: boolean;
-    problem: boolean;
-  }[];
+  logs: LogDecl[];
   /** Missing on YAC versions before `links` were introduced. */
   links?: LinkDecl[];
   actions: ActionDecl[];
@@ -212,14 +222,28 @@ export interface EntityObject {
 }
 
 export const TYPE_CHECK_ENTITY_LOG =
-  '{name: String, message: String, time: String, progress: Null | Number, problem: Null | Boolean}';
+  '{name: String, message: String, time: String, progress: Null | Number, problem: Null | Boolean, has_content: Boolean}';
 
 export type EntityLog = {
   name: string;
   message: string;
   time: string;
+  /** 0 to 100, or null if the log does not report a progress. */
   progress: Nullable<number>;
+  /** Whether the entry indicates a problem, or null if not reported. */
   problem: Nullable<boolean>;
+  /** Whether the log has a content document (see {@link EntityLogContent}). */
+  has_content: boolean;
+};
+
+export const TYPE_CHECK_ENTITY_LOG_CONTENT = '{name: String, time: String, content: String}';
+
+/** The content document of a log, fetched on demand (it may be big). */
+export type EntityLogContent = {
+  name: string;
+  /** Timestamp of the document, may be empty. */
+  time: string;
+  content: string;
 };
 
 export const TYPE_CHECK_ENTITY_DATA = `{

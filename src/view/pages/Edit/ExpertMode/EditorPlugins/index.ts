@@ -2,6 +2,7 @@ import { EditorInitPlugins } from '../../../../../utils/types/internal/editor';
 import editorErrorDecoration from './errorDecoration';
 import editorFieldHelp from './fieldHelp';
 import editorLimitGlyphs from './limitGlyphs';
+import editorLockedRegions from './lockedRegions';
 import editorMissingPropertyRelocator from './missingPropertyRelocator';
 import editorInitializeSchema from './schemaInitializer';
 import editorTheme from './theme';
@@ -13,6 +14,7 @@ const editorPlugins: EditorInitPlugins[] = [
   editorMissingPropertyRelocator,
   editorFieldHelp,
   editorLimitGlyphs,
+  editorLockedRegions,
   editorInitializeSchema,
 ];
 export default editorPlugins;

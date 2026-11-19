@@ -32,6 +32,7 @@ import { getUpdateCallback, setupMonacoYAMLPlugin } from './utils/setup.js';
 import { startExpertModeSession } from '../../../../controller/local/EditController/ExpertMode/index.js';
 import { disposeErrorMarkersListener } from './EditorPlugins/errorDecoration';
 import { disposeLimitGlyphs } from './EditorPlugins/limitGlyphs';
+import { disposeLockedRegions } from './EditorPlugins/lockedRegions';
 import { disposeMissingPropertyRelocator } from './EditorPlugins/missingPropertyRelocator';
 import './glyph.css';
 import { getEditor, getModel } from './utils/factory.js';
@@ -100,6 +101,7 @@ export const Editor = ({
         disposeErrorMarkersListener();
         disposeMissingPropertyRelocator();
         disposeLimitGlyphs();
+        disposeLockedRegions();
         // A keystroke may still sit in the debounce window; it belongs to THIS
         // session (the epoch stamp would drop it anyway) — cancel it so it
         // does not fire into the next session at all.

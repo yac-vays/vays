@@ -3,6 +3,7 @@ import { ActionDecl } from '../../../../utils/types/api';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 import { Nullable } from '../../../../utils/types/typeUtils';
 import editingState from '../../../state/EditCtrlState';
+import { notifyEditStateChange } from '../../../state/editStateEvents';
 
 export function setMonacoYaml(e: any) {
   editingState.monacoyaml = e;
@@ -19,6 +20,7 @@ export function getMonacoYaml() {
  */
 export function setCurrentJsonSchema(schema: any) {
   editingState.currentJsonSchema = schema;
+  notifyEditStateChange();
 }
 
 export function getCurrentJsonSchema(): any {

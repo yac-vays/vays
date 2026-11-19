@@ -22,6 +22,7 @@ import { RequestEditContext } from '../../../utils/types/internal/request';
 import { logError } from '../../../utils/logger';
 import { ValidateResponse } from '../../../utils/types/internal/validation';
 import { Nullable } from '../../../utils/types/typeUtils';
+import { notifyEditStateChange } from '../../state/editStateEvents';
 import { showError } from '../../global/notification';
 import { reportSchemaWarnings } from '../../global/troubleshoot';
 import { navigateToURL } from '../../global/url';
@@ -243,6 +244,12 @@ export function setEntityPermsListener(cb: ((perms: string[]) => void) | null) {
 export function setEntityPerms(perms: string[]) {
   editingState.entityPerms = perms;
   entityPermsListener?.(perms);
+  notifyEditStateChange();
+}
+
+/** The user's permissions on the entity, as of the latest validation. */
+export function getEntityPerms(): string[] {
+  return editingState.entityPerms;
 }
 
 /**
@@ -261,6 +268,7 @@ export function setAdminOverrideListener(cb: ((active: boolean) => void) | null)
 export function setAdminOverride(active: boolean) {
   editingState.adminOverride = active;
   adminOverrideListener?.(active);
+  notifyEditStateChange();
 }
 
 export function isAdminOverride(): boolean {

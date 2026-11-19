@@ -58,10 +58,10 @@ export const LogContentStatus = ({
   if (state.kind === 'error') {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
-        <p className="text-solid">{state.message}</p>
+        <p className="font-medium text-plainfont">{state.message}</p>
         <button
           type="button"
-          className="rounded-sm border border-stroke px-3 py-1 text-sm text-solid hover:bg-gray-500/10"
+          className="rounded-sm border border-stroke bg-primary-5 py-2 px-4 text-center font-medium text-plain transition hover:border-meta-4 hover:bg-meta-4 hover:text-white dark:bg-meta-4 dark:hover:bg-white dark:hover:text-black"
           onClick={retry}
         >
           Retry

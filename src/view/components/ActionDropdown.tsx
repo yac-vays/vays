@@ -3,6 +3,7 @@ import { hashCode } from '../../utils/hashUtils';
 import { isModifiedClick } from '../../utils/navClick';
 import { GUIActionDropdownArg } from '../../utils/types/internal/actions';
 import { Nullable } from '../../utils/types/typeUtils';
+import { ICON_BUTTON_STYLE, iconButtonClassName } from './Buttons/IconButtonImage';
 import Popover from './Popover';
 
 // Color transform turning any (black) SVG icon into the same grey used for the
@@ -16,6 +17,8 @@ const MINWIDTH_DROPDOWN = 180; // px
 interface ActionDropdownProps {
   actions: GUIActionDropdownArg[];
   entityName: string;
+  /** Whether there are no action buttons before the dropdown (rounded left too). */
+  isLeft?: boolean;
 }
 
 /**
@@ -33,57 +36,34 @@ interface ActionDropdownProps {
  *
  * @satisfies ID: The actionable dropdown items have the ID "action-dropdown-" + hashCode(`${entityName}-${act.action.name}-${act.action.description}`).
  */
-const ActionDropdown = ({ actions, entityName }: ActionDropdownProps) => {
+const ActionDropdown = ({ actions, entityName, isLeft = false }: ActionDropdownProps) => {
   const [open, setOpen] = useState<boolean>(false);
   const isEmpty = actions.length == 0;
 
+  // The last button of the action row: same square, colour and hover as the
+  // action buttons, the chevron centred (it turns while the menu is open).
   const trigger = (
     <div
-      className={
-        'inline-flex items-center justify-center border-t border-r border-b text-center gap-2.5 font-medium bg-[#f5f5f5] dark:bg-meta-4 rounded-sm'
-      }
-      style={{
-        position: 'relative',
-        borderColor: 'rgb(0 0 0/0)',
-        left: -1,
-        zIndex: 1,
-      }}
+      className={`group/dropdown ${iconButtonClassName(isLeft, true)}`}
+      style={{ ...ICON_BUTTON_STYLE, cursor: isEmpty ? 'default' : 'pointer' }}
+      title="Other Actions"
     >
-      <div
-        className={`group flex relative duration-300 hover:text-plainfont ${
-          isEmpty ? 'opacity-40' : 'hover:scale-110'
+      <svg
+        className={`fill-current text-[#64748b] duration-300 ${isEmpty ? 'opacity-40' : 'group-hover/dropdown:scale-125'} ${
+          open ? 'rotate-180' : ''
         }`}
-        style={{ position: 'relative', zIndex: 1 }}
+        width="20"
+        height="20"
+        viewBox="0 0 20 20"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
       >
-        <div
-          className="group relative flex items-center justify-center border-t border-r border-b rounded-r"
-          title="Other Actions"
-          style={{
-            borderColor: 'rgb(0 0 0/0)',
-            height: 36,
-            width: 36,
-            whiteSpace: 'nowrap',
-            position: 'relative',
-            zIndex: 2,
-          }}
-        >
-          <svg
-            className={`-translate-y-1/6 fill-current ${open && 'rotate-180'}`}
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-              fill=""
-            />
-          </svg>
-        </div>
-      </div>
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
+        />
+      </svg>
     </div>
   );
 

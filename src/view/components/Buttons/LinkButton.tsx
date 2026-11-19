@@ -6,6 +6,8 @@ interface LinkButtonProps {
   /** The URL for this entity, or undefined if the link does not apply to it. */
   url: string | undefined;
   isLeft: boolean;
+  /** Whether the button is the last link. */
+  isRight?: boolean;
 }
 
 /**
@@ -13,8 +15,8 @@ interface LinkButtonProps {
  * does not apply to the entity is shown faded out (like a disallowed action),
  * so the icons stay aligned across rows.
  */
-const LinkButton = ({ link, url, isLeft }: LinkButtonProps) => {
-  const className = iconButtonClassName(isLeft);
+const LinkButton = ({ link, url, isLeft, isRight = false }: LinkButtonProps) => {
+  const className = iconButtonClassName(isLeft, isRight);
   if (url == undefined) {
     return (
       <div className={className} style={{ ...ICON_BUTTON_STYLE, cursor: 'default' }}>

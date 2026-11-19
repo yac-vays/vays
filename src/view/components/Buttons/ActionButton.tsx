@@ -6,14 +6,17 @@ import IconButtonImage, { ICON_BUTTON_STYLE, iconButtonClassName } from './IconB
 interface ActionButtonProps {
   actArgs: GUIActionButtonArg;
   isLeft: boolean;
+  /** Whether the button is the last of the action row (no dropdown after it). */
+  isRight?: boolean;
 }
 
 /**
  * @param actArgs the arguments for this specific action
  * @param isLeft whether this action is to the very left of the action row.
+ * @param isRight whether this action is to the very right of the action row.
  * @returns
  */
-const ActionButton = ({ actArgs, isLeft }: ActionButtonProps) => {
+const ActionButton = ({ actArgs, isLeft, isRight = false }: ActionButtonProps) => {
   const [isSending, setSending] = useState<boolean>(false);
   const action = actArgs.action;
 
@@ -35,7 +38,7 @@ const ActionButton = ({ actArgs, isLeft }: ActionButtonProps) => {
   // modified/middle clicks keep their native "open in new tab" behaviour.
   const asLink = actArgs.href != null && actArgs.isAllowed;
 
-  const className = iconButtonClassName(isLeft);
+  const className = iconButtonClassName(isLeft, isRight);
   const style = ICON_BUTTON_STYLE;
 
   const content = isSending ? (

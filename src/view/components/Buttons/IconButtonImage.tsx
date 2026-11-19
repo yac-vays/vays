@@ -10,9 +10,16 @@ const GREY_FILTER =
   'brightness(0) saturate(100%) invert(42%) sepia(24%) saturate(434%) hue-rotate(176deg) brightness(99%) contrast(85%)';
 
 /** @param isLeft whether the button is the very left one of its row */
-export function iconButtonClassName(isLeft: boolean): string {
+/**
+ * The look of an icon button (actions, links, the "other actions" dropdown).
+ * Buttons next to each other form a group: only its outer corners are rounded.
+ *
+ * @param isLeft whether the button is the first of its group
+ * @param isRight whether the button is the last of its group
+ */
+export function iconButtonClassName(isLeft: boolean, isRight: boolean = false): string {
   return `p-1 inline-flex items-center justify-center text-center gap-2.5 font-medium bg-[#f5f5f5] dark:bg-meta-4  border-transparent
-             ${isLeft ? 'rounded-l' : ''}`;
+             ${isLeft ? 'rounded-l' : ''} ${isRight ? 'rounded-r' : ''}`;
 }
 
 export const ICON_BUTTON_STYLE = {

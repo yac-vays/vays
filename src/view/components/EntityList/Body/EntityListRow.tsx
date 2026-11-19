@@ -1,5 +1,4 @@
 import { ReactNode, useEffect, useRef } from 'react';
-import 'react-circular-progressbar/dist/styles.css';
 import { buildOverviewHighlightURL, navigateToURL } from '../../../../controller/global/url';
 import { hasLinksDefined, numTrailingColumns } from '../../../../utils/columnUtils';
 import { hasLogsDefined } from '../../../../utils/logUtils';
@@ -141,12 +140,11 @@ const EntityListRow = ({
                 key="logs"
                 className="pl-8:first-child border-stroke"
                 // `width:1px` makes the auto-layout table shrink this column to its
-                // content (the indicator row) instead of stretching it and leaving a
-                // large empty gap on the right. `paddingRight` gives the icons a
-                // modest gap before the Actions column. The reduced vertical padding
-                // (vs the table's default 1.25rem) offsets the larger symbols so the
-                // row stays as tall as a log-less row.
-                style={{ width: '1px', paddingRight: 24, paddingTop: 8, paddingBottom: 8 }}
+                // content (the symbols) instead of stretching it and leaving a large
+                // empty gap on the right. `paddingRight` gives the symbols a modest gap
+                // before the Actions column. The symbols are as high as the action
+                // buttons, so the cell keeps the table's default vertical padding.
+                style={{ width: '1px', paddingRight: 24 }}
                 role="cell"
               >
                 <LogsField requestContext={requestContext} entityName={entityName} />
@@ -162,8 +160,14 @@ const EntityListRow = ({
                 role="cell"
               >
                 <div className="items-center flex flex-row">
-                  {(requestContext.accessedEntityType?.links ?? []).map((link, i) => (
-                    <LinkButton key={link.name} link={link} url={links[link.name]} isLeft={i === 0} />
+                  {(requestContext.accessedEntityType?.links ?? []).map((link, i, all) => (
+                    <LinkButton
+                      key={link.name}
+                      link={link}
+                      url={links[link.name]}
+                      isLeft={i === 0}
+                      isRight={i === all.length - 1}
+                    />
                   ))}
                 </div>
               </td>,
@@ -178,17 +182,22 @@ const EntityListRow = ({
               {/* Buttons and the dropdown trigger staying together on one line. */}
               <div className="items-center flex flex-row">
                 {(function () {
-                  const jsx: ReactNode[] = [];
-                  let isLeft = true;
-                  for (const act of actionPair.favActs) {
-                    jsx.push(<ActionButton key={act.action.name} actArgs={act} isLeft={isLeft} />);
-                    isLeft = false;
-                    // TODO: using pseudoclass?
-                  }
-                  return jsx;
+                  const hasDropdown = actionPair.dropdownActs.length > 0;
+                  return actionPair.favActs.map((act, i, all) => (
+                    <ActionButton
+                      key={act.action.name}
+                      actArgs={act}
+                      isLeft={i === 0}
+                      isRight={!hasDropdown && i === all.length - 1}
+                    />
+                  ));
                 })()}
                 {actionPair.dropdownActs.length > 0 ? (
-                  <ActionDropdown entityName={entityName} actions={actionPair.dropdownActs} />
+                  <ActionDropdown
+                    entityName={entityName}
+                    actions={actionPair.dropdownActs}
+                    isLeft={actionPair.favActs.length === 0}
+                  />
                 ) : (
                   <></>
                 )}

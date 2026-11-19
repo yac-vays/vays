@@ -9,13 +9,8 @@ import { EntityLog, LogDecl } from '../../../../utils/types/api';
 import { RequestContext } from '../../../../utils/types/internal/request';
 import RichInfoPanel from '../../RichInfoPanel';
 import LogPanel from './LogPanel';
-import NoDataLog from './NoDataLog';
 import { getLogRenderer } from './renderers';
-
-// Size of a single log indicator (equal across log types). The row height is
-// kept in line with log-less rows by trimming the cell's vertical padding in
-// EntityListRow, not by shrinking the symbol — see the Logs <td> there.
-const LOG_ITEM_CLASS = 'max-w-[44px] min-w-[34px] 2xl:max-w-[50px]';
+import { SYMBOL_SIZE, SymbolFrame, SymbolLoading, SymbolNone } from './renderers/symbols';
 
 // Base interval between two background polls of an entity's logs (a little
 // random jitter is added so the rows don't all fire at once). Note that
@@ -135,28 +130,27 @@ const LogsField = ({
       if (wake) wake();
     };
   }, [entityName]);
+  const logs = requestContext.accessedEntityType?.logs ?? [];
   return (
+    // One group of squares, like the action buttons (separated by a hairline).
     <div
-      className="flex flex-row flex-nowrap gap-1 px-1 py-0"
-      style={{
-        verticalAlign: 'middle',
-        minWidth: Math.max(2, numLogElts) * 40,
-      }}
+      className="flex flex-row flex-nowrap items-center gap-px"
+      style={{ minWidth: Math.max(2, numLogElts) * (SYMBOL_SIZE + 1) }}
     >
-      {!requestContext.accessedEntityType?.logs ||
-      requestContext.accessedEntityType.logs.length == 0 ? (
+      {logs.length == 0 ? (
         <em className="opacity-80">No Logs Defined</em>
       ) : (
-        requestContext.accessedEntityType.logs.map((decl) => (
-          <div key={decl.name} className={LOG_ITEM_CLASS}>
-            <LogSlot
-              decl={decl}
-              entries={logObject[decl.name] ?? []}
-              loading={isLoading}
-              entityName={entityName}
-              requestContext={requestContext}
-            />
-          </div>
+        logs.map((decl, i) => (
+          <LogSlot
+            key={decl.name}
+            decl={decl}
+            entries={logObject[decl.name] ?? []}
+            loading={isLoading}
+            entityName={entityName}
+            requestContext={requestContext}
+            first={i === 0}
+            last={i === logs.length - 1}
+          />
         ))
       )}
     </div>
@@ -174,33 +168,44 @@ export const LogSlot = ({
   loading,
   entityName,
   requestContext,
+  first = true,
+  last = true,
 }: {
   decl: LogDecl;
   entries: EntityLog[];
   loading: boolean;
   entityName: string;
   requestContext: RequestContext;
+  /** Whether the symbol is the first / last of the group (rounded corners). */
+  first?: boolean;
+  last?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
 
-  // Still fetching: the (non-clickable) spinner placeholder.
-  if (loading) return <NoDataLog loading />;
+  const frame = (title: string, content: React.ReactNode) => (
+    <SymbolFrame first={first} last={last} title={title}>
+      {content}
+    </SymbolFrame>
+  );
+
+  // Still fetching: a (non-clickable) spinner.
+  if (loading) return frame(decl.title, <SymbolLoading />);
 
   // No data: still openable, but the panel just states there are none.
   if (entries.length === 0) {
     return (
-      <RichInfoPanel anchor={<NoDataLog loading={false} />}>
+      <RichInfoPanel anchor={frame(`${decl.title}: no entries`, <SymbolNone />)}>
         <LogPanel title={decl.title} description={decl.description} logList={[]} />
       </RichInfoPanel>
     );
   }
 
   const renderer = getLogRenderer(decl);
-  const indicator = (
-    <div className="opacity-60">
-      <renderer.Indicator decl={decl} latest={entries[0]} />
-    </div>
+  const latest = entries[0];
+  const indicator = frame(
+    latest.message ? `${decl.title}: ${latest.message}` : decl.title,
+    <renderer.Indicator decl={decl} latest={latest} />,
   );
   const view = (
     <renderer.View

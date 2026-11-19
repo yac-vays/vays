@@ -22,9 +22,11 @@
   * Giving the individual cell content some formatting and padding.
   */
   .entity-list>tbody>tr>td {
+    /* The tallest content of a row are the 36px status symbols / action
+       buttons: a little padding around them is enough. */
     border-bottom-width:1px;
-    padding-top:1.25rem;
-    padding-bottom:1.25rem;
+    padding-top:0.5rem;
+    padding-bottom:0.5rem;
     font-weight:500
   }
 /**

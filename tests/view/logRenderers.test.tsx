@@ -1,25 +1,19 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { forwardRef, useImperativeHandle } from 'react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import LogPanel from '../../src/view/components/EntityList/Logs/LogPanel';
 import { LogSlot } from '../../src/view/components/EntityList/Logs/LogsField';
 import { getLogRenderer, LOG_RENDERERS } from '../../src/view/components/EntityList/Logs/renderers';
 import { downloadFilename } from '../../src/view/components/EntityList/Logs/renderers/document';
+import { iconButtonClassName } from '../../src/view/components/Buttons/IconButtonImage';
 import type { EntityLog, LogDecl } from '../../src/utils/types/api';
 import { getTestEditRequestContext } from '../testUtils';
 
 // Monaco does not run in jsdom: replace the lazily loaded viewer.
-const { findSpy } = vi.hoisted(() => ({ findSpy: vi.fn() }));
 vi.mock('../../src/view/components/EntityList/Logs/renderers/DocumentViewer', () => ({
-  default: forwardRef<{ find: () => void }, { content: string; language: string }>(
-    ({ content, language }, ref) => {
-      useImperativeHandle(ref, () => ({ find: findSpy }));
-      return (
-        <pre data-testid="document-viewer" data-language={language}>
-          {content}
-        </pre>
-      );
-    },
+  default: ({ content, language }: { content: string; language: string }) => (
+    <pre data-testid="document-viewer" data-language={language}>
+      {content}
+    </pre>
   ),
 }));
 
@@ -59,7 +53,6 @@ const fetchMock = vi.fn();
 beforeEach(() => {
   fetchMock.mockReset();
   global.fetch = fetchMock as unknown as typeof fetch;
-  findSpy.mockClear();
 });
 afterEach(() => vi.restoreAllMocks());
 
@@ -150,12 +143,10 @@ describe('log slot', () => {
     expect(await screen.findByText('now there')).toBeTruthy();
   });
 
-  it('shows a document with search, copy and download', async () => {
+  it('shows a document with download', async () => {
     fetchMock.mockResolvedValue(
       respond(200, { name: 'howto', time: '2026-11-18T12:00:00Z', content: 'a: 1\n' }),
     );
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.assign(navigator, { clipboard: { writeText } });
     URL.createObjectURL = vi.fn(() => 'blob:x');
     URL.revokeObjectURL = vi.fn();
     let downloaded = '';
@@ -178,18 +169,13 @@ describe('log slot', () => {
     const viewer = await screen.findByTestId('document-viewer');
     expect(viewer.textContent).toBe('a: 1\n');
     expect(viewer.getAttribute('data-language')).toBe('yaml');
+    expect(screen.queryByRole('button', { name: /Search|Copy/ })).toBeNull();
 
-    fireEvent.click(screen.getByRole('button', { name: /Search/ }));
-    expect(findSpy).toHaveBeenCalled();
-
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: /Copy/ }));
-    });
-    expect(writeText).toHaveBeenCalledWith('a: 1\n');
-    expect(await screen.findByRole('button', { name: /Copied/ })).toBeTruthy();
-
-    fireEvent.click(screen.getByRole('button', { name: /Download/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Download' }));
     expect(downloaded).toBe('node1-howto.yaml');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close (Esc)' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
   it('marks problems of window renderers with a light warning', () => {
@@ -234,5 +220,82 @@ describe('document options', () => {
     expect(downloadFilename('node1', 'facts', { filename: '{name}.facts.yml' })).toBe(
       'node1.facts.yml',
     );
+  });
+});
+
+describe('symbols', () => {
+  const slot = (renderer: string, fields: Partial<EntityLog>, extra = {}) =>
+    render(
+      <LogSlot
+        decl={decl(renderer)}
+        entries={[entry(fields)]}
+        loading={false}
+        entityName="node1"
+        requestContext={rc()}
+        {...extra}
+      />,
+    );
+
+  it('shows the progress as percentage and bar', () => {
+    const { container } = slot('progress', { progress: 40, problem: null });
+    expect(container.textContent).toBe('40%');
+    expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('40');
+  });
+
+  it('shows a check when done and an error (with the bar where it stopped) on problems', () => {
+    const done = slot('progress', { progress: 100, problem: false });
+    expect(done.container.textContent).toBe('');
+    expect(done.container.querySelector(`path[d^="m424-296"]`)).toBeTruthy(); // check
+    done.unmount();
+    const failed = slot('progress', { progress: 70, problem: true });
+    expect(failed.container.textContent).toBe('');
+    expect(screen.getByRole('progressbar').getAttribute('aria-valuenow')).toBe('70');
+    expect(failed.container.querySelector(`path[d^="M480-280"]`)).toBeTruthy(); // error
+  });
+
+  it('shows the health of the problem renderer', () => {
+    for (const [problem, icon] of [
+      [true, 'M480-280'],
+      [false, 'm424-296'],
+      [null, 'M478-240'],
+    ] as const) {
+      const { container, unmount } = slot('problem', { problem });
+      expect(container.querySelector(`path[d^="${icon}"]`)).toBeTruthy();
+      unmount();
+    }
+  });
+
+  it('shows loading and missing entries the same for every renderer', () => {
+    const loading = render(
+      <LogSlot decl={decl('document')} entries={[]} loading entityName="n" requestContext={rc()} />,
+    );
+    expect(screen.getByRole('status', { name: 'Loading' })).toBeTruthy();
+    loading.unmount();
+    render(
+      <LogSlot
+        decl={decl('progress')}
+        entries={[]}
+        loading={false}
+        entityName="n"
+        requestContext={rc()}
+      />,
+    );
+    expect(screen.getByTitle('How to connect: no entries')).toBeTruthy();
+  });
+
+  it('rounds only the outer corners of the group and shows the message as tooltip', () => {
+    slot('messages', { message: 'disk replaced' }, { first: true, last: false });
+    const frame = screen.getByTitle('How to connect: disk replaced');
+    expect(frame.className).toContain('rounded-l');
+    expect(frame.className).not.toContain('rounded-r');
+  });
+});
+
+describe('icon button groups', () => {
+  it('rounds the outer corners only', () => {
+    expect(iconButtonClassName(true)).toContain('rounded-l');
+    expect(iconButtonClassName(true)).not.toContain('rounded-r');
+    expect(iconButtonClassName(false, true)).toContain('rounded-r');
+    expect(iconButtonClassName(false, true)).not.toContain('rounded-l');
   });
 });

@@ -55,7 +55,7 @@ RUN npm run build
 # listens on 8080 by default — no root required.
 #
 
-FROM nginxinc/nginx-unprivileged:1.31.7-alpine3.24 AS production
+FROM nginx/nginx-unprivileged:1.31.9-alpine3.24 AS production
 
 # Enforce test run
 COPY --from=test /tmp/tested /dev/null

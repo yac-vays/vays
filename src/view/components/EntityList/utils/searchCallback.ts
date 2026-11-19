@@ -3,6 +3,7 @@ import {
   isStaleListGeneration,
   nextListGeneration,
 } from '../../../../controller/local/Overview/list';
+import { saveSearchTerms } from '../../../../controller/local/Overview/filters';
 import { QueryResponse, QueryResult } from '../../../../utils/types/internal/entityList';
 import { RequestContext } from '../../../../utils/types/internal/request';
 
@@ -43,6 +44,8 @@ export function getSearchCallback(
       const newSearchTerms = [...searchTerms];
       newSearchTerms[index] = newSearchTerm;
       setSearchTerms(newSearchTerms);
+      // Kept for the tab, so the filters are still there when coming back.
+      saveSearchTerms(requestContext, newSearchTerms);
 
       // Debounce the fetch so fast typing causes one request, not one per
       // keystroke; the (shared) generation stamp drops responses that lost the

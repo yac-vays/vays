@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import { showInfo } from '../../../../controller/global/notification';
 import { buildCreateURL, navigateToURL } from '../../../../controller/global/url';
+import {
+  hasActiveFilters,
+  loadSearchTerms,
+  saveSearchTerms,
+  SearchTerms,
+} from '../../../../controller/local/Overview/filters';
 import {
   fetchEntities,
   getEntityPage,
@@ -11,6 +18,7 @@ import { probeEntity } from '../../../../model/entityData';
 import iLocalStorage from '../../../../session/persistent/LocalStorage';
 import { QueryResponse, QueryResult } from '../../../../utils/types/internal/entityList';
 import { RequestContext } from '../../../../utils/types/internal/request';
+import { entityToastTitle } from '../../../../utils/toastUtils';
 
 export function useInitializeList(requestContext: RequestContext, targetEntityName?: string) {
   const [reloadCount, setReloadCount] = useState<number>(0);
@@ -18,7 +26,10 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
   //const tableEntries = useRef<QueryResult[]>([]);
   const [tableHeaderEntries, setTableHeaderEntries] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [searchTerms, setSearchTerms] = useState<(string | null)[]>([]);
+  // The column filters, restored from the tab's session (see filters.ts).
+  const [searchTerms, setSearchTerms] = useState<SearchTerms>(() =>
+    loadSearchTerms(requestContext),
+  );
   // The entity to scroll to. Only set when we actually (re)load/page to it, so
   // that simply highlighting an already-visible entity does not scroll.
   const [scrollTargetName, setScrollTargetName] = useState<string | undefined>(undefined);
@@ -42,6 +53,19 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
   latestSearchTermsRef.current = searchTerms;
   const prevDataKeyRef = useRef<string>('');
   const prevTargetRef = useRef<string | undefined>(undefined);
+  // The list (backend + type) whose stored filters are loaded. The type
+  // declaration (its columns) may only arrive after mounting.
+  const listIdentity = `${requestContext.yacURL}|${requestContext.entityTypeName}`;
+  const filtersLoadedForRef = useRef<string | null>(
+    requestContext.accessedEntityType?.options != undefined ? listIdentity : null,
+  );
+
+  /** Replace the filters (state, the effect's view of them and the session). */
+  const applySearchTerms = (terms: SearchTerms) => {
+    latestSearchTermsRef.current = terms;
+    setSearchTerms(terms);
+    saveSearchTerms(requestContext, terms);
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -59,6 +83,13 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
       if (requestContext.accessedEntityType?.options == undefined) {
         setTableHeaderEntries([]);
         return;
+      }
+
+      if (filtersLoadedForRef.current !== listIdentity) {
+        filtersLoadedForRef.current = listIdentity;
+        const stored = loadSearchTerms(requestContext);
+        latestSearchTermsRef.current = stored;
+        setSearchTerms(stored);
       }
 
       // Did the underlying data (type/backend/page size/explicit reload) change,
@@ -96,6 +127,35 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
       const header: string[] = getHeaderEntries(requestContext);
       setTableHeaderEntries(header);
 
+      /**
+       * The targeted entity is not in the list. Ask YAC whether it exists:
+       * only if it doesn't (404) the user is forwarded to the create form,
+       * prefilled with the requested name. Otherwise the list is shown — the
+       * user may not see the entity (403, toast shown) or the check failed
+       * (toast shown).
+       */
+      const handleMissingTarget = async (): Promise<'done' | 'stay'> => {
+        if (!targetEntityName) return 'stay';
+        const existence = await probeEntity(targetEntityName, requestContext);
+        // 'done': superseded by a newer load, or navigated to the create form.
+        if (!mounted || isStaleListGeneration(gen)) return 'done';
+        if (
+          existence === 'missing' &&
+          requestContext.backendObject &&
+          requestContext.entityTypeName
+        ) {
+          navigateToURL(
+            buildCreateURL(
+              requestContext.backendObject,
+              requestContext.entityTypeName,
+              targetEntityName,
+            ),
+          );
+          return 'done';
+        }
+        return 'stay';
+      };
+
       // Jump to the page containing the targeted entity (from the URL), if any.
       let page = 1;
       if (targetEntityName) {
@@ -108,32 +168,39 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
         if (!mounted || isStaleListGeneration(gen)) return;
         if (targetPage != null) {
           page = targetPage;
-        } else if (targetChanged) {
-          // The targeted entity is not in the (filtered) list. Ask YAC whether
-          // it exists: only if it doesn't (404) do we forward the user to the
-          // create form, prefilled with the requested name. Otherwise we render
-          // the (filtered) list — the entity is hidden by the search filter, or
-          // the user may not see it (403, toast shown), or the check failed
-          // (toast shown).
-          // Only on navigation to the target: a reload (refresh button, page
-          // size, a write) keeps showing the list, even if the pinned entity
-          // got filtered out or was deleted elsewhere meanwhile.
-          const existence = await probeEntity(targetEntityName, requestContext);
+        } else if (targetChanged && hasActiveFilters(latestSearchTermsRef.current)) {
+          // The targeted entity is hidden by the column filters (e.g. a link
+          // to it was opened while the list is filtered): when it is in the
+          // unfiltered list, drop the filters to show it — with a way back.
+          const unfilteredPage = await getEntityPage(
+            requestContext,
+            targetEntityName,
+            numResultsPerPage.valueOf(),
+            null,
+          );
           if (!mounted || isStaleListGeneration(gen)) return;
-          if (
-            existence === 'missing' &&
-            requestContext.backendObject &&
-            requestContext.entityTypeName
-          ) {
-            navigateToURL(
-              buildCreateURL(
-                requestContext.backendObject,
-                requestContext.entityTypeName,
-                targetEntityName,
-              ),
+          if (unfilteredPage != null) {
+            const previousTerms = latestSearchTermsRef.current;
+            applySearchTerms([]);
+            page = unfilteredPage;
+            showInfo(
+              entityToastTitle(requestContext, targetEntityName),
+              'The column filters were removed to show it.',
+              {
+                label: 'Restore filters',
+                onClick: () => {
+                  applySearchTerms(previousTerms);
+                  setReloadCount((c) => c + 1);
+                },
+              },
             );
+          } else if ((await handleMissingTarget()) === 'done') {
+            // Not in the unfiltered list either: missing (create form) or not
+            // visible to the user — then the filtered list stays.
             return;
           }
+        } else if (targetChanged) {
+          if ((await handleMissingTarget()) === 'done') return;
         }
       }
       // Guarded like the final writes: a superseded run must not move the

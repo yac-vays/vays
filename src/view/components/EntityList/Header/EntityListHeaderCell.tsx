@@ -1,4 +1,4 @@
-import { DetailedHTMLProps, InputHTMLAttributes, useRef, useState } from 'react';
+import { DetailedHTMLProps, InputHTMLAttributes, useEffect, useRef, useState } from 'react';
 import useOutsideClick from '../../../hooks/useOutsideClick';
 
 export const MINWIDTH_COLUMN = 100; // px
@@ -8,6 +8,12 @@ interface ELHeaderCellProps {
   firstField: boolean;
   searchable: boolean;
   searchCallback: undefined | ((a: string) => void);
+  /**
+   * The current filter of the column. Typing changes it via `searchCallback`;
+   * a change from elsewhere (restored filters, filters removed to show an
+   * entity) is written into the search input.
+   */
+  searchTerm?: string;
   /**
    * If true, the column shrinks to its content width (used for the Actions
    * column) instead of claiming a minimum width and trailing padding.
@@ -27,11 +33,21 @@ const EntityListHeaderCell = ({
   firstField,
   searchable,
   searchCallback,
+  searchTerm = '',
   shrink = false,
 }: ELHeaderCellProps) => {
-  const [openSearch, setOpenSearch] = useState(false);
+  const [openSearch, setOpenSearch] = useState(searchable && searchTerm !== '');
   const headerEntryRef = useRef<HTMLTableCellElement>(null);
   const inputBar = useRef<HTMLInputElement>(null);
+
+  // Show a filter that was set elsewhere; while typing, the input already has it.
+  useEffect(() => {
+    const input = inputBar.current;
+    if (!searchable || input == null) return;
+    if (input.value !== searchTerm) input.value = searchTerm;
+    if (searchTerm !== '') setOpenSearch(true);
+    else if (document.activeElement !== input) setOpenSearch(false);
+  }, [searchable, searchTerm]);
 
   const toggleOpenSearch = () => {
     if (searchable) {

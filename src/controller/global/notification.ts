@@ -32,6 +32,19 @@ export function showError(title: string, detail: string) {
 }
 
 /**
+ * Show an info toast: a neutral notice, e.g. about something that was done for
+ * the user, with an optional link to undo it.
+ * @param title the title to display.
+ * @param detail the message below, giving more detail.
+ * @param link optional action link below the detail (e.g. "Restore filters").
+ */
+export function showInfo(title: string, detail: string, link?: ToastLink) {
+  if (notifyCtrlState.notifyCallback != null) {
+    notifyCtrlState.notifyCallback(ToastMode.INFO, title, detail, link);
+  }
+}
+
+/**
  * Show success toast.
  * @param title the title to display.
  * @param detail the message below, giving more detail.

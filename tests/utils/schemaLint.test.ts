@@ -62,6 +62,21 @@ describe('schemaLint', () => {
       expect(f[0].message).toContain(EXPLICIT_RENDERERS.join(', '));
     });
 
+    it('Explains an implicit renderer named explicitly, instead of calling it unknown', () => {
+      const f = form({
+        a: described({
+          type: 'array',
+          uniqueItems: true,
+          items: { type: 'string', enum: ['x', 'y'] },
+          vays_options: { renderer: 'multiple_choice' },
+        }),
+      });
+      expect(titles(f)).toEqual(['Implicit renderer selected explicitly']);
+      expect(f[0].priority).toBe(3);
+      expect(f[0].message).toContain("'type: array' of 'enum' or 'oneOf' items");
+      expect(f[0].message).toContain('no effect');
+    });
+
     it('Flags a string renderer on a non-string type', () => {
       const f = form({
         a: described({ type: 'integer', vays_options: { renderer: 'text_area' } }),

@@ -94,3 +94,16 @@
 .locked-text{
     opacity: 0.55;
 }
+
+/* Another indicator on a locked line (error, removed-lines bar, limit dot):
+   Monaco merges the glyph classes onto one element, and the lock mask would
+   clip that indicator to a tiny fragment (e.g. a tiny red "!" instead of the
+   error icon). The other indicator wins: it is what matters on that line. */
+.locked-glyph.error-glyph,
+.locked-glyph.diff-removed-glyph,
+.locked-glyph.limit-glyph{
+    -webkit-mask: none;
+    mask: none;
+    background-color: transparent;
+    opacity: 1;
+}

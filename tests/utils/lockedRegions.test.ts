@@ -57,7 +57,7 @@ groups:
       ['fixed-optional', 'legacy: keep'],
       ['fixed', 'vlan: 12'],
       ['fixed', 'uid: 1000'],
-      ['fixed-optional', 'groups:\n  - a\n  - b\n'],
+      ['fixed-optional', 'groups:\n  - a\n  - b'],
     ]);
   });
 
@@ -110,7 +110,11 @@ describe('edits', () => {
     expect(blockingRegion(regions, 7, 7, false)).toBeNull(); // end of the value: Enter adds a line
     expect(blockingRegion(regions, 0, 0, false)).toBeNull();
     expect(blockingRegion(regions, 11, 11, false)).toBe(inline);
-    expect(blockingRegion(regions, 20, 20, false)).toBeNull(); // optional fixed values are not blocked
+    // optional fixed values can't be changed either ...
+    expect(blockingRegion(regions, 20, 20, false)).toBe(optional);
+    // ... but removed as whole lines ("owner: alice\n")
+    expect(blockingRegion(regions, 13, 26, true)).toBeNull();
+    expect(blockingRegion(regions, 15, 26, false)).toBe(optional);
   });
 
   it('blocks selections touching a region, except whole lines with inline comments', () => {
@@ -133,5 +137,6 @@ describe('edits', () => {
     expect(edgeRegion(regions, 0, 'ArrowLeft')).toBeNull();
     expect(edgeRegion(regions, 12, 'Enter')).toBeNull(); // after the inline comment
     expect(edgeRegion(regions, 12, 'a')).toBe(inline);
+    expect(edgeRegion(regions, 25, 'x')).toBe(optional); // appending to an optional fixed value
   });
 });

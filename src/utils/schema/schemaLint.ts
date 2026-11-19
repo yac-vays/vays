@@ -42,6 +42,22 @@ export const EXPLICIT_RENDERERS = [
   'unavailable',
 ] as const;
 
+/**
+ * The implicit renderers (see the renderer docs): VAYS picks them from the
+ * schema alone, their testers never look at `vays_options.renderer`.
+ */
+const IMPLICIT_RENDERERS: Record<string, string> = {
+  text: "'type: string' (or untyped with a 'pattern')",
+  number: "'type: number' / 'integer'",
+  boolean: "'type: boolean'",
+  date: "'type: string' with 'format: date'",
+  enum: "properties with an 'enum'",
+  one_of_enum: "properties with a 'oneOf' of 'const' values",
+  multiple_choice: "'type: array' of 'enum' or 'oneOf' items",
+  array: 'arrays of primitives or flat objects',
+  nested_array: 'object arrays whose items contain a nested array or object',
+};
+
 /** Explicit renderers whose tester requires `type: string` (or no type). */
 const STRING_RENDERERS = new Set([
   'age_secret',
@@ -392,7 +408,15 @@ function lintField(f: Field, findings: LintFinding[]) {
 
   // --- renderer selection -------------------------------------------------
   if (renderer !== undefined) {
-    if (!(EXPLICIT_RENDERERS as readonly string[]).includes(renderer)) {
+    if (Object.hasOwn(IMPLICIT_RENDERERS, renderer)) {
+      add(
+        3,
+        'Implicit renderer selected explicitly',
+        `The renderer '${renderer}' is picked automatically for ${IMPLICIT_RENDERERS[renderer]}; ` +
+          "'renderer' can't select it, so the option has no effect and can be removed. " +
+          `Renderers to select explicitly: ${EXPLICIT_RENDERERS.join(', ')}.`,
+      );
+    } else if (!(EXPLICIT_RENDERERS as readonly string[]).includes(renderer)) {
       add(
         9,
         'Unknown renderer',

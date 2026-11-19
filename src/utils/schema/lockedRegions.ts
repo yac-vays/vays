@@ -8,8 +8,9 @@ import { isMap, isNode, isPair, isScalar, isSeq, Node, parseDocument, Parser, Sc
  *     (YAC pins stored values the user may not write that way, e.g. missing
  *     `yac_perms` or `yac_editable: false`; spec authors can also write one).
  *     Required in its object: neither changeable nor removable.
- *   - `fixed-optional`: the same, but the key may be removed (e.g. stored keys
- *     the schema does not define, which `cln` holders may clean up).
+ *   - `fixed-optional`: the same, but the key may be removed as a whole (e.g.
+ *     stored keys the schema does not define, which `cln` holders may clean
+ *     up) — the value itself can't be changed either.
  *   - `comment`: a comment; without the `cln` permission YAC rejects any change
  *     of comments (adding, editing, removing), so it is locked too.
  *
@@ -40,7 +41,13 @@ function nodeEnd(node: Node): number {
   return node.range ? node.range[1] : 0;
 }
 
-function collectFixed(schema: any, node: unknown, out: LockedRegion[]): void {
+/** `end` moved back over trailing whitespace (block values end after their newline). */
+function trimEnd(yamlText: string, end: number): number {
+  while (end > 0 && /\s/.test(yamlText[end - 1])) end--;
+  return end;
+}
+
+function collectFixed(yamlText: string, schema: any, node: unknown, out: LockedRegion[]): void {
   if (schema == null || typeof schema !== 'object') return;
   if (isMap(node)) {
     const props = schema.properties;
@@ -56,16 +63,16 @@ function collectFixed(schema: any, node: unknown, out: LockedRegion[]): void {
         out.push({
           kind: required.includes(name) ? 'fixed' : 'fixed-optional',
           start: pair.key.range[0],
-          end: Math.max(end, nodeEnd(pair.key)),
+          end: trimEnd(yamlText, Math.max(end, nodeEnd(pair.key))),
         });
       } else {
-        collectFixed(sub, pair.value, out);
+        collectFixed(yamlText, sub, pair.value, out);
       }
     }
   } else if (isSeq(node)) {
     const items = schema.items;
     if (items == null || typeof items !== 'object' || Array.isArray(items)) return;
-    for (const item of node.items) collectFixed(items, item, out);
+    for (const item of node.items) collectFixed(yamlText, items, item, out);
   }
 }
 
@@ -80,7 +87,7 @@ export function fixedValueRegions(yamlText: string, jsonSchema: any): LockedRegi
   }
   if (doc.errors.length > 0) return [];
   const out: LockedRegion[] = [];
-  collectFixed(jsonSchema, doc.contents, out);
+  collectFixed(yamlText, jsonSchema, doc.contents, out);
   return out;
 }
 
@@ -164,7 +171,8 @@ export function startsComment(yamlText: string, offset: number): boolean {
  * comment adds a line), see `edgeRegion` for the keys that would still change
  * it there. `wholeLines` tells whether the selection spans complete lines:
  * deleting whole lines may take inline comments along (YAC drops a key's
- * comment with the key), but never a fixed value or a standalone comment line.
+ * comment with the key) or an optional fixed value (removing the key), but
+ * never a required fixed value or a standalone comment line.
  */
 export function blockingRegion(
   regions: LockedRegion[],
@@ -173,13 +181,11 @@ export function blockingRegion(
   wholeLines: boolean,
 ): LockedRegion | null {
   for (const r of regions) {
-    if (r.kind === 'fixed-optional') continue;
     const touches =
       start === end ? start > r.start && start < r.end : start < r.end && end > r.start;
     if (!touches) continue;
-    if (r.kind === 'comment' && !r.standalone && wholeLines && start <= r.start && end >= r.end) {
-      continue;
-    }
+    const removable = r.kind === 'fixed-optional' || (r.kind === 'comment' && !r.standalone);
+    if (removable && wholeLines && start <= r.start && end >= r.end) continue;
     return r;
   }
   return null;
@@ -198,7 +204,6 @@ export function edgeRegion(
 ): LockedRegion | null {
   const printable = key.length === 1;
   for (const r of regions) {
-    if (r.kind === 'fixed-optional') continue;
     if (offset === r.end && (printable || key === 'Backspace')) return r;
     if (offset === r.start && (printable || key === 'Delete')) return r;
   }
@@ -207,7 +212,8 @@ export function edgeRegion(
 
 export const LOCK_MESSAGES: Record<LockedRegionKind, string> = {
   fixed: "This value is fixed and can't be changed or removed here.",
-  'fixed-optional': "This value is fixed: it can't be changed here, but the key may be removed.",
+  'fixed-optional':
+    "This value is fixed and can't be changed here, but the key may be removed (select its whole lines and delete them).",
   comment:
     'Changing comments needs the `cln` permission (it covers comments, key order and formatting).',
 };

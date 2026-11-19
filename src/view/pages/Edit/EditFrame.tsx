@@ -254,9 +254,12 @@ const EditFrame = ({
   const nothingToCommit = requestEditContext.mode === 'edit' && !hasChanges;
   // Admin override: with "adm" the user may unlock committing past validation
   // errors (the backend then only enforces YAML syntax, name rules, perms and
-  // limits — see the `force` parameter of the write endpoints).
+  // limits — see the `force` parameter of the write endpoints). The lock is
+  // always offered, not only once validation fails: unlocking also lifts the
+  // editor's locks on fixed values, which would otherwise prevent the very
+  // edit that needs the override.
   const hasAdminPerm = entityPerms.includes('adm');
-  const showAdminLock = !isReadOnly && hasAdminPerm && (!isValid || adminUnlocked);
+  const showAdminLock = !isReadOnly && hasAdminPerm;
   // The latest validation got no answer (network, 5xx): the footer offers
   // "Retry", and Commit stays blocked — even in admin mode, as the save payload
   // would miss the unvalidated edit.
@@ -288,14 +291,20 @@ const EditFrame = ({
   const btnDisabledInPair = `cursor-not-allowed text-reducedfont ${
     adminUnlocked ? 'border-[#d32f2f]' : 'border-black dark:border-meta-4'
   }`;
+  // Unlocked but still valid: a regular Commit, framed like the open lock.
+  const btnEnabledUnlocked = btnEnabled.replace(
+    'border-black dark:border-meta-4',
+    'border-[#d32f2f]',
+  );
 
   const unlockAdminMode = () => {
     showModalMessage(
       'Unlock admin mode?',
-      'You will be able to commit this document although it fails validation. ' +
-        'YAC will still check the YAML syntax, the name, your permissions and ' +
-        'the limits — but **not** the schema. The commit is recorded as an ' +
-        'admin override, and the mode locks again after one commit.',
+      'You will be able to change fixed values and to commit this document ' +
+        'although it fails validation. YAC will still check the YAML syntax, ' +
+        'the name, your permissions and the limits — but **not** the schema. ' +
+        'An invalid commit is recorded as an admin override, and the mode ' +
+        'locks again after one commit.',
       async () => setAdminOverride(true),
       async () => {},
       'Unlock',
@@ -496,7 +505,7 @@ const EditFrame = ({
                     title={
                       adminUnlocked
                         ? 'Lock admin mode again (commits then require valid data).'
-                        : 'Unlock admin mode: commit although validation fails (adm permission).'
+                        : 'Unlock admin mode: change fixed values and commit although validation fails (adm permission).'
                     }
                     onClick={() => (adminUnlocked ? setAdminOverride(false) : unlockAdminMode())}
                     className={`${btnBase} rounded-r-none border-r-0 ${
@@ -532,7 +541,9 @@ const EditFrame = ({
                         : btnDisabled
                       : commitOverridden
                         ? btnOverride
-                        : btnEnabled
+                        : adminUnlocked
+                          ? btnEnabledUnlocked
+                          : btnEnabled
                   }`}
                 >
                   {isValidating ? (

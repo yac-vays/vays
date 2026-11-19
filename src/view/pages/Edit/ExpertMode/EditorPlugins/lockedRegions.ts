@@ -112,20 +112,23 @@ export default async function editorLockedRegions(
     for (const r of regions) {
       const start = model.getPositionAt(r.start);
       const end = model.getPositionAt(r.end);
-      const hoverMessage = { value: `🔒 ${LOCK_MESSAGES[r.kind]}` };
+      const hoverMessage = { value: LOCK_MESSAGES[r.kind] };
       decorations.push({
         range: new monaco.Range(start.lineNumber, start.column, end.lineNumber, end.column),
         options: { inlineClassName: 'locked-text', hoverMessage },
       });
-      // A lock in the gutter for lines that are locked as a whole.
+      // A lock in the gutter on every line that is locked as a whole (all
+      // lines of a multi-line value, like consecutive comment lines).
       if (r.kind !== 'comment' || r.standalone) {
-        decorations.push({
-          range: new monaco.Range(start.lineNumber, 1, start.lineNumber, 1),
-          options: {
-            glyphMarginClassName: `locked-glyph${r.kind === 'fixed-optional' ? ' locked-glyph-optional' : ''}`,
-            glyphMarginHoverMessage: hoverMessage,
-          },
-        });
+        for (let line = start.lineNumber; line <= end.lineNumber; line++) {
+          decorations.push({
+            range: new monaco.Range(line, 1, line, 1),
+            options: {
+              glyphMarginClassName: `locked-glyph${r.kind === 'fixed-optional' ? ' locked-glyph-optional' : ''}`,
+              glyphMarginHoverMessage: hoverMessage,
+            },
+          });
+        }
       }
     }
     collection?.set(decorations);

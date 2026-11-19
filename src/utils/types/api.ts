@@ -33,8 +33,8 @@ export const TYPE_CHECK_VALIDATE_RESP = `{
   schemas: {
     json_schema: Object,
     ui_schema: {
-        type: String,
-        elements: *,
+        type: Maybe String,
+        elements: Maybe *,
     },
     data: Object,
     valid: Boolean,
@@ -55,9 +55,13 @@ export const TYPE_CHECK_VALIDATE_RESP = `{
 export interface APIValidateResponse {
   schemas: {
     json_schema: JsonSchema;
+    /**
+     * Empty (`{}`) when no field of the type has a `vays_category`: the type
+     * has no form fields (see `normalizeUiSchema`).
+     */
     ui_schema: {
-      type: string;
-      elements: {
+      type?: string;
+      elements?: {
         type: string;
         label: string;
         elements: any[];

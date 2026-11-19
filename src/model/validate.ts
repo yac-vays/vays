@@ -21,6 +21,27 @@ export const defaultValidationResponse: ValidateResponse = {
   usages: [],
 };
 
+/**
+ * The UI schema of a validation response for the form. YAC only builds a
+ * layout once a field has a `vays_category`, so a type without any sends an
+ * empty object: that is an empty form (the YAML editor still works), not bad
+ * data.
+ */
+export function normalizeUiSchema(
+  uiSchema: APIValidateResponse['schemas']['ui_schema'],
+): ValidateResponse['ui_schema'] {
+  if (
+    uiSchema == null ||
+    typeof uiSchema !== 'object' ||
+    Array.isArray(uiSchema) ||
+    typeof uiSchema.type !== 'string' ||
+    !Array.isArray(uiSchema.elements)
+  ) {
+    return { type: 'VerticalLayout', elements: [] };
+  }
+  return uiSchema as ValidateResponse['ui_schema'];
+}
+
 export async function getSchema(
   requestEditContext: RequestEditContext,
 ): Promise<ValidateResponse | null> {
@@ -73,7 +94,7 @@ async function _validate(
 
     return {
       json_schema: dat.schemas.json_schema,
-      ui_schema: dat.schemas.ui_schema,
+      ui_schema: normalizeUiSchema(dat.schemas.ui_schema),
       data: dat.schemas.data,
       valid: dat.request.valid && dat.schemas.valid,
       detail: dat.request.message ?? dat.schemas.message ?? '',

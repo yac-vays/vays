@@ -262,6 +262,13 @@ const StandardEditMode = memo(
                     scrolling to CategorizationLayout's own overflow-auto
                     content box, keeping the tab bar pinned). */}
                 <div className="relative h-full">
+                  {uiSchema.elements.length === 0 && (
+                    // A type without form fields (no `vays_category` in its
+                    // schema): edited in the YAML editor only.
+                    <p className="p-4 text-reducedfont">
+                      This type has no form fields. Use the YAML editor to edit it.
+                    </p>
+                  )}
                   <FormsErrorBoundary>
                     <JsonForms
                       schema={jsonSchema}

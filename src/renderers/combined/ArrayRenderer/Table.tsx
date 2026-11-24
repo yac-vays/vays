@@ -106,17 +106,6 @@ export class Table extends React.Component<
   render() {
     return (
       <>
-        {/* <FormComponentTitle
-          label={this.props.label}
-          onClick={() => {
-            this.addItem(
-              this.props.path,
-              createDefaultValue(this.props.schema, this.props.rootSchema),
-            )();
-          }}
-          description={this.props.description}
-          required={this.props.required}
-        /> */}
         {this.props.data == 0 ? (
           <div className="w-full items-center justify-center text-center py-8">None</div>
         ) : (

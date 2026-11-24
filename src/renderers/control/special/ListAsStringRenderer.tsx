@@ -4,14 +4,14 @@ import { useFormReadonly, visibleFormErrors } from '../../../view/components/For
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
 import LargeStringList from '../../../view/thirdparty/components/ifc/LargeStringList/LargeStringList';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
-import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
+import { matchesJsonType, reportBadData } from '../../utils/dataSanitization';
 
 export const ListAsStringRenderer = (props: ControlProps) => {
   const readonly = useFormReadonly();
   /// data check (derived locally — props are shared and must not be mutated)
   let data = props.data;
   let errors = props.errors;
-  if (!isOfTypeWeak(data, 'string')) {
+  if (!matchesJsonType(data, 'string')) {
     errors = reportBadData(data);
     data = undefined;
   }

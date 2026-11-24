@@ -13,7 +13,7 @@ import ErrorRing from '../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import TextInput from '../../view/thirdparty/components/ifc/TextInput/TextInput';
 import { isUntypedStringInput } from '../utils/customTesterUtils';
-import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
+import { matchesJsonType, reportBadData } from '../utils/dataSanitization';
 
 const eventToValue = (ev: React.ChangeEvent<HTMLInputElement>) => ev.target.value;
 /**
@@ -44,7 +44,7 @@ export const TextControl = (props: ControlProps) => {
   let errors = props.errors;
 
   /// data check
-  if (!isOfTypeWeak(data, 'string')) {
+  if (!matchesJsonType(data, 'string')) {
     errors = reportBadData(data);
     data = undefined;
   }

@@ -17,7 +17,7 @@ import { withJsonFormsMultiEnumProps } from '@jsonforms/react';
 import ErrorRing from '../../view/components/Form/ErrorRing';
 import FormComponentTitle from '../../view/components/FormComponentTitle';
 import MultiSelect from '../../view/thirdparty/components/ifc/MultiSelect/MultiSelect';
-import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
+import { matchesJsonType, reportBadData } from '../utils/dataSanitization';
 import { resolveInitial } from '../utils/initialHandling';
 
 export const MultipleChoiceRenderer = ({
@@ -47,7 +47,7 @@ export const MultipleChoiceRenderer = ({
   const { data: resolvedData, isPlaceholder } = resolveInitial(data, uischema);
   data = resolvedData;
 
-  if (!isOfTypeWeak(data, schema.type, true)) {
+  if (!matchesJsonType(data, schema.type, true)) {
     errors = reportBadData(data);
     data = undefined;
   } else if (data != undefined) {
@@ -81,7 +81,7 @@ export const MultipleChoiceRenderer = ({
             handleChange={_handleChange}
             id={id}
             path={path}
-            multiple={!schema.uniqueItems}
+            allowDuplicates={!schema.uniqueItems}
             disabled={!enabled}
           />
         </div>

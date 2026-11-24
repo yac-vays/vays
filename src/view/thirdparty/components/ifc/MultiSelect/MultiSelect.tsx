@@ -13,7 +13,8 @@ interface DropdownProps {
   options: Option[];
   handleChange: (path: string, value: (number | string)[]) => void;
   id: string;
-  multiple?: boolean;
+  /** Whether an option may be selected more than once. */
+  allowDuplicates?: boolean;
   path: string;
   data?: (number | string)[];
   disabled?: boolean;
@@ -26,7 +27,7 @@ function filterOptions(options: Option[], searchTerm: string) {
 
 const MultiSelect: React.FC<DropdownProps> = ({
   id,
-  multiple,
+  allowDuplicates,
   options,
   handleChange,
   path,
@@ -61,7 +62,7 @@ const MultiSelect: React.FC<DropdownProps> = ({
     if (disabled) return;
     const value = option.value;
     const selectedIndex = selected.findIndex((v) => value == v);
-    if (!multiple && selectedIndex != -1) {
+    if (!allowDuplicates && selectedIndex != -1) {
       remove(selectedIndex);
       return;
     }

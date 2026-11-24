@@ -4,7 +4,7 @@ import ErrorButton from '../../view/components/Buttons/ErrorButton';
 import ErrorRing from '../../view/components/Form/ErrorRing';
 import { FormFieldLimitChips } from '../../view/components/LimitChips';
 import Checkbox from '../../view/thirdparty/components/ifc/CheckBox/CheckBox';
-import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
+import { matchesJsonType, reportBadData } from '../utils/dataSanitization';
 import { resolveInitial } from '../utils/initialHandling';
 
 export const BooleanControl = ({
@@ -31,7 +31,7 @@ export const BooleanControl = ({
   data = resolvedData;
 
   ///////// check data
-  if (!isOfTypeWeak(data, 'boolean')) {
+  if (!matchesJsonType(data, 'boolean')) {
     errors = reportBadData(data);
     data = false;
   }

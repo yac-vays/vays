@@ -31,7 +31,7 @@ function jsonTypesOf(data: unknown): string[] {
   return [typeof data];
 }
 
-export function isOfTypeWeak(
+export function matchesJsonType(
   data: unknown,
   type: string | string[] | undefined,
   isArray: boolean = false,

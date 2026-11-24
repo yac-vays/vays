@@ -14,7 +14,7 @@ import FormComponentTitle from '../../../view/components/FormComponentTitle';
 import LargeStringList from '../../../view/thirdparty/components/ifc/LargeStringList/LargeStringList';
 import { withJsonFormsControlPropsAndArrayLevelErrors } from '../../utils/customPropsHandling';
 import { isCustomRenderer } from '../../utils/customTesterUtils';
-import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
+import { matchesJsonType, reportBadData } from '../../utils/dataSanitization';
 
 export const BigStringArray = (props: ControlProps) => {
   const { visible } = props;
@@ -27,7 +27,7 @@ export const BigStringArray = (props: ControlProps) => {
   // data check (derived locally — props are shared and must not be mutated)
   let data = props.data;
   let errors = props.errors;
-  if (!isOfTypeWeak(data, props.schema.type, true)) {
+  if (!matchesJsonType(data, props.schema.type, true)) {
     errors = reportBadData(data);
     data = undefined;
   }

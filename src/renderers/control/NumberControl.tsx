@@ -11,7 +11,7 @@ import { useDebouncedInput } from '../../view/hooks/useDebouncedInput';
 import ErrorRing from '../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import NumberInput from '../../view/thirdparty/components/ifc/NumberInput/NumberInput';
-import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
+import { matchesJsonType, reportBadData } from '../utils/dataSanitization';
 import { multipleOfStep } from '../utils/numberStep';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,7 +40,7 @@ export const NumberControl = ({
   if (!visible) return <></>;
 
   ///// data check
-  if (!isOfTypeWeak(data, 'number')) {
+  if (!matchesJsonType(data, 'number')) {
     errors = reportBadData(data);
     data = undefined;
   }

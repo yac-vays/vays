@@ -8,7 +8,7 @@ import { useDebouncedInput } from '../../../view/hooks/useDebouncedInput';
 import ErrorRing from '../../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
-import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
+import { matchesJsonType, reportBadData } from '../../utils/dataSanitization';
 
 export const PasswordRenderer = (props: ControlProps) => {
   const pt = props.uischema?.options?.renderer_options?.save_password_as === 'plaintext';
@@ -17,7 +17,7 @@ export const PasswordRenderer = (props: ControlProps) => {
   /// data check (derived locally — props/uischema are shared and must not be mutated)
   let storedData = props.data;
   let errors = props.errors;
-  if (!isOfTypeWeak(storedData, 'string')) {
+  if (!matchesJsonType(storedData, 'string')) {
     errors = reportBadData(storedData);
     storedData = undefined;
   }

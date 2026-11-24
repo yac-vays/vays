@@ -47,18 +47,18 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
     this.ref = React.createRef();
     this.textInputRef = React.createRef();
     this.handleClickOutside = this.handleClickOutside.bind(this);
-    this.handleEscapeButton = this.handleEscapeButton.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
     this.blockConfirm = false;
   }
 
   componentDidMount(): void {
     document.addEventListener('mousedown', this.handleClickOutside);
-    document.addEventListener('keydown', this.handleEscapeButton);
+    document.addEventListener('keydown', this.handleKeyDown);
   }
 
   componentWillUnmount(): void {
     document.removeEventListener('mousedown', this.handleClickOutside);
-    document.removeEventListener('keydown', this.handleEscapeButton);
+    document.removeEventListener('keydown', this.handleKeyDown);
     if (this.focusTimeout != null) clearTimeout(this.focusTimeout);
   }
 
@@ -71,7 +71,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
     }
   }
 
-  handleEscapeButton(
+  handleKeyDown(
     event: DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>,
   ): void {
     if (!this.state.show) return;

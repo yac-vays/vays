@@ -75,7 +75,7 @@ const EntityListHeaderCell = ({
     }
   });
 
-  const onButtonDownCallback = (
+  const onSearchKeyDown = (
     event: DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>,
   ) => {
     if ((event as KeyboardEvent).code === 'Escape' && inputBar.current != null) {
@@ -100,7 +100,7 @@ const EntityListHeaderCell = ({
         colSpan={1}
         onClick={toggleOpenSearch}
         role="columnheader"
-        title="Search"
+        title={searchCallback ? 'Search' : undefined}
         className={`py-0 ${shrink ? '' : 'pr-20'}`}
         // display: "flex", justifyContent: "center", alignItems: "center",
         style={
@@ -136,7 +136,7 @@ const EntityListHeaderCell = ({
         <div className={`flex items-left ${openSearch ? 'block' : 'hidden'}`}>
           <input
             onInput={onInput}
-            onKeyDown={onButtonDownCallback}
+            onKeyDown={onSearchKeyDown}
             ref={inputBar}
             type="text"
             className=" rounded-md border border-stroke px-3 py-1 outline-hidden focus:border-primary "

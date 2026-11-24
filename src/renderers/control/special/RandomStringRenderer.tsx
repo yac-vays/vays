@@ -15,7 +15,7 @@ import { useModalContext } from '../../../view/components/Modal/ModalContext';
 import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import TextInput from '../../../view/thirdparty/components/ifc/TextInput/TextInput';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
-import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
+import { matchesJsonType, reportBadData } from '../../utils/dataSanitization';
 
 interface RendererOptions {
   format?: RandomStringFormat;
@@ -47,7 +47,7 @@ export const RandomStringRenderer = (props: ControlProps) => {
   /// data check (derived locally — props/uischema are shared and must not be mutated)
   let storedData = props.data;
   let badDataError = '';
-  if (!isOfTypeWeak(storedData, 'string')) {
+  if (!matchesJsonType(storedData, 'string')) {
     badDataError = reportBadData(storedData);
     storedData = undefined;
   }

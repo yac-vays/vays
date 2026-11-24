@@ -6,7 +6,7 @@ import { hashCode } from '../../utils/hashUtils';
 import ErrorRing from '../../view/components/Form/ErrorRing';
 import DatePicker from '../../view/thirdparty/components/ifc/Datepicker/DatePicker';
 import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
-import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
+import { matchesJsonType, reportBadData } from '../utils/dataSanitization';
 import { resolveInitial } from '../utils/initialHandling';
 
 export const DateControl = ({
@@ -41,7 +41,7 @@ export const DateControl = ({
   data = resolvedData;
 
   //// data check
-  if (!isOfTypeWeak(data, 'string') || (data != undefined && !isRFC3339Date(data))) {
+  if (!matchesJsonType(data, 'string') || (data != undefined && !isRFC3339Date(data))) {
     errors = reportBadData(data);
     data = undefined;
   }

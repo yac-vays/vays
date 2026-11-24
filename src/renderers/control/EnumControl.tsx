@@ -12,7 +12,7 @@ import { WithOptionLabel } from '@jsonforms/material-renderers';
 import ErrorRing from '../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import SelectStatic from '../../view/thirdparty/components/ifc/Selector/SelectStatic';
-import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
+import { matchesJsonType, reportBadData } from '../utils/dataSanitization';
 import { resolveInitial } from '../utils/initialHandling';
 
 /**
@@ -66,7 +66,10 @@ export const EnumControl = ({
 
   //// bad data check
   // using short circuiting here for type safety
-  if (!isOfTypeWeak(data, schema.type) || (data !== '' && optionsValueList.indexOf(data) === -1)) {
+  if (
+    !matchesJsonType(data, schema.type) ||
+    (data !== '' && optionsValueList.indexOf(data) === -1)
+  ) {
     errors = reportBadData(data);
     data = undefined;
   }

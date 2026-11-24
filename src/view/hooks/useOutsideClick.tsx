@@ -1,4 +1,3 @@
-// Actually, this is redundant to thirdparty-based-components/OutsideClick
 import { useEffect } from 'react';
 
 function useOutsideClick(ref: React.RefObject<HTMLElement>, callback: () => void) {

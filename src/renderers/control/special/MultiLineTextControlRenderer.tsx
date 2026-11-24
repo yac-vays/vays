@@ -5,7 +5,7 @@ import ErrorRing from '../../../view/components/Form/ErrorRing';
 import OverheadLabel from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import TextArea from '../../../view/thirdparty/components/ifc/TextArea/TextAreaInput';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
-import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
+import { matchesJsonType, reportBadData } from '../../utils/dataSanitization';
 
 const eventToValue = (ev: React.ChangeEvent<HTMLTextAreaElement>) => ev.target.value;
 
@@ -14,7 +14,7 @@ export const MultiLineTextControlRenderer = (props: ControlProps) => {
   let errors = props.errors;
 
   /// data check
-  if (!isOfTypeWeak(data, 'string')) {
+  if (!matchesJsonType(data, 'string')) {
     errors = reportBadData(data);
     data = undefined;
   }

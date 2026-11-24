@@ -6,7 +6,7 @@ import ErrorRing from '../../../view/components/Form/ErrorRing';
 import OverheadLabel from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import TextInput from '../../../view/thirdparty/components/ifc/TextInput/TextInput';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
-import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
+import { matchesJsonType, reportBadData } from '../../utils/dataSanitization';
 
 // Regular expression to validate MAC address format
 const MAC_ADDRESS_REGEX = /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/;
@@ -25,7 +25,7 @@ export const MacAddressRenderer = (props: ControlProps) => {
   /// Data validation (derived locally — props are shared and must not be mutated)
   let storedData = props.data;
   let errors = props.errors;
-  if (!isOfTypeWeak(storedData, 'string')) {
+  if (!matchesJsonType(storedData, 'string')) {
     errors = reportBadData(storedData);
     storedData = undefined;
   }

@@ -29,7 +29,7 @@ import { useYACUsageSnapshot } from '../../../view/hooks/useYACUsages';
 import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import NumberInput from '../../../view/thirdparty/components/ifc/NumberInput/NumberInput';
 import { isCustomRenderer } from '../../utils/customTesterUtils';
-import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
+import { matchesJsonType, reportBadData } from '../../utils/dataSanitization';
 import { multipleOfStep } from '../../utils/numberStep';
 
 interface RendererOptions {
@@ -80,7 +80,7 @@ export const LimitBar = (props: ControlProps) => {
   /// data check (derived locally — props are shared and must not be mutated)
   let data: number | undefined = props.data;
   let badDataError = '';
-  if (!isOfTypeWeak(data, 'number')) {
+  if (!matchesJsonType(data, 'number')) {
     badDataError = reportBadData(data);
     data = undefined;
   }

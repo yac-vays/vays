@@ -5,7 +5,7 @@ import { useState } from 'react';
 import SSHKeyInput from '../../../view/components/SSHKeyInput';
 import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
-import { isOfTypeWeak, reportBadData } from '../../utils/dataSanitization';
+import { matchesJsonType, reportBadData } from '../../utils/dataSanitization';
 
 export const SSHKeyRenderer = ({
   visible,
@@ -29,7 +29,7 @@ export const SSHKeyRenderer = ({
   if (!visible) return <></>;
 
   /// data check
-  if (!isOfTypeWeak(data, 'string')) {
+  if (!matchesJsonType(data, 'string')) {
     errors = reportBadData(data);
     data = undefined;
   }

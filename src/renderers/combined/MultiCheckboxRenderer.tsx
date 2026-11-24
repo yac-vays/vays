@@ -20,7 +20,7 @@ import ErrorRing from '../../view/components/Form/ErrorRing';
 import FormComponentTitle from '../../view/components/FormComponentTitle';
 import { BooleanControl } from '../control/BooleanControlRenderer';
 import { isCustomRenderer } from '../utils/customTesterUtils';
-import { isOfTypeWeak, reportBadData } from '../utils/dataSanitization';
+import { matchesJsonType, reportBadData } from '../utils/dataSanitization';
 import { resolveInitial } from '../utils/initialHandling';
 
 interface Option {
@@ -49,7 +49,7 @@ export const MultiCheckboxRenderer = ({
     return null;
   }
 
-  if (!isOfTypeWeak(data, schema.type, true)) {
+  if (!matchesJsonType(data, schema.type, true)) {
     errors = reportBadData(data);
     data = undefined;
   }

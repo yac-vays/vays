@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { logError } from '../../../utils/logger';
 import { GUIActionButtonArg } from '../../../utils/types/internal/actions';
 import { isModifiedClick } from '../../../utils/navClick';
 import IconButtonImage, { ICON_BUTTON_STYLE, iconButtonClassName } from './IconButtonImage';
@@ -21,15 +22,16 @@ const ActionButton = ({ actArgs, isLeft, isRight = false }: ActionButtonProps) =
   const action = actArgs.action;
 
   const activate = () => {
-    if (actArgs.isAllowed) {
-      if (action.dangerous) {
-        actArgs.performAction();
-      } else {
-        setSending(true);
-        actArgs.performAction().then(() => {
-          setSending(false);
-        });
-      }
+    // A second click while the action runs must not run it again.
+    if (!actArgs.isAllowed || isSending) return;
+    if (action.dangerous) {
+      actArgs.performAction();
+    } else {
+      setSending(true);
+      actArgs
+        .performAction()
+        .catch((e: unknown) => logError(`Action ${action.name} failed: ${e}`, 'ActionButton'))
+        .finally(() => setSending(false));
     }
   };
 

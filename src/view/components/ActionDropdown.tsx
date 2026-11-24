@@ -1,8 +1,7 @@
-import { MouseEvent as ReactMouseEvent, ReactNode, useState } from 'react';
+import { MouseEvent as ReactMouseEvent, ReactNode, useRef, useState } from 'react';
 import { hashCode } from '../../utils/hashUtils';
 import { isModifiedClick } from '../../utils/navClick';
 import { GUIActionDropdownArg } from '../../utils/types/internal/actions';
-import { Nullable } from '../../utils/types/typeUtils';
 import { ICON_BUTTON_STYLE, iconButtonClassName } from './Buttons/IconButtonImage';
 import Popover from './Popover';
 
@@ -38,6 +37,8 @@ interface ActionDropdownProps {
  */
 const ActionDropdown = ({ actions, entityName, isLeft = false }: ActionDropdownProps) => {
   const [open, setOpen] = useState<boolean>(false);
+  // Ids of the items whose action is currently running.
+  const running = useRef(new Set<string>());
   const isEmpty = actions.length == 0;
 
   // The last button of the action row: same square, colour and hover as the
@@ -102,20 +103,19 @@ const ActionDropdown = ({ actions, entityName, isLeft = false }: ActionDropdownP
                  * Keep in mind that the common case is that only a few of these (<< 1000) will be pressed over the
                  * span of the webapp lifecycle. Thus having variables for each, for each entity is avoided.
                  */
-                const loaderElt: Nullable<HTMLElement> = document.getElementById(idLoader);
-                const listEntryElt: Nullable<HTMLElement> = document.getElementById(id);
-                if (loaderElt != null) {
-                  loaderElt.classList.toggle('hidden');
-                }
-                if (listEntryElt != null) {
-                  listEntryElt.classList.toggle('opacity-30');
-                }
-                await act.performAction();
-                if (loaderElt != null) {
-                  loaderElt.classList.toggle('hidden');
-                }
-                if (listEntryElt != null) {
-                  listEntryElt.classList.toggle('opacity-30');
+                // A second click while the action runs must not run it again.
+                if (running.current.has(id)) return;
+                running.current.add(id);
+                const setBusy = (busy: boolean) => {
+                  document.getElementById(idLoader)?.classList.toggle('hidden', !busy);
+                  document.getElementById(id)?.classList.toggle('opacity-30', busy);
+                };
+                setBusy(true);
+                try {
+                  await act.performAction();
+                } finally {
+                  running.current.delete(id);
+                  setBusy(false);
                 }
               };
               const itemInner = (

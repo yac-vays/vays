@@ -201,7 +201,8 @@ export function extractPatch(oldData: any, newData: any) {
  * @param badSchemaCallback the callback for the case that the schema is bad (e.g. bad regex).
  * Is a function that receives an error object with the corresponding error raised by Ajv.
  *
- * @assumes the ajv object was initialized using allErrors: true.
+ * @assumes the ajv object was initialized using allErrors: true. With
+ * `useDefaults` it would also insert defaults into `data`.
  *
  * @returns Null, if the schema cannot be compiled (e.g. due to bad regex patterns).
  * Else it will return a list of all errors in the data object accoring to the json schema.
@@ -212,8 +213,8 @@ export function getAllErrors(
   ajv: Ajv,
   badSchemaCallback: (e: any) => void = () => {},
 ): Nullable<ErrorObject<string, Record<string, any>, unknown>[]> {
-  const validate = ajv.compile(jsonSchema);
   try {
+    const validate = ajv.compile(jsonSchema);
     validate(data);
     return validate.errors ?? [];
   } catch (e: any) {

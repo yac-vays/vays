@@ -150,6 +150,38 @@ describe('Check default handling utils', async () => {
     });
   });
 
+  it('merges defaults into existing nested objects and array items', () => {
+    const valResp = {
+      json_schema: {
+        type: 'object',
+        properties: {
+          net: {
+            type: 'object',
+            properties: { mtu: { type: 'number' }, dhcp: { type: 'boolean', default: true } },
+          },
+          disks: {
+            type: 'array',
+            items: { type: 'object', properties: { fs: { type: 'string', default: 'ext4' } } },
+          },
+        },
+      },
+      ui_schema: { type: '', elements: [] },
+      data: { net: { mtu: 9000 }, disks: [{}, { fs: 'xfs' }] },
+      valid: false,
+      detail: '',
+    };
+    const before = valResp.data;
+    expect(mergeDefaults(valResp)).toBe(true);
+    expect(valResp.data).toStrictEqual({
+      net: { mtu: 9000, dhcp: true },
+      disks: [{ fs: 'ext4' }, { fs: 'xfs' }],
+    });
+    // the caller's object is left alone
+    expect(before).toStrictEqual({ net: { mtu: 9000 }, disks: [{}, { fs: 'xfs' }] });
+    // nothing left to merge
+    expect(mergeDefaults(valResp)).toBe(false);
+  });
+
   it('Serializes the loaded data into the initial create YAML (not just schema defaults)', () => {
     // Load-time generated values (e.g. `random_string`) live in the data but
     // have no schema default — they must survive into the seeded YAML.

@@ -11,6 +11,7 @@ import {
   setUndefinedAtPath,
 } from '../../../utils/schema/dataUtils';
 import {
+  fillDefaults,
   insertDefaults,
   mergeDefaults,
   updateDefaults,
@@ -645,6 +646,11 @@ function handleDefaults(
     didChange = mergeDefaults(valResp);
   } else {
     didChange = updateDefaults(valResp);
+    if (requestEditContext.mode === 'create') {
+      // Defaults inside objects and array items the user added meanwhile.
+      const didFill = fillDefaults(valResp);
+      didChange ||= didFill;
+    }
   }
   // Note: seperate calculate and store here, avoiding short circuiting.
   const didRemove = cleanData(valResp);
@@ -665,7 +671,7 @@ function handleDefaults(
 function cleanData(valResp: ValidateResponse): boolean {
   const removed = removeOldData(
     valResp.data,
-    getAllErrors(valResp.data, valResp.json_schema, getAJV(), (e: any) => {
+    getAllErrors(valResp.data, valResp.json_schema, getValidationAJV(), (e: any) => {
       showError('Faulty YAC Config: Schema Error', e.toString());
       navigateToURL('/');
     }),

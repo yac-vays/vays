@@ -151,3 +151,18 @@ describe('path helpers never touch the prototype chain', () => {
     expect(removeOldData(data, errors)).toEqual([['users', 'bad']]);
   });
 });
+
+describe('getAllErrors', () => {
+  it('reports a schema Ajv cannot compile instead of throwing', () => {
+    const ajv = new Ajv({ allErrors: true, strict: false });
+    const seen: unknown[] = [];
+    const errors = getAllErrors(
+      { a: 'x' },
+      { type: 'object', properties: { a: { type: 'string', pattern: '(?P<x>a)' } } },
+      ajv,
+      (e) => seen.push(e),
+    );
+    expect(errors).toBeNull();
+    expect(seen).toHaveLength(1);
+  });
+});

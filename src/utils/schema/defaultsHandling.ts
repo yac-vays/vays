@@ -65,16 +65,34 @@ function _refreshDefaults(
   return { removedData: remSym, modified: mod };
 }
 
-function _extractDefaults(schema: JsonSchema) {
-  const newDefault = {};
+/** Let the schema insert the defaults `data` lacks (in place, at any depth). */
+function _applyDefaults(schema: JsonSchema, data: any) {
   try {
     const validate = getAJV().compile(schema);
-    validate(newDefault);
+    validate(data);
   } catch (e: any) {
     showError('Faulty YAC Config: Schema Error', e.toString());
     navigateToURL('/');
   }
+}
+
+function _extractDefaults(schema: JsonSchema) {
+  const newDefault = {};
+  _applyDefaults(schema, newDefault);
   return newDefault;
+}
+
+/**
+ * Insert the schema's defaults into the data wherever a key is missing, also
+ * inside existing nested objects and array items. Existing values are kept.
+ * @returns Whether the data has been changed.
+ */
+export function fillDefaults(valResp: ValidateResponse): boolean {
+  const filled = structuredClone(valResp.data);
+  _applyDefaults(valResp.json_schema, filled);
+  const changed = !_.isEqual(filled, valResp.data);
+  valResp.data = filled;
+  return changed;
 }
 
 /**
@@ -117,24 +135,16 @@ export function insertDefaults(valResp: ValidateResponse) {
 }
 
 /**
- * Merge defaults. This creates a defaults object and merges it with the existing
- * data. This has the effect that if a key does not exist in the data object but
- * it contains a default, then it is set. Does do so also for deep keys.
+ * Insert the defaults the existing data lacks (see {@link fillDefaults}) and
+ * remember the schema's defaults object.
  *
- * Used for editing in which new defaults appearing are entered but existing data
- * is not changed.
- * @param valResp
- * @returns
+ * Used for editing, where new defaults are entered but existing data is not
+ * changed.
+ * @returns Whether the data has been changed.
  */
 export function mergeDefaults(valResp: ValidateResponse): boolean {
-  const defaults = _extractDefaults(valResp.json_schema);
-  setPreviousDefaultsObject(structuredClone(defaults));
-
-  const mergeResult = _.assign(defaults, structuredClone(valResp.data));
-  const isEqual = _.isEqual(mergeResult, valResp.data);
-
-  valResp.data = mergeResult;
-  return !isEqual;
+  setPreviousDefaultsObject(_extractDefaults(valResp.json_schema));
+  return fillDefaults(valResp);
 }
 
 /**

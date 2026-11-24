@@ -46,6 +46,7 @@ import {
   footerErrorMessage,
   locateBackendError,
 } from '../../../../utils/schema/locatedErrors';
+import { logError } from '../../../../utils/logger';
 import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import NoDataIndicator from '../../../components/NoDataIndicator';
 import useInitializeForm from './useInitializeState';
@@ -201,15 +202,9 @@ const StandardEditMode = memo(({ requestEditContext, setEditErrorMsg, setLoading
     // (preserving its comments/formatting) rather than regenerating from data.
     updateSchema(data, requestEditContext, true, null, getEntityYAML(), seq)
       .then((resp) => {
-        if (didBlur) {
-          setPendingValidations((c) => Math.max(0, c - 1));
-        }
         // A newer edit (in either pane) has since been dispatched; drop this
         // stale response so it cannot clobber the latest state.
-        if (isStaleValidation(seq)) {
-          setIsCurrentlyEditingString(false);
-          return;
-        }
+        if (isStaleValidation(seq)) return;
         if (resp == null) {
           // The backend did not answer (network, 5xx, ...). Keep the form as
           // the user left it — it is still the document they are editing —
@@ -222,9 +217,21 @@ const StandardEditMode = memo(({ requestEditContext, setEditErrorMsg, setLoading
           // Project the canonical YAML into the (inactive) YAML pane.
           applyCanonical('form', resp);
         }
-        setIsCurrentlyEditingString(false);
       })
-      .finally(() => endValidationDispatch());
+      .catch((e) => {
+        // E.g. a schema Ajv cannot compile: same handling as no answer.
+        logError(`Form validation failed: ${e}`, 'StandardEditMode');
+        if (isStaleValidation(seq)) return;
+        reportValidationFailed(() => dispatchValidation(data, errors, true));
+        setEditErrorMsg(VALIDATION_FAILED_DETAIL);
+      })
+      .finally(() => {
+        if (didBlur) {
+          setPendingValidations((c) => Math.max(0, c - 1));
+        }
+        setIsCurrentlyEditingString(false);
+        endValidationDispatch();
+      });
   };
 
   return (

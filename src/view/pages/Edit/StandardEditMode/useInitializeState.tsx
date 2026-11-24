@@ -17,6 +17,7 @@ import { RequestEditContext } from '../../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import { Nullable } from '../../../../utils/types/typeUtils';
 import { ErrorObject } from 'ajv';
+import { getAllErrors } from '../../../../utils/schema/dataUtils';
 import {
   dropLocallyDuplicatedErrors,
   footerErrorMessage,
@@ -93,9 +94,8 @@ const useInitializeForm = (
       // longer validates against the current schema (e.g. the spec changed).
       let localErrors: ErrorObject[] = [];
       if (requestEditContext.mode === 'edit') {
-        const validate = getValidationAJV().compile(resp.json_schema);
-        validate(structuredClone(resp.data));
-        localErrors = validate.errors ?? [];
+        // null: a schema Ajv cannot compile, already reported by the load.
+        localErrors = getAllErrors(resp.data, resp.json_schema, getValidationAJV()) ?? [];
       }
       const migrationError = localErrors.length > 0;
 

@@ -107,6 +107,15 @@ export function consumeFormSuppression(): boolean {
   return false;
 }
 
+/**
+ * Announce a programmatic write to the YAML editor that is no user edit: its
+ * change event is neither validated nor makes the session dirty. Only call
+ * when the write really changes the text (otherwise no event consumes it).
+ */
+export function expectProgrammaticYamlWrite() {
+  editingState.suppressNextYamlChange = true;
+}
+
 /** Consume the YAML's programmatic-write guard (true => ignore this change). */
 export function consumeYamlSuppression(): boolean {
   if (editingState.suppressNextYamlChange) {

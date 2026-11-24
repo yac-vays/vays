@@ -12,7 +12,10 @@ import {
   retreiveSchema,
   setInitialEntityYAML,
 } from '../../../../../controller/local/EditController/shared';
-import { seedCanonical } from '../../../../../controller/local/EditController/sync';
+import {
+  expectProgrammaticYamlWrite,
+  seedCanonical,
+} from '../../../../../controller/local/EditController/sync';
 import { getInitialCreateYAML } from '../../../../../utils/schema/defaultsHandling';
 import { patchSchemaForMonaco } from '../../../../../utils/schema/monacoSchemaFix';
 import { RequestEditContext } from '../../../../../utils/types/internal/request';
@@ -32,7 +35,11 @@ export default async function editorInitializeSchema(
   const defaultStr = '---\n\n# The data could not be fetched in time. Enter the content here.';
 
   if (v == null) {
-    ed.setValue(defaultStr);
+    // A placeholder, not a document: it must not count as an edit.
+    if (ed.getValue() !== defaultStr) {
+      expectProgrammaticYamlWrite();
+      ed.setValue(defaultStr);
+    }
     await getMonacoYaml().update({
       schemas: [
         {

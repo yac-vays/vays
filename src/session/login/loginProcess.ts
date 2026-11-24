@@ -12,7 +12,12 @@ import iLocalStorage from '../persistent/LocalStorage';
 import { discoverClient } from './oidcClient';
 import { setUserLoggedIn } from './tokenHandling';
 
-const LS_CONFIG_KEY = 'OIDC_DS_CONF';
+/**
+ * The PKCE verifier and nonce of the login in progress. In the session
+ * storage: it survives the redirect to the provider, and logins started in
+ * several tabs do not overwrite each other.
+ */
+const LOGIN_STATE_KEY = 'OIDC_DS_CONF';
 
 export async function startAuthentication(appconf: AppConfig) {
   const resp = await performDiscovery(appconf);
@@ -56,8 +61,8 @@ async function performDiscovery(appconf: AppConfig): Promise<Nullable<URL>> {
   const nonce = client.randomNonce();
   parameters.nonce = nonce;
   const redirURL = client.buildAuthorizationUrl(config, parameters);
-  localStorage.setItem(
-    LS_CONFIG_KEY,
+  sessionStorage.setItem(
+    LOGIN_STATE_KEY,
     JSON.stringify({
       clientID: appconf.oidcConf.clientID,
       nonce: nonce,
@@ -68,8 +73,8 @@ async function performDiscovery(appconf: AppConfig): Promise<Nullable<URL>> {
 }
 
 export async function finalizeAuthentication(appconf: AppConfig): Promise<boolean> {
-  const configString = localStorage.getItem(LS_CONFIG_KEY);
-  localStorage.setItem(LS_CONFIG_KEY, '');
+  const configString = sessionStorage.getItem(LOGIN_STATE_KEY);
+  sessionStorage.removeItem(LOGIN_STATE_KEY);
   if (configString == null) return false;
   let config: AuthDiscConfig;
   try {

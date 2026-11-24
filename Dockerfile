@@ -66,8 +66,11 @@ COPY --from=build /code/dist /usr/share/nginx/html
 # Custom nginx configuration (listens on 8080, writes pid/temp dirs to /tmp)
 COPY misc/nginx.conf /etc/nginx/nginx.conf
 
-# Startup: write the configured favicon to /tmp/branding, then exec nginx
+# Startup: write the configured favicon to /tmp/branding and the CSP header of
+# index.html to /tmp/csp (built by the module the app itself uses), then exec nginx
 COPY misc/favicon.js /favicon.js
+COPY misc/csp.js /csp.js
+COPY src/session/cspPolicy.js /cspPolicy.js
 COPY misc/entrypoint.sh /entrypoint.sh
 
 EXPOSE 8080

@@ -3,7 +3,10 @@ import {
   setActivatedActions,
   setEntityName,
 } from '../../../../controller/local/EditController/ExpertMode/access';
-import { editViewNavigateToNewName } from '../../../../controller/local/EditController/shared';
+import {
+  editViewNavigateToNewName,
+  setEditDirty,
+} from '../../../../controller/local/EditController/shared';
 import { getTriggerableActions } from '../../../../utils/actionUtils';
 import { isNameGeneratedByYAC, isNameOptionalByYAC } from '../../../../utils/nameUtils';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
@@ -97,6 +100,7 @@ const MetaInfoPanel = ({
                   setNameValue(value);
                   const name = value === '' ? null : value;
                   setEntityName(name);
+                  setEditDirty();
                   editViewNavigateToNewName(name, requestEditContext);
                   try {
                     if (

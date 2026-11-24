@@ -155,7 +155,8 @@ export async function sendYAMLData(requestContext: RequestEditContext) {
         success = res.success;
         entityName = res.name;
       } else {
-        entityName = requestContext.entityName ?? null;
+        // The name the entity has after the commit (it may have been renamed).
+        entityName = getEntityName() ?? requestContext.entityName ?? null;
         const res = await sendPutEntity(getEntityYAML() ?? getInitialEntityYAML(), requestContext);
         success = res.kind === 'ok';
         if (res.kind === 'conflict') {

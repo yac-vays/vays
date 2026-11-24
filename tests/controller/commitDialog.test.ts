@@ -13,6 +13,7 @@ import { ModalCallback } from '../../src/view/components/Modal/ModalContext';
 import {
   hasUncommittedChanges,
   setChangeListener,
+  setEntityName,
   setEntityYAML,
 } from '../../src/controller/local/EditController/ExpertMode/access';
 import { sendYAMLData } from '../../src/controller/local/EditController/ExpertMode';
@@ -96,5 +97,35 @@ describe('uncommitted-change tracking', () => {
     expect(hasUncommittedChanges()).toBe(false);
     expect(seen).toStrictEqual([false, true, false]);
     setChangeListener(null);
+  });
+
+  it('counts a new name in edit mode as a change (pure rename)', async () => {
+    const ctx = getTestEditRequestContext('https://x', 'test', 'web01', 'host', 'edit');
+    editingState.currentEditContext = ctx;
+    editingState.isValidYAC = true;
+    setInitialEntityYAML('a: 1\n');
+    setEntityYAML('a: 1\n');
+    const seen: boolean[] = [];
+    setChangeListener((v) => seen.push(v));
+
+    setEntityName('web02');
+    expect(hasUncommittedChanges()).toBe(true);
+    setEntityName('web01');
+    expect(hasUncommittedChanges()).toBe(false);
+    setEntityName(null); // an emptied name field keeps the stored name
+    expect(hasUncommittedChanges()).toBe(false);
+    expect(seen).toStrictEqual([false, true, false, false]);
+    setChangeListener(null);
+
+    // The commit dialogue opens for the rename and names the new entity.
+    modalCalls.length = 0;
+    registerModalCallback((title, text) => {
+      modalCalls.push({ title, text });
+    });
+    setEntityName('web02');
+    await sendYAMLData(ctx);
+    expect(modalCalls).toHaveLength(1);
+    expect(modalCalls[0].title).toBe('Commit changes to web02?');
+    setEntityName(null);
   });
 });

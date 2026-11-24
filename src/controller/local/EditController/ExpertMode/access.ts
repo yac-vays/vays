@@ -80,10 +80,25 @@ export function setChangeListener(cb: ((hasChanges: boolean) => void) | null) {
  * the stored file ("Cannot write without changing anything", HTTP 400), so the
  * Commit button is disabled while this is false. Injected defaults count as a
  * change (the displayed document differs from the stored file) — committing
- * them is a legitimate "heal" of the entity.
+ * them is a legitimate "heal" of the entity. So does a new name: a pure rename
+ * moves the stored file as it is.
  */
 export function hasUncommittedChanges(): boolean {
-  return editingState.entityYAML != null && editingState.entityYAML !== editingState.initialYAML;
+  return (
+    (editingState.entityYAML != null && editingState.entityYAML !== editingState.initialYAML) ||
+    isRenamed()
+  );
+}
+
+/** Whether the name of the edited entity was changed (commit renames it). */
+export function isRenamed(): boolean {
+  const ctx = editingState.currentEditContext;
+  return (
+    ctx?.mode === 'edit' &&
+    ctx.entityName != null &&
+    editingState.entityName != null &&
+    editingState.entityName !== ctx.entityName
+  );
 }
 
 /** Recompute + push the change state to the view (cheap; React bails on equal). */
@@ -97,6 +112,7 @@ export function getEntityName() {
 
 export function setEntityName(v: Nullable<string>) {
   editingState.entityName = v;
+  emitChangeState();
 }
 
 export function setActivatedActions(v: ActionDecl[]) {

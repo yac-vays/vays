@@ -51,7 +51,10 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
   // manual "Refresh table" re-apply the active filter instead of dropping it.
   const latestSearchTermsRef = useRef<(string | null)[]>(searchTerms);
   latestSearchTermsRef.current = searchTerms;
+  const latestPageRef = useRef<number>(currPage);
+  latestPageRef.current = currPage;
   const prevDataKeyRef = useRef<string>('');
+  const prevListKeyRef = useRef<string>('');
   const prevTargetRef = useRef<string | undefined>(undefined);
   // The list (backend + type) whose stored filters are loaded. The type
   // declaration (its columns) may only arrive after mounting.
@@ -101,6 +104,11 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
       // of the list while the same entity stays pinned in the URL?
       const targetChanged = targetEntityName !== prevTargetRef.current;
       prevTargetRef.current = targetEntityName;
+      // A reload of the same list (refresh, after a delete, ...) stays on the
+      // page the user is on instead of returning to the first or target page.
+      const listKey = `${requestContext.entityTypeName}|${requestContext.yacURL}|${numResultsPerPage}`;
+      const keepPage = listKey === prevListKeyRef.current && !targetChanged;
+      prevListKeyRef.current = listKey;
 
       // Only the URL target changed and that entity is already on the current
       // page: just highlight it — no reload, no scroll.
@@ -157,8 +165,8 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
       };
 
       // Jump to the page containing the targeted entity (from the URL), if any.
-      let page = 1;
-      if (targetEntityName) {
+      let page = keepPage ? latestPageRef.current : 1;
+      if (targetEntityName && !keepPage) {
         const targetPage = await getEntityPage(
           requestContext,
           targetEntityName,
@@ -207,19 +215,28 @@ export function useInitializeList(requestContext: RequestContext, targetEntityNa
       // page indicator for a table it no longer describes.
       setCurrPage(page);
 
-      const qRes: QueryResponse = await fetchEntities(
-        requestContext,
-        numResultsPerPage.valueOf(),
-        (page - 1) * numResultsPerPage.valueOf(),
-        latestSearchTermsRef.current,
-      );
+      const fetchPage = () =>
+        fetchEntities(
+          requestContext,
+          numResultsPerPage.valueOf(),
+          (page - 1) * numResultsPerPage.valueOf(),
+          latestSearchTermsRef.current,
+        );
+      let qRes: QueryResponse = await fetchPage();
+      if (keepPage && page > 1 && qRes.partialResults.length === 0) {
+        // The kept page no longer exists (fewer entries now): show the last one.
+        if (!mounted || isStaleListGeneration(gen)) return;
+        page = Math.max(1, Math.ceil(qRes.totalNumberOfResults / numResultsPerPage.valueOf()));
+        setCurrPage(page);
+        qRes = await fetchPage();
+      }
 
       if (mounted && !isStaleListGeneration(gen)) {
         setLoading(false);
         setTotalNumResults(qRes.totalNumberOfResults);
         setTableEntries(qRes.partialResults);
-        // We (re)loaded and possibly paged: scroll to the target if there is one.
-        setScrollTargetName(targetEntityName);
+        // We navigated to the target and possibly paged: scroll to it.
+        setScrollTargetName(keepPage ? undefined : targetEntityName);
       }
     })();
     return () => {

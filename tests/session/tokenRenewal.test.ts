@@ -195,4 +195,16 @@ describe('background renewal', () => {
     expect(refreshTokenGrant).toHaveBeenCalledTimes(1);
     expect(iLocalStorage.getToken()).toBe(`Bearer ${fresh}`);
   });
+
+  it('does not renew in a loop when the fresh token already looks due (clock ahead)', async () => {
+    vi.useFakeTimers();
+    signIn(-10);
+    refreshTokenGrant.mockImplementation(async () => ({ id_token: idToken(-10) }));
+
+    startTokenRenewal();
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect(refreshTokenGrant).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(refreshTokenGrant).toHaveBeenCalledTimes(2);
+  });
 });

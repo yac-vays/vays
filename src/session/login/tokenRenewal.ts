@@ -26,6 +26,11 @@ import { getTokenFromStorage, userIsLoggedIn } from './tokenHandling';
 const RENEW_BEFORE_S = 60;
 /** Wait before retrying after a renewal failed for a transient reason. */
 const RETRY_MS = 30_000;
+/**
+ * Wait before renewing a token that is due right after its renewal: a client
+ * clock running ahead must not turn into a renewal loop.
+ */
+const MIN_INTERVAL_MS = 10_000;
 const LOCK_NAME = 'vays-token-renewal';
 /** OAuth error codes (RFC 6749 5.2 / 4.1.2.1) worth retrying. */
 const TRANSIENT_OAUTH_ERRORS = ['server_error', 'temporarily_unavailable'];
@@ -136,7 +141,8 @@ function schedule(minDelayMs: number = 0) {
   );
   timer = setTimeout(async () => {
     const ok = await renewToken();
-    schedule(ok ? 0 : RETRY_MS);
+    const stillDue = secondsUntilRenewal(getTokenFromStorage()) <= 0;
+    schedule(!ok ? RETRY_MS : stillDue ? MIN_INTERVAL_MS : 0);
   }, delayMs);
 }
 

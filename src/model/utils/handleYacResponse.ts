@@ -178,9 +178,30 @@ export async function handleYacResponse(
 export async function decodeErrorBody(resp: Response): Promise<YacErrorBody> {
   try {
     const body = await resp.json();
-    if (body != null && typeof body === 'object') return body as YacErrorBody;
+    if (body != null && typeof body === 'object') {
+      const envelope = body as YacErrorBody;
+      if (typeof envelope.detail !== 'string') envelope.detail = detailText(envelope.detail);
+      return envelope;
+    }
   } catch {
     // Non-JSON error body (e.g. a proxy error page) — treat as empty envelope.
   }
   return {};
+}
+
+/**
+ * FastAPI reports request-validation errors (422) as a list of
+ * `{loc, msg, ...}` in `detail`: flatten it to one line.
+ */
+function detailText(detail: unknown): string | undefined {
+  if (!Array.isArray(detail)) return undefined;
+  const lines = detail
+    .map((d) => {
+      if (typeof d === 'string') return d;
+      if (d == null || typeof d.msg !== 'string') return '';
+      const loc = Array.isArray(d.loc) ? d.loc.join('.') : '';
+      return loc ? `${loc}: ${d.msg}` : d.msg;
+    })
+    .filter(Boolean);
+  return lines.length > 0 ? lines.join('; ') : undefined;
 }

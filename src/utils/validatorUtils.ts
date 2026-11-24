@@ -87,7 +87,7 @@ function getEntityObjectStdMode(
   actions: string[] = [],
   yamlBase?: string,
 ): string {
-  // Both create and change send an `UpdateEntity` (data patch). `yaml_base`, when
+  // Both create and edit send an `UpdateEntity` (data patch). `yaml_base`, when
   // present, is the YAML the patch is merged into so the backend preserves the
   // editor's comments/formatting (see `UpdateEntity.yaml_base` on the backend).
   const base = yamlBase !== undefined ? { yaml_base: yamlBase } : {};

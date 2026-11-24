@@ -1,7 +1,7 @@
 import {
   checkPermissions,
   getActionCallback,
-  OPERATION_VIEW,
+  OPERATION_READ,
   OPERATIONS,
   OPERATIONS_META,
 } from '../../../model/action';
@@ -66,10 +66,7 @@ function isOperationGloballyEnabled(opName: string, requestContext: RequestConte
   return true;
 }
 
-/**
- * Copy, link and edit (change) cannot be performed on an entity that is itself a
- * link — YAC rejects them — so they are disabled / hidden for link entities.
- */
+/** YAC rejects copy, link and edit on an entity that is itself a link. */
 function isBlockedOnLink(opName: string): boolean {
   return opName === 'create_copy' || opName === 'create_link' || opName === 'edit';
 }
@@ -118,45 +115,43 @@ function getFavActions(
 }
 
 /**
- * Adds a favorite operation. For the edit (change) operation, if it is not allowed,
- * then it will be exchanged for the view operation.
- * @param opName
- * @param favActs
+ * The operation the user actually gets for `opName` on this entity. Edit
+ * degrades to Read when it is not available: a read-only type, a missing
+ * permission or a link entity (YAC rejects copy/link/edit on links).
  */
+function resolveOperation(
+  opName: string,
+  entity: EntityObject,
+  requestContext: RequestContext,
+): { decl: ActionDecl; isAllowed: boolean; performAction: () => Promise<boolean>; href?: string } {
+  let decl: ActionDecl = OPERATIONS[opName];
+  let isAllowed = checkPermissions(entity.perms, decl.perms);
+  if (opName === 'edit' && requestContext.accessedEntityType?.edit === false) isAllowed = false;
+  if (entity.link != null && isBlockedOnLink(opName)) isAllowed = false;
+  if (opName === 'edit' && !isAllowed) {
+    decl = OPERATION_READ;
+    isAllowed = true;
+  }
+  const meta = OPERATIONS_META[decl.name];
+  const href = meta.getOperationURL?.(entity.name, requestContext);
+  return {
+    decl,
+    isAllowed,
+    performAction: meta.getOperationCallback(entity.name, requestContext),
+    // Only navigating operations (edit/read) carry an href.
+    ...(href ? { href } : {}),
+  };
+}
+
+/** Adds a favorite operation; one that is not allowed is shown disabled. */
 function _addFavoriteOperation(
   opName: string,
   favActs: GUIActionButtonArg[],
   entity: EntityObject,
   requestContext: RequestContext,
 ) {
-  const entityName: string = entity.name;
-  let entry: ActionDecl = OPERATIONS[opName] as ActionDecl;
-  let isAllowed = checkPermissions(entity.perms, entry.perms);
-  // A read-only type (`edit` disabled) degrades Edit to the Read operation,
-  // exactly like lacking the per-entity edit permission does.
-  if (entry.name === 'edit' && requestContext.accessedEntityType?.edit === false) {
-    isAllowed = false;
-  }
-  // Copy/link/edit are not possible on a link entity (YAC rejects them): edit
-  // degrades to View below, copy/link end up disabled.
-  if (entity.link != null && isBlockedOnLink(entry.name)) {
-    isAllowed = false;
-  }
-  if (entry.name === 'edit' && !isAllowed) {
-    entry = OPERATION_VIEW;
-    isAllowed = true;
-    opName = entry.name;
-  }
-
-  const href = OPERATIONS_META[opName].getOperationURL?.(entityName, requestContext);
-  favActs.push({
-    action: entry,
-    isAllowed: isAllowed,
-    performAction: OPERATIONS_META[opName].getOperationCallback(entityName, requestContext),
-    // Only navigating operations (edit/view) carry an href; omit the key
-    // entirely otherwise.
-    ...(href ? { href } : {}),
-  });
+  const { decl, ...rest } = resolveOperation(opName, entity, requestContext);
+  favActs.push({ action: decl, ...rest });
 }
 
 /**
@@ -213,38 +208,10 @@ function getDropdownActions(
       continue;
     }
 
-    let operation: ActionDecl = OPERATIONS[opName];
-    // The operation actually carried out; diverges from opName only when Edit
-    // degrades to View below (so the click target / link follow the View op,
-    // not the Edit op the iteration started from).
-    let effectiveOpName = opName;
-    let isAllowed = checkPermissions(entity.perms, operation.perms);
-    // A read-only type (`edit` disabled) degrades Edit to the Read operation.
-    if (opName === 'edit' && requestContext.accessedEntityType?.edit === false) {
-      isAllowed = false;
-    }
-    // Copy/link are dropped from the dropdown and edit degrades to View when the
-    // entity is a link (these operations are not allowed on links by YAC).
-    if (entity.link != null && isBlockedOnLink(opName)) {
-      isAllowed = false;
-    }
-    if (!isAllowed && operation.name === 'edit') {
-      operation = OPERATION_VIEW;
-      effectiveOpName = OPERATION_VIEW.name;
-    } else if (!isAllowed) {
-      continue;
-    }
-
-    const href = OPERATIONS_META[effectiveOpName].getOperationURL?.(entity.name, requestContext);
-    result.push({
-      action: operation,
-      performAction: OPERATIONS_META[effectiveOpName].getOperationCallback(
-        entity.name,
-        requestContext,
-      ),
-      // Only navigating operations (edit/view) carry an href; omit otherwise.
-      ...(href ? { href } : {}),
-    });
+    // Operations that are not allowed are left out of the dropdown.
+    const { decl, isAllowed, ...rest } = resolveOperation(opName, entity, requestContext);
+    if (!isAllowed) continue;
+    result.push({ action: decl, ...rest });
   }
 
   for (const acName in actions) {

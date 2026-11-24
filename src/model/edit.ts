@@ -8,7 +8,7 @@ import { RequestEditContext } from '../utils/types/internal/request';
 import { entityPath, joinUrl } from '../utils/urlUtils';
 import { handleYacResponse, yacErrorDetail } from './utils/handleYacResponse';
 
-export type PutResult =
+export type EditResult =
   | { kind: 'ok' }
   /**
    * HTTP 409. No toast has been shown: YAC answers 409 both for a stale
@@ -21,13 +21,10 @@ export type PutResult =
   | { kind: 'failed' };
 
 /**
- * @param name
- * @param yaml
- * @param yaml_old
- * @param requestEditContext
- * @returns
+ * Edit the entity of the context: replace its stored YAML (`yaml_old`) with
+ * `yaml`, renaming it if `name` differs from the context's entity name.
  */
-export async function putYAMLEntity(
+export async function editEntity(
   name: string,
   yaml: string,
   yaml_old: string,
@@ -35,7 +32,7 @@ export async function putYAMLEntity(
   acts: ActionDecl[],
   // Admin override: commit past a failing schema validation (requires "adm").
   force: boolean = false,
-): Promise<PutResult> {
+): Promise<EditResult> {
   if (requestEditContext.entityName == null) {
     showError('Frontend error', 'The name is missing. Please file a bug report.');
     return { kind: 'failed' };

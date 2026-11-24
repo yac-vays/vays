@@ -35,7 +35,7 @@ const ActionButton = ({ actArgs, isLeft, isRight = false }: ActionButtonProps) =
     }
   };
 
-  // Navigating actions (edit/view) render as real links so they can be opened in
+  // Navigating actions (edit/read) render as real links so they can be opened in
   // a new tab; a plain left-click is intercepted for in-app navigation, while
   // modified/middle clicks keep their native "open in new tab" behaviour.
   const asLink = actArgs.href != null && actArgs.isAllowed;

@@ -1,7 +1,7 @@
 import { createNewEntity } from '../../../../model/create';
 import { invalidateEntityListCache } from '../../../../model/entityList';
 import { LOG_REFRESH_DELAY_MS, refreshEntityLogs } from '../../../../model/logs';
-import { PutResult, putYAMLEntity } from '../../../../model/put';
+import { EditResult, editEntity } from '../../../../model/edit';
 import { validateYAML } from '../../../../model/validate';
 import { ActionDecl } from '../../../../utils/types/api';
 import { RequestContext, RequestEditContext } from '../../../../utils/types/internal/request';
@@ -157,7 +157,7 @@ export async function sendYAMLData(requestContext: RequestEditContext) {
       } else {
         // The name the entity has after the commit (it may have been renamed).
         entityName = getEntityName() ?? requestContext.entityName ?? null;
-        const res = await sendPutEntity(getEntityYAML() ?? getInitialEntityYAML(), requestContext);
+        const res = await sendEditEntity(getEntityYAML() ?? getInitialEntityYAML(), requestContext);
         success = res.kind === 'ok';
         if (res.kind === 'conflict') {
           // Someone else committed meanwhile (or the 409 has another reason —
@@ -226,16 +226,16 @@ async function sendCreateNewEntity(
  * @param requestEditContext
  * @returns
  */
-async function sendPutEntity(
+async function sendEditEntity(
   yaml: string,
   requestEditContext: RequestEditContext,
-): Promise<PutResult> {
+): Promise<EditResult> {
   const name: string | undefined = getEntityName() ?? requestEditContext.entityName;
   if (name == undefined) {
     showError('Could not send the update', '');
     return { kind: 'failed' };
   }
-  return await putYAMLEntity(
+  return await editEntity(
     name,
     yaml,
     getInitialEntityYAML(),

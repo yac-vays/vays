@@ -91,7 +91,7 @@ const ActionDropdown = ({ actions, entityName, isLeft = false }: ActionDropdownP
               const itemClassName =
                 'group pb-1 relative flex items-center gap-2.5 rounded-md px-2 font-medium duration-300 ease-in-out dark:hover:text-white';
               const onItemClick = async (e: ReactMouseEvent) => {
-                // Navigating items (edit/view) are real links: leave modified /
+                // Navigating items (edit/read) are real links: leave modified /
                 // middle clicks to the browser (open in a new tab), otherwise
                 // intercept for in-app navigation.
                 if (act.href != null) {

@@ -282,7 +282,7 @@ export function buildOverviewURL(yacBackend: YACBackend, entityTypeName: string)
 }
 
 /**
- * Builds the URL of an entity-scoped action page (edit / view).
+ * Builds the URL of an entity-scoped action page (edit / read).
  *
  * @param backendName The YAC backend name.
  * @param entityTypeName The corresponding entity type name.

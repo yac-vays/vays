@@ -2,23 +2,23 @@ import { useEffect, useState } from 'react';
 import {
   setActivatedActions,
   setEntityName,
-} from '../../../../controller/local/EditController/ExpertMode/access';
+} from '../../../controller/local/EditController/editState';
 import {
   editViewNavigateToNewName,
   setEditDirty,
-} from '../../../../controller/local/EditController/shared';
-import { getTriggerableActions } from '../../../../utils/actionUtils';
+} from '../../../controller/local/EditController/shared';
+import { getTriggerableActions } from '../../../utils/actionUtils';
 import {
   isNameGeneratedByYAC,
   isNameOptionalByYAC,
   matchesNamePattern,
-} from '../../../../utils/nameUtils';
-import { RequestEditContext } from '../../../../utils/types/internal/request';
-import ErrorRing from '../../../components/Form/ErrorRing';
-import { MetaLimitChips } from '../../../components/LimitChips';
-import Checkbox from '../../../thirdparty/components/ifc/CheckBox/CheckBox';
-import OverheadLabelWithMarkdownDescr from '../../../thirdparty/components/ifc/Label/OverheadLabel';
-import TextInput from '../../../thirdparty/components/ifc/TextInput/TextInput';
+} from '../../../utils/nameUtils';
+import { RequestEditContext } from '../../../utils/types/internal/request';
+import ErrorRing from '../../components/Form/ErrorRing';
+import { MetaLimitChips } from '../../components/LimitChips';
+import Checkbox from '../../thirdparty/components/ifc/CheckBox/CheckBox';
+import OverheadLabelWithMarkdownDescr from '../../thirdparty/components/ifc/Label/OverheadLabel';
+import TextInput from '../../thirdparty/components/ifc/TextInput/TextInput';
 
 const MetaInfoPanel = ({
   requestEditContext,

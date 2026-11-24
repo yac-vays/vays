@@ -7,7 +7,7 @@ import {
   rankWith,
 } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import { useDebouncedCommit } from '../../view/hooks/useDebouncedCommit';
+import { useDebouncedInput } from '../../view/hooks/useDebouncedInput';
 import ErrorRing from '../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import NumberInput from '../../view/thirdparty/components/ifc/NumberInput/NumberInput';
@@ -32,7 +32,7 @@ export const NumberControl = ({
   uischema,
   errors,
 }: ControlProps) => {
-  const onChange = useDebouncedCommit(
+  const onChange = useDebouncedInput(
     (e: React.ChangeEvent<HTMLInputElement>) => handleChange(path, eventToValue(e)),
     800,
   );

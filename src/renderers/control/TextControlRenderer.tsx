@@ -7,7 +7,7 @@ import {
   rankWith,
 } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import { useDebouncedCommit } from '../../view/hooks/useDebouncedCommit';
+import { useDebouncedInput } from '../../view/hooks/useDebouncedInput';
 import ErrorButton from '../../view/components/Buttons/ErrorButton';
 import ErrorRing from '../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
@@ -32,7 +32,7 @@ export const TextControl = (props: ControlProps) => {
   const sendTrivial =
     isArrayItem || (props.uischema.options?.renderer_options?.send_trivial ?? false);
 
-  const onChange = useDebouncedCommit(
+  const onChange = useDebouncedInput(
     (e: React.ChangeEvent<HTMLInputElement>) =>
       props.handleChange(props.path, sendTrivial ? eventToValue(e) : strictEventToValue(e)),
     1500,

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { setIsCurrentlyEditingString } from '../../../../../controller/local/EditController/StandardMode/access';
+import { setIsCurrentlyEditingString } from '../../../../../controller/local/EditController/formPane/access';
 
 interface InputProps {
   data?: string;

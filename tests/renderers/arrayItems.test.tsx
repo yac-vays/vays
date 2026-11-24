@@ -2,7 +2,7 @@ import { materialCells, materialRenderers } from '@jsonforms/material-renderers'
 import { JsonForms } from '@jsonforms/react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { flushPendingDebouncedCommits } from '../../src/controller/local/EditController/debounceRegistry';
+import { flushPendingDebouncedInputs } from '../../src/controller/local/EditController/debounceRegistry';
 import { customRenderers } from '../../src/renderers';
 
 const renderers = [...materialRenderers, ...customRenderers];
@@ -32,7 +32,7 @@ describe('items of a string array', () => {
     const inputs = container.querySelectorAll('input[type="text"]');
     expect(inputs).toHaveLength(3);
     fireEvent.change(inputs[1], { target: { value: '' } });
-    act(() => flushPendingDebouncedCommits());
+    act(() => flushPendingDebouncedInputs());
     await waitFor(() => expect(seen.data).toEqual({ tags: ['a', '', 'c'] }));
   });
 });

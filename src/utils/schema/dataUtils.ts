@@ -172,7 +172,7 @@ export function markRemovedKeys(oldData: any, newData: any) {
 }
 
 /**
- * Get a patch from old to new. This is required for the modify API call in the standard edit mode.
+ * Get a patch from old to new. This is required for the form pane's validate call.
  * @param oldData
  * @param newData
  * @returns

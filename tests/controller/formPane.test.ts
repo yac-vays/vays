@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest';
-import { updateSchema } from '../../src/controller/local/EditController/StandardMode';
+import { validateFormData } from '../../src/controller/local/EditController/formPane';
 import { getSchema } from '../../src/model/validate';
 import { createFetchResponse, getTestEditRequestContext } from '../testUtils';
 import {
@@ -17,14 +17,14 @@ global.fetch = vi.fn();
  */
 const URL = 'https://yac_no_token.com';
 
-test('tests the validation of the standard mode', async () => {
+test('tests the validation of the form pane', async () => {
   //@ts-expect-error The method has been injected above.
   global.fetch.mockResolvedValue(createFetchResponse(VALIDATE_02_RESPONSE));
   getSchema(getTestEditRequestContext(URL, 'test', null, 'testType', 'create'));
   //@ts-expect-error The method has been injected above.
   global.fetch.mockResolvedValue(createFetchResponse(VALIDATE_02_RESPONSE2));
 
-  const valResp = await updateSchema(
+  const valResp = await validateFormData(
     VALIDATE_02_DATA,
     getTestEditRequestContext(URL, 'test', null, 'testType', 'create'),
     true,

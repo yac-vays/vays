@@ -4,13 +4,13 @@ import { debounce } from 'lodash';
 /**
  * Registry of the panes' debounced commit functions (the `trackedDebounce`
  * wrappers around `handleChange` / the editor validate). Controls register
- * theirs through `useDebouncedCommit`, which flushes a pending invocation on
+ * theirs through `useDebouncedInput`, which flushes a pending invocation on
  * unmount.
  *
- * The commit path calls {@link flushPendingDebouncedCommits} before reading the
+ * The commit path calls {@link flushPendingDebouncedInputs} before reading the
  * YAML to save, so an edit still sitting in a debounce window (0.5–1.5s) is not
  * silently dropped when the user clicks Commit quickly after typing. Cross-pane
- * rewrites consult {@link hasPendingDebouncedCommits} so a validation response
+ * rewrites consult {@link hasPendingDebouncedInputs} so a validation response
  * never overwrites input that is newer than itself.
  */
 
@@ -57,18 +57,18 @@ type AnyTracked = TrackedDebounced<(...args: any[]) => any>;
 const registered = new Set<AnyTracked>();
 
 /** Register a pane's debounced commit function (on mount). */
-export function registerDebouncedCommit(fn: AnyTracked) {
+export function registerDebouncedInput(fn: AnyTracked) {
   registered.add(fn);
 }
 
 /** Cancel + deregister a pane's debounced commit function (on unmount). */
-export function deregisterDebouncedCommit(fn: AnyTracked) {
+export function deregisterDebouncedInput(fn: AnyTracked) {
   fn.cancel();
   registered.delete(fn);
 }
 
 /** Immediately invoke every pending debounced commit (start of the save path). */
-export function flushPendingDebouncedCommits() {
+export function flushPendingDebouncedInputs() {
   for (const fn of [...registered]) {
     fn.flush();
   }
@@ -78,7 +78,7 @@ export function flushPendingDebouncedCommits() {
  * Whether any registered commit is still waiting in its debounce window, i.e.
  * a pane holds user input newer than every in-flight validation.
  */
-export function hasPendingDebouncedCommits(): boolean {
+export function hasPendingDebouncedInputs(): boolean {
   for (const fn of registered) {
     if (fn.pending()) return true;
   }

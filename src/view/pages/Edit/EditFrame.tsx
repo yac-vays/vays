@@ -12,8 +12,8 @@ import { leavesEditedDocument } from '../../../controller/global/url';
 import {
   getActivatedActions,
   setChangeListener,
-} from '../../../controller/local/EditController/ExpertMode/access';
-import { sendYAMLData } from '../../../controller/local/EditController/ExpertMode';
+} from '../../../controller/local/EditController/editState';
+import { commitEntity } from '../../../controller/local/EditController/commit';
 import {
   handleEditConflict,
   isConflictMessage,
@@ -42,9 +42,9 @@ import { EditorLayout } from '../../../utils/types/config';
 import { RequestEditContext } from '../../../utils/types/internal/request';
 import SubLoader from '../../thirdparty/components/SubLoader';
 import { useContainerDimensions } from '../../hooks/useContainerDimensions';
-import ExpertMode from './ExpertMode/ExpertMode';
-import MetaInfoPanel from './ExpertMode/MetaInfoPanel';
-import StandardEditMode from './StandardEditMode';
+import YamlPane from './YamlPane';
+import MetaInfoPanel from './MetaInfoPanel';
+import FormPane from './FormPane';
 
 /** Below this container width the split is unavailable: only one pane at a time. */
 const SIDE_BY_SIDE_MIN_WIDTH = 900;
@@ -385,7 +385,7 @@ const EditFrame = ({
                 popouts z-50) cannot escape past the sibling dim overlay
                 (z-10) below. */}
             <div className="isolate flex grow flex-col min-h-0 min-w-0 overflow-hidden">
-              <StandardEditMode
+              <FormPane
                 requestEditContext={requestEditContext}
                 setEditErrorMsg={setEditErrorMsg}
                 setLoading={setFormLoading}
@@ -442,7 +442,7 @@ const EditFrame = ({
             {/* Same stacking-context isolation as the form pane, so Monaco's
                 internal widgets cannot escape past the dim overlay either. */}
             <div className="isolate flex grow flex-col min-h-0 min-w-0 overflow-hidden">
-              <ExpertMode
+              <YamlPane
                 requestContext={requestEditContext}
                 setEditErrorMsg={setEditErrorMsg}
                 setLoading={setYamlLoading}
@@ -543,7 +543,7 @@ const EditFrame = ({
                   onClick={() => {
                     // Unified save: the canonical YAML (kept current no matter which
                     // pane was edited) is PUT, preserving comments/order.
-                    sendYAMLData(requestEditContext);
+                    commitEntity(requestEditContext);
                   }}
                   className={`${btnBase} ${showAdminLock ? 'rounded-l-none' : ''} ${
                     saveDisabled

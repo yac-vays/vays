@@ -1,5 +1,5 @@
 /**
- * Single point where Monaco is set up for the expert-mode YAML editor.
+ * Single point where Monaco is set up for the YAML editor.
  *
  * This replaces the former secondary Webpack build (`webpack.config.js` +
  * `src/workerInit.js`, which produced a full ~12 MB `public/editor/` bundle that

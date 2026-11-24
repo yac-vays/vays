@@ -4,7 +4,7 @@ import { lazy, Suspense } from 'react';
 
 const Editor = lazy(() => import('./Editor'));
 
-const ExpertMode = ({
+const YamlPane = ({
   requestContext,
   setEditErrorMsg,
   setLoading,
@@ -30,14 +30,8 @@ const ExpertMode = ({
           visible={visible}
         />
       </Suspense>
-      {/* <div className={`absolute mx-4 md:mx-8 p-2 rounded-sm duration-1000 opacity-0 ${isDisplayingYACError && "opacity-100"}`} 
-          style={{bottom:0, left:0, right:0, backgroundColor: "rgb(255 0 200/ 0.6)"}}>
-          {yacErrorMsg}
-        </div> */}
-      {/* </div>
-    </section> */}
     </>
   );
 };
 
-export default ExpertMode;
+export default YamlPane;

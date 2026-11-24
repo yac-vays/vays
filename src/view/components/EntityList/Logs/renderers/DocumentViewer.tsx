@@ -1,13 +1,13 @@
 /**
  * Read-only Monaco viewer of the `document` log renderer. Loaded lazily (see
  * document.tsx), so the overview only pulls in Monaco once a document is
- * opened. Uses the expert mode's Monaco setup (workers, the YAML grammar, the
+ * opened. Uses the YAML pane's Monaco setup (workers, the YAML grammar, the
  * find widget and folding) and themes.
  */
-import '../../../../pages/Edit/ExpertMode/monacoSetup';
+import '../../../../pages/Edit/YamlPane/monacoSetup';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { useEffect, useRef } from 'react';
-import editorTheme from '../../../../pages/Edit/ExpertMode/EditorPlugins/theme';
+import editorTheme from '../../../../pages/Edit/YamlPane/EditorPlugins/theme';
 
 /** A language Monaco knows, else plain text. */
 function knownLanguage(language: string): string {

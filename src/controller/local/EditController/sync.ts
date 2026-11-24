@@ -2,8 +2,8 @@
 import { RequestEditContext } from '../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../utils/types/internal/validation';
 import editingState from '../../state/EditCtrlState';
-import { getEntityYAML, setEntityYAML } from './ExpertMode/access';
-import { hasPendingDebouncedCommits } from './debounceRegistry';
+import { getEntityYAML, setEntityYAML } from './editState';
+import { hasPendingDebouncedInputs } from './debounceRegistry';
 import {
   beginValidationDispatch,
   currentSession,
@@ -14,7 +14,7 @@ import {
   whenValidationIdle,
 } from './session';
 import { reportValidationFailed } from './shared';
-import { updateSchema } from './StandardMode';
+import { validateFormData } from './formPane';
 
 /**
  * Side-by-side editor synchronization.
@@ -66,7 +66,7 @@ function yamlInputPending(): boolean {
 
 /** Un-validated user input pending in a form renderer (debounce window). */
 function formInputPending(): boolean {
-  return hasPendingDebouncedCommits();
+  return hasPendingDebouncedInputs();
 }
 
 /** Whether the YAML pane is currently mounted (its writer is registered). */
@@ -84,7 +84,7 @@ export function getActivePane(): Pane | null {
 
 // Lives in access.ts (leaf module) so the load path in shared.ts can seed
 // without an import cycle; re-exported here for the panes.
-export { seedCanonical } from './ExpertMode/access';
+export { seedCanonical } from './editState';
 
 export function getCanonicalYAML(): string {
   return editingState.canonicalYAML;
@@ -187,7 +187,7 @@ let metaRevalidationQueued = false;
  * Re-validate the current data after a name/action change in the always-visible
  * MetaInfoPanel (toggling an action can change the schema) and refresh both
  * panes from the result. Name/actions are read from the controller state (set
- * by the panel) inside `updateSchema`.
+ * by the panel) inside `validateFormData`.
  */
 export async function revalidateMeta(requestEditContext: RequestEditContext) {
   // The canonical pair is this validation's input, so it must not overtake a
@@ -212,7 +212,7 @@ export async function revalidateMeta(requestEditContext: RequestEditContext) {
   beginValidationDispatch();
   try {
     // Keep the editor's comments/formatting when an action toggle re-validates.
-    const resp = await updateSchema(
+    const resp = await validateFormData(
       getCanonicalData(),
       requestEditContext,
       true,

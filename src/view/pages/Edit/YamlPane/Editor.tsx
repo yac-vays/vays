@@ -12,7 +12,7 @@ import {
   getMonacoYaml,
   setCurrentJsonSchema,
   setMonacoYaml,
-} from '../../../../controller/local/EditController/ExpertMode/access';
+} from '../../../../controller/local/EditController/editState';
 import {
   getInitialEntityYAML,
   subscribeToBaseline,
@@ -29,7 +29,7 @@ import { computeDiffDecorations } from './EditorPlugins/diffDecoration';
 import editorPlugins, { editorSetupPlugins } from './EditorPlugins';
 import { getUpdateCallback, setupMonacoYAMLPlugin } from './utils/setup.js';
 
-import { startExpertModeSession } from '../../../../controller/local/EditController/ExpertMode/index.js';
+import { startYamlPaneSession } from '../../../../controller/local/EditController/yamlPane';
 import { disposeErrorMarkersListener } from './EditorPlugins/errorDecoration';
 import { disposeLimitGlyphs } from './EditorPlugins/limitGlyphs';
 import { disposeLockedRegions } from './EditorPlugins/lockedRegions';
@@ -61,7 +61,7 @@ export const Editor = ({
   const update = getUpdateCallback();
 
   useEffect(() => {
-    startExpertModeSession(requestEditContext, setEditErrorMsg);
+    startYamlPaneSession(requestEditContext, setEditErrorMsg);
 
     if (monacoEl && requestEditContext.rc.yacURL != null) {
       setIsSettingUp(true);

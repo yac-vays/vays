@@ -100,7 +100,7 @@ class EditControlState {
    * linger in the YAML and block the commit. We re-emit each of these paths as
    * `~undefined` in the outgoing patch so the merge actually unsets them. An
    * entry is dropped once its key reappears in the data (condition re-met).
-   * Reset at the start of every editing session (see `clearYACStatus`).
+   * Reset at the start of every editing session (see `resetSessionStatus`).
    */
   public strippedPaths: Set<string> = new Set();
 

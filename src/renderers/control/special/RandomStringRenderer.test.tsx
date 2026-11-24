@@ -3,7 +3,7 @@ import { JsonForms } from '@jsonforms/react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { customRenderers } from '../..';
-import { flushPendingDebouncedCommits } from '../../../controller/local/EditController/debounceRegistry';
+import { flushPendingDebouncedInputs } from '../../../controller/local/EditController/debounceRegistry';
 import { injectEagerRandomStrings, resetEagerGenerated } from '../../../utils/schema/eagerValues';
 import { ValidateResponse } from '../../../utils/types/internal/validation';
 
@@ -190,7 +190,7 @@ describe('RandomStringRenderer', () => {
       target: { value: 'typed' },
     });
     fireEvent.click(getByText('Regenerate'));
-    act(() => flushPendingDebouncedCommits());
+    act(() => flushPendingDebouncedInputs());
     await new Promise((r) => setTimeout(r, 50));
     expect(seen.data?.token).toMatch(UUID_RE);
   });

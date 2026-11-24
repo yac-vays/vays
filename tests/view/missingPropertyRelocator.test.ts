@@ -15,7 +15,7 @@ import {
   missingPropertyPlacer,
   PlacementModel,
   relocateMissingPropertyMarkers,
-} from '../../src/view/pages/Edit/ExpertMode/EditorPlugins/missingPropertyRelocator';
+} from '../../src/view/pages/Edit/YamlPane/EditorPlugins/missingPropertyRelocator';
 
 /** Minimal stand-in for monaco's ITextModel (1-based lines and columns). */
 function fakeModel(text: string): PlacementModel {

@@ -1,18 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import { getActivatedActions } from '../../../../controller/local/EditController/ExpertMode/access';
+import { getActivatedActions } from '../../../../controller/local/EditController/editState';
 import {
   beginPaneSession,
   emitValidity,
   getValidationAJV,
-  retreiveSchema,
+  loadEntitySchema,
   setLocalValidity,
 } from '../../../../controller/local/EditController/shared';
 import { revalidateMeta } from '../../../../controller/local/EditController/sync';
-import { setCurrentTab } from '../../../../controller/local/EditController/StandardMode/access';
+import { setCurrentTab } from '../../../../controller/local/EditController/formPane/access';
 import {
   resetCategoryErrs,
   updateTabsErrorNotification,
-} from '../../../../controller/local/EditController/StandardMode/tabs';
+} from '../../../../controller/local/EditController/formPane/tabs';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import { Nullable } from '../../../../utils/types/typeUtils';
@@ -81,7 +81,7 @@ const useInitializeForm = (
       resetCategoryErrs();
       // Name + actions are rendered separately in the always-visible
       // MetaInfoPanel, not injected into the form.
-      const resp: Nullable<ValidateResponse> = await retreiveSchema(requestEditContext);
+      const resp: Nullable<ValidateResponse> = await loadEntitySchema(requestEditContext);
       if (!isMounted) return;
 
       if (resp == null) {

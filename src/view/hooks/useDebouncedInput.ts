@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useRef } from 'react';
 import {
-  deregisterDebouncedCommit,
-  registerDebouncedCommit,
+  deregisterDebouncedInput,
+  registerDebouncedInput,
   trackedDebounce,
   TrackedDebounced,
 } from '../../controller/local/EditController/debounceRegistry';
@@ -15,7 +15,7 @@ import {
  * (e.g. the user switches the category tab) a pending call is flushed, not
  * dropped: the input was already shown as accepted.
  */
-export function useDebouncedCommit<A extends any[]>(
+export function useDebouncedInput<A extends any[]>(
   commit: (...args: A) => void,
   wait: number,
 ): TrackedDebounced<(...args: A) => void> {
@@ -28,10 +28,10 @@ export function useDebouncedCommit<A extends any[]>(
   );
 
   useEffect(() => {
-    registerDebouncedCommit(debounced);
+    registerDebouncedInput(debounced);
     return () => {
       debounced.flush();
-      deregisterDebouncedCommit(debounced);
+      deregisterDebouncedInput(debounced);
     };
   }, [debounced]);
 

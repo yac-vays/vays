@@ -1,7 +1,7 @@
 import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { ChangeEvent, useCallback, useEffect, useRef } from 'react';
-import { useDebouncedCommit } from '../../../view/hooks/useDebouncedCommit';
+import { useDebouncedInput } from '../../../view/hooks/useDebouncedInput';
 import {
   DEFAULT_RANDOM_STRING_FORMAT,
   DEFAULT_RANDOM_STRING_LENGTH,
@@ -65,7 +65,7 @@ export const RandomStringRenderer = (props: ControlProps) => {
   const autoGenStarted = useRef<boolean>(false);
   const { showModal } = useModalContext();
 
-  const update = useDebouncedCommit(
+  const update = useDebouncedInput(
     (value: string) => props.handleChange(props.path, value ? value : undefined),
     1500,
   );

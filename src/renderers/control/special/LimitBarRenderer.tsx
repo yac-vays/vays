@@ -9,7 +9,7 @@ import {
 } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useDebouncedCommit } from '../../../view/hooks/useDebouncedCommit';
+import { useDebouncedInput } from '../../../view/hooks/useDebouncedInput';
 import {
   buildLimitBar,
   clampToRange,
@@ -109,7 +109,7 @@ export const LimitBar = (props: ControlProps) => {
     [fieldUsages, measuredData, props.path, shown, initial, props.schema, step],
   );
 
-  const commit = useDebouncedCommit((v: number | undefined) => {
+  const commit = useDebouncedInput((v: number | undefined) => {
     props.handleChange(props.path, v);
     // Committing the stored value changes no data, so the effect below would
     // never end the draft (which then hides later changes from outside).

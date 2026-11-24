@@ -2,7 +2,7 @@ import { materialCells, materialRenderers } from '@jsonforms/material-renderers'
 import { JsonForms } from '@jsonforms/react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { flushPendingDebouncedCommits } from '../../src/controller/local/EditController/debounceRegistry';
+import { flushPendingDebouncedInputs } from '../../src/controller/local/EditController/debounceRegistry';
 import { customRenderers } from '../../src/renderers';
 
 const renderers = [...materialRenderers, ...customRenderers];
@@ -39,7 +39,7 @@ describe('mac_address', () => {
     const { seen, input } = mount({});
     fireEvent.change(input, { target: { value: 'aa-bb-cc-dd-ee-ff' } });
     expect(input.value).toBe('AA:BB:CC:DD:EE:FF');
-    act(() => flushPendingDebouncedCommits());
+    act(() => flushPendingDebouncedInputs());
     await waitFor(() => expect(seen.data).toEqual({ mac: 'AA:BB:CC:DD:EE:FF' }));
   });
 

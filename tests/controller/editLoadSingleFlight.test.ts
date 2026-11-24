@@ -1,7 +1,7 @@
 /**
  * The edit view loads the schema twice on mount: once from the form pane
  * (useInitializeState) and once from the Monaco editor's init plugin
- * (schemaInitializer). Both used to run their own retreiveSchema, whose
+ * (schemaInitializer). Both used to run their own loadEntitySchema, whose
  * stabilization loop works on module-global editing state — so the slower
  * run computed its defaults patch against the baseline the faster run had
  * already replaced, sent an empty patch and ended up with the stored YAML
@@ -14,7 +14,10 @@
  */
 import { expect, test, vi } from 'vitest';
 import { newEditingView } from '../../src/controller/local/EditController/session';
-import { beginPaneSession, retreiveSchema } from '../../src/controller/local/EditController/shared';
+import {
+  beginPaneSession,
+  loadEntitySchema,
+} from '../../src/controller/local/EditController/shared';
 import { getTestEditRequestContext } from '../testUtils';
 
 global.fetch = vi.fn();
@@ -108,9 +111,9 @@ test('concurrent edit loads are single-flighted and both get the stabilized resu
   const ctx = getTestEditRequestContext(URL, 'test', HOST, 'testType', 'edit');
 
   // form pane and editor plugin fire the same load concurrently
-  const formLoad = retreiveSchema(ctx);
+  const formLoad = loadEntitySchema(ctx);
   await flushMicrotasks();
-  const editorLoad = retreiveSchema(ctx);
+  const editorLoad = loadEntitySchema(ctx);
   await flushMicrotasks();
 
   // one shared chain: GET, pass 1 (empty patch), pass 2 (defaults patch)
@@ -143,7 +146,7 @@ test('a late pane of the same session shares the finished load, a new session lo
   newEditingView();
   beginPaneSession(ctx);
 
-  const first = retreiveSchema(ctx);
+  const first = loadEntitySchema(ctx);
   await flushMicrotasks();
   await answerNext('get');
   await answerNext('validate');
@@ -152,7 +155,7 @@ test('a late pane of the same session shares the finished load, a new session lo
   expect(firstResp).not.toBeNull();
 
   // e.g. the lazily loaded editor: no second fetch, an independent copy
-  const late = await retreiveSchema(ctx);
+  const late = await loadEntitySchema(ctx);
   expect(pending).toHaveLength(0);
   expect(late).toStrictEqual(firstResp);
   expect(late).not.toBe(firstResp);
@@ -160,7 +163,7 @@ test('a late pane of the same session shares the finished load, a new session lo
   // reopening the entity is a new session with its own load
   newEditingView();
   beginPaneSession(ctx);
-  const second = retreiveSchema(ctx);
+  const second = loadEntitySchema(ctx);
   await flushMicrotasks();
   await answerNext('get');
   await answerNext('validate');
@@ -172,13 +175,13 @@ test('a new session does not join the abandoned load of the previous one', async
   const ctx = getTestEditRequestContext(URL, 'test', HOST, 'testType', 'edit');
   newEditingView();
   beginPaneSession(ctx);
-  const abandoned = retreiveSchema(ctx);
+  const abandoned = loadEntitySchema(ctx);
   await flushMicrotasks();
 
   // left and reopened before the first load settled
   newEditingView();
   beginPaneSession(ctx);
-  const current = retreiveSchema(ctx);
+  const current = loadEntitySchema(ctx);
   await flushMicrotasks();
   expect(pending.filter((p) => p.kind === 'get')).toHaveLength(2);
 

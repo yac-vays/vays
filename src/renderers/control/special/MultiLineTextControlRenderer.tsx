@@ -1,6 +1,6 @@
 import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import { useDebouncedCommit } from '../../../view/hooks/useDebouncedCommit';
+import { useDebouncedInput } from '../../../view/hooks/useDebouncedInput';
 import ErrorRing from '../../../view/components/Form/ErrorRing';
 import OverheadLabel from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import TextArea from '../../../view/thirdparty/components/ifc/TextArea/TextAreaInput';
@@ -20,7 +20,7 @@ export const MultiLineTextControlRenderer = (props: ControlProps) => {
   }
   ///
 
-  const onChange = useDebouncedCommit(
+  const onChange = useDebouncedInput(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => props.handleChange(props.path, eventToValue(e)),
     1500,
   );

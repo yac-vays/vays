@@ -8,24 +8,24 @@ import { expect, test, vi } from 'vitest';
 import { getDefaultEditContext } from '../../src/controller/global/url';
 import { getTestEditRequestContext } from '../testUtils';
 
-const retreiveSchema = vi.fn(async () => null);
+const loadEntitySchema = vi.fn(async () => null);
 vi.mock('../../src/controller/local/EditController/shared', async (importOriginal) => ({
   ...(await importOriginal<object>()),
-  retreiveSchema: (...args: unknown[]) => retreiveSchema(...(args as [])),
+  loadEntitySchema: (...args: unknown[]) => loadEntitySchema(...(args as [])),
 }));
 
-import useInitializeForm from '../../src/view/pages/Edit/StandardEditMode/useInitializeState';
+import useInitializeForm from '../../src/view/pages/Edit/FormPane/useInitializeForm';
 
 test('placeholder context loads nothing', () => {
-  retreiveSchema.mockClear();
+  loadEntitySchema.mockClear();
   renderHook(() => useInitializeForm(getDefaultEditContext(), () => {}));
-  expect(retreiveSchema).not.toHaveBeenCalled();
+  expect(loadEntitySchema).not.toHaveBeenCalled();
 });
 
 test('a mount with the real context loads the schema', async () => {
-  retreiveSchema.mockClear();
+  loadEntitySchema.mockClear();
   const ctx = getTestEditRequestContext('https://yac.example', 'be', 'web01', 'host', 'edit');
   const { result } = renderHook(() => useInitializeForm(ctx, () => {}));
-  await waitFor(() => expect(retreiveSchema).toHaveBeenCalledTimes(1));
+  await waitFor(() => expect(loadEntitySchema).toHaveBeenCalledTimes(1));
   await waitFor(() => expect(result.current.isEmpty).toBe(true));
 });

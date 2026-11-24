@@ -4,7 +4,7 @@ import { ChangeEvent, useState } from 'react';
 import { hashPassword } from '../../../utils/passwordHashes';
 import TextInput from '../../../view/thirdparty/components/ifc/TextInput/TextInput';
 
-import { useDebouncedCommit } from '../../../view/hooks/useDebouncedCommit';
+import { useDebouncedInput } from '../../../view/hooks/useDebouncedInput';
 import ErrorRing from '../../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
@@ -32,7 +32,7 @@ export const PasswordRenderer = (props: ControlProps) => {
     placeholderEditable = false;
   }
 
-  const update = useDebouncedCommit(
+  const update = useDebouncedInput(
     (value: string) =>
       props.handleChange(props.path, value ? (pt ? value : hashPassword(value)) : undefined),
     1500,

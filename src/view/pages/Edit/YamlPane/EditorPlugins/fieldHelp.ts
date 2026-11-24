@@ -1,6 +1,6 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
-import { getCurrentJsonSchema } from '../../../../../controller/local/EditController/ExpertMode/access';
+import { getCurrentJsonSchema } from '../../../../../controller/local/EditController/editState';
 import { getYACUsages } from '../../../../../controller/local/EditController/shared';
 import { formatLimitLong, limitMatchesYamlPath } from '../../../../../utils/limitUtils';
 import {

@@ -9,7 +9,7 @@ import { RequestEditContext } from '../utils/types/internal/request';
 import { ValidateResponse } from '../utils/types/internal/validation';
 import { Nullable } from '../utils/types/typeUtils';
 import { joinUrl } from '../utils/urlUtils';
-import { stringifyEntityInfoForAPI } from '../utils/validatorUtils';
+import { buildValidateRequestBody } from '../utils/validatorUtils';
 import { handleYacResponse, yacErrorDetail } from './utils/handleYacResponse';
 
 export const defaultValidationResponse: ValidateResponse = {
@@ -58,7 +58,7 @@ export async function validateYAML(
   const url: string | null | undefined = requestEditContext.rc.yacURL;
 
   if (url == undefined || url == null) return null;
-  const obj = stringifyEntityInfoForAPI(
+  const obj = buildValidateRequestBody(
     requestEditContext,
     undefined,
     name,
@@ -147,7 +147,7 @@ export async function validate(
   const url: string | null | undefined = requestEditContext.rc.yacURL;
 
   if (url == undefined || url == null) return null;
-  const obj = stringifyEntityInfoForAPI(
+  const obj = buildValidateRequestBody(
     requestEditContext,
     data,
     name,

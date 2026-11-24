@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useDebouncedCommit } from '../../../../../view/hooks/useDebouncedCommit';
-import { setIsCurrentlyEditingString } from '../../../../../controller/local/EditController/StandardMode/access';
+import { useDebouncedInput } from '../../../../../view/hooks/useDebouncedInput';
+import { setIsCurrentlyEditingString } from '../../../../../controller/local/EditController/formPane/access';
 import useOutsideClick from '../../../../hooks/useOutsideClick';
 import DeleteButton from '../MultiSelect/DeleteButton';
 import DropdownButton from '../MultiSelect/DropdownButton';
@@ -34,7 +34,7 @@ const LargeStringList: React.FC<LargeStringProps> = ({
   /**
    * We need to debounce here to avoid presenting an easy way to spam the server.
    */
-  const debouncedHandleChange = useDebouncedCommit(
+  const debouncedHandleChange = useDebouncedInput(
     (newS: string[]) => handleChange(path, newS),
     800,
   );

@@ -14,7 +14,7 @@ import {
 } from '@jsonforms/react';
 import React, { useCallback, useState } from 'react';
 import { showModalMessage } from '../../../controller/global/modal';
-import { flushPendingDebouncedCommits } from '../../../controller/local/EditController/debounceRegistry';
+import { flushPendingDebouncedInputs } from '../../../controller/local/EditController/debounceRegistry';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
 import { useRowKeys } from '../../utils/useRowKeys';
 import CardRenderer from './CardRenderer';
@@ -67,7 +67,7 @@ export const NestedObjectRenderer = ({
       async () => {
         if (!removeItems) return;
         // A pending edit must land before the indices shift.
-        flushPendingDebouncedCommits();
+        flushPendingDebouncedInputs();
         rowKeys.remove(rowIndex);
         removeItems(path, [rowIndex])();
       },

@@ -15,8 +15,8 @@ import {
   setChangeListener,
   setEntityName,
   setEntityYAML,
-} from '../../src/controller/local/EditController/ExpertMode/access';
-import { sendYAMLData } from '../../src/controller/local/EditController/ExpertMode';
+} from '../../src/controller/local/EditController/editState';
+import { commitEntity } from '../../src/controller/local/EditController/commit';
 import { setInitialEntityYAML } from '../../src/controller/local/EditController/shared';
 import editingState from '../../src/controller/state/EditCtrlState';
 import { ActionDecl } from '../../src/utils/types/api';
@@ -51,7 +51,7 @@ describe('commit confirm dialogue', () => {
   it('shows the activated actions title + description in the modal body', async () => {
     editingState.activatedActions = [INSTALL_ACTION];
     const ctx = getTestEditRequestContext('https://x', 'test', 'web01', 'host', 'edit');
-    await sendYAMLData(ctx);
+    await commitEntity(ctx);
 
     expect(modalCalls).toHaveLength(1);
     expect(modalCalls[0].text).toContain('will also trigger the following action:');
@@ -61,7 +61,7 @@ describe('commit confirm dialogue', () => {
 
   it('keeps the body empty without activated actions', async () => {
     const ctx = getTestEditRequestContext('https://x', 'test', 'web01', 'host', 'edit');
-    await sendYAMLData(ctx);
+    await commitEntity(ctx);
     expect(modalCalls).toHaveLength(1);
     expect(modalCalls[0].text).toBe('');
   });
@@ -69,7 +69,7 @@ describe('commit confirm dialogue', () => {
   it('does not open the modal for an edit-mode no-op commit', async () => {
     setEntityYAML('owner: alice\n'); // payload equals the stored file
     const ctx = getTestEditRequestContext('https://x', 'test', 'web01', 'host', 'edit');
-    await sendYAMLData(ctx);
+    await commitEntity(ctx);
     expect(modalCalls).toHaveLength(0);
   });
 
@@ -77,7 +77,7 @@ describe('commit confirm dialogue', () => {
     setInitialEntityYAML('defaults: template\n');
     setEntityYAML('defaults: template\n');
     const ctx = getTestEditRequestContext('https://x', 'test', null, 'host', 'create');
-    await sendYAMLData(ctx);
+    await commitEntity(ctx);
     expect(modalCalls).toHaveLength(1);
   });
 });
@@ -123,7 +123,7 @@ describe('uncommitted-change tracking', () => {
       modalCalls.push({ title, text });
     });
     setEntityName('web02');
-    await sendYAMLData(ctx);
+    await commitEntity(ctx);
     expect(modalCalls).toHaveLength(1);
     expect(modalCalls[0].title).toBe('Commit changes to web02?');
     setEntityName(null);

@@ -2,7 +2,7 @@
 import { isMap, isNode, isPair, isScalar, isSeq, Node, parseDocument, Parser, Scalar } from 'yaml';
 
 /**
- * Parts of an entity's YAML the user cannot change in the expert editor:
+ * Parts of an entity's YAML the user cannot change in the YAML pane:
  *
  *   - `fixed`: a value whose schema is a `const` — the only allowed value
  *     (YAC pins stored values the user may not write that way, e.g. missing

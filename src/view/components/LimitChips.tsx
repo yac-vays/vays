@@ -1,4 +1,4 @@
-import { getCurrentJsonSchema } from '../../controller/local/EditController/ExpertMode/access';
+import { getCurrentJsonSchema } from '../../controller/local/EditController/editState';
 import {
   LIMIT_CHIP_STYLE,
   formatLimitShort,

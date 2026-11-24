@@ -1,6 +1,6 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { configureMonacoYaml, type SchemasSettings } from 'monaco-yaml';
-import { updateYAMLschema } from '../../../../../controller/local/EditController/ExpertMode';
+import { validateYAMLText } from '../../../../../controller/local/EditController/yamlPane';
 import {
   getActivatedActions,
   getCurrentContext,
@@ -9,9 +9,9 @@ import {
   setCurrentJsonSchema,
   setEntityYAML,
   setErrorMessage,
-} from '../../../../../controller/local/EditController/ExpertMode/access';
+} from '../../../../../controller/local/EditController/editState';
 import {
-  registerDebouncedCommit,
+  registerDebouncedInput,
   trackedDebounce,
   TrackedDebounced,
 } from '../../../../../controller/local/EditController/debounceRegistry';
@@ -173,7 +173,7 @@ export function getUpdateCallback(): EditorUpdateCallback {
     const seq = nextValidationSeq();
     beginValidationDispatch();
     try {
-      const rep = await updateYAMLschema(
+      const rep = await validateYAMLText(
         getEntityName(),
         value,
         requestEditContext,
@@ -222,7 +222,7 @@ export function getUpdateCallback(): EditorUpdateCallback {
   // The save path's flush must include the editor's pending keystrokes, not
   // just the form renderers' (a commit within the debounce window would
   // otherwise silently save text older than what the editor shows).
-  registerDebouncedCommit(updateCallbackSingleton);
+  registerDebouncedInput(updateCallbackSingleton);
 
   return updateCallbackSingleton;
 }

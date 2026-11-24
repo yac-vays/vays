@@ -1,7 +1,7 @@
 import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
-import { useDebouncedCommit } from '../../../view/hooks/useDebouncedCommit';
+import { useDebouncedInput } from '../../../view/hooks/useDebouncedInput';
 import ErrorRing from '../../../view/components/Form/ErrorRing';
 import OverheadLabel from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import TextInput from '../../../view/thirdparty/components/ifc/TextInput/TextInput';
@@ -41,7 +41,7 @@ export const MacAddressRenderer = (props: ControlProps) => {
     setMac(typeof storedData === 'string' ? storedData : '');
   }, [storedData]);
 
-  const update = useDebouncedCommit((value: string) => {
+  const update = useDebouncedInput((value: string) => {
     if (value === '') {
       // Explicit emptying: remove the stored value.
       props.handleChange(props.path, undefined);

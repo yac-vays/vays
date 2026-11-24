@@ -9,13 +9,13 @@ import FormsErrorBoundary from './ErrorBoundary';
 import {
   getEntityYAML,
   setCurrentContext,
-} from '../../../../controller/local/EditController/ExpertMode/access';
-import { updateSchema } from '../../../../controller/local/EditController/StandardMode';
+} from '../../../../controller/local/EditController/editState';
+import { validateFormData } from '../../../../controller/local/EditController/formPane';
 import {
   IsCurrentlyEditingString,
   setFormData,
   setIsCurrentlyEditingString,
-} from '../../../../controller/local/EditController/StandardMode/access';
+} from '../../../../controller/local/EditController/formPane/access';
 import { customRenderers } from '../../../../renderers';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 // import { Nullable } from '../../../../utils/typeUtils';
@@ -27,7 +27,7 @@ import {
   setLocalValidity,
   VALIDATION_FAILED_DETAIL,
 } from '../../../../controller/local/EditController/shared';
-import { updateTabsErrorNotification } from '../../../../controller/local/EditController/StandardMode/tabs';
+import { updateTabsErrorNotification } from '../../../../controller/local/EditController/formPane/tabs';
 import {
   beginValidationDispatch,
   endValidationDispatch,
@@ -49,7 +49,7 @@ import {
 import { logError } from '../../../../utils/logger';
 import { ValidateResponse } from '../../../../utils/types/internal/validation';
 import NoDataIndicator from '../../../components/NoDataIndicator';
-import useInitializeForm from './useInitializeState';
+import useInitializeForm from './useInitializeForm';
 
 const renderers = [...materialRenderers, ...customRenderers];
 
@@ -73,7 +73,7 @@ interface FormProps {
  * @remarks
  * The component uses `memo` to optimize rendering performance by memoizing the result.
  */
-const StandardEditMode = memo(({ requestEditContext, setEditErrorMsg, setLoading }: FormProps) => {
+const FormPane = memo(({ requestEditContext, setEditErrorMsg, setLoading }: FormProps) => {
   const {
     loading,
     isEmpty,
@@ -200,7 +200,7 @@ const StandardEditMode = memo(({ requestEditContext, setEditErrorMsg, setLoading
     beginValidationDispatch();
     // Merge this form change into the YAML the user currently has in the editor
     // (preserving its comments/formatting) rather than regenerating from data.
-    updateSchema(data, requestEditContext, true, null, getEntityYAML(), seq)
+    validateFormData(data, requestEditContext, true, null, getEntityYAML(), seq)
       .then((resp) => {
         // A newer edit (in either pane) has since been dispatched; drop this
         // stale response so it cannot clobber the latest state.
@@ -220,7 +220,7 @@ const StandardEditMode = memo(({ requestEditContext, setEditErrorMsg, setLoading
       })
       .catch((e) => {
         // E.g. a schema Ajv cannot compile: same handling as no answer.
-        logError(`Form validation failed: ${e}`, 'StandardEditMode');
+        logError(`Form validation failed: ${e}`, 'FormPane');
         if (isStaleValidation(seq)) return;
         reportValidationFailed(() => dispatchValidation(data, errors, true));
         setEditErrorMsg(VALIDATION_FAILED_DETAIL);
@@ -292,4 +292,4 @@ const StandardEditMode = memo(({ requestEditContext, setEditErrorMsg, setLoading
   );
 });
 
-export default StandardEditMode;
+export default FormPane;

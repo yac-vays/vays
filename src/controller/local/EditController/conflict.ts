@@ -9,12 +9,7 @@ import { showDiffViewer } from '../../global/diffViewer';
 import { showModalMessage } from '../../global/modal';
 import { showError } from '../../global/notification';
 import editingState from '../../state/EditCtrlState';
-import {
-  getActivatedActions,
-  getEntityName,
-  getEntityYAML,
-  setErrorMessage,
-} from './ExpertMode/access';
+import { getActivatedActions, getEntityName, getEntityYAML, setErrorMessage } from './editState';
 import {
   beginValidationDispatch,
   currentSession,

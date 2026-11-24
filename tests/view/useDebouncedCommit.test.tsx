@@ -1,19 +1,19 @@
 import { render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  flushPendingDebouncedCommits,
-  hasPendingDebouncedCommits,
+  flushPendingDebouncedInputs,
+  hasPendingDebouncedInputs,
 } from '../../src/controller/local/EditController/debounceRegistry';
-import { useDebouncedCommit } from '../../src/view/hooks/useDebouncedCommit';
+import { useDebouncedInput } from '../../src/view/hooks/useDebouncedInput';
 
 let trigger: (v: string) => void;
 
 const Field = ({ commit }: { commit: (v: string) => void }) => {
-  trigger = useDebouncedCommit(commit, 1000);
+  trigger = useDebouncedInput(commit, 1000);
   return null;
 };
 
-describe('useDebouncedCommit', () => {
+describe('useDebouncedInput', () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -36,7 +36,7 @@ describe('useDebouncedCommit', () => {
     trigger('a');
     unmount();
     expect(commit).toHaveBeenCalledExactlyOnceWith('a');
-    expect(hasPendingDebouncedCommits()).toBe(false);
+    expect(hasPendingDebouncedInputs()).toBe(false);
     vi.advanceTimersByTime(5000);
     expect(commit).toHaveBeenCalledTimes(1);
   });
@@ -47,7 +47,7 @@ describe('useDebouncedCommit', () => {
     const { rerender } = render(<Field commit={first} />);
     trigger('a');
     rerender(<Field commit={second} />);
-    flushPendingDebouncedCommits();
+    flushPendingDebouncedInputs();
     expect(first).not.toHaveBeenCalled();
     expect(second).toHaveBeenCalledExactlyOnceWith('a');
   });

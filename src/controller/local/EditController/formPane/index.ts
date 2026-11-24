@@ -4,7 +4,7 @@ import { EditActionSnapshot } from '../../../../utils/schema/injectActions';
 import { ActionDecl } from '../../../../utils/types/api';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 import { Nullable } from '../../../../utils/types/typeUtils';
-import { getActivatedActions, getEntityName } from '../ExpertMode/access';
+import { getActivatedActions, getEntityName } from '../editState';
 import { coreUpdate } from '../shared';
 
 /**
@@ -32,7 +32,7 @@ function actionsToSnapshot(acts: ActionDecl[]): EditActionSnapshot {
  * @param doRevalidate Whether to re-validate until the data stabilizes.
  * @param entityName Fallback name (used when none is set in the MetaInfoPanel).
  */
-export async function updateSchema(
+export async function validateFormData(
   frontData: { [key: string]: any },
   requestEditContext: RequestEditContext,
   doRevalidate: boolean,

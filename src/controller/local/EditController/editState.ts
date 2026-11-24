@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ActionDecl } from '../../../../utils/types/api';
-import { RequestEditContext } from '../../../../utils/types/internal/request';
-import { Nullable } from '../../../../utils/types/typeUtils';
-import editingState from '../../../state/EditCtrlState';
-import { notifyEditStateChange } from '../../../state/editStateEvents';
+import { ActionDecl } from '../../../utils/types/api';
+import { RequestEditContext } from '../../../utils/types/internal/request';
+import { Nullable } from '../../../utils/types/typeUtils';
+import editingState from '../../state/EditCtrlState';
+import { notifyEditStateChange } from '../../state/editStateEvents';
 
 export function setMonacoYaml(e: any) {
   editingState.monacoyaml = e;

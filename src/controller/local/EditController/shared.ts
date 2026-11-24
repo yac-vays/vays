@@ -29,20 +29,20 @@ import { showError } from '../../global/notification';
 import { reportSchemaWarnings } from '../../global/troubleshoot';
 import { navigateToURL, pathStartsWith } from '../../global/url';
 import editingState from '../../state/EditCtrlState';
-import { emitChangeState, seedCanonical, setErrorMessage } from './ExpertMode/access';
+import { emitChangeState, seedCanonical, setErrorMessage } from './editState';
 import {
   activateEditingSession,
   currentSession,
   isStaleSession,
   isStaleValidation,
 } from './session';
-import { updateSchema } from './StandardMode';
+import { validateFormData } from './formPane';
 
 /**
  * Reset internal status storing the most recent YAC response (the one
  * which is also displayed in the footer of the edit view)
  */
-export function clearYACStatus() {
+export function resetSessionStatus() {
   validationRetry = null;
   setYACValidateResponse('');
   setYACValidStatus(true);
@@ -68,7 +68,7 @@ export function clearYACStatus() {
 export function beginPaneSession(requestEditContext: RequestEditContext): number {
   const { epoch, isNewSession } = activateEditingSession(requestEditContext);
   if (isNewSession) {
-    clearYACStatus();
+    resetSessionStatus();
     // Session-scoped fields left behind by the previous session. The canonical
     // pair / save payload are re-seeded by this session's schema load; until
     // then `canonicalSeeded` keeps consumers (revalidateMeta) from reading the
@@ -173,7 +173,7 @@ export function retryValidation() {
  * edit view (`EditFrame`) registers a listener to enable/disable the Commit
  * button. Validity combines the backend verdict (`isValidYAC`, from every
  * `setYACStatus`) with the form's own JSON Forms error count (`isValidLocal`,
- * pushed from the standard-mode `onChange`).
+ * pushed from the form pane's `onChange`).
  */
 let validityListener: ((valid: boolean) => void) | null = null;
 
@@ -301,13 +301,13 @@ function schemaLoadKey(
 /**
  * Get the schema (and validated data) for the current entity. Name + actions are
  * never injected into the schema/data: they live in the always-visible
- * MetaInfoPanel (see `view/.../ExpertMode/MetaInfoPanel`).
+ * MetaInfoPanel (see `view/pages/Edit/MetaInfoPanel`).
  *
  * @param requestEditContext
  * @param [startEditingSession=true] If true, records the initial data + YAML
  *    (the baseline used for the YAML diff and concurrency detection).
  */
-export async function retreiveSchema(
+export async function loadEntitySchema(
   requestEditContext: RequestEditContext,
   startEditingSession: boolean = true,
 ): Promise<ValidateResponse | null> {
@@ -323,8 +323,8 @@ export async function retreiveSchema(
   if (load === undefined) {
     load =
       requestEditContext.mode === 'create'
-        ? retreiveNewCreateSchema(requestEditContext, epoch)
-        : retreiveEditSchema(requestEditContext, startEditingSession, epoch);
+        ? loadCreateSchema(requestEditContext, epoch)
+        : loadEditSchema(requestEditContext, startEditingSession, epoch);
     // Only the current session's loads are worth keeping.
     for (const k of sessionSchemaLoads.keys()) {
       if (!k.startsWith(`${epoch}|`)) sessionSchemaLoads.delete(k);
@@ -339,7 +339,7 @@ export async function retreiveSchema(
 /**
  * Get the editing schema for an existing entity.
  */
-async function retreiveEditSchema(
+async function loadEditSchema(
   requestEditContext: RequestEditContext,
   startEditingSession: boolean = true,
   epoch: number = currentSession(),
@@ -416,7 +416,7 @@ async function retreiveEditSchema(
 /**
  * Get the create schema for a new entity.
  */
-async function retreiveNewCreateSchema(
+async function loadCreateSchema(
   requestEditContext: RequestEditContext,
   epoch: number = currentSession(),
 ): Promise<ValidateResponse | null> {
@@ -433,7 +433,7 @@ async function retreiveNewCreateSchema(
   // mount-time generation only reaches controls on the currently open tab).
   injectEagerRandomStrings(valResp);
 
-  return await updateSchema(valResp.data, requestEditContext, false);
+  return await validateFormData(valResp.data, requestEditContext, false);
 }
 
 /**
@@ -570,7 +570,7 @@ export async function coreUpdate(
   // (`yaml.update` on `yaml_base`) actually unsets them. Without this, a default
   // that appeared and disappeared (e.g. a toggled `yac_if`) leaves its now-illegal
   // value lingering in the editor YAML and blocks the commit. `entityData` is a
-  // clone owned by `updateSchema`, so mutating `data` (which may alias it in
+  // clone owned by `validateFormData`, so mutating `data` (which may alias it in
   // create mode) never touches the live form state.
   applyStrippedPaths(data, entityData);
 

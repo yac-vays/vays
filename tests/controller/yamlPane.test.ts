@@ -1,5 +1,5 @@
 import { expect, test, vi } from 'vitest';
-import { updateYAMLschema } from '../../src/controller/local/EditController/ExpertMode';
+import { validateYAMLText } from '../../src/controller/local/EditController/yamlPane';
 import { createFetchResponse, getTestEditRequestContext } from '../testUtils';
 import {
   VALIDATE_01_ACTIONS,
@@ -17,20 +17,14 @@ global.fetch = vi.fn();
  */
 const URL = 'https://yac_no_token.com';
 
-test('tests the validation of the expert mode', async () => {
+test('tests the validation of the YAML pane', async () => {
   //@ts-expect-error The method has been injected above.
   global.fetch.mockResolvedValue(createFetchResponse(VALIDATE_01_RESPONSE_VALID));
 
-  const valResp = await updateYAMLschema(
+  const valResp = await validateYAMLText(
     VALIDATE_01_NAME,
     VALIDATE_01_NEWYAML,
-    getTestEditRequestContext(
-      URL,
-      'test',
-      VALIDATE_01_NAME,
-      'testType',
-      VALIDATE_01_OPERATION,
-    ),
+    getTestEditRequestContext(URL, 'test', VALIDATE_01_NAME, 'testType', VALIDATE_01_OPERATION),
     VALIDATE_01_ACTIONS,
   );
 

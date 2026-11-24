@@ -3,13 +3,13 @@ import {
   getCurrentContext,
   getMonacoYaml,
   setCurrentJsonSchema,
-} from '../../../../../controller/local/EditController/ExpertMode/access';
+} from '../../../../../controller/local/EditController/editState';
 import {
   currentSession,
   isStaleSession,
 } from '../../../../../controller/local/EditController/session';
 import {
-  retreiveSchema,
+  loadEntitySchema,
   setInitialEntityYAML,
 } from '../../../../../controller/local/EditController/shared';
 import {
@@ -27,7 +27,7 @@ export default async function editorInitializeSchema(
 ) {
   requestEditContext = getCurrentContext() ?? requestEditContext;
   const epoch = currentSession();
-  const v = await retreiveSchema(requestEditContext);
+  const v = await loadEntitySchema(requestEditContext);
   // The user navigated on while the schema loaded: everything below (canonical
   // seed, save payload, the SINGLETON monaco-yaml schema) would land in the
   // next session — that session's own initializer takes care of it.

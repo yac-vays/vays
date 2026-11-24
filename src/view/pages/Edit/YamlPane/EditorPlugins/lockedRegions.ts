@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
-import { getCurrentJsonSchema } from '../../../../../controller/local/EditController/ExpertMode/access';
+import { getCurrentJsonSchema } from '../../../../../controller/local/EditController/editState';
 import {
   getEntityPerms,
   isAdminOverride,

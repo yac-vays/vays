@@ -1,38 +1,31 @@
-import { createNewEntity } from '../../../../model/create';
-import { invalidateEntityListCache } from '../../../../model/entityList';
-import { LOG_REFRESH_DELAY_MS, refreshEntityLogs } from '../../../../model/logs';
-import { EditResult, editEntity } from '../../../../model/edit';
-import { validateYAML } from '../../../../model/validate';
-import { ActionDecl } from '../../../../utils/types/api';
-import { RequestContext, RequestEditContext } from '../../../../utils/types/internal/request';
-import { ValidateResponse } from '../../../../utils/types/internal/validation';
-import { Nullable } from '../../../../utils/types/typeUtils';
-import { entityToastTitle } from '../../../../utils/toastUtils';
-import { showModalMessage } from '../../../global/modal';
-import { showError } from '../../../global/notification';
-import { reportSchemaWarnings } from '../../../global/troubleshoot';
-import { buildOverviewHighlightURL, navigateToURL } from '../../../global/url';
-import editingState from '../../../state/EditCtrlState';
-import { handleEditConflict } from '../conflict';
-import { flushPendingDebouncedCommits } from '../debounceRegistry';
-import { isStaleValidation, whenValidationIdle } from '../session';
-import {
-  beginPaneSession,
-  clearEditDirty,
-  getInitialEntityYAML,
-  isAdminOverride,
-  isValidationFailed,
-  setAdminOverride,
-  setEntityPerms,
-  setYACStatus,
-} from '../shared';
+import { createNewEntity } from '../../../model/create';
+import { EditResult, editEntity } from '../../../model/edit';
+import { invalidateEntityListCache } from '../../../model/entityList';
+import { LOG_REFRESH_DELAY_MS, refreshEntityLogs } from '../../../model/logs';
+import { entityToastTitle } from '../../../utils/toastUtils';
+import { ActionDecl } from '../../../utils/types/api';
+import { RequestContext, RequestEditContext } from '../../../utils/types/internal/request';
+import { Nullable } from '../../../utils/types/typeUtils';
+import { showModalMessage } from '../../global/modal';
+import { showError } from '../../global/notification';
+import { buildOverviewHighlightURL, navigateToURL } from '../../global/url';
+import editingState from '../../state/EditCtrlState';
+import { handleEditConflict } from './conflict';
+import { flushPendingDebouncedInputs } from './debounceRegistry';
 import {
   getActivatedActions,
   getEntityName,
   getEntityYAML,
   hasUncommittedChanges,
-  setErrorMessageCallback,
-} from './access';
+} from './editState';
+import { whenValidationIdle } from './session';
+import {
+  clearEditDirty,
+  getInitialEntityYAML,
+  isAdminOverride,
+  isValidationFailed,
+  setAdminOverride,
+} from './shared';
 
 /**
  * The confirm dialogue's body: what committing will additionally trigger. The
@@ -52,42 +45,13 @@ function describeActivatedActions(acts: ActionDecl[]): string {
 }
 
 /**
- * Send validation for the yaml.
- * @param name
- * @param yaml
- * @param requestEditContext
- * @param seq The validation-seq stamp of the editor edit driving this call. A
- *    response superseded by a newer edit must not write the global YAC status
- *    (validity / footer / Commit gate) — that would describe the wrong document.
- * @returns
+ * The Commit button: flush pending input, wait for its validation, ask for
+ * confirmation, then create or edit the entity and return to the overview.
  */
-export async function updateYAMLschema(
-  name: Nullable<string>,
-  yaml: string,
-  requestEditContext: RequestEditContext,
-  acts: ActionDecl[],
-  seq?: number,
-): Promise<Nullable<ValidateResponse>> {
-  const valResp = await validateYAML(requestEditContext, name, yaml, getInitialEntityYAML(), acts);
-  if (valResp == null) return null;
-  if (seq === undefined || !isStaleValidation(seq)) {
-    setYACStatus(valResp.valid, valResp.detail, valResp.usages, valResp.data);
-    if (valResp.perms) setEntityPerms(valResp.perms);
-    reportSchemaWarnings(valResp, requestEditContext);
-  }
-
-  return valResp;
-}
-
-/**
- * Callback for the edit view.
- * @param requestContext
- * @returns
- */
-export async function sendYAMLData(requestContext: RequestEditContext) {
+export async function commitEntity(requestContext: RequestEditContext) {
   // An edit may still be sitting in a renderer's debounce window; commit it now
   // so the YAML read below includes the user's last keystrokes.
-  flushPendingDebouncedCommits();
+  flushPendingDebouncedInputs();
   // The flushed edits reach the save payload (`entityYAML`) only through their
   // validation round-trip (the backend returns the merged canonical YAML), and
   // a form flush additionally crosses a React state tick before it even
@@ -192,12 +156,6 @@ export async function sendYAMLData(requestContext: RequestEditContext) {
   );
 }
 
-/**
- * Helper function which tells the model to send a new entity request.
- * @param yaml
- * @param requestContext
- * @returns
- */
 async function sendCreateNewEntity(
   yaml: string | undefined,
   requestContext: RequestContext,
@@ -220,12 +178,6 @@ async function sendCreateNewEntity(
   return res;
 }
 
-/**
- * Helper function which tells the model to send a put API call.
- * @param yaml
- * @param requestEditContext
- * @returns
- */
 async function sendEditEntity(
   yaml: string,
   requestEditContext: RequestEditContext,
@@ -243,24 +195,4 @@ async function sendEditEntity(
     getActivatedActions(),
     isAdminOverride(),
   );
-}
-
-/**
- * Initializes the internal state for a new expert mode editing session.
- * @param requestEditContext
- * @param setEditErrorMsg
- */
-export function startExpertModeSession(
-  requestEditContext: RequestEditContext,
-  setEditErrorMsg: (v: string) => void,
-) {
-  // Activates the session and — only when a NEW session actually begins —
-  // performs the one-time resets (status, dirty flag, activated actions, name
-  // from the context/URL). The Monaco chunk loads lazily, so this often runs
-  // late into a session the form pane already started: it must not wipe
-  // actions/name/validity the user set in the meantime.
-  beginPaneSession(requestEditContext);
-  setErrorMessageCallback(setEditErrorMsg);
-
-  setEditErrorMsg(''); // Start with no error message, please
 }

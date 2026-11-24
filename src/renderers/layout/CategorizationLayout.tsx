@@ -22,12 +22,12 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   getCurrentTab,
   setCurrentTab,
-} from '../../controller/local/EditController/StandardMode/access';
+} from '../../controller/local/EditController/formPane/access';
 import {
   getCategoryErrs,
   registerOnUpdateCategoryErrors,
   unregisterOnUpdateCategoryErrors,
-} from '../../controller/local/EditController/StandardMode/tabs';
+} from '../../controller/local/EditController/formPane/tabs';
 import { useFormReadonly } from '../../view/components/Form/useFormReadonly';
 import ControlBar from '../../view/components/Tabs/ControlBar';
 import Tab from '../../view/components/Tabs/Tab';

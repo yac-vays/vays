@@ -2,7 +2,7 @@ import { isNameGeneratedByYAC } from './nameUtils';
 import { RequestEditContext } from './types/internal/request';
 import { Nullable } from './types/typeUtils';
 
-export function stringifyEntityInfoForAPI(
+export function buildValidateRequestBody(
   requestEditContext: RequestEditContext,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any = {},
@@ -27,20 +27,20 @@ export function stringifyEntityInfoForAPI(
   // and the YAML editor (`validateYAML`, yaml_new) both validate against the same
   // context. `validateYAML` always passes `yaml_new`; `validate` never does.
   if (yaml_new !== undefined) {
-    return getEntityObjectExpertMode(requestEditContext, name, actions, yaml_new, yaml_old);
+    return yamlValidateBody(requestEditContext, name, actions, yaml_new, yaml_old);
   } else {
-    return getEntityObjectStdMode(requestEditContext, data, name, actions, yamlBase);
+    return formValidateBody(requestEditContext, data, name, actions, yamlBase);
   }
 }
 
-function getEntityObjectExpertMode(
+function yamlValidateBody(
   requestEditContext: RequestEditContext,
   name: Nullable<string>,
   actions: string[],
   yaml_new?: string,
   yaml_old?: string,
 ): string {
-  // YAML editor (Expert mode)
+  // YAML pane
   if (requestEditContext.mode === 'edit') {
     return JSON.stringify({
       operation: 'edit',
@@ -79,7 +79,7 @@ function readRequest(requestEditContext: RequestEditContext, actions: string[]):
   });
 }
 
-function getEntityObjectStdMode(
+function formValidateBody(
   requestEditContext: RequestEditContext,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any = {},

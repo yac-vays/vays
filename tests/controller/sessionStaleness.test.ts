@@ -9,7 +9,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import editingState from '../../src/controller/state/EditCtrlState';
 import {
-  hasPendingDebouncedCommits,
+  hasPendingDebouncedInputs,
   trackedDebounce,
 } from '../../src/controller/local/EditController/debounceRegistry';
 import {
@@ -23,7 +23,10 @@ import {
   nextValidationSeq,
   whenValidationIdle,
 } from '../../src/controller/local/EditController/session';
-import { beginPaneSession, retreiveSchema } from '../../src/controller/local/EditController/shared';
+import {
+  beginPaneSession,
+  loadEntitySchema,
+} from '../../src/controller/local/EditController/shared';
 import { getTestEditRequestContext } from '../testUtils';
 
 global.fetch = vi.fn();
@@ -39,7 +42,7 @@ function fetchResponse(data: object) {
 }
 
 // Manual answer queue so the test controls when entity A's slow load resolves.
- 
+
 type PendingRequest = { kind: 'get' | 'validate'; answer: () => void };
 const pending: PendingRequest[] = [];
 
@@ -96,7 +99,7 @@ describe('session epoch', () => {
 
     newEditingView();
     beginPaneSession(ctxA);
-    const loadA = retreiveSchema(ctxA);
+    const loadA = loadEntitySchema(ctxA);
     await flushMicrotasks();
 
     // The user navigates on to entity B while A's GET is still in flight.
@@ -200,7 +203,7 @@ describe('validation quiescence + pending input probes', () => {
     expect(d.pending()).toBe(false);
     vi.advanceTimersByTime(1000);
     expect(spy).toHaveBeenCalledTimes(1);
-    expect(hasPendingDebouncedCommits()).toBe(false);
+    expect(hasPendingDebouncedInputs()).toBe(false);
     vi.useRealTimers();
   });
 });

@@ -9,13 +9,13 @@
  * canonical pair — the data belonging to the very document it is merged into.
  */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  getEntityYAML,
-  seedCanonical,
-} from '../../src/controller/local/EditController/ExpertMode/access';
+import { getEntityYAML, seedCanonical } from '../../src/controller/local/EditController/editState';
 import { newEditingView } from '../../src/controller/local/EditController/session';
-import { beginPaneSession, retreiveSchema } from '../../src/controller/local/EditController/shared';
-import { updateSchema } from '../../src/controller/local/EditController/StandardMode';
+import {
+  beginPaneSession,
+  loadEntitySchema,
+} from '../../src/controller/local/EditController/shared';
+import { validateFormData } from '../../src/controller/local/EditController/formPane';
 import { applyCanonical } from '../../src/controller/local/EditController/sync';
 import { getTestEditRequestContext } from '../testUtils';
 
@@ -93,9 +93,9 @@ function fetchResponse(data: object) {
   return a;
 }
 
-/** One form edit exactly like StandardEditMode dispatches it. */
+/** One form edit exactly like the form pane dispatches it. */
 async function formEdit(ctx: ReturnType<typeof getTestEditRequestContext>, data: object) {
-  const resp = await updateSchema(
+  const resp = await validateFormData(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data as any,
     ctx,
@@ -118,7 +118,7 @@ describe('reverting a form edit', () => {
     const ctx = getTestEditRequestContext('https://yac_no_token.com', 'test', 'web01', 't', 'edit');
     newEditingView();
     beginPaneSession(ctx);
-    await retreiveSchema(ctx);
+    await loadEntitySchema(ctx);
     expect(getEntityYAML()).toBe(STORED_YAML); // canonical seeded by the load
 
     // A -> B: the change lands in the YAML.

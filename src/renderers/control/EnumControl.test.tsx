@@ -13,7 +13,7 @@ const uischema = {
 
 const mount = (
   flavorSchema: object,
-  { options, required }: { options?: object; required?: boolean } = {},
+  { options, required, data }: { options?: object; required?: boolean; data?: object } = {},
 ) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const seen: { data?: any } = {};
@@ -25,7 +25,7 @@ const mount = (
         ...(required ? { required: ['flavor'] } : {}),
       }}
       uischema={{ ...uischema, elements: [{ ...uischema.elements[0], options }] }}
-      data={{}}
+      data={data ?? {}}
       renderers={renderers}
       cells={materialCells}
       onChange={({ data }) => {
@@ -110,5 +110,22 @@ describe('EnumControl / OneOfEnumControl', () => {
     const empty = (screen.getByRole('combobox') as HTMLSelectElement).options[0];
     expect(empty.textContent).toBe('Choose one');
     expect(empty.disabled).toBe(true);
+  });
+
+  it('shows and writes integer enum values as numbers', async () => {
+    const seen = mount(
+      { type: 'integer', title: 'Flavor', enum: [1, 2, 3] },
+      { data: { flavor: 2 } },
+    );
+    expect(selected()).toBe('2');
+
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: '3' } });
+    await waitFor(() => expect(seen.data).toEqual({ flavor: 3 }));
+    expect(selected()).toBe('3');
+  });
+
+  it('does not show a stored value of the wrong type', () => {
+    mount({ type: 'integer', title: 'Flavor', enum: [1, 2] }, { data: { flavor: '2' } });
+    expect(selected()).toBe('Not set');
   });
 });

@@ -2,13 +2,15 @@ import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
 import InformationButton from '../../../../components/Buttons/InformationButton';
 
-type DropDownOptions = { label: string; value: string; description?: string }[];
+// Option values are whatever the schema's enum holds (strings, numbers, null).
+type OptionValue = string | number | boolean | null;
+type DropDownOptions = { label: string; value: OptionValue; description?: string }[];
 
 interface DropdownProps {
   // Expects the first one to be the title, the second one the label.
   options: DropDownOptions;
-  onChange: (value: string | number | undefined) => void;
-  initValue?: string;
+  onChange: (value: OptionValue | undefined) => void;
+  initValue?: OptionValue;
   disabled?: boolean;
   canResetToUndefined?: boolean;
   /**
@@ -26,7 +28,7 @@ interface DropdownProps {
   placeholder?: boolean;
 }
 
-function isValidOption(optValue: string | undefined, options: DropDownOptions) {
+function isValidOption(optValue: OptionValue | undefined, options: DropDownOptions) {
   for (const opt of options) {
     if (_.isEqual(optValue, opt.value)) {
       return true;
@@ -47,7 +49,9 @@ const SelectStatic: React.FC<DropdownProps> = ({
   if (!isValidOption(initValue, options)) {
     initValue = undefined;
   }
-  const [selectedOption, setSelectedOption] = useState<string | undefined>(initValue ?? '');
+  // The <select> matches by string, so the selection is kept as one.
+  const initSelection = initValue === undefined ? '' : String(initValue);
+  const [selectedOption, setSelectedOption] = useState<string>(initSelection);
 
   const defaultOpt =
     canResetToUndefined && defaultOption !== undefined
@@ -65,15 +69,15 @@ const SelectStatic: React.FC<DropdownProps> = ({
       ? defaultOpt
       : options.find((opt) => String(opt.value) === selectedOption);
   const selectedWithDescription = selectedOpt?.description ? selectedOpt : undefined;
-  const [isOptionSelected, setIsOptionSelected] = useState<boolean>(initValue != undefined);
+  const [isOptionSelected, setIsOptionSelected] = useState<boolean>(initValue !== undefined);
 
   const changeTextColor = () => {
     setIsOptionSelected(true);
   };
 
   useEffect(() => {
-    setSelectedOption(initValue ?? '');
-  }, [initValue]);
+    setSelectedOption(initSelection);
+  }, [initSelection]);
 
   return (
     <div className="relative z-20 bg-transparent dark:bg-form-input">
@@ -118,8 +122,8 @@ const SelectStatic: React.FC<DropdownProps> = ({
           for (const item of options) {
             jsx.push(
               <option
-                key={item.value}
-                value={item.value}
+                key={String(item.value)}
+                value={String(item.value)}
                 className="text-plainfont dark:text-reducedfont"
               >
                 {item.label}

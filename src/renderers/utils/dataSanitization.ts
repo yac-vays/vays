@@ -26,6 +26,14 @@ export function isBadDataMessage(line: string): boolean {
   return line.startsWith(BAD_DATA_PREFIX);
 }
 
+/** The JSON-Schema type names a value belongs to (`typeof` knows neither `integer` nor `null`). */
+function jsonTypesOf(data: unknown): string[] {
+  if (data === null) return ['null'];
+  if (Array.isArray(data)) return ['array'];
+  if (typeof data === 'number') return Number.isInteger(data) ? ['integer', 'number'] : ['number'];
+  return [typeof data];
+}
+
 export function isOfTypeWeak(
   data: unknown,
   type: string | string[] | undefined,
@@ -40,12 +48,9 @@ export function isOfTypeWeak(
     return true; // check will happen elsewhere.
   }
 
-  if (typeof type === 'string') {
-    return typeof data === type;
-  } else if (Array.isArray(type)) {
-    return type.indexOf(typeof data) !== -1;
-  }
-  return true; // if no constraints then okay.
+  if (type === undefined) return true; // if no constraints then okay.
+  const allowed = Array.isArray(type) ? type : [type];
+  return jsonTypesOf(data).some((t) => allowed.includes(t));
 }
 
 export function sanitizeCategory(activeCategory: number, cat: Categorization) {

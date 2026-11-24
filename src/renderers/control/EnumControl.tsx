@@ -84,7 +84,7 @@ export const EnumControl = ({
         <ErrorRing errors={errors}>
           <SelectStatic
             options={optionsWithDescription}
-            onChange={(v: string | number | undefined) => handleChange(path, v)}
+            onChange={(v) => handleChange(path, v)}
             initValue={data}
             disabled={!enabled}
             canResetToUndefined={!required}

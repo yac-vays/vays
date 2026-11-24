@@ -13,6 +13,12 @@ const SEARCH_DEBOUNCE_MS = 300;
 /** Pending debounced fetch (one search runs at a time across all columns). */
 let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 
+/** Drop a search still waiting in its debounce (the list unmounts). */
+export function cancelPendingSearch() {
+  if (debounceTimer !== undefined) clearTimeout(debounceTimer);
+  debounceTimer = undefined;
+}
+
 export function getSearchCallback(
   hooks: {
     setCurrPage: (v: number) => void;
@@ -50,10 +56,14 @@ export function getSearchCallback(
       // Debounce the fetch so fast typing causes one request, not one per
       // keystroke; the (shared) generation stamp drops responses that lost the
       // race against ANY newer table-content dispatch (search, reload, or the
-      // effect loader), not just against a newer search.
+      // effect loader), not just against a newer search. Stamped at the
+      // keystroke: a dispatch during the debounce (e.g. another list mounted)
+      // supersedes this search before it even fetches.
+      const seq = nextListGeneration();
       if (debounceTimer !== undefined) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(async () => {
-        const seq = nextListGeneration();
+        debounceTimer = undefined;
+        if (isStaleListGeneration(seq)) return;
         const qRes: QueryResponse = await fetchEntities(
           requestContext,
           numResultsPerPage.valueOf(),

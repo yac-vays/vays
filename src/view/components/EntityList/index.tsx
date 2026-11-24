@@ -12,7 +12,7 @@ import './entity-list-styles.css';
 import { EntityListPagination } from './Footer/Pagination';
 import TableHeader from './Header/TableHeader';
 import TableFrame from './TableFrame';
-import { getSearchCallback } from './utils/searchCallback';
+import { cancelPendingSearch, getSearchCallback } from './utils/searchCallback';
 import { useInitializeList } from './utils/useInitializeList';
 
 interface EntityListProps {
@@ -127,6 +127,9 @@ const EntityList = ({ requestContext, highlightEntityName }: EntityListProps) =>
   }, [requestContext.yacURL, requestContext.entityTypeName, reloadCount]);
 
   useEffect(() => refreshLogsOnResume(), []);
+
+  // A search still in its debounce must not fire into the next list.
+  useEffect(() => cancelPendingSearch, []);
 
   return (
     <>

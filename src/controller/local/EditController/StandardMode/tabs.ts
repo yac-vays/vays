@@ -2,15 +2,16 @@
 import { JsonSchema, toDataPath, UISchemaElement } from '@jsonforms/core';
 import { ErrorObject } from 'ajv';
 import { getAllErrors } from '../../../../utils/schema/dataUtils';
-import {
-  controlOwnsPath,
-  instancePathToDotted,
-} from '../../../../utils/schema/locatedErrors';
+import { controlOwnsPath, instancePathToDotted } from '../../../../utils/schema/locatedErrors';
 import editingState from '../../../state/EditCtrlState';
 import { getValidationAJV } from '../shared';
 
 export function registerOnUpdateCategoryErrors(f: (v: boolean[]) => void) {
   editingState.onUpdateCategoryErrors = f;
+}
+
+export function unregisterOnUpdateCategoryErrors(f: (v: boolean[]) => void) {
+  if (editingState.onUpdateCategoryErrors === f) editingState.onUpdateCategoryErrors = () => {};
 }
 
 export function getCategoryErrs(): boolean[] | undefined {

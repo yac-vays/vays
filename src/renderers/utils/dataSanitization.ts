@@ -1,6 +1,3 @@
-import { Categorization } from '@jsonforms/core';
-import { getCurrentTab } from '../../controller/local/EditController/StandardMode/access';
-
 /**
  * User-facing message for data the renderer cannot display (wrong type or not
  * an allowed value). The renderer shows the field as empty, so the message
@@ -53,10 +50,7 @@ export function isOfTypeWeak(
   return jsonTypesOf(data).some((t) => allowed.includes(t));
 }
 
-export function sanitizeCategory(activeCategory: number, cat: Categorization) {
-  return activeCategory >= numCategories(cat) ? getCurrentTab() : activeCategory;
-}
-
-export function numCategories(cat: Categorization): number {
-  return cat.elements.length;
+/** The tab to show for `active` when there are `count` tabs. */
+export function clampTab(active: number, count: number): number {
+  return Math.min(Math.max(active, 0), Math.max(count - 1, 0));
 }

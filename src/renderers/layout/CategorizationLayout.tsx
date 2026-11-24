@@ -26,11 +26,12 @@ import {
 import {
   getCategoryErrs,
   registerOnUpdateCategoryErrors,
+  unregisterOnUpdateCategoryErrors,
 } from '../../controller/local/EditController/StandardMode/tabs';
 import { useFormReadonly } from '../../view/components/Form/useFormReadonly';
 import ControlBar from '../../view/components/Tabs/ControlBar';
 import Tab from '../../view/components/Tabs/Tab';
-import { sanitizeCategory } from '../utils/dataSanitization';
+import { clampTab } from '../utils/dataSanitization';
 import { groupIntoRows } from './RowLayout';
 
 export const CategorizationTester: RankedTester = withIncreasedRank(
@@ -82,15 +83,29 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
     getCategoryErrs() ?? categories.map(() => false),
   );
 
-  // Register callback
-  registerOnUpdateCategoryErrors((v: boolean[]) => {
-    setCatErrs([...v]);
-  });
+  useEffect(() => {
+    const update = (v: boolean[]) => setCatErrs([...v]);
+    registerOnUpdateCategoryErrors(update);
+    // An update between the first render and this registration was missed.
+    const current = getCategoryErrs();
+    if (current) update(current);
+    return () => unregisterOnUpdateCategoryErrors(update);
+  }, []);
 
   useEffect(() => {
     setCurrentTab(getCurrentTab());
     setActiveCategory(getCurrentTab());
   }, [categorization]);
+
+  // The active tab may be gone (its category became invisible): the shown,
+  // clamped one becomes the current tab.
+  useEffect(() => {
+    const clamped = clampTab(activeCategory, categories.length);
+    if (clamped !== activeCategory) {
+      setCurrentTab(clamped);
+      setActiveCategory(clamped);
+    }
+  }, [activeCategory, categories.length]);
 
   // Memoize since this changes hardly anytime (except if category is added or removed)
   const tabLabels = useMemo(() => {
@@ -102,7 +117,7 @@ export const CategorizationLayoutRenderer = (props: CategorizationLayoutRenderer
     return <></>;
   }
 
-  const safeCategory = sanitizeCategory(activeCategory, categorization);
+  const safeCategory = clampTab(activeCategory, categories.length);
 
   const onTabChange = (_event: any, value: number) => {
     setCurrentTab(value);

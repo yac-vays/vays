@@ -22,12 +22,16 @@ const SVG_PRESENTATION = [
   'strokeLinecap', 'strokeLinejoin', 'strokeMiterlimit', 'strokeOpacity',
   'strokeDasharray', 'opacity', 'transform',
 ];
+/** Same-document references (`#id`) only: what <use> and gradients need. */
+const FRAGMENT_REF = /^#[\w:.-]+$/;
+
 const svgSchema = {
   ...defaultSchema,
   // Don't prefix ids with "user-content-": that rewrites <g id> / <linearGradient id>
   // but NOT the matching url(#id) / xlink:href="#id" references, which silently
   // breaks <use> and gradient fills. SVGO gives each logo a unique id prefix, so
   // dropping the clobber guard is safe for these trusted, self-contained SVGs.
+  // (Only for text from the specs/config - never for `untrusted` text, see below.)
   clobberPrefix: '',
   tagNames: [
     ...(defaultSchema.tagNames ?? []),
@@ -46,22 +50,37 @@ const svgSchema = {
     polyline: ['points', ...SVG_PRESENTATION],
     polygon: ['points', ...SVG_PRESENTATION],
     ellipse: ['cx', 'cy', 'rx', 'ry', ...SVG_PRESENTATION],
-    use: ['href', 'xLinkHref', 'x', 'y', 'width', 'height', ...SVG_PRESENTATION],
+    // References are limited to same-document fragments: the sanitizer only
+    // protocol-checks a fixed set of attributes (not xlink:href), so without
+    // the pattern any URL (data:, https:, ...) would pass.
+    use: [['href', FRAGMENT_REF], ['xLinkHref', FRAGMENT_REF], 'x', 'y', 'width', 'height', ...SVG_PRESENTATION],
     symbol: ['id', 'viewBox', 'preserveAspectRatio'],
     defs: ['id'],
-    linearGradient: ['id', 'x1', 'y1', 'x2', 'y2', 'gradientUnits', 'gradientTransform', 'spreadMethod', 'href', 'xLinkHref'],
-    radialGradient: ['id', 'cx', 'cy', 'r', 'fx', 'fy', 'fr', 'gradientUnits', 'gradientTransform', 'spreadMethod', 'href', 'xLinkHref'],
+    linearGradient: ['id', 'x1', 'y1', 'x2', 'y2', 'gradientUnits', 'gradientTransform', 'spreadMethod', ['href', FRAGMENT_REF], ['xLinkHref', FRAGMENT_REF]],
+    radialGradient: ['id', 'cx', 'cy', 'r', 'fx', 'fy', 'fr', 'gradientUnits', 'gradientTransform', 'spreadMethod', ['href', FRAGMENT_REF], ['xLinkHref', FRAGMENT_REF]],
     stop: ['offset', 'stopColor', 'stopOpacity'],
   },
 };
 
-const MarkdownRender = ({ text }: { text: string | null | undefined }) => {
+/**
+ * `untrusted`: the text does not come from the specs or the config but from
+ * somewhere less trusted (e.g. log content written by a host). It is sanitized
+ * with the plain default schema: no inline SVG, and ids / names keep their
+ * `user-content-` prefix so they cannot shadow properties of `document`.
+ */
+const MarkdownRender = ({
+  text,
+  untrusted = false,
+}: {
+  text: string | null | undefined;
+  untrusted?: boolean;
+}) => {
   if (!text) return <></>;
   return (
     <div className="markdown-body">
       <Markdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw, [rehypeSanitize, svgSchema]]}
+        rehypePlugins={[rehypeRaw, [rehypeSanitize, untrusted ? defaultSchema : svgSchema]]}
         components={{
           a({ href, children }) {
             return (

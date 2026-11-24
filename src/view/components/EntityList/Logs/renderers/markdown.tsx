@@ -28,7 +28,8 @@ const MarkdownView = ({ decl, entries, entityName, requestContext, onClose }: Lo
         <LogContentStatus state={state} retry={retry} />
       ) : (
         <div className="min-h-0 flex-1 overflow-y-auto text-plainfont">
-          <MarkdownRender text={content.content} />
+          {/* written by whatever feeds the log (e.g. a host), not by the specs */}
+          <MarkdownRender text={content.content} untrusted />
         </div>
       )}
     </LogWindow>

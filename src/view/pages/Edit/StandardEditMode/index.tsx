@@ -55,7 +55,6 @@ const renderers = [...materialRenderers, ...customRenderers];
 interface FormProps {
   requestEditContext: RequestEditContext;
   setEditErrorMsg: (v: string) => void;
-  setIsValidating: (v: boolean) => void;
   /** Reports the initial schema-load state to the frame's unified loader. */
   setLoading: (v: boolean) => void;
 }
@@ -65,7 +64,6 @@ interface FormProps {
  *
  * @param {object} props.requestEditContext - The context for the request edit.
  * @param {function} props.setEditErrorMsg - Callback function to handle errors.
- * @param {function} props.setIsValidating - Function to set the validation status.
  *
  * @returns {JSX.Element} The rendered Form component.
  *
@@ -74,222 +72,217 @@ interface FormProps {
  * @remarks
  * The component uses `memo` to optimize rendering performance by memoizing the result.
  */
-const StandardEditMode = memo(
-  ({ requestEditContext, setEditErrorMsg, setIsValidating, setLoading }: FormProps) => {
-    const {
-      loading,
-      isEmpty,
-      setIsEmpty,
-      localData,
-      setLocalData,
-      jsonSchema,
-      setJsonSchema,
-      uiSchema,
-      setUISchema,
-      setupDone,
-      additionalErrors,
-      setAdditionalErrors,
-      formContainer,
-    } = useInitializeForm(requestEditContext, setEditErrorMsg);
+const StandardEditMode = memo(({ requestEditContext, setEditErrorMsg, setLoading }: FormProps) => {
+  const {
+    loading,
+    isEmpty,
+    setIsEmpty,
+    localData,
+    setLocalData,
+    jsonSchema,
+    setJsonSchema,
+    uiSchema,
+    setUISchema,
+    setupDone,
+    additionalErrors,
+    setAdditionalErrors,
+    formContainer,
+  } = useInitializeForm(requestEditContext, setEditErrorMsg);
 
-    // Number of in-flight validations that should blur (dim + lock) the form.
-    // State-driven (and counted) so the dimming is idempotent and survives
-    // re-renders, unlike the former per-render closure flag + classList.toggle.
-    const [pendingValidations, setPendingValidations] = useState<number>(0);
-    const formBlurred = pendingValidations > 0;
+  // Number of in-flight validations that should blur (dim + lock) the form.
+  // State-driven (and counted) so the dimming is idempotent and survives
+  // re-renders, unlike the former per-render closure flag + classList.toggle.
+  const [pendingValidations, setPendingValidations] = useState<number>(0);
+  const formBlurred = pendingValidations > 0;
 
-    // The data the form last reported or was last given. `localData` is what
-    // is handed to <JsonForms data>, and it only changes on programmatic writes
-    // (load, validation response, YAML -> form). The form's own onChange data
-    // must NOT be fed back into it: every new `data` prop makes the provider
-    // re-dispatch updateCore with that snapshot, which wipes any change a
-    // renderer dispatched since the (debounced) emission — e.g. an async
-    // age_secret landing right after its array row was added.
-    const lastFormData = useRef<unknown>(localData);
-    useEffect(() => {
-      lastFormData.current = localData;
-    }, [localData]);
+  // The data the form last reported or was last given. `localData` is what
+  // is handed to <JsonForms data>, and it only changes on programmatic writes
+  // (load, validation response, YAML -> form). The form's own onChange data
+  // must NOT be fed back into it: every new `data` prop makes the provider
+  // re-dispatch updateCore with that snapshot, which wipes any change a
+  // renderer dispatched since the (debounced) emission — e.g. an async
+  // age_secret landing right after its array row was added.
+  const lastFormData = useRef<unknown>(localData);
+  useEffect(() => {
+    lastFormData.current = localData;
+  }, [localData]);
 
-    // Render a (canonical) validation response into the form. Shared between the
-    // user's own onChange flow and the cross-pane writer that the YAML editor
-    // invokes (via `applyCanonical`) when the user edits YAML instead.
+  // Render a (canonical) validation response into the form. Shared between the
+  // user's own onChange flow and the cross-pane writer that the YAML editor
+  // invokes (via `applyCanonical`) when the user edits YAML instead.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const applyRespToForm = (resp: ValidateResponse, errors?: any[]) => {
+    setJsonSchema(resp.json_schema);
+    setUISchema(resp.ui_schema);
+    // Local (AJV) validation of the response data: it feeds the Commit gate
+    // below AND dedupes the backend error on fields the local validation
+    // already flags (the control would otherwise show the same problem twice).
+    const validate = getValidationAJV().compile(resp.json_schema);
+    validate(structuredClone(resp.data));
+    const localErrors = validate.errors ?? [];
+    const located = locateBackendError(resp);
+    const additional = dropLocallyDuplicatedErrors(located.additionalErrors, localErrors);
+    setAdditionalErrors(additional);
+    // The footer only carries errors that cannot be displayed inline in both
+    // panes (see footerErrorMessage) — e.g. request-level errors, document
+    // root, or a control that is not rendered.
+    setEditErrorMsg(footerErrorMessage(resp));
+    setLocalData(resp.data);
+    setIsEmpty(false);
+    setFormData(resp.data, errors);
+    updateTabsErrorNotification(resp.data, resp.json_schema, resp.ui_schema, additional);
+    // Re-derive the form's local validity from the response itself (the same
+    // check as useInitializeState's migration detection). The onChange event
+    // this write triggers is suppressed, so when the render was caused by a
+    // YAML edit nothing else refreshes `isValidLocal` — a stale `false` from
+    // the load-time migration check would keep the Commit button disabled
+    // even after the user fixed the data in the YAML pane.
+    setLocalValidity(localErrors.length === 0);
+    emitValidity();
+  };
+
+  // Register this form as the "form pane" so YAML edits can be projected back
+  // into it. Setters from useState are stable, so a one-time registration is
+  // safe.
+  useEffect(() => {
+    registerFormWriter((resp) => applyRespToForm(resp));
+    return () => registerFormWriter(null);
+  }, []);
+
+  // Report initial schema-load state to the frame's single loading indicator.
+  useEffect(() => {
+    setLoading(loading);
+  }, [loading, setLoading]);
+
+  const onChangeCallback = async ({ errors, data }: Pick<JsonFormsCore, 'data' | 'errors'>) => {
+    setCurrentContext(requestEditContext);
+    // Ignore the change event caused by our own programmatic write (YAML ->
+    // form projection); otherwise it would re-validate and bounce back — and
+    // it must NOT steal "active pane" from the YAML editor the user is in.
+    if (consumeFormSuppression()) {
+      return;
+    }
+    if (!setupDone || _.isEqual(data, lastFormData.current)) {
+      return;
+    }
+    // A genuine user edit in the form: it is now the active pane and the
+    // session is dirty (used to warn before navigating away).
+    setActivePane('form');
+    setEditDirty();
+
+    const didBlur = !IsCurrentlyEditingString();
+
+    lastFormData.current = data;
+
+    // Reflect the form's own (JSON Forms) validation immediately for snappy
+    // Commit-button feedback; the backend round-trip below confirms it.
+    setLocalValidity((errors ?? []).length === 0);
+    emitValidity();
+
+    dispatchValidation(data, errors, didBlur);
+  };
+
+  // Validate the form data against the backend (merged into the YAML the user
+  // currently has in the editor) and render the canonical response.
+  const dispatchValidation = (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const applyRespToForm = (resp: ValidateResponse, errors?: any[]) => {
-      setJsonSchema(resp.json_schema);
-      setUISchema(resp.ui_schema);
-      // Local (AJV) validation of the response data: it feeds the Commit gate
-      // below AND dedupes the backend error on fields the local validation
-      // already flags (the control would otherwise show the same problem twice).
-      const validate = getValidationAJV().compile(resp.json_schema);
-      validate(structuredClone(resp.data));
-      const localErrors = validate.errors ?? [];
-      const located = locateBackendError(resp);
-      const additional = dropLocallyDuplicatedErrors(located.additionalErrors, localErrors);
-      setAdditionalErrors(additional);
-      // The footer only carries errors that cannot be displayed inline in both
-      // panes (see footerErrorMessage) — e.g. request-level errors, document
-      // root, or a control that is not rendered.
-      setEditErrorMsg(footerErrorMessage(resp));
-      setLocalData(resp.data);
-      setIsEmpty(false);
-      setFormData(resp.data, errors);
-      updateTabsErrorNotification(resp.data, resp.json_schema, resp.ui_schema, additional);
-      // Re-derive the form's local validity from the response itself (the same
-      // check as useInitializeState's migration detection). The onChange event
-      // this write triggers is suppressed, so when the render was caused by a
-      // YAML edit nothing else refreshes `isValidLocal` — a stale `false` from
-      // the load-time migration check would keep the Commit button disabled
-      // even after the user fixed the data in the YAML pane.
-      setLocalValidity(localErrors.length === 0);
-      emitValidity();
-    };
-
-    // Register this form as the "form pane" so YAML edits can be projected back
-    // into it. Setters from useState are stable, so a one-time registration is
-    // safe.
-    useEffect(() => {
-      registerFormWriter((resp) => applyRespToForm(resp));
-      return () => registerFormWriter(null);
-    }, []);
-
-    // Report initial schema-load state to the frame's single loading indicator.
-    useEffect(() => {
-      setLoading(loading);
-    }, [loading, setLoading]);
-
-    const onChangeCallback = async ({ errors, data }: Pick<JsonFormsCore, 'data' | 'errors'>) => {
-      setCurrentContext(requestEditContext);
-      // Ignore the change event caused by our own programmatic write (YAML ->
-      // form projection); otherwise it would re-validate and bounce back — and
-      // it must NOT steal "active pane" from the YAML editor the user is in.
-      if (consumeFormSuppression()) {
-        return;
-      }
-      if (!setupDone || _.isEqual(data, lastFormData.current)) {
-        return;
-      }
-      // A genuine user edit in the form: it is now the active pane and the
-      // session is dirty (used to warn before navigating away).
-      setActivePane('form');
-      setEditDirty();
-
-      const didBlur = !IsCurrentlyEditingString();
-
-      lastFormData.current = data;
-
-      // Reflect the form's own (JSON Forms) validation immediately for snappy
-      // Commit-button feedback; the backend round-trip below confirms it.
-      setLocalValidity((errors ?? []).length === 0);
-      emitValidity();
-
-      dispatchValidation(data, errors, didBlur);
-    };
-
-    // Validate the form data against the backend (merged into the YAML the user
-    // currently has in the editor) and render the canonical response.
-    const dispatchValidation = (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      data: any,
-      errors: JsonFormsCore['errors'],
-      didBlur: boolean,
-    ) => {
-      if (didBlur) {
-        setPendingValidations((c) => c + 1);
-      }
-      setIsValidating(true);
-      const seq = nextValidationSeq();
-      // The save path awaits validation quiescence before reading the payload;
-      // bracket the whole round-trip (incl. the stabilization passes).
-      beginValidationDispatch();
-      // Merge this form change into the YAML the user currently has in the editor
-      // (preserving its comments/formatting) rather than regenerating from data.
-      updateSchema(data, requestEditContext, true, true, null, getEntityYAML(), seq)
-        .then((resp) => {
-          if (didBlur) {
-            setPendingValidations((c) => Math.max(0, c - 1));
-          }
-          // A newer edit (in either pane) has since been dispatched; drop this
-          // stale response so it cannot clobber the latest state.
-          if (isStaleValidation(seq)) {
-            setIsValidating(false);
-            setIsCurrentlyEditingString(false);
-            return;
-          }
-          if (resp == null) {
-            // The backend did not answer (network, 5xx, ...). Keep the form as
-            // the user left it — it is still the document they are editing —
-            // but block Commit until a validation succeeds (see
-            // reportValidationFailed); "Retry" re-sends this very data.
-            reportValidationFailed(() => dispatchValidation(data, errors, true));
-            setEditErrorMsg(VALIDATION_FAILED_DETAIL);
-          } else {
-            applyRespToForm(resp, errors);
-            // Project the canonical YAML into the (inactive) YAML pane.
-            applyCanonical('form', resp);
-          }
-          setIsValidating(false);
+    data: any,
+    errors: JsonFormsCore['errors'],
+    didBlur: boolean,
+  ) => {
+    if (didBlur) {
+      setPendingValidations((c) => c + 1);
+    }
+    const seq = nextValidationSeq();
+    // The save path awaits validation quiescence before reading the payload;
+    // bracket the whole round-trip (incl. the stabilization passes).
+    beginValidationDispatch();
+    // Merge this form change into the YAML the user currently has in the editor
+    // (preserving its comments/formatting) rather than regenerating from data.
+    updateSchema(data, requestEditContext, true, true, null, getEntityYAML(), seq)
+      .then((resp) => {
+        if (didBlur) {
+          setPendingValidations((c) => Math.max(0, c - 1));
+        }
+        // A newer edit (in either pane) has since been dispatched; drop this
+        // stale response so it cannot clobber the latest state.
+        if (isStaleValidation(seq)) {
           setIsCurrentlyEditingString(false);
-        })
-        .finally(() => endValidationDispatch());
-    };
+          return;
+        }
+        if (resp == null) {
+          // The backend did not answer (network, 5xx, ...). Keep the form as
+          // the user left it — it is still the document they are editing —
+          // but block Commit until a validation succeeds (see
+          // reportValidationFailed); "Retry" re-sends this very data.
+          reportValidationFailed(() => dispatchValidation(data, errors, true));
+          setEditErrorMsg(VALIDATION_FAILED_DETAIL);
+        } else {
+          applyRespToForm(resp, errors);
+          // Project the canonical YAML into the (inactive) YAML pane.
+          applyCanonical('form', resp);
+        }
+        setIsCurrentlyEditingString(false);
+      })
+      .finally(() => endValidationDispatch());
+  };
 
-    return (
-      <>
-        <div className="relative w-full h-full">
-          {/* Fill the (flex-sized) pane and scroll internally, so a tall form
+  return (
+    <>
+      <div className="relative w-full h-full">
+        {/* Fill the (flex-sized) pane and scroll internally, so a tall form
               never grows the page — mirrors the Monaco pane's `h-full`. */}
-          <div
-            ref={formContainer}
-            className={`h-full overflow-y-auto duration-300 ${
-              formBlurred ? 'opacity-50 pointer-events-none' : ''
-            }`}
-          >
-            {isEmpty ? (
-              <div className="w-full h-full items-center align-center">
-                {/* The schema/entity load failed (network, 5xx, ...): there is
+        <div
+          ref={formContainer}
+          className={`h-full overflow-y-auto duration-300 ${
+            formBlurred ? 'opacity-50 pointer-events-none' : ''
+          }`}
+        >
+          {isEmpty ? (
+            <div className="w-full h-full items-center align-center">
+              {/* The schema/entity load failed (network, 5xx, ...): there is
                     nothing to edit yet, so retrying = loading the editor anew. */}
-                <NoDataIndicator onRetry={reloadEditingView} />
-              </div>
-            ) : loading ? (
-              // The frame shows a single unified loader; render nothing here.
-              <></>
-            ) : (
-              <>
-                {/* h-full: stretch the form content to the whole pane height
+              <NoDataIndicator onRetry={reloadEditingView} />
+            </div>
+          ) : loading ? (
+            // The frame shows a single unified loader; render nothing here.
+            <></>
+          ) : (
+            <>
+              {/* h-full: stretch the form content to the whole pane height
                     even when it is naturally shorter, so dropdowns opening
                     below the last controls have room instead of being cut off
                     at the content edge (with tabs, this also hands the
                     scrolling to CategorizationLayout's own overflow-auto
                     content box, keeping the tab bar pinned). */}
-                <div className="relative h-full">
-                  {uiSchema.elements.length === 0 && (
-                    // A type without form fields (no `vays_category` in its
-                    // schema): edited in the YAML editor only.
-                    <p className="p-4 text-reducedfont">
-                      This type has no form fields. Use the YAML editor to edit it.
-                    </p>
-                  )}
-                  <FormsErrorBoundary>
-                    <JsonForms
-                      schema={jsonSchema}
-                      uischema={uiSchema}
-                      data={localData}
-                      renderers={renderers}
-                      cells={materialCells}
-                      onChange={onChangeCallback}
-                      ajv={getValidationAJV()}
-                      additionalErrors={additionalErrors}
-                      readonly={requestEditContext.mode === 'read'}
-                    />
-                  </FormsErrorBoundary>
-                </div>
-              </>
-            )}
-          </div>
+              <div className="relative h-full">
+                {uiSchema.elements.length === 0 && (
+                  // A type without form fields (no `vays_category` in its
+                  // schema): edited in the YAML editor only.
+                  <p className="p-4 text-reducedfont">
+                    This type has no form fields. Use the YAML editor to edit it.
+                  </p>
+                )}
+                <FormsErrorBoundary>
+                  <JsonForms
+                    schema={jsonSchema}
+                    uischema={uiSchema}
+                    data={localData}
+                    renderers={renderers}
+                    cells={materialCells}
+                    onChange={onChangeCallback}
+                    ajv={getValidationAJV()}
+                    additionalErrors={additionalErrors}
+                    readonly={requestEditContext.mode === 'read'}
+                  />
+                </FormsErrorBoundary>
+              </div>
+            </>
+          )}
         </div>
-      </>
-    );
-  },
-);
+      </div>
+    </>
+  );
+});
 
 export default StandardEditMode;

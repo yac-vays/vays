@@ -14,7 +14,6 @@ import {
   getEntityName,
   getEntityYAML,
   setErrorMessage,
-  setIsValidating,
 } from './ExpertMode/access';
 import {
   beginValidationDispatch,
@@ -230,7 +229,6 @@ async function revalidateAgainstBaseline(requestEditContext: RequestEditContext)
   const epoch = currentSession();
   const seq = nextValidationSeq();
   beginValidationDispatch();
-  setIsValidating(true);
   try {
     const rep = await validateYAML(
       requestEditContext,
@@ -244,7 +242,6 @@ async function revalidateAgainstBaseline(requestEditContext: RequestEditContext)
     if (rep.perms) setEntityPerms(rep.perms);
     setErrorMessage(footerErrorMessage(rep));
   } finally {
-    if (!isStaleValidation(seq)) setIsValidating(false);
     endValidationDispatch();
   }
 }

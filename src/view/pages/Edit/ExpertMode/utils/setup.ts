@@ -9,7 +9,6 @@ import {
   setCurrentJsonSchema,
   setEntityYAML,
   setErrorMessage,
-  setIsValidating,
 } from '../../../../../controller/local/EditController/ExpertMode/access';
 import {
   registerDebouncedCommit,
@@ -171,7 +170,6 @@ export function getUpdateCallback(): EditorUpdateCallback {
     setActivePane('yaml');
     setEditDirty();
     setEntityYAML(value);
-    setIsValidating(true);
     const seq = nextValidationSeq();
     beginValidationDispatch();
     try {
@@ -185,7 +183,6 @@ export function getUpdateCallback(): EditorUpdateCallback {
       // A newer edit (in either pane) has since been dispatched; drop this stale
       // response so it cannot overwrite the latest state.
       if (isStaleValidation(seq)) return;
-      setIsValidating(false);
       if (rep == null) {
         // No answer (network, 5xx, ...): the text stays in the editor, Commit
         // is blocked until a validation succeeds; "Retry" re-sends this text.

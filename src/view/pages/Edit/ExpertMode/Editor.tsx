@@ -40,14 +40,12 @@ import { getEditor, getModel } from './utils/factory.js';
 export const Editor = ({
   requestEditContext,
   setEditErrorMsg,
-  setIsValidating,
   setLoading,
   setFocused,
   visible = true,
 }: {
   requestEditContext: RequestEditContext;
   setEditErrorMsg: (v: string) => void;
-  setIsValidating: (b: boolean) => void;
   // Reports the initial setup state to the frame's unified loader.
   setLoading: (b: boolean) => void;
   // Reports whether the editor text is focused (the frame dims the inactive pane).
@@ -63,7 +61,7 @@ export const Editor = ({
   const update = getUpdateCallback();
 
   useEffect(() => {
-    startExpertModeSession(requestEditContext, setIsValidating, setEditErrorMsg);
+    startExpertModeSession(requestEditContext, setEditErrorMsg);
 
     if (monacoEl && requestEditContext.rc.yacURL != null) {
       setIsSettingUp(true);

@@ -6,9 +6,12 @@ import { getEntityYAML, setEntityYAML } from './ExpertMode/access';
 import { hasPendingDebouncedCommits } from './debounceRegistry';
 import {
   beginValidationDispatch,
+  currentSession,
   endValidationDispatch,
+  isStaleSession,
   isStaleValidation,
   nextValidationSeq,
+  whenValidationIdle,
 } from './session';
 import { reportValidationFailed } from './shared';
 import { updateSchema } from './StandardMode';
@@ -168,6 +171,9 @@ function writeBothPanes(resp: ValidateResponse) {
   }
 }
 
+// A meta revalidation waiting for the in-flight validations to settle.
+let metaRevalidationQueued = false;
+
 /**
  * Re-validate the current data after a name/action change in the always-visible
  * MetaInfoPanel (toggling an action can change the schema) and refresh both
@@ -175,10 +181,23 @@ function writeBothPanes(resp: ValidateResponse) {
  * by the panel) inside `updateSchema`.
  */
 export async function revalidateMeta(requestEditContext: RequestEditContext) {
-  // The canonical pair is this validation's input. Before the session's schema
-  // load has seeded it, it still holds the PREVIOUS session's document — a
-  // meta change made that early is picked up by the first regular validation
-  // after the load instead.
+  // The canonical pair is this validation's input, so it must not overtake a
+  // pane validation still in flight: that edit is not in the pair yet and
+  // would be dropped as stale, then overwritten by this response. Meta changes
+  // arriving while one is already waiting are covered by it (name and actions
+  // are read at dispatch).
+  if (metaRevalidationQueued) return;
+  metaRevalidationQueued = true;
+  const epoch = currentSession();
+  try {
+    await whenValidationIdle();
+  } finally {
+    metaRevalidationQueued = false;
+  }
+  if (isStaleSession(epoch)) return;
+  // Before the session's schema load has seeded the pair it still holds the
+  // PREVIOUS session's document — a meta change made that early is picked up
+  // by the first regular validation after the load instead.
   if (!editingState.canonicalSeeded) return;
   const seq = nextValidationSeq();
   beginValidationDispatch();

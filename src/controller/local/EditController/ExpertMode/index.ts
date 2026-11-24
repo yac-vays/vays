@@ -32,7 +32,6 @@ import {
   getEntityYAML,
   hasUncommittedChanges,
   setErrorMessageCallback,
-  setIsValidatingCallback,
 } from './access';
 
 /**
@@ -248,12 +247,10 @@ async function sendPutEntity(
 /**
  * Initializes the internal state for a new expert mode editing session.
  * @param requestEditContext
- * @param setIsValidating
  * @param setEditErrorMsg
  */
 export function startExpertModeSession(
   requestEditContext: RequestEditContext,
-  setIsValidating: (v: boolean) => void,
   setEditErrorMsg: (v: string) => void,
 ) {
   // Activates the session and — only when a NEW session actually begins —
@@ -262,7 +259,6 @@ export function startExpertModeSession(
   // late into a session the form pane already started: it must not wipe
   // actions/name/validity the user set in the meantime.
   beginPaneSession(requestEditContext);
-  setIsValidatingCallback(setIsValidating);
   setErrorMessageCallback(setEditErrorMsg);
 
   setEditErrorMsg(''); // Start with no error message, please

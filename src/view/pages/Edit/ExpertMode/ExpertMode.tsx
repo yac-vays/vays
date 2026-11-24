@@ -7,14 +7,12 @@ const Editor = lazy(() => import('./Editor'));
 const ExpertMode = ({
   requestContext,
   setEditErrorMsg,
-  setIsValidating,
   setLoading,
   setFocused,
   visible = true,
 }: {
   requestContext: RequestEditContext;
   setEditErrorMsg: (v: string) => void;
-  setIsValidating: (b: boolean) => void;
   setLoading: (b: boolean) => void;
   setFocused: (b: boolean) => void;
   visible?: boolean;
@@ -27,7 +25,6 @@ const ExpertMode = ({
         <Editor
           requestEditContext={requestContext}
           setEditErrorMsg={setEditErrorMsg}
-          setIsValidating={setIsValidating}
           setLoading={setLoading}
           setFocused={setFocused}
           visible={visible}

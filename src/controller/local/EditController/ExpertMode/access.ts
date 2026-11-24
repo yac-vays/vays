@@ -107,14 +107,6 @@ export function getActivatedActions() {
   return editingState.activatedActions;
 }
 
-export function setIsValidatingCallback(cb: (v: boolean) => void) {
-  editingState._setIsValidating = cb;
-}
-
-export function setIsValidating(v: boolean) {
-  return editingState._setIsValidating(v);
-}
-
 export function setErrorMessageCallback(cb: (v: string) => void) {
   editingState._setErrorMessage = cb;
 }

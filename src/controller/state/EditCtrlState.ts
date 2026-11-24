@@ -208,8 +208,7 @@ class EditControlState {
   /** The triggerable actions activated in the MetaInfoPanel. */
   public activatedActions: ActionDecl[] = [];
 
-  /** Callbacks bridging controller -> view (validation spinner, error text). */
-  public _setIsValidating: (v: boolean) => void = () => {};
+  /** Callback bridging controller -> view (footer error text). */
   public _setErrorMessage: (v: string) => void = () => {};
 }
 

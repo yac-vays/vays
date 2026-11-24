@@ -122,15 +122,28 @@ export function isStaleSession(epoch: number): boolean {
 
 let pendingValidations = 0;
 let idleWaiters: (() => void)[] = [];
+let validatingListener: ((validating: boolean) => void) | null = null;
+
+/**
+ * Register the view's "a validation is in flight" listener (the Commit
+ * button's spinner); immediately called with the current state.
+ */
+export function setValidatingListener(cb: ((validating: boolean) => void) | null) {
+  validatingListener = cb;
+  cb?.(pendingValidations > 0);
+}
 
 /** Bracket a validation dispatch (call in try/finally with the end call). */
 export function beginValidationDispatch() {
   pendingValidations += 1;
+  if (pendingValidations === 1) validatingListener?.(true);
 }
 
 export function endValidationDispatch() {
-  pendingValidations = Math.max(0, pendingValidations - 1);
+  if (pendingValidations === 0) return;
+  pendingValidations -= 1;
   if (pendingValidations === 0) {
+    validatingListener?.(false);
     const waiters = idleWaiters;
     idleWaiters = [];
     waiters.forEach((resolve) => resolve());

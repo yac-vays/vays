@@ -17,7 +17,10 @@ import {
   handleEditConflict,
   isConflictMessage,
 } from '../../../controller/local/EditController/conflict';
-import { newEditingView } from '../../../controller/local/EditController/session';
+import {
+  newEditingView,
+  setValidatingListener,
+} from '../../../controller/local/EditController/session';
 import {
   clearEditDirty,
   isEditDirty,
@@ -191,11 +194,14 @@ const EditFrame = ({
     setChangeListener(setHasChanges);
     setEntityPermsListener(setEntityPerms);
     setAdminOverrideListener(setAdminUnlocked);
+    // The spinner follows the in-flight validations of either pane.
+    setValidatingListener(setIsValidating);
     return () => {
       setValidityListener(null);
       setChangeListener(null);
       setEntityPermsListener(null);
       setAdminOverrideListener(null);
+      setValidatingListener(null);
     };
   }, []);
 
@@ -375,7 +381,6 @@ const EditFrame = ({
               <StandardEditMode
                 requestEditContext={requestEditContext}
                 setEditErrorMsg={setEditErrorMsg}
-                setIsValidating={setIsValidating}
                 setLoading={setFormLoading}
               />
             </div>
@@ -433,7 +438,6 @@ const EditFrame = ({
               <ExpertMode
                 requestContext={requestEditContext}
                 setEditErrorMsg={setEditErrorMsg}
-                setIsValidating={setIsValidating}
                 setLoading={setYamlLoading}
                 setFocused={setYamlFocused}
                 visible={yamlVisible}

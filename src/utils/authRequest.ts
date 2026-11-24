@@ -109,6 +109,7 @@ export async function sendRequest(
     }
   }
 
+  const generation = cacheContext ? VAYS_CACHE.generation(cacheContext, url) : 0;
   const headers = getHeaders(url);
 
   let error: boolean = false;
@@ -121,12 +122,15 @@ export async function sendRequest(
 
   const resp: Response = await accessResource(url, method, headers, requestBody, catchAccessError);
 
-  if (cacheContext) {
+  // Invalidated while in flight: a newer fetch owns the entry now.
+  const current = cacheContext != null && VAYS_CACHE.generation(cacheContext, url) === generation;
+  if (cacheContext && current) {
     VAYS_CACHE.preCacheUnregister(cacheContext, url);
   }
   if (error || resp.status === undefined) return null;
 
-  if (cacheContext) {
+  // Errors are not cached: the next call asks the backend again.
+  if (cacheContext && current && resp.ok) {
     VAYS_CACHE.cache(cacheContext, url, resp.clone());
   }
 

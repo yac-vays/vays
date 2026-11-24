@@ -84,6 +84,14 @@ export class AppCache {
     return false;
   }
 
+  /**
+   * Changes whenever the entry is invalidated: a fetch that started under an
+   * older generation must neither be cached nor touch the registration.
+   */
+  generation(ctx: string, id: string): number {
+    return ctx in this._nodes ? this._nodes[ctx].generation(id) : 0;
+  }
+
   invalidate(ctx: string, id: string): void {
     if (ctx in this._nodes) {
       this._nodes[ctx].invalidate(id);

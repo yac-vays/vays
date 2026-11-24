@@ -10,6 +10,7 @@ class CacheNode<T = unknown> {
   _hooks = new Map<string, () => void>();
   _isWrittenTo = new Map<string, boolean>();
   _cacheTime = new Map<string, number>();
+  _generation = new Map<string, number>();
   ttl: number = 0; // 0 is off
 
   /**
@@ -82,6 +83,11 @@ class CacheNode<T = unknown> {
     return { found: false, value: null };
   }
 
+  /** Number of invalidations of this entry so far. */
+  generation(id: string): number {
+    return this._generation.get(id) ?? 0;
+  }
+
   /**
    * Invalidate an entry from this cache node.
    * @param id
@@ -89,6 +95,7 @@ class CacheNode<T = unknown> {
    */
   invalidate(id: string): boolean {
     const ret = this._cache.get(id) != undefined;
+    this._generation.set(id, this.generation(id) + 1);
     this._cache.delete(id);
     this._cacheTime.delete(id);
 

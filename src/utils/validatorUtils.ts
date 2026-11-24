@@ -53,7 +53,7 @@ function getEntityObjectExpertMode(
         yaml_old: yaml_old ?? '',
       },
     });
-  } else {
+  } else if (requestEditContext.mode === 'create') {
     return JSON.stringify({
       operation: 'create',
       type: requestEditContext.rc.entityTypeName,
@@ -65,6 +65,18 @@ function getEntityObjectExpertMode(
       },
     });
   }
+  return readRequest(requestEditContext, actions);
+}
+
+/** Read mode validates the stored entity, whatever the pane shows. */
+function readRequest(requestEditContext: RequestEditContext, actions: string[]): string {
+  return JSON.stringify({
+    operation: 'read',
+    type: requestEditContext.rc.entityTypeName,
+    actions: actions,
+    name: requestEditContext.entityName ?? null,
+    entity: null,
+  });
 }
 
 function getEntityObjectStdMode(
@@ -98,11 +110,5 @@ function getEntityObjectStdMode(
     });
   }
 
-  return JSON.stringify({
-    operation: 'read',
-    type: requestEditContext.rc.entityTypeName,
-    actions: actions,
-    name: requestEditContext.entityName ?? null,
-    entity: null,
-  });
+  return readRequest(requestEditContext, actions);
 }

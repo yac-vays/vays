@@ -25,14 +25,13 @@ function currentBackend(pathname: string, backendList: YACBackend[]): YACBackend
 const AvailabilityBanner = ({ backendList }: { backendList: YACBackend[] }) => {
   const { pathname } = useLocation();
   const backend = currentBackend(pathname, backendList);
-  const [availability, setAvailability] = useState<BackendAvailability>(
-    getAvailability(backend?.url),
-  );
+  const url = backend?.url ?? null;
+  const [availability, setAvailability] = useState<BackendAvailability>(getAvailability(url));
 
   useEffect(() => {
-    setAvailability(getAvailability(backend?.url));
-    return subscribeAvailability(() => setAvailability(getAvailability(backend?.url)));
-  }, [backend?.url]);
+    setAvailability(getAvailability(url));
+    return subscribeAvailability(() => setAvailability(getAvailability(url)));
+  }, [url]);
 
   if (!backend || availability.state === 'ok') return null;
 

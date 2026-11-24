@@ -8,6 +8,12 @@
     /* Bundler mode */
     // "moduleResolution": "bundler",
     "moduleResolution": "node",
+    // "node" resolution does not read the `exports` of a package: tell tsc
+    // where the types of this subpath are (Vite resolves it by itself;
+    // "bundler" resolution would, but breaks Monaco's deep imports).
+    "paths": {
+      "react-router/dom": ["./node_modules/react-router/dist/development/dom-export.d.ts"]
+    },
 		"allowSyntheticDefaultImports": true,
 
     

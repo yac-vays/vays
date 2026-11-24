@@ -15,10 +15,10 @@ import { logError } from '../logger';
 import { ValidateResponse } from '../types/internal/validation';
 
 /**
- * Retunrs whether the data has been removed.
- * @param newDefault
- * @param oldDefault
- * @param oldObject
+ * Bring `oldObject` (the data) from the old defaults to the new ones: a value
+ * still equal to its old default follows the default (changed or gone), new
+ * defaults are added. A value the user changed is left alone.
+ * @returns whether data was removed / modified at all.
  */
 function _refreshDefaults(
   newDefault: Readonly<any>,
@@ -28,34 +28,34 @@ function _refreshDefaults(
   removedData: boolean;
   modified: boolean;
 } {
-  // So far ignores additions of new defaults (i.e. in newDeault, not in oldDef)
   let remSym = false;
   let mod = false;
   for (const key of Object.keys(oldDefault)) {
+    if (!(key in oldObject)) continue;
+    const untouched = _.isEqual(oldObject[key], oldDefault[key]);
     if (!(key in newDefault)) {
-      remSym = true;
-      mod = true;
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      delete oldObject[key];
-    } else if (!(key in oldObject)) {
-      continue;
+      if (untouched) {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete oldObject[key];
+        remSym = true;
+        mod = true;
+      }
     } else if (
-      typeof oldObject[key] === 'object' &&
-      oldObject[key] != null &&
-      !Array.isArray(oldObject[key])
+      _.isPlainObject(oldObject[key]) &&
+      _.isPlainObject(oldDefault[key]) &&
+      _.isPlainObject(newDefault[key])
     ) {
       const ret = _refreshDefaults(newDefault[key], oldDefault[key], oldObject[key]);
       remSym ||= ret.removedData;
       mod ||= ret.modified;
-      // Changing the default value
-    } else if (!_.isEqual(oldDefault[key], newDefault[key])) {
+    } else if (untouched && !_.isEqual(oldDefault[key], newDefault[key])) {
       oldObject[key] = _.clone(newDefault[key]);
       mod = true;
     }
   }
 
   for (const key of Object.keys(newDefault)) {
-    if (!(key in oldDefault)) {
+    if (!(key in oldDefault) && !(key in oldObject)) {
       // Adding new default value
       oldObject[key] = _.clone(newDefault[key]);
       mod = true;

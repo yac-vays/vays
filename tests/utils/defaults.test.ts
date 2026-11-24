@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { setPreviousDefaultsObject } from '../../src/controller/local/EditController/shared';
 import { AppConfig } from '../../src/utils/types/config';
+import { ValidateResponse } from '../../src/utils/types/internal/validation';
 import {
   DEFAULT_YAML_COMMENT,
   getInitialCreateYAML,
@@ -112,10 +113,67 @@ describe('Check default handling utils', async () => {
       detail: '',
     };
     updateDefaults(valResp);
+    // a1 was changed by the user: it does not follow its new default
     expect(valResp.data).toStrictEqual({
-      a1: 'a1-default',
+      a1: 'other value',
       a2: 'hey',
       c1: [1],
+    });
+  });
+
+  it('lets untouched values follow their default, keeps what the user changed', () => {
+    const schema = (cpus: number | undefined, withNote: boolean) => ({
+      type: 'object',
+      properties: {
+        cpus: { type: 'number', ...(cpus === undefined ? {} : { default: cpus }) },
+        ram: { type: 'number', default: 4 },
+        opts: { type: 'object', ...(withNote ? { default: { note: 'x' } } : {}) },
+      },
+    });
+    const run = (
+      previous: object,
+      data: ValidateResponse['data'],
+      json_schema: ValidateResponse['json_schema'],
+    ) => {
+      setPreviousDefaultsObject(previous);
+      const valResp = {
+        json_schema,
+        ui_schema: { type: '', elements: [] },
+        data,
+        valid: false,
+        detail: '',
+      };
+      const changed = updateDefaults(valResp);
+      return { data: valResp.data, changed };
+    };
+
+    // default 2 -> 4: an untouched 2 follows, a user's 8 stays
+    expect(run({ cpus: 2, ram: 4 }, { cpus: 2, ram: 4 }, schema(4, false))).toStrictEqual({
+      data: { cpus: 4, ram: 4 },
+      changed: true,
+    });
+    expect(run({ cpus: 2, ram: 4 }, { cpus: 8, ram: 4 }, schema(4, false))).toStrictEqual({
+      data: { cpus: 8, ram: 4 },
+      changed: false,
+    });
+    // default gone: only an untouched value goes with it
+    expect(
+      run({ cpus: 2, ram: 4 }, { cpus: 2, ram: 4 }, schema(undefined, false)).data,
+    ).toStrictEqual({
+      ram: 4,
+    });
+    expect(
+      run({ cpus: 2, ram: 4 }, { cpus: 8, ram: 4 }, schema(undefined, false)).data,
+    ).toStrictEqual({
+      cpus: 8,
+      ram: 4,
+    });
+    // a default that is no object on one side (here: absent before) next to a user's object
+    expect(
+      run({ ram: 4, opts: null }, { ram: 4, opts: { mine: 1 } }, schema(undefined, true)).data,
+    ).toStrictEqual({
+      ram: 4,
+      opts: { mine: 1 },
     });
   });
 

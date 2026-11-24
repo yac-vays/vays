@@ -93,6 +93,14 @@ export interface AppConfig {
      * Defaults to `openid email`.
      */
     scope?: string;
+    /**
+     * Also end the session at the provider on logout: the browser is sent to
+     * its `end_session_endpoint` (RP-initiated logout) and comes back to the
+     * start page. Requires `https://<vays-host>/` to be registered as a
+     * post-logout redirect URI of the client. Defaults to `false`: the logout
+     * only ends the VAYS session (and revokes its refresh token).
+     */
+    endSession?: boolean;
   };
   backends: YACBackend[];
 } /**

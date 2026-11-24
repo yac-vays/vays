@@ -22,6 +22,9 @@ config:
   oidcConf:
     server: "https://example.com/.well-known/openid-configuration"
     clientID: "vays-spa"
+    # Also end the session at the provider on logout (RP-initiated logout);
+    # needs https://<host>/ registered as post-logout redirect URI of the client.
+    # endSession: true
   backends:
     - name: "example"
       title: "Example Inventory"

@@ -28,6 +28,7 @@ class ResponseBodyError extends Error {
 
 vi.mock('openid-client', () => ({
   discovery: vi.fn(async () => ({})),
+  None: vi.fn(),
   refreshTokenGrant: (...args: unknown[]) => refreshTokenGrant(...args),
   ResponseBodyError,
 }));

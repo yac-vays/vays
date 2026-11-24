@@ -1,6 +1,7 @@
 import * as client from 'openid-client';
 
 import { navigateToURL } from '../../controller/global/url';
+import { getCachedConfig } from '../../model/config';
 import { loadIdentity } from '../../model/identity';
 import { logError } from '../../utils/logger';
 import { AppConfig } from '../../utils/types/config';
@@ -121,14 +122,99 @@ function storeToken(token: string) {
   }
 }
 
-export function logOut() {
-  // Wipe everything except the persisted UI preferences, then do a *full page
-  // reload* to the home page. A hard reload (rather than a client-side
-  // navigation) is what makes it look and feel like a real logout: all
-  // in-memory state — caches and rendered UI such as the sidebar submenus and
-  // fetched lists — is thrown away and the app boots fresh into the logged-out
-  // home page. (The token is stored in localStorage and is removed by
-  // clearSession() below, so the reload genuinely deauthenticates.)
+/** Upper bound for everything the logout asks of the provider. */
+const LOGOUT_PROVIDER_TIMEOUT_MS = 3000;
+
+let loggingOut = false;
+
+/**
+ * End the session. Always ends the local one; what involves the provider is
+ * best effort and bounded by a timeout, so a slow or failing provider can
+ * never keep the user logged in:
+ *
+ *  - the refresh token is revoked (if the provider has a revocation endpoint),
+ *    so a copy of it cannot renew the session any more;
+ *  - with `oidcConf.endSession`, the browser then goes to the provider's
+ *    `end_session_endpoint` to end the session there as well, and returns to
+ *    the home page.
+ */
+export async function logOut(): Promise<void> {
+  if (loggingOut) return;
+  loggingOut = true;
+
+  const appconf = getCachedConfig();
+  const idToken = iLocalStorage.getToken()?.replace(/^Bearer /, '');
+  const refreshToken = iLocalStorage.getRefreshToken();
+
+  // Wipe everything except the persisted UI preferences first: from here on
+  // this browser is logged out, whatever happens below.
   iLocalStorage.clearSession();
-  window.location.replace('/');
+
+  let target = '/';
+  if (appconf != null && (refreshToken || appconf.oidcConf.endSession)) {
+    try {
+      target = await withTimeout(
+        endProviderSession(appconf, idToken, refreshToken),
+        LOGOUT_PROVIDER_TIMEOUT_MS,
+        '/',
+      );
+    } catch (e) {
+      logError(`Logout at the OIDC provider failed: ${e}`, 'logOut');
+    }
+  }
+
+  // A *full page load* (rather than a client-side navigation) is what makes it
+  // look and feel like a real logout: all in-memory state — caches and
+  // rendered UI such as the sidebar submenus and fetched lists — is thrown
+  // away and the app boots fresh into the logged-out home page.
+  window.location.replace(target);
+}
+
+/** Revoke the refresh token; returns where to send the browser afterwards. */
+async function endProviderSession(
+  appconf: AppConfig,
+  idToken: string | undefined,
+  refreshToken: string | undefined,
+): Promise<string> {
+  const config = await discoverClient(appconf);
+  const metadata = config.serverMetadata();
+
+  // The end-session URL is built first: it must not depend on the revocation.
+  let target = '/';
+  if (appconf.oidcConf.endSession && metadata.end_session_endpoint) {
+    target = client.buildEndSessionUrl(config, {
+      post_logout_redirect_uri: joinUrl(`https://${window.location.host}`, ''),
+      ...(idToken ? { id_token_hint: idToken } : {}),
+    }).href;
+  }
+
+  if (refreshToken && metadata.revocation_endpoint) {
+    try {
+      await withTimeout(
+        client.tokenRevocation(config, refreshToken, { token_type_hint: 'refresh_token' }),
+        LOGOUT_PROVIDER_TIMEOUT_MS - 500,
+        undefined,
+      );
+    } catch (e) {
+      logError(`Revoking the refresh token failed: ${e}`, 'logOut');
+    }
+  }
+  return target;
+}
+
+/** `promise`, or `fallback` if it has not settled after `ms`. */
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => resolve(fallback), ms);
+    promise.then(
+      (v) => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(timer);
+        reject(e);
+      },
+    );
+  });
 }

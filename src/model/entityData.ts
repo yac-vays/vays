@@ -6,51 +6,70 @@ import { EntityData, TYPE_CHECK_ENTITY_DATA } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
 import { entityPath, joinUrl } from '../utils/urlUtils';
-import { handleYacResponse, yacErrorDetail } from './utils/handleYacResponse';
+import { handleYacResponse, YacErrorBody, yacErrorDetail } from './utils/handleYacResponse';
 
-export async function getEntityData(
+type EntityResponse =
+  | { kind: 'ok'; resp: Response }
+  /** HTTP 404 (no toast unless `toastGone`). */
+  | { kind: 'gone' }
+  /** HTTP 403 (a toast has been shown). */
+  | { kind: 'hidden' }
+  /** Any other failure (a toast or the availability banner has been shown). */
+  | { kind: 'error' };
+
+/** GET an entity, with the error handling shared by all readers. */
+async function requestEntity(
   entityName: string,
   requestContext: RequestContext,
-): Promise<EntityData | null> {
+  { toastGone = false, forbiddenDetail }: { toastGone?: boolean; forbiddenDetail?: string } = {},
+): Promise<EntityResponse> {
   const url = requestContext.yacURL;
-  if (url == null) return null;
+  if (url == null) return { kind: 'error' };
 
   const resp: Nullable<Response> = await sendRequest(
     joinUrl(url, entityPath(requestContext.entityTypeName, entityName)),
     'GET',
   );
-
-  if (resp == null) {
-    showError(
-      entityToastTitle(requestContext, entityName),
-      `Read of ${entityName} failed: the backend could not be reached.`,
-    );
-    return null;
-  }
-
+  const title = entityToastTitle(requestContext, entityName);
+  const errorText = `Read of ${entityName} failed`;
   const result = await handleYacResponse(resp, {
-    title: entityToastTitle(requestContext, entityName),
-    errorText: `Read of ${entityName} failed`,
+    title,
+    errorText,
     errorMessage: 'Please contact the admin to resolve this issue.',
+    ...(forbiddenDetail
+      ? {
+          errorDetail: (status: number, body: YacErrorBody) =>
+            status === 403
+              ? forbiddenDetail
+              : yacErrorDetail(
+                  errorText,
+                  status,
+                  body,
+                  'Please contact the admin to resolve this issue.',
+                ),
+        }
+      : {}),
   });
 
-  if (result.kind === 'success') {
-    return typeCheckEntityData(await result.resp.json(), entityName);
-  } else if (result.kind === 'invalid-request') {
-    // No validation error should happen here.
-    showError('Internal Error', 'Error ID-VAL-GED-01. Please file a bug report.');
-  } else if (result.kind === 'client-error') {
-    showError(
-      entityToastTitle(requestContext, entityName),
-      yacErrorDetail(
-        `Read of ${entityName} failed`,
-        result.status,
-        result.body,
-        'Please try again.',
-      ),
-    );
+  if (result.kind === 'success') return { kind: 'ok', resp: result.resp };
+  if (result.kind === 'forbidden') return { kind: 'hidden' };
+  const gone = result.kind === 'client-error' && result.status === 404;
+  if (gone && !toastGone) return { kind: 'gone' };
+  if (result.kind === 'network-error') {
+    showError(title, `${errorText}: the backend could not be reached.`);
+  } else if (result.kind === 'client-error' || result.kind === 'invalid-request') {
+    showError(title, yacErrorDetail(errorText, result.status, result.body, 'Please try again.'));
   }
-  return null;
+  return gone ? { kind: 'gone' } : { kind: 'error' };
+}
+
+/** The stored entity, or null if it cannot be read (a toast has been shown). */
+export async function getEntityData(
+  entityName: string,
+  requestContext: RequestContext,
+): Promise<EntityData | null> {
+  const res = await requestEntity(entityName, requestContext, { toastGone: true });
+  return res.kind === 'ok' ? typeCheckEntityData(await res.resp.json(), entityName) : null;
 }
 
 export type StoredEntityResult =
@@ -69,41 +88,11 @@ export async function getStoredEntity(
   entityName: string,
   requestContext: RequestContext,
 ): Promise<StoredEntityResult> {
-  const url = requestContext.yacURL;
-  if (url == null) return { kind: 'error' };
-
-  const resp: Nullable<Response> = await sendRequest(
-    joinUrl(url, entityPath(requestContext.entityTypeName, entityName)),
-    'GET',
-  );
-  const result = await handleYacResponse(resp, {
-    title: entityToastTitle(requestContext, entityName),
-    errorText: `Read of ${entityName} failed`,
-    errorMessage: 'Please contact the admin to resolve this issue.',
-  });
-
-  if (result.kind === 'success') {
-    const entity = typeCheckEntityData(await result.resp.json(), entityName);
-    return entity == null ? { kind: 'error' } : { kind: 'found', entity };
-  }
-  if (result.kind === 'client-error' && result.status === 404) return { kind: 'gone' };
-  if (result.kind === 'network-error') {
-    showError(
-      entityToastTitle(requestContext, entityName),
-      `Read of ${entityName} failed: the backend could not be reached.`,
-    );
-  } else if (result.kind === 'client-error' || result.kind === 'invalid-request') {
-    showError(
-      entityToastTitle(requestContext, entityName),
-      yacErrorDetail(
-        `Read of ${entityName} failed`,
-        result.status,
-        result.body,
-        'Please try again.',
-      ),
-    );
-  }
-  return { kind: 'error' };
+  const res = await requestEntity(entityName, requestContext);
+  if (res.kind === 'gone') return res;
+  if (res.kind !== 'ok') return { kind: 'error' };
+  const entity = typeCheckEntityData(await res.resp.json(), entityName);
+  return entity == null ? { kind: 'error' } : { kind: 'found', entity };
 }
 
 export type EntityExistence =
@@ -128,43 +117,11 @@ export async function probeEntity(
   entityName: string,
   requestContext: RequestContext,
 ): Promise<EntityExistence> {
-  const url = requestContext.yacURL;
-  if (url == null) return 'error';
-
-  const resp: Nullable<Response> = await sendRequest(
-    joinUrl(url, entityPath(requestContext.entityTypeName, entityName)),
-    'GET',
-  );
-  const errorText = `Read of ${entityName} failed`;
-  const result = await handleYacResponse(resp, {
-    title: entityToastTitle(requestContext, entityName),
-    errorText,
-    errorDetail: (status, body) =>
-      status === 403
-        ? 'It does not exist or you lack the permission to see it.'
-        : yacErrorDetail(
-            errorText,
-            status,
-            body,
-            'Please contact the admin to resolve this issue.',
-          ),
+  const res = await requestEntity(entityName, requestContext, {
+    forbiddenDetail: 'It does not exist or you lack the permission to see it.',
   });
-
-  if (result.kind === 'success') return 'exists';
-  if (result.kind === 'forbidden') return 'hidden';
-  if (result.kind === 'client-error' && result.status === 404) return 'missing';
-  if (result.kind === 'network-error') {
-    showError(
-      entityToastTitle(requestContext, entityName),
-      `${errorText}: the backend could not be reached.`,
-    );
-  } else if (result.kind === 'client-error' || result.kind === 'invalid-request') {
-    showError(
-      entityToastTitle(requestContext, entityName),
-      yacErrorDetail(errorText, result.status, result.body, 'Please try again.'),
-    );
-  }
-  return 'error';
+  if (res.kind === 'ok') return 'exists';
+  return res.kind === 'gone' ? 'missing' : res.kind;
 }
 
 function typeCheckEntityData(ed: unknown, entityName: string): Nullable<EntityData> {

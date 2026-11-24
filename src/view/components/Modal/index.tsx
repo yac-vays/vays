@@ -63,6 +63,7 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
   }
 
   handleClickOutside(event: Event): void {
+    if (!this.state.show) return;
     if (this.ref.current && !this.ref.current.contains(event.target as Node)) {
       this.state.callbackCancel().then(() => {
         this.hide();
@@ -79,6 +80,12 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
       // this.hide();
       this._cancel();
     } else if ((event as KeyboardEvent).code === 'Enter') {
+      const target = (event as KeyboardEvent).target;
+      // Enter on one of the dialog's own buttons activates that button.
+      if (target instanceof HTMLButtonElement && this.ref.current?.contains(target)) return;
+      // Otherwise Enter confirms, and must not also click whatever is focused
+      // behind the dialog (e.g. the button that opened it).
+      (event as KeyboardEvent).preventDefault();
       this._confirm();
     }
   }
@@ -140,9 +147,12 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
       actionsChoice: actions.map(() => false),
       extraButtons: extraButtons,
     });
-    // Requires slight delay to take effect
+    // Move the focus into the dialog (requires a slight delay to take effect).
     if (this.focusTimeout != null) clearTimeout(this.focusTimeout);
-    this.focusTimeout = setTimeout(() => this.textInputRef.current?.focus(), 16);
+    this.focusTimeout = setTimeout(
+      () => (this.textInputRef.current ?? this.ref.current)?.focus(),
+      16,
+    );
   }
 
   hide(): void {
@@ -171,7 +181,8 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
         >
           <div
             ref={this.ref}
-            className="relative md:px-10 w-full max-w-180 rounded-sm bg-white px-10 py-8 dark:bg-boxdark md:py-8"
+            tabIndex={-1}
+            className="relative outline-hidden md:px-10 w-full max-w-180 rounded-sm bg-white px-10 py-8 dark:bg-boxdark md:py-8"
           >
             <div className="flex flex-row">
               <div className="grow">

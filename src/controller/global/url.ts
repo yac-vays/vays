@@ -186,7 +186,7 @@ export async function isValidQueryEdit(
     return false;
   }
 
-  if (mode === 'edit' && entityName == undefined) return false;
+  if (mode !== 'create' && entityName == undefined) return false;
 
   return await isValidQueryOverview(backendName, entityTypeName, backends);
 }

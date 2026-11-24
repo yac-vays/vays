@@ -160,16 +160,12 @@ class ConfirmAlert extends Component<ConfirmationModalProps, ConfirmationModalSt
       clearTimeout(this.focusTimeout);
       this.focusTimeout = null;
     }
-    const stateCopy: ConfirmationModalState = { ...this.state };
-    stateCopy.show = false;
-    this.setState(stateCopy);
+    this.setState({ show: false });
     if (this.textInputRef.current != undefined) this.textInputRef.current.value = '';
   }
 
   private _setSending(value: boolean): void {
-    const stateCopy: ConfirmationModalState = { ...this.state };
-    stateCopy.isSending = value;
-    this.setState(stateCopy);
+    this.setState({ isSending: value });
   }
   render() {
     return (

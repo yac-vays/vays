@@ -15,17 +15,3 @@ export function setCurrentTab(v: number) {
 export function getCurrentTab() {
   return editingState.currentTab;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function setFormData(data: any, errors?: any[]) {
-  if (errors != undefined && errors.length > 0) {
-    editingState.isValidLocal = false;
-  } else {
-    editingState.isValidLocal = true;
-  }
-  editingState.entityDataObject = data;
-}
-
-export function getLocalEntityData() {
-  return editingState.entityDataObject;
-}

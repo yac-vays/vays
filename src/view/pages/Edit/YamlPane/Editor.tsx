@@ -8,9 +8,9 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 import { memo, useEffect, useRef, useState } from 'react';
 
+import { setEditorSchema } from './utils/uris';
 import {
   getMonacoYaml,
-  setCurrentJsonSchema,
   setMonacoYaml,
 } from '../../../../controller/local/EditController/editState';
 import {
@@ -20,9 +20,7 @@ import {
 import {
   registerYamlInputPendingProbe,
   registerYamlWriter,
-  setActivePane,
 } from '../../../../controller/local/EditController/sync';
-import { patchSchemaForMonaco } from '../../../../utils/schema/monacoSchemaFix';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 import { setBackendValidationMarkers } from './EditorPlugins/backendMarkers';
 import { computeDiffDecorations } from './EditorPlugins/diffDecoration';
@@ -122,7 +120,6 @@ export const Editor = ({
     // Widget-level focus (not just the text area) so the editor stays "active"
     // while using its find/replace widget.
     const focusSub = editor.onDidFocusEditorWidget(() => {
-      setActivePane('yaml');
       setFocused(true);
     });
     const blurSub = editor.onDidBlurEditorWidget(() => setFocused(false));
@@ -131,16 +128,7 @@ export const Editor = ({
       const scrollTop = editor.getScrollTop();
       editor.setValue(resp.yaml);
       editor.setScrollTop(scrollTop);
-      setCurrentJsonSchema(resp.json_schema);
-      getMonacoYaml()?.update({
-        schemas: [
-          {
-            uri: 'inmemory://schema.json',
-            schema: patchSchemaForMonaco(resp.json_schema),
-            fileMatch: ['*'],
-          },
-        ],
-      });
+      void setEditorSchema(resp.json_schema);
       // Backend-only findings (custom formats, ...) on the projected document.
       setBackendValidationMarkers(editor.getModel(), resp);
     });

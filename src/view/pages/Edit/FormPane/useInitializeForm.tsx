@@ -25,32 +25,18 @@ import {
 } from '../../../../utils/schema/locatedErrors';
 
 /**
- * Custom hook to initialize the form state for the edit page.
+ * Loads the entity's schema and data for the form pane and holds the form's
+ * state. `loadFailed` is set when the load returned nothing; `setupDone` once
+ * the first load has been rendered (form edits before that are ignored).
  *
- * @param {RequestEditContext} requestEditContext - The context for the edit request.
- * @param {(v: string) => void} onYacError - Callback function to handle errors.
- *
- * @returns {object} An object containing the form state and related setters.
- * @returns {boolean} loading - Indicates if the form is (initially) loading.
- * @returns {Function} setLoading - Setter for the loading state.
- * @returns {boolean} isEmpty - Indicates if the form data is empty.
- * @returns {Function} setIsEmpty - Setter for the isEmpty state.
- * @returns {object} localData - The local data for the form.
- * @returns {Function} setLocalData - Setter for the local data.
- * @returns {object} jsonSchema - The JSON schema for the form.
- * @returns {Function} setJsonSchema - Setter for the JSON schema.
- * @returns {ValidateResponse['ui_schema']} uiSchema - The UI schema for the form.
- * @returns {Function} setUISchema - Setter for the UI schema.
- * @returns {boolean} setupDone - Indicates if the setup is done.
- * @returns {Function} setSetupDone - Setter for the setupDone state.
- * @returns {React.MutableRefObject<HTMLDivElement | null>} formContainer - Ref for the form container element. Needs to be set on the container.
+ * @param onYacError Receives the footer message of the load.
  */
 const useInitializeForm = (
   requestEditContext: RequestEditContext,
   onYacError: (v: string) => void,
 ) => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [isEmpty, setIsEmpty] = useState<boolean>(false);
+  const [loadFailed, setLoadFailed] = useState<boolean>(false);
   const [localData, setLocalData] = useState({});
   const [jsonSchema, setJsonSchema] = useState({});
   const [uiSchema, setUISchema] = useState<ValidateResponse['ui_schema']>({
@@ -69,7 +55,7 @@ const useInitializeForm = (
     setCurrentTab(0);
 
     const fetchSchemaUI = async function () {
-      setIsEmpty(false);
+      setLoadFailed(false);
       setLoading(true);
       // Activate the session for this pane. Exactly the first pane to arrive
       // performs the one-time session resets (status, dirty flag, actions, and
@@ -85,7 +71,7 @@ const useInitializeForm = (
       if (!isMounted) return;
 
       if (resp == null) {
-        setIsEmpty(true);
+        setLoadFailed(true);
         setLoading(false);
         return;
       }
@@ -150,9 +136,8 @@ const useInitializeForm = (
 
   return {
     loading,
-    setLoading,
-    isEmpty,
-    setIsEmpty,
+    loadFailed,
+    setLoadFailed,
     localData,
     setLocalData,
     jsonSchema,
@@ -160,7 +145,6 @@ const useInitializeForm = (
     uiSchema,
     setUISchema,
     setupDone,
-    setSetupDone,
     additionalErrors,
     setAdditionalErrors,
     formContainer,

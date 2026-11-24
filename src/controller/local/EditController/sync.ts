@@ -69,20 +69,7 @@ function formInputPending(): boolean {
   return hasPendingDebouncedInputs();
 }
 
-/** Whether the YAML pane is currently mounted (its writer is registered). */
-export function hasYamlPane(): boolean {
-  return yamlWriter != null;
-}
-
-export function setActivePane(p: Pane | null) {
-  editingState.activePane = p;
-}
-
-export function getActivePane(): Pane | null {
-  return editingState.activePane;
-}
-
-// Lives in access.ts (leaf module) so the load path in shared.ts can seed
+// Lives in editState.ts (leaf module) so the load path in shared.ts can seed
 // without an import cycle; re-exported here for the panes.
 export { seedCanonical } from './editState';
 

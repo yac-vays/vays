@@ -2,7 +2,6 @@ import { typeCheck } from 'type-check';
 import { showError } from '../controller/global/notification';
 import { getActionNames } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
-import { dumpEditActions, EditActionSnapshot, NO_ACTIONS } from '../utils/schema/injectActions';
 import { entityToastTitle } from '../utils/toastUtils';
 import { ActionDecl, APIValidateResponse, TYPE_CHECK_VALIDATE_RESP } from '../utils/types/api';
 import { RequestEditContext } from '../utils/types/internal/request';
@@ -45,7 +44,7 @@ export function normalizeUiSchema(
 export async function getSchema(
   requestEditContext: RequestEditContext,
 ): Promise<ValidateResponse | null> {
-  return validate(requestEditContext.entityName ?? null, {}, requestEditContext, NO_ACTIONS);
+  return validate(requestEditContext.entityName ?? null, {}, requestEditContext, []);
 }
 
 export async function validateYAML(
@@ -55,9 +54,9 @@ export async function validateYAML(
   yaml_old: string,
   acts: ActionDecl[],
 ) {
-  const url: string | null | undefined = requestEditContext.rc.yacURL;
+  const url = requestEditContext.rc.yacURL;
 
-  if (url == undefined || url == null) return null;
+  if (url == null) return null;
   const obj = buildValidateRequestBody(
     requestEditContext,
     undefined,
@@ -128,30 +127,27 @@ async function _validate(
 }
 
 /**
- * Validate the data object.
- * @param name The name of the entity. Maybe null, especially if YAC is required to generate the name.
- * @param data some data object.
- * @param requestEditContext the request context
- * @param editActions
- * @returns
+ * Validate the form's data.
+ * @param name The entity name; null if there is none (yet) or YAC generates it.
+ * @param actions Names of the actions to run with the write.
  */
 export async function validate(
   name: Nullable<string>,
   data: object,
   requestEditContext: RequestEditContext,
-  editActions: EditActionSnapshot,
+  actions: string[],
   // The YAML the user is editing; the backend merges `data` into it (preserving
   // comments) instead of regenerating from data. Omit for initial loads.
   yamlBase?: string,
 ): Promise<ValidateResponse | null> {
-  const url: string | null | undefined = requestEditContext.rc.yacURL;
+  const url = requestEditContext.rc.yacURL;
 
-  if (url == undefined || url == null) return null;
+  if (url == null) return null;
   const obj = buildValidateRequestBody(
     requestEditContext,
     data,
     name,
-    dumpEditActions(editActions),
+    actions,
     undefined,
     undefined,
     yamlBase,

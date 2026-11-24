@@ -1,5 +1,6 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
+import { getEntityModel } from '../utils/uris';
 import { getCurrentJsonSchema } from '../../../../../controller/local/EditController/editState';
 import { getYACUsages } from '../../../../../controller/local/EditController/shared';
 import { formatLimitLong, limitMatchesYamlPath } from '../../../../../utils/limitUtils';
@@ -37,7 +38,7 @@ export default async function editorFieldHelp(
       provideHover: (model, position) => {
         // The provider serves every YAML model (e.g. a log document viewer),
         // the schema and usages only describe the entity document.
-        if (model !== monaco.editor.getModel(monaco.Uri.parse('inmemory://schema.json'))) {
+        if (model !== getEntityModel()) {
           return null;
         }
         const schema = getCurrentJsonSchema();

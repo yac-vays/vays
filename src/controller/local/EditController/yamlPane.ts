@@ -24,7 +24,7 @@ export async function validateYAMLText(
   const valResp = await validateYAML(requestEditContext, name, yaml, getInitialEntityYAML(), acts);
   if (valResp == null) return null;
   if (seq === undefined || !isStaleValidation(seq)) {
-    setYACStatus(valResp.valid, valResp.detail, valResp.usages, valResp.data);
+    setYACStatus(valResp.valid, valResp.usages, valResp.data);
     if (valResp.perms) setEntityPerms(valResp.perms);
     reportSchemaWarnings(valResp, requestEditContext);
   }

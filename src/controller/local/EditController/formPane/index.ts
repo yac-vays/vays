@@ -1,24 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { getActionNames } from '../../../../utils/actionUtils';
 import { isNameGeneratedByYAC } from '../../../../utils/nameUtils';
-import { EditActionSnapshot } from '../../../../utils/schema/injectActions';
-import { ActionDecl } from '../../../../utils/types/api';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 import { Nullable } from '../../../../utils/types/typeUtils';
 import { getActivatedActions, getEntityName } from '../editState';
 import { coreUpdate } from '../shared';
-
-/**
- * Build an `EditActionSnapshot` (all active) from the action declarations chosen
- * in the MetaInfoPanel. Only `action.name` + `dataEntryValue` are read downstream
- * (via `dumpEditActions`), so synthetic keys are fine.
- */
-function actionsToSnapshot(acts: ActionDecl[]): EditActionSnapshot {
-  const snapshot: EditActionSnapshot = {};
-  acts.forEach((action, idx) => {
-    snapshot[`a${idx}`] = { action, dataEntryValue: true };
-  });
-  return snapshot;
-}
 
 /**
  * Validate the form's entity data and return the (possibly re-generated) schema.
@@ -50,7 +36,11 @@ export async function validateFormData(
   const name = isNameGeneratedByYAC(requestEditContext.rc.accessedEntityType)
     ? (requestEditContext.entityName ?? null)
     : (getEntityName() ?? entityName);
-  const editActions = actionsToSnapshot(getActivatedActions());
-
-  return await coreUpdate(data, requestEditContext, doRevalidate, editActions, name, yamlBase, seq);
+  return await coreUpdate(data, requestEditContext, {
+    doRevalidate,
+    actions: getActionNames(getActivatedActions()),
+    name,
+    yamlBase,
+    seq,
+  });
 }

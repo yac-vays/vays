@@ -1,12 +1,11 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-import { configureMonacoYaml, type SchemasSettings } from 'monaco-yaml';
+import { configureMonacoYaml } from 'monaco-yaml';
+import { getEntityModel, setEditorSchema, yamlSchemaOptions } from './uris';
 import { validateYAMLText } from '../../../../../controller/local/EditController/yamlPane';
 import {
   getActivatedActions,
   getCurrentContext,
   getEntityName,
-  getMonacoYaml,
-  setCurrentJsonSchema,
   setEntityYAML,
   setErrorMessage,
 } from '../../../../../controller/local/EditController/editState';
@@ -26,13 +25,11 @@ import {
   setEditDirty,
 } from '../../../../../controller/local/EditController/shared';
 import { footerErrorMessage } from '../../../../../utils/schema/locatedErrors';
-import { patchSchemaForMonaco } from '../../../../../utils/schema/monacoSchemaFix';
 import { setBackendValidationMarkers } from '../EditorPlugins/backendMarkers';
 import {
   applyCanonical,
   isStaleValidation,
   nextValidationSeq,
-  setActivePane,
 } from '../../../../../controller/local/EditController/sync';
 
 /**
@@ -74,12 +71,6 @@ function createWebWorkerCompat<T extends object>(opts: {
 }
 
 export function setupMonacoYAMLPlugin() {
-  const defaultSchema: SchemasSettings = {
-    uri: 'inmemory://schema.json',
-    schema: {},
-    fileMatch: ['*'],
-  };
-
   // Hand monaco-yaml a monaco namespace whose createWebWorker speaks the old
   // signature its worker glue expects (see createWebWorkerCompat above).
   const monacoWithLegacyWorkers = {
@@ -89,7 +80,7 @@ export function setupMonacoYAMLPlugin() {
 
   const monacoYaml = configureMonacoYaml(monacoWithLegacyWorkers, {
     enableSchemaRequest: false,
-    schemas: [defaultSchema],
+    ...yamlSchemaOptions({}),
     validate: true,
     completion: true,
   });
@@ -164,10 +155,8 @@ export function getUpdateCallback(): EditorUpdateCallback {
     const requestEditContext = getCurrentContext();
     if (requestEditContext == null) return;
 
-    // The YAML editor is the active pane while the user types in it, and the
-    // session is now dirty (genuine edit — suppressed/no-op writes are filtered
-    // out before `update` is called, see factory.ts).
-    setActivePane('yaml');
+    // A genuine edit (suppressed/no-op writes are filtered out before `update`
+    // is called, see factory.ts): the session is dirty.
     setEditDirty();
     setEntityYAML(value);
     const seq = nextValidationSeq();
@@ -196,22 +185,10 @@ export function getUpdateCallback(): EditorUpdateCallback {
       // Footer policy: an error that both panes display inline is suppressed
       // there (see footerErrorMessage).
       setErrorMessage(footerErrorMessage(rep));
-      setCurrentJsonSchema(rep.json_schema);
-      await getMonacoYaml().update({
-        schemas: [
-          {
-            uri: 'inmemory://schema.json',
-            schema: patchSchemaForMonaco(rep.json_schema),
-            fileMatch: ['*'],
-          },
-        ],
-      });
+      await setEditorSchema(rep.json_schema);
       // Backend-only findings (custom formats, ...) as markers on the text
       // the user just typed.
-      setBackendValidationMarkers(
-        monaco.editor.getModel(monaco.Uri.parse('inmemory://schema.json')),
-        rep,
-      );
+      setBackendValidationMarkers(getEntityModel(), rep);
       // Project the canonical data into the (inactive) form pane.
       applyCanonical('yaml', rep);
     } finally {

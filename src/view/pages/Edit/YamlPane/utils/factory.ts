@@ -5,32 +5,29 @@ import {
   getCanonicalYAML,
 } from '../../../../../controller/local/EditController/sync';
 import getEditorSettings, { EditorUpdateCallback } from './setup';
+import { ENTITY_MODEL_URI, getEntityModel } from './uris';
 
 export function getModel(update: EditorUpdateCallback): monaco.editor.ITextModel {
-  let model: monaco.editor.ITextModel;
+  const existing = getEntityModel();
+  if (existing != null) return existing;
 
-  if (monaco.editor.getModels().length != 0) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    model = monaco.editor.getModel(monaco.Uri.parse('inmemory://schema.json'))!;
-  } else {
-    model = monaco.editor.createModel('', 'yaml', monaco.Uri.parse('inmemory://schema.json'));
-    model.onDidChangeContent(() => {
-      // Ignore our own programmatic write (form -> YAML projection): it carries
-      // the suppression flag, and re-validating it would bounce back to the form.
-      if (consumeYamlSuppression()) return;
-      const value = model.getValue();
-      // No semantic change versus what the backend already blessed: skip the
-      // round-trip (also guards initial setValue echoes) — and drop a pending
-      // one for text that has been taken back meanwhile.
-      if (value === getCanonicalYAML()) {
-        update.cancel();
-        return;
-      }
-      // Stamp the keystroke with its session so the debounced commit can drop
-      // it if the user navigates away before the debounce fires.
-      update(value, currentSession());
-    });
-  }
+  const model = monaco.editor.createModel('', 'yaml', monaco.Uri.parse(ENTITY_MODEL_URI));
+  model.onDidChangeContent(() => {
+    // Ignore our own programmatic write (form -> YAML projection): it carries
+    // the suppression flag, and re-validating it would bounce back to the form.
+    if (consumeYamlSuppression()) return;
+    const value = model.getValue();
+    // No semantic change versus what the backend already blessed: skip the
+    // round-trip (also guards initial setValue echoes) — and drop a pending
+    // one for text that has been taken back meanwhile.
+    if (value === getCanonicalYAML()) {
+      update.cancel();
+      return;
+    }
+    // Stamp the keystroke with its session so the debounced commit can drop
+    // it if the user navigates away before the debounce fires.
+    update(value, currentSession());
+  });
   return model;
 }
 

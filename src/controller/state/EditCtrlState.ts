@@ -12,20 +12,15 @@ import { RequestEditContext } from '../../utils/types/internal/request';
 export const AJV_OPTIONS = { allErrors: true, strict: false, multipleOfPrecision: 9 } as const;
 
 /**
- * The single state of the entity editor. The editor has one form pane and one
- * YAML pane (previously separate "standard"/"expert" modes); their state is
- * unified here.
+ * State of the entity editor shared by its form pane and YAML pane. Session
+ * bookkeeping (epochs, pending validations, listeners) lives next to the code
+ * that owns it in `local/EditController`.
  */
 class EditControlState {
   /**
    * Whether the most recent validation has returned, that the data is valid.
    */
   public isValidYAC: boolean = false;
-
-  /**
-   * The most recent YAC response.
-   */
-  public yacResponse: string = '';
 
   /**
    * The `limits` usages from the most recent validation (for the UI usage
@@ -84,7 +79,8 @@ class EditControlState {
   public previousDefaultsObject: any = null;
 
   /**
-   * The data as it was received before any editing has taken place.
+   * Fallback diff baseline of the session, used until the canonical pair is
+   * seeded: the stored data while loading, then the loaded data with defaults.
    */
   public initialData: any = {};
 
@@ -105,7 +101,8 @@ class EditControlState {
   public strippedPaths: Set<string> = new Set();
 
   /**
-   * The most recently fetched YAML file content
+   * The commit baseline (sent as `yaml_old`): the stored file in edit mode,
+   * the generated document in create mode.
    */
   public initialYAML: string = '';
 
@@ -129,9 +126,6 @@ class EditControlState {
 
   /** The canonical YAML from the most recent validation (comments preserved). */
   public canonicalYAML: string = '';
-
-  /** Which pane the user is currently editing (for focus styling / reconcile). */
-  public activePane: 'form' | 'yaml' | null = null;
 
   /**
    * Monotonic id stamped on every validation dispatch. A response whose id is
@@ -167,9 +161,6 @@ class EditControlState {
   //
   // Form pane state.
   //
-
-  /** The entity data object currently held by the form. */
-  public entityDataObject: any = {};
 
   /** Whether the user is currently editing a string (adjusts the loading hint). */
   public userIsEditingString: boolean = false;

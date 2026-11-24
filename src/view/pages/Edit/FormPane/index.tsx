@@ -13,7 +13,6 @@ import {
 import { validateFormData } from '../../../../controller/local/EditController/formPane';
 import {
   IsCurrentlyEditingString,
-  setFormData,
   setIsCurrentlyEditingString,
 } from '../../../../controller/local/EditController/formPane/access';
 import { customRenderers } from '../../../../renderers';
@@ -39,7 +38,6 @@ import {
   isStaleValidation,
   nextValidationSeq,
   registerFormWriter,
-  setActivePane,
 } from '../../../../controller/local/EditController/sync';
 import {
   dropLocallyDuplicatedErrors,
@@ -76,8 +74,8 @@ interface FormProps {
 const FormPane = memo(({ requestEditContext, setEditErrorMsg, setLoading }: FormProps) => {
   const {
     loading,
-    isEmpty,
-    setIsEmpty,
+    loadFailed,
+    setLoadFailed,
     localData,
     setLocalData,
     jsonSchema,
@@ -111,8 +109,7 @@ const FormPane = memo(({ requestEditContext, setEditErrorMsg, setLoading }: Form
   // Render a (canonical) validation response into the form. Shared between the
   // user's own onChange flow and the cross-pane writer that the YAML editor
   // invokes (via `applyCanonical`) when the user edits YAML instead.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const applyRespToForm = (resp: ValidateResponse, errors?: any[]) => {
+  const applyRespToForm = (resp: ValidateResponse) => {
     setJsonSchema(resp.json_schema);
     setUISchema(resp.ui_schema);
     // Local (AJV) validation of the response data: it feeds the Commit gate
@@ -129,8 +126,7 @@ const FormPane = memo(({ requestEditContext, setEditErrorMsg, setLoading }: Form
     // root, or a control that is not rendered.
     setEditErrorMsg(footerErrorMessage(resp));
     setLocalData(resp.data);
-    setIsEmpty(false);
-    setFormData(resp.data, errors);
+    setLoadFailed(false);
     updateTabsErrorNotification(resp.data, resp.json_schema, resp.ui_schema, additional);
     // Re-derive the form's local validity from the response itself (the same
     // check as useInitializeState's migration detection). The onChange event
@@ -158,17 +154,14 @@ const FormPane = memo(({ requestEditContext, setEditErrorMsg, setLoading }: Form
   const onChangeCallback = async ({ errors, data }: Pick<JsonFormsCore, 'data' | 'errors'>) => {
     setCurrentContext(requestEditContext);
     // Ignore the change event caused by our own programmatic write (YAML ->
-    // form projection); otherwise it would re-validate and bounce back — and
-    // it must NOT steal "active pane" from the YAML editor the user is in.
+    // form projection); otherwise it would re-validate and bounce back.
     if (consumeFormSuppression()) {
       return;
     }
     if (!setupDone || _.isEqual(data, lastFormData.current)) {
       return;
     }
-    // A genuine user edit in the form: it is now the active pane and the
-    // session is dirty (used to warn before navigating away).
-    setActivePane('form');
+    // A genuine user edit: the session is dirty (warn before navigating away).
     setEditDirty();
 
     const didBlur = !IsCurrentlyEditingString();
@@ -213,7 +206,7 @@ const FormPane = memo(({ requestEditContext, setEditErrorMsg, setLoading }: Form
           reportValidationFailed(() => dispatchValidation(data, errors, true));
           setEditErrorMsg(VALIDATION_FAILED_DETAIL);
         } else {
-          applyRespToForm(resp, errors);
+          applyRespToForm(resp);
           // Project the canonical YAML into the (inactive) YAML pane.
           applyCanonical('form', resp);
         }
@@ -245,7 +238,7 @@ const FormPane = memo(({ requestEditContext, setEditErrorMsg, setLoading }: Form
             formBlurred ? 'opacity-50 pointer-events-none' : ''
           }`}
         >
-          {isEmpty ? (
+          {loadFailed ? (
             <div className="w-full h-full items-center align-center">
               {/* The schema/entity load failed (network, 5xx, ...): there is
                     nothing to edit yet, so retrying = loading the editor anew. */}

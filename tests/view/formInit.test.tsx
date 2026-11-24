@@ -27,5 +27,5 @@ test('a mount with the real context loads the schema', async () => {
   const ctx = getTestEditRequestContext('https://yac.example', 'be', 'web01', 'host', 'edit');
   const { result } = renderHook(() => useInitializeForm(ctx, () => {}));
   await waitFor(() => expect(loadEntitySchema).toHaveBeenCalledTimes(1));
-  await waitFor(() => expect(result.current.isEmpty).toBe(true));
+  await waitFor(() => expect(result.current.loadFailed).toBe(true));
 });

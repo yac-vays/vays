@@ -18,7 +18,6 @@ import {
   updateDefaults,
 } from '../../../utils/schema/defaultsHandling';
 import { injectEagerRandomStrings, resetEagerGenerated } from '../../../utils/schema/eagerValues';
-import { EditActionSnapshot, NO_ACTIONS } from '../../../utils/schema/injectActions';
 import { LimitUsage } from '../../../utils/types/api';
 import { RequestEditContext } from '../../../utils/types/internal/request';
 import { logError } from '../../../utils/logger';
@@ -44,7 +43,6 @@ import { validateFormData } from './formPane';
  */
 export function resetSessionStatus() {
   validationRetry = null;
-  setYACValidateResponse('');
   setYACValidStatus(true);
   setLocalValidity(true);
   setYACUsages([]);
@@ -107,13 +105,11 @@ export function isEditDirty(): boolean {
 
 export function setYACStatus(
   valid: boolean,
-  detail: string,
   usages: LimitUsage[] = [],
   usagesData: unknown = null,
 ) {
   // Any answer from the backend supersedes an earlier failed validation.
   validationRetry = null;
-  setYACValidateResponse(detail);
   setYACValidStatus(valid);
   setYACUsages(usages, usagesData);
   emitValidity();
@@ -140,7 +136,6 @@ let validationRetry: { retry: () => void; epoch: number } | null = null;
  */
 export function reportValidationFailed(retry: () => void) {
   validationRetry = { retry, epoch: currentSession() };
-  setYACValidateResponse(VALIDATION_FAILED_DETAIL);
   setYACValidStatus(false);
   emitValidity();
   setErrorMessage(VALIDATION_FAILED_DETAIL);
@@ -169,7 +164,7 @@ export function retryValidation() {
 }
 
 /**
- * Reactive bridge for overall form validity, mirroring `usagesListener`. The
+ * Reactive bridge for overall form validity, like `subscribeToUsages`. The
  * edit view (`EditFrame`) registers a listener to enable/disable the Commit
  * button. Validity combines the backend verdict (`isValidYAC`, from every
  * `setYACStatus`) with the form's own JSON Forms error count (`isValidLocal`,
@@ -231,8 +226,8 @@ export function setYACUsages(usages: LimitUsage[], usagesData: unknown = null) {
 }
 
 /**
- * Reactive bridge for the entity permissions reported by validations, mirroring
- * `usagesListener`. The edit view uses them to decide whether to OFFER the
+ * Reactive bridge for the entity permissions reported by validations, like
+ * `subscribeToUsages`. The edit view uses them to decide whether to OFFER the
  * admin override ("adm" permission); the backend re-checks on commit anyway.
  * Registering immediately pushes the current state.
  */
@@ -283,33 +278,24 @@ export function isAdminOverride(): boolean {
 // both panes share its result, each getting its own copy.
 const sessionSchemaLoads = new Map<string, Promise<ValidateResponse | null>>();
 
-function schemaLoadKey(
-  requestEditContext: RequestEditContext,
-  startEditingSession: boolean,
-  epoch: number,
-): string {
+function schemaLoadKey(requestEditContext: RequestEditContext, epoch: number): string {
   return [
     epoch,
     requestEditContext.rc.yacURL ?? '',
     requestEditContext.rc.entityTypeName,
     requestEditContext.mode,
     requestEditContext.entityName ?? '',
-    startEditingSession,
   ].join('|');
 }
 
 /**
- * Get the schema (and validated data) for the current entity. Name + actions are
- * never injected into the schema/data: they live in the always-visible
- * MetaInfoPanel (see `view/pages/Edit/MetaInfoPanel`).
- *
- * @param requestEditContext
- * @param [startEditingSession=true] If true, records the initial data + YAML
- *    (the baseline used for the YAML diff and concurrency detection).
+ * Load the entity of the session: its schema, the validated data (with
+ * defaults) and the YAML to show. Sets the session's commit baseline and the
+ * canonical pair. Name and actions are not part of the data (see
+ * `view/pages/Edit/MetaInfoPanel`).
  */
 export async function loadEntitySchema(
   requestEditContext: RequestEditContext,
-  startEditingSession: boolean = true,
 ): Promise<ValidateResponse | null> {
   if (requestEditContext.rc.yacURL == null) return null;
 
@@ -318,13 +304,13 @@ export async function loadEntitySchema(
   // rendered nor have touched the session baselines (checked again inside).
   const epoch = currentSession();
 
-  const key = schemaLoadKey(requestEditContext, startEditingSession, epoch);
+  const key = schemaLoadKey(requestEditContext, epoch);
   let load = sessionSchemaLoads.get(key);
   if (load === undefined) {
     load =
       requestEditContext.mode === 'create'
         ? loadCreateSchema(requestEditContext, epoch)
-        : loadEditSchema(requestEditContext, startEditingSession, epoch);
+        : loadEditSchema(requestEditContext, epoch);
     // Only the current session's loads are worth keeping.
     for (const k of sessionSchemaLoads.keys()) {
       if (!k.startsWith(`${epoch}|`)) sessionSchemaLoads.delete(k);
@@ -341,8 +327,7 @@ export async function loadEntitySchema(
  */
 async function loadEditSchema(
   requestEditContext: RequestEditContext,
-  startEditingSession: boolean = true,
-  epoch: number = currentSession(),
+  epoch: number,
 ): Promise<ValidateResponse | null> {
   if (requestEditContext.entityName == null) return null;
 
@@ -363,52 +348,44 @@ async function loadEditSchema(
   // is replaced with the stabilized state below).
   editingState.initialData = structuredClone(entityData.data);
 
-  const valResp = await coreUpdate(
-    entityData.data,
-    requestEditContext,
-    true,
-    NO_ACTIONS,
-    requestEditContext.entityName,
+  const valResp = await coreUpdate(entityData.data, requestEditContext, {
+    doRevalidate: true,
+    actions: [],
+    name: requestEditContext.entityName,
     // In edit mode, merge any missing defaults INTO the stored YAML
     // (comment-preserving) so the *displayed* document already contains them. In
     // read mode we keep the stored YAML as-is.
-    isReadMode ? undefined : entityData.yaml,
-    undefined,
+    yamlBase: isReadMode ? undefined : entityData.yaml,
     // Loads merge into the STORED file, so they diff against the stored data
     // (`initialData` seeded above) — even on a same-session re-load where the
     // canonical pair is already seeded.
-    false,
-    0,
+    useCanonicalBaseline: false,
     epoch,
-  );
+  });
 
   if (valResp == null || isStaleSession(epoch)) {
     return null;
   }
 
-  if (startEditingSession) {
-    // The diff/commit baseline is ALWAYS the original stored YAML. It is sent to
-    // the backend as `yaml_old`, which must equal what is on disk or conflict
-    // detection false-fires ("data has changed in the meantime"); and keeping it
-    // as the stored file makes the editor highlight the injected defaults as
-    // additions, so the user can see that what is shown is not verbatim on disk.
-    setInitialEntityYAML(entityData.yaml);
-    // Keep the stabilized data as the session baseline. (User edits diff
-    // against the canonical pair seeded below; this remains the fallback for
-    // any validation racing in before the seed.)
-    editingState.initialData = structuredClone(isReadMode ? entityData.data : valResp.data);
-  }
+  // The diff/commit baseline is ALWAYS the original stored YAML. It is sent to
+  // the backend as `yaml_old`, which must equal what is on disk or conflict
+  // detection false-fires ("data has changed in the meantime"); and keeping it
+  // as the stored file makes the editor highlight the injected defaults as
+  // additions, so the user can see that what is shown is not verbatim on disk.
+  setInitialEntityYAML(entityData.yaml);
+  // Keep the stabilized data as the session baseline. (User edits diff
+  // against the canonical pair seeded below; this remains the fallback for
+  // any validation racing in before the seed.)
+  editingState.initialData = structuredClone(isReadMode ? entityData.data : valResp.data);
 
   // Editor display: the defaulted YAML in edit mode (diffed green against the
   // stored baseline above), the stored YAML verbatim in read mode.
   valResp.yaml = isReadMode ? entityData.yaml : (valResp.yaml ?? entityData.yaml);
 
-  if (startEditingSession) {
-    // Seed the canonical pair right here (not only in the lazily-loaded
-    // Monaco pane's initializer): a form edit made before the editor mounts
-    // must already diff against this document and merge into this YAML.
-    seedCanonical(structuredClone(valResp.data), valResp.yaml);
-  }
+  // Seed the canonical pair right here (not only in the lazily-loaded
+  // Monaco pane's initializer): a form edit made before the editor mounts
+  // must already diff against this document and merge into this YAML.
+  seedCanonical(structuredClone(valResp.data), valResp.yaml);
 
   return valResp;
 }
@@ -418,7 +395,7 @@ async function loadEditSchema(
  */
 async function loadCreateSchema(
   requestEditContext: RequestEditContext,
-  epoch: number = currentSession(),
+  epoch: number,
 ): Promise<ValidateResponse | null> {
   const valResp: Nullable<ValidateResponse> = await getSchema(requestEditContext);
   if (valResp == null) {
@@ -451,16 +428,8 @@ export function editViewNavigateToNewName(
   navigateToURL(`${base}/${name == null ? '' : encodeURIComponent(name)}`, true);
 }
 
-export function setYACValidateResponse(yacResponse: string) {
-  editingState.yacResponse = yacResponse;
-}
-
 export function setYACValidStatus(valid: boolean) {
   editingState.isValidYAC = valid;
-}
-
-export function getYACValidateResponse() {
-  return editingState.yacResponse;
 }
 
 export function getInitialEntityYAML() {
@@ -511,97 +480,107 @@ export function getValidationAJV(): Ajv {
  */
 const CORE_UPDATE_MAX_PASSES = 100;
 
+export interface CoreUpdateOptions {
+  /** Validate again until the data no longer changes (defaults, cleanup). */
+  doRevalidate: boolean;
+  /** Names of the actions to run with the write. */
+  actions: string[];
+  name: Nullable<string>;
+  /**
+   * The YAML the form patch is merged into (comment-preserving). Passed for
+   * user form edits; omitted on initial loads (then the stored YAML is used).
+   */
+  yamlBase?: string;
+  /**
+   * The validation-seq stamp of the user edit driving this update (loads pass
+   * none). A newer stamped edit supersedes the whole stabilization.
+   */
+  seq?: number;
+  /**
+   * Whether to diff against the canonical pair (user edits, merged into the
+   * LIVE editor document; the default) or the session-load baseline (schema
+   * loads, merged into the STORED file). Must match what `yamlBase` carries.
+   */
+  useCanonicalBaseline?: boolean;
+  /** The session the update belongs to; defaults to the current one. */
+  epoch?: number;
+}
+
 /**
- * Subroutine which performs as many validates as it
- * is necessary to stabilize out the data object. That is, it validates and if new parameters
- * with defaults appear or parameters are removed and the data needs to be cleared up.
- * @param entityData
- * @param requestEditContext
- * @param doRevalidate
- * @param editActions
- * @param name
- * @returns
+ * Validate the data as often as it takes to stabilize it: a validation may
+ * bring new defaults or remove properties, which changes the data to validate.
  *
  * @note Internal (controller) use only.
  */
 export async function coreUpdate(
   entityData: { [key: string]: unknown },
   requestEditContext: RequestEditContext,
-  doRevalidate: boolean,
-  editActions: EditActionSnapshot,
-  name: Nullable<string>,
-  // The YAML the form patch should be merged into (comment-preserving). Passed
-  // for user form edits; omitted on initial loads (then the stored YAML is used).
-  yamlBase?: string,
-  // The validation-seq stamp of the user edit driving this update (loads pass
-  // none). A newer stamped edit supersedes this whole stabilization chain.
-  seq?: number,
-  // Whether to diff against the canonical pair (user edits, merged into the
-  // LIVE editor document) or the session-load baseline (schema loads, merged
-  // into the STORED file). Must match what `yamlBase` carries.
-  useCanonicalBaseline: boolean = true,
-  // Internal: number of stabilization passes already performed.
-  pass: number = 0,
-  // The session this update belongs to; captured at the first pass.
-  epoch: number = currentSession(),
-) {
-  let data = entityData;
-  if (requestEditContext.mode === 'edit') {
-    // The patch is merged into `yaml_base`, so it must be diffed against THAT
-    // document's data. For user edits that is the canonical pair — diffing
-    // against the load baseline instead makes "change a value back to its
-    // stored state" an EMPTY patch, so the previous change would survive in
-    // the merged YAML forever. Loads (and anything racing in before the
-    // canonical seed) merge into the stored file and diff against its data.
-    const baseline =
-      useCanonicalBaseline && editingState.canonicalSeeded
-        ? editingState.canonicalData
-        : editingState.initialData;
-    data = extractPatch(baseline, data);
-  } else if (yamlBase !== undefined && useCanonicalBaseline && editingState.canonicalSeeded) {
-    // Create sends the full data, but YAC merges it ADDITIVELY into
-    // `yaml_base` as well: a key the user removed in the form (e.g. reset to
-    // its initial) would survive in the merged YAML and bounce back into the
-    // form with the response. Unset what is gone since the canonical data.
-    data = markRemovedKeys(editingState.canonicalData, data);
-  }
-
-  // Re-emit session-stripped keys as `~undefined` so the additive YAML merge
-  // (`yaml.update` on `yaml_base`) actually unsets them. Without this, a default
-  // that appeared and disappeared (e.g. a toggled `yac_if`) leaves its now-illegal
-  // value lingering in the editor YAML and blocks the commit. `entityData` is a
-  // clone owned by `validateFormData`, so mutating `data` (which may alias it in
-  // create mode) never touches the live form state.
-  applyStrippedPaths(data, entityData);
-
-  const valResp: Nullable<ValidateResponse> = await validate(
+  {
+    doRevalidate,
+    actions,
     name,
-    data,
-    requestEditContext,
-    editActions,
     yamlBase,
-  );
-  if (valResp == null) return null;
+    seq,
+    useCanonicalBaseline = true,
+    epoch = currentSession(),
+  }: CoreUpdateOptions,
+) {
+  for (let pass = 0; ; pass++) {
+    let data = entityData;
+    if (requestEditContext.mode === 'edit') {
+      // The patch is merged into `yaml_base`, so it must be diffed against THAT
+      // document's data. For user edits that is the canonical pair — diffing
+      // against the load baseline instead makes "change a value back to its
+      // stored state" an EMPTY patch, so the previous change would survive in
+      // the merged YAML forever. Loads (and anything racing in before the
+      // canonical seed) merge into the stored file and diff against its data.
+      const baseline =
+        useCanonicalBaseline && editingState.canonicalSeeded
+          ? editingState.canonicalData
+          : editingState.initialData;
+      data = extractPatch(baseline, data);
+    } else if (yamlBase !== undefined && useCanonicalBaseline && editingState.canonicalSeeded) {
+      // Create sends the full data, but YAC merges it ADDITIVELY into
+      // `yaml_base` as well: a key the user removed in the form (e.g. reset to
+      // its initial) would survive in the merged YAML and bounce back into the
+      // form with the response. Unset what is gone since the canonical data.
+      data = markRemovedKeys(editingState.canonicalData, data);
+    }
 
-  // The session changed while the request was in flight (navigation to another
-  // entity): none of the writes below may touch the new session's state.
-  if (isStaleSession(epoch)) return null;
+    // Re-emit session-stripped keys as `~undefined` so the additive YAML merge
+    // (`yaml.update` on `yaml_base`) actually unsets them. Without this, a default
+    // that appeared and disappeared (e.g. a toggled `yac_if`) leaves its now-illegal
+    // value lingering in the editor YAML and blocks the commit. `entityData` is a
+    // clone owned by `validateFormData`, so mutating `data` (which may alias it in
+    // create mode) never touches the live form state.
+    applyStrippedPaths(data, entityData);
 
-  // A newer user edit was dispatched meanwhile: stop this stabilization chain.
-  // Its status, defaults bookkeeping and stripped-path records would describe a
-  // document the panes no longer show; the newer edit's own chain (which set
-  // out from the newer data) replaces all of it. The caller re-checks the seq
-  // and drops the returned response.
-  if (seq !== undefined && isStaleValidation(seq)) return valResp;
+    const valResp: Nullable<ValidateResponse> = await validate(
+      name,
+      data,
+      requestEditContext,
+      actions,
+      yamlBase,
+    );
+    if (valResp == null) return null;
 
-  setYACStatus(valResp.valid, valResp.detail, valResp.usages, valResp.data);
-  if (valResp.perms) setEntityPerms(valResp.perms);
-  reportSchemaWarnings(valResp, requestEditContext);
-  const didChange = handleDefaults(entityData, valResp, requestEditContext);
+    // The session changed while the request was in flight (navigation to another
+    // entity): none of the writes below may touch the new session's state.
+    if (isStaleSession(epoch)) return null;
 
-  // do revalidation here!
-  // See ephemeral property problem.
-  if (doRevalidate && didChange) {
+    // A newer user edit was dispatched meanwhile: stop the stabilization. Its
+    // status, defaults bookkeeping and stripped-path records would describe a
+    // document the panes no longer show; the newer edit's own run (which set
+    // out from the newer data) replaces all of it. The caller re-checks the seq
+    // and drops the returned response.
+    if (seq !== undefined && isStaleValidation(seq)) return valResp;
+
+    setYACStatus(valResp.valid, valResp.usages, valResp.data);
+    if (valResp.perms) setEntityPerms(valResp.perms);
+    reportSchemaWarnings(valResp, requestEditContext);
+    const didChange = handleDefaults(entityData, valResp, requestEditContext);
+
+    if (!doRevalidate || !didChange) return valResp;
     if (pass >= CORE_UPDATE_MAX_PASSES) {
       logError(
         `coreUpdate did not stabilize after ${CORE_UPDATE_MAX_PASSES} passes; aborting revalidation loop`,
@@ -609,20 +588,8 @@ export async function coreUpdate(
       );
       return valResp;
     }
-    return await coreUpdate(
-      valResp.data,
-      requestEditContext,
-      doRevalidate,
-      editActions,
-      name,
-      yamlBase,
-      seq,
-      useCanonicalBaseline,
-      pass + 1,
-      epoch,
-    );
+    entityData = valResp.data;
   }
-  return valResp;
 }
 
 /**

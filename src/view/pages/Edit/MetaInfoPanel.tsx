@@ -28,8 +28,7 @@ const MetaInfoPanel = ({
   updateCallback: () => void;
 }) => {
   const [nameError, setNameError] = useState<string>('');
-  // The name field mirrors the logic used everywhere else (see model/action.ts,
-  // utils/schema/injectName.ts): when YAC generates the name ('enforced') there
+  // The name field mirrors the logic used everywhere else (see model/action.ts): when YAC generates the name ('enforced') there
   // must be no name input at all; when the name is 'optional' it is generated if
   // left empty (hint this in the placeholder and do not mark it required).
   const accessedEntityType = requestEditContext.rc.accessedEntityType;

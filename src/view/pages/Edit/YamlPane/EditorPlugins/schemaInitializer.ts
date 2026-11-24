@@ -1,8 +1,8 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import { setEditorSchema, yamlSchemaOptions } from '../utils/uris';
 import {
   getCurrentContext,
   getMonacoYaml,
-  setCurrentJsonSchema,
 } from '../../../../../controller/local/EditController/editState';
 import {
   currentSession,
@@ -17,7 +17,6 @@ import {
   seedCanonical,
 } from '../../../../../controller/local/EditController/sync';
 import { getInitialCreateYAML } from '../../../../../utils/schema/defaultsHandling';
-import { patchSchemaForMonaco } from '../../../../../utils/schema/monacoSchemaFix';
 import { RequestEditContext } from '../../../../../utils/types/internal/request';
 import { setBackendValidationMarkers } from './backendMarkers';
 
@@ -40,15 +39,7 @@ export default async function editorInitializeSchema(
       expectProgrammaticYamlWrite();
       ed.setValue(defaultStr);
     }
-    await getMonacoYaml().update({
-      schemas: [
-        {
-          uri: `inmemory://schema.json`,
-          schema: {},
-          fileMatch: ['*'],
-        },
-      ],
-    });
+    await getMonacoYaml().update(yamlSchemaOptions({}));
     return;
   }
   if (requestEditContext.mode === 'create') {
@@ -70,16 +61,7 @@ export default async function editorInitializeSchema(
     ed.setValue(initialYaml);
   }
 
-  setCurrentJsonSchema(v.json_schema);
-  await getMonacoYaml().update({
-    schemas: [
-      {
-        uri: `inmemory://schema.json`,
-        schema: patchSchemaForMonaco(v.json_schema),
-        fileMatch: ['*'],
-      },
-    ],
-  });
+  await setEditorSchema(v.json_schema);
 
   // Stored data can already violate backend-only checks (custom formats,
   // migration): surface the located error from the load's validation.

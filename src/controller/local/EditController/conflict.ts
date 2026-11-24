@@ -107,7 +107,7 @@ export async function handleEditConflict(
   // conflict (with its "Resolve" link) and the Commit button is disabled. The
   // YAML editor's own validations report the same thing; the form's do not
   // send `yaml_old`, so the 409 path has to record it here.
-  setYACStatus(false, CONFLICT_DETAIL);
+  setYACStatus(false);
   setErrorMessage(CONFLICT_DETAIL);
 
   // The commit dialog hides itself once its confirm callback settles; a dialog
@@ -233,7 +233,7 @@ async function revalidateAgainstBaseline(requestEditContext: RequestEditContext)
       getActivatedActions(),
     );
     if (rep == null || isStaleSession(epoch) || isStaleValidation(seq)) return;
-    setYACStatus(rep.valid, rep.detail, rep.usages, rep.data);
+    setYACStatus(rep.valid, rep.usages, rep.data);
     if (rep.perms) setEntityPerms(rep.perms);
     setErrorMessage(footerErrorMessage(rep));
   } finally {

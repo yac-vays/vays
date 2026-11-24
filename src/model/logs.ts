@@ -155,9 +155,13 @@ export function getEntityLogID(entityName: string, requestContext: RequestContex
 /** Log IDs whose 404 already triggered a list reload. */
 const reportedGone = new Set<string>();
 
+/**
+ * @param quiet Do not toast a failure (background polls).
+ */
 export async function getEntityLogs(
   entityName: string,
   requestContext: RequestContext,
+  quiet: boolean = false,
 ): Promise<EntityLog[] | null> {
   const url: string | null | undefined = requestContext.yacURL;
 
@@ -171,10 +175,12 @@ export async function getEntityLogs(
   );
 
   if (resp == null) {
-    showError(
-      entityToastTitle(requestContext, entityName),
-      `Fetching logs for ${entityName} failed: the backend could not be reached.`,
-    );
+    if (!quiet) {
+      showError(
+        entityToastTitle(requestContext, entityName),
+        `Fetching logs for ${entityName} failed: the backend could not be reached.`,
+      );
+    }
     return null;
   }
 
@@ -195,10 +201,13 @@ export async function getEntityLogs(
     title: entityToastTitle(requestContext, entityName),
     errorText: `Fetching logs for ${entityName} failed`,
     errorMessage: 'Please contact the admin to resolve this issue.',
+    quiet,
   });
 
   if (result.kind === 'success') {
     return typeCheckLog(await result.resp.json(), entityName);
+  } else if (quiet) {
+    return null;
   } else if (result.kind === 'invalid-request') {
     // No validation error should happen here.
     showError('Internal Error', 'Error ID-VAL-GEL-01. Please file a bug report.');

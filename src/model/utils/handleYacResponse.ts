@@ -75,6 +75,8 @@ export interface YacResponseContext {
    * >= 400 alike, such as copy/link/delete/run-action).
    */
   genericClientErrors?: boolean;
+  /** Show no error toast at all (the re-login flow of a 401 still runs). */
+  quiet?: boolean;
 }
 
 /**
@@ -113,16 +115,17 @@ export async function handleYacResponse(
   }
 
   if (status >= 500) {
-    showError(
-      ctx.title,
-      ctx.errorDetail?.(status, body) ??
-        yacErrorDetail(
-          ctx.errorText,
-          status,
-          body,
-          ctx.errorMessage ?? 'Please contact your admin on this issue.',
-        ),
-    );
+    if (!ctx.quiet)
+      showError(
+        ctx.title,
+        ctx.errorDetail?.(status, body) ??
+          yacErrorDetail(
+            ctx.errorText,
+            status,
+            body,
+            ctx.errorMessage ?? 'Please contact your admin on this issue.',
+          ),
+      );
     return { kind: 'server-error', status, body };
   }
 
@@ -145,16 +148,17 @@ export async function handleYacResponse(
     }
     // The session itself is fine — the user merely lacks permission for this
     // operation. Surface the backend's explanation instead of re-logging-in.
-    showError(
-      ctx.title,
-      ctx.errorDetail?.(status, body) ??
-        yacErrorDetail(
-          ctx.errorText,
-          status,
-          body,
-          ctx.errorMessage ?? 'You do not have permission to perform this operation.',
-        ),
-    );
+    if (!ctx.quiet)
+      showError(
+        ctx.title,
+        ctx.errorDetail?.(status, body) ??
+          yacErrorDetail(
+            ctx.errorText,
+            status,
+            body,
+            ctx.errorMessage ?? 'You do not have permission to perform this operation.',
+          ),
+      );
     return { kind: 'forbidden', status, body };
   }
 

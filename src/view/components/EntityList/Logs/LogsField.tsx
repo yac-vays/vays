@@ -6,6 +6,7 @@ import {
   subscribeLogRefresh,
 } from '../../../../model/logs';
 import { EntityLog, LogDecl } from '../../../../utils/types/api';
+import { sortLatestFirst } from '../../../../utils/logUtils';
 import { RequestContext } from '../../../../utils/types/internal/request';
 import RichInfoPanel from '../../RichInfoPanel';
 import LogPanel from './LogPanel';
@@ -92,11 +93,12 @@ const LogsField = ({
         refreshPending = false;
         lastFetchStart = Date.now();
 
-        const logs = await getEntityLogs(entityName, requestContext);
+        // Background polls fail silently: one toast per row every few
+        // seconds would not tell the user anything new.
+        const logs = await getEntityLogs(entityName, requestContext, !forced);
         if (!mounted) return;
-        if (logs === null) {
-          setLogObject({});
-        } else {
+        // A failed fetch keeps the logs shown so far.
+        if (logs !== null) {
           const log: { [key: string]: EntityLog[] } = {};
 
           for (const l of logs) {
@@ -107,7 +109,7 @@ const LogsField = ({
           }
 
           for (const key of Object.keys(log)) {
-            log[key].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+            log[key] = sortLatestFirst(log[key]);
           }
           setLogObject(log);
         }

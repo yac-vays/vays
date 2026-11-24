@@ -32,6 +32,22 @@ export function formatLogTime(time: string | null | undefined): string {
 }
 
 /**
+ * Order log entries latest first. Entries whose time cannot be parsed come
+ * last, in their given order.
+ */
+export function sortLatestFirst<T extends { time?: string | null }>(entries: T[]): T[] {
+  const stamp = (e: T) => {
+    const t = e.time ? Date.parse(e.time) : NaN;
+    return isNaN(t) ? -Infinity : t;
+  };
+  return [...entries].sort((a, b) => {
+    const ta = stamp(a);
+    const tb = stamp(b);
+    return ta === tb ? 0 : tb > ta ? 1 : -1;
+  });
+}
+
+/**
  * Compact "time ago" for a log timestamp: seconds (`2s`), minutes (`5m`), hours
  * (`3h`) or days (`672d`). Returns null when the time is missing or unparseable,
  * so the caller can fall back to showing the raw string.

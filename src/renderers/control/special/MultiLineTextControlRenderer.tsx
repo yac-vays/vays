@@ -1,11 +1,6 @@
 import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import { useCallback, useEffect } from 'react';
-import {
-  deregisterDebouncedCommit,
-  trackedDebounce,
-  registerDebouncedCommit,
-} from '../../../controller/local/EditController/debounceRegistry';
+import { useDebouncedCommit } from '../../../view/hooks/useDebouncedCommit';
 import ErrorRing from '../../../view/components/Form/ErrorRing';
 import OverheadLabel from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import TextArea from '../../../view/thirdparty/components/ifc/TextArea/TextAreaInput';
@@ -25,20 +20,10 @@ export const MultiLineTextControlRenderer = (props: ControlProps) => {
   }
   ///
 
-  const onChange = useCallback(
-    trackedDebounce(
-      (e: React.ChangeEvent<HTMLTextAreaElement>) =>
-        props.handleChange(props.path, eventToValue(e)),
-      1500,
-    ),
-    [props.path],
+  const onChange = useDebouncedCommit(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => props.handleChange(props.path, eventToValue(e)),
+    1500,
   );
-
-  // Let the commit path flush a still-pending debounced edit before saving.
-  useEffect(() => {
-    registerDebouncedCommit(onChange);
-    return () => deregisterDebouncedCommit(onChange);
-  }, [onChange]);
 
   return (
     <div className="p-1">

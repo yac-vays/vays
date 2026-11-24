@@ -1,11 +1,7 @@
 import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
-import {
-  deregisterDebouncedCommit,
-  trackedDebounce,
-  registerDebouncedCommit,
-} from '../../../controller/local/EditController/debounceRegistry';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { useDebouncedCommit } from '../../../view/hooks/useDebouncedCommit';
 import ErrorRing from '../../../view/components/Form/ErrorRing';
 import OverheadLabel from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import TextInput from '../../../view/thirdparty/components/ifc/TextInput/TextInput';
@@ -45,27 +41,18 @@ export const MacAddressRenderer = (props: ControlProps) => {
     setMac(typeof storedData === 'string' ? storedData : '');
   }, [storedData]);
 
-  const update = useCallback(
-    trackedDebounce((value: string) => {
-      if (value === '') {
-        // Explicit emptying: remove the stored value.
-        props.handleChange(props.path, undefined);
-        return;
-      }
-      // Only commit complete MAC addresses; a partial value mid-edit must not
-      // delete the stored value (that is only done on blur, below).
-      if (MAC_ADDRESS_REGEX.test(value)) {
-        props.handleChange(props.path, value);
-      }
-    }, 500),
-    [props.path],
-  );
-
-  // Let the commit path flush a still-pending debounced edit before saving.
-  useEffect(() => {
-    registerDebouncedCommit(update);
-    return () => deregisterDebouncedCommit(update);
-  }, [update]);
+  const update = useDebouncedCommit((value: string) => {
+    if (value === '') {
+      // Explicit emptying: remove the stored value.
+      props.handleChange(props.path, undefined);
+      return;
+    }
+    // Only commit complete MAC addresses; a partial value mid-edit must not
+    // delete the stored value (that is only done on blur, below).
+    if (MAC_ADDRESS_REGEX.test(value)) {
+      props.handleChange(props.path, value);
+    }
+  }, 500);
 
   const onChange = (ev: ChangeEvent<HTMLInputElement>) => {
     const value = ev.target.value;

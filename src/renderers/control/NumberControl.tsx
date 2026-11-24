@@ -7,12 +7,7 @@ import {
   rankWith,
 } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import { useCallback, useEffect } from 'react';
-import {
-  deregisterDebouncedCommit,
-  trackedDebounce,
-  registerDebouncedCommit,
-} from '../../controller/local/EditController/debounceRegistry';
+import { useDebouncedCommit } from '../../view/hooks/useDebouncedCommit';
 import ErrorRing from '../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import NumberInput from '../../view/thirdparty/components/ifc/NumberInput/NumberInput';
@@ -37,19 +32,10 @@ export const NumberControl = ({
   uischema,
   errors,
 }: ControlProps) => {
-  const onChange = useCallback(
-    trackedDebounce(
-      (e: React.ChangeEvent<HTMLInputElement>) => handleChange(path, eventToValue(e)),
-      800,
-    ),
-    [path],
+  const onChange = useDebouncedCommit(
+    (e: React.ChangeEvent<HTMLInputElement>) => handleChange(path, eventToValue(e)),
+    800,
   );
-
-  // Let the commit path flush a still-pending debounced edit before saving.
-  useEffect(() => {
-    registerDebouncedCommit(onChange);
-    return () => deregisterDebouncedCommit(onChange);
-  }, [onChange]);
 
   if (!visible) return <></>;
 

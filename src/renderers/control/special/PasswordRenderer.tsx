@@ -1,14 +1,10 @@
 import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import { ChangeEvent, useCallback, useEffect, useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 import { hashPassword } from '../../../utils/passwordHashes';
 import TextInput from '../../../view/thirdparty/components/ifc/TextInput/TextInput';
 
-import {
-  deregisterDebouncedCommit,
-  trackedDebounce,
-  registerDebouncedCommit,
-} from '../../../controller/local/EditController/debounceRegistry';
+import { useDebouncedCommit } from '../../../view/hooks/useDebouncedCommit';
 import ErrorRing from '../../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../../view/thirdparty/components/ifc/Label/OverheadLabel';
 import { isCustomRenderer, isUntypedStringInput } from '../../utils/customTesterUtils';
@@ -36,20 +32,11 @@ export const PasswordRenderer = (props: ControlProps) => {
     placeholderEditable = false;
   }
 
-  const update = useCallback(
-    trackedDebounce(
-      (value: string) =>
-        props.handleChange(props.path, value ? (pt ? value : hashPassword(value)) : undefined),
-      1500,
-    ),
-    [props.path],
+  const update = useDebouncedCommit(
+    (value: string) =>
+      props.handleChange(props.path, value ? (pt ? value : hashPassword(value)) : undefined),
+    1500,
   );
-
-  // Let the commit path flush a still-pending debounced edit before saving.
-  useEffect(() => {
-    registerDebouncedCommit(update);
-    return () => deregisterDebouncedCommit(update);
-  }, [update]);
 
   const onChange = async (ev: ChangeEvent<HTMLInputElement>) => {
     const value = ev.target.value;

@@ -1,11 +1,6 @@
 import { ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import { useCallback, useEffect } from 'react';
-import {
-  deregisterDebouncedCommit,
-  trackedDebounce,
-  registerDebouncedCommit,
-} from '../../controller/local/EditController/debounceRegistry';
+import { useDebouncedCommit } from '../../view/hooks/useDebouncedCommit';
 import ErrorButton from '../../view/components/Buttons/ErrorButton';
 import ErrorRing from '../../view/components/Form/ErrorRing';
 import OverheadLabelWithMarkdownDescr from '../../view/thirdparty/components/ifc/Label/OverheadLabel';
@@ -26,20 +21,11 @@ const strictEventToValue = (ev: React.ChangeEvent<HTMLInputElement>) =>
 export const TextControl = (props: ControlProps) => {
   const sendTrivial = props.uischema.options?.renderer_options?.send_trivial ?? false;
 
-  const onChange = useCallback(
-    trackedDebounce(
-      (e: React.ChangeEvent<HTMLInputElement>) =>
-        props.handleChange(props.path, sendTrivial ? eventToValue(e) : strictEventToValue(e)),
-      1500,
-    ),
-    [props.path],
+  const onChange = useDebouncedCommit(
+    (e: React.ChangeEvent<HTMLInputElement>) =>
+      props.handleChange(props.path, sendTrivial ? eventToValue(e) : strictEventToValue(e)),
+    1500,
   );
-
-  // Let the commit path flush a still-pending debounced edit before saving.
-  useEffect(() => {
-    registerDebouncedCommit(onChange);
-    return () => deregisterDebouncedCommit(onChange);
-  }, [onChange]);
 
   if (!props.visible) return <></>;
 

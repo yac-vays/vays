@@ -3,9 +3,9 @@ import { debounce } from 'lodash';
 
 /**
  * Registry of the panes' debounced commit functions (the `trackedDebounce`
- * wrappers around `handleChange` / the editor validate). Panes register their
- * debounced function on mount and deregister (cancelling any pending
- * invocation) on unmount.
+ * wrappers around `handleChange` / the editor validate). Controls register
+ * theirs through `useDebouncedCommit`, which flushes a pending invocation on
+ * unmount.
  *
  * The commit path calls {@link flushPendingDebouncedCommits} before reading the
  * YAML to save, so an edit still sitting in a debounce window (0.5–1.5s) is not

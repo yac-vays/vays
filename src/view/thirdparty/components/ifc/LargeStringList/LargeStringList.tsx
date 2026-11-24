@@ -1,9 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  deregisterDebouncedCommit,
-  trackedDebounce,
-  registerDebouncedCommit,
-} from '../../../../../controller/local/EditController/debounceRegistry';
+import React, { useEffect, useRef, useState } from 'react';
+import { useDebouncedCommit } from '../../../../../view/hooks/useDebouncedCommit';
 import { setIsCurrentlyEditingString } from '../../../../../controller/local/EditController/StandardMode/access';
 import useOutsideClick from '../../../../hooks/useOutsideClick';
 import DeleteButton from '../MultiSelect/DeleteButton';
@@ -38,16 +34,10 @@ const LargeStringList: React.FC<LargeStringProps> = ({
   /**
    * We need to debounce here to avoid presenting an easy way to spam the server.
    */
-  const debouncedHandleChange = useCallback(
-    trackedDebounce((newS: string[]) => handleChange(path, newS), 800),
-    [path],
+  const debouncedHandleChange = useDebouncedCommit(
+    (newS: string[]) => handleChange(path, newS),
+    800,
   );
-
-  // Let the commit path flush a still-pending debounced edit before saving.
-  useEffect(() => {
-    registerDebouncedCommit(debouncedHandleChange);
-    return () => deregisterDebouncedCommit(debouncedHandleChange);
-  }, [debouncedHandleChange]);
 
   /**
    * Re-sync the local selection when the data prop changes externally (mirrors

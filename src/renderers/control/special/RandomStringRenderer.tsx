@@ -1,11 +1,7 @@
 import { and, ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { ChangeEvent, useCallback, useEffect, useRef } from 'react';
-import {
-  deregisterDebouncedCommit,
-  trackedDebounce,
-  registerDebouncedCommit,
-} from '../../../controller/local/EditController/debounceRegistry';
+import { useDebouncedCommit } from '../../../view/hooks/useDebouncedCommit';
 import {
   DEFAULT_RANDOM_STRING_FORMAT,
   DEFAULT_RANDOM_STRING_LENGTH,
@@ -89,19 +85,10 @@ export const RandomStringRenderer = (props: ControlProps) => {
     return () => clearTimeout(t);
   }, [props.visible, props.enabled, specError, hasData, props.schema.default, doGenerate]);
 
-  const update = useCallback(
-    trackedDebounce(
-      (value: string) => props.handleChange(props.path, value ? value : undefined),
-      1500,
-    ),
-    [props.path],
+  const update = useDebouncedCommit(
+    (value: string) => props.handleChange(props.path, value ? value : undefined),
+    1500,
   );
-
-  // Let the commit path flush a still-pending debounced edit before saving.
-  useEffect(() => {
-    registerDebouncedCommit(update);
-    return () => deregisterDebouncedCommit(update);
-  }, [update]);
 
   // After all hooks: rules of hooks forbid an early return before them.
   if (!props.visible) return <></>;

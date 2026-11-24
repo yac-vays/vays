@@ -8,12 +8,8 @@ import {
   rankWith,
 } from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  deregisterDebouncedCommit,
-  registerDebouncedCommit,
-  trackedDebounce,
-} from '../../../controller/local/EditController/debounceRegistry';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useDebouncedCommit } from '../../../view/hooks/useDebouncedCommit';
 import {
   buildLimitBar,
   clampToRange,
@@ -113,16 +109,10 @@ export const LimitBar = (props: ControlProps) => {
     [fieldUsages, measuredData, props.path, shown, initial, props.schema, step],
   );
 
-  const commit = useCallback(
-    trackedDebounce((v: number | undefined) => props.handleChange(props.path, v), 800),
-    [props.path],
+  const commit = useDebouncedCommit(
+    (v: number | undefined) => props.handleChange(props.path, v),
+    800,
   );
-  // Let the commit path flush a still-pending debounced edit before saving.
-  useEffect(() => {
-    registerDebouncedCommit(commit);
-    return () => deregisterDebouncedCommit(commit);
-  }, [commit]);
-
   // Once the committed value arrived in the data, the draft is obsolete.
   const dragging = useRef<{ model: LimitBarModel; range: { lo: number; hi: number } } | null>(null);
   useEffect(() => {

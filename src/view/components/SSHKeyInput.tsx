@@ -105,7 +105,7 @@ const SSHKeyInput = ({
     const file = (event.target.files as FileList)[0];
     // Reset so selecting the same file again still triggers onChange.
     event.target.value = '';
-    if (!file) return;
+    if (!file || !enabled) return;
 
     const fr = new FileReader();
     fr.onload = function () {
@@ -168,6 +168,7 @@ const SSHKeyInput = ({
               id={id + 'sshkey'}
               className="hidden"
               accept=".pub, text"
+              disabled={!enabled}
               onChange={(e) => loadFile(e)}
             />
             <div
@@ -244,7 +245,9 @@ const SSHKeyInput = ({
             <label
               htmlFor={id + 'sshkey'}
               title="Select SSH key file"
-              className="flex w-16 items-center justify-center cursor-pointer"
+              className={`flex w-16 items-center justify-center ${
+                enabled ? 'cursor-pointer' : 'opacity-50'
+              }`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

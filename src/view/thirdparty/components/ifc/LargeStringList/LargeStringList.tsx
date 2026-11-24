@@ -63,20 +63,23 @@ const LargeStringList: React.FC<LargeStringProps> = ({
     debouncedHandleChange(newS);
   };
 
-  const changeValue = (idx: number, value: string) => {
-    if (idx >= selected.length) return;
-    const newS = [...selected];
-    newS[idx] = value;
+  // Immediate changes supersede a pending debounced add, which holds an older list.
+  const commitNow = (newS: string[]) => {
+    debouncedHandleChange.cancel();
     setSelected(newS);
     handleChange(path, newS);
-    // UX decision: Do debounce when editing...? No because enter...
-    //debouncedHandleChange(newS);
+  };
+
+  const changeValue = (idx: number, value: string) => {
+    if (disabled || idx >= selected.length) return;
+    const newS = [...selected];
+    newS[idx] = value;
+    commitNow(newS);
   };
 
   const remove = (index: number) => {
-    const newS = selected.filter((_, idx) => idx !== index);
-    setSelected(newS);
-    handleChange(path, newS);
+    if (disabled) return;
+    commitNow(selected.filter((_, idx) => idx !== index));
   };
 
   return (
@@ -111,7 +114,7 @@ const LargeStringList: React.FC<LargeStringProps> = ({
                       return (
                         <ListItem
                           key={idx}
-                          editable
+                          editable={!disabled}
                           idx={idx}
                           value={value}
                           removeCallback={remove}
@@ -145,8 +148,7 @@ const LargeStringList: React.FC<LargeStringProps> = ({
                   <DeleteButton
                     removeCallback={() => {
                       if (disabled) return;
-                      setSelected([]);
-                      handleChange(path, []);
+                      commitNow([]);
                     }}
                     disabled={disabled}
                   />

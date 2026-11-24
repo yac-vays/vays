@@ -65,7 +65,12 @@ class ILocalStorage {
   private get(key: string): any | undefined {
     const v = localStorage.getItem(key);
     if (!v) return undefined;
-    return JSON.parse(v);
+    try {
+      return JSON.parse(v);
+    } catch {
+      // Not written by this class (or corrupted): as good as absent.
+      return undefined;
+    }
   }
 
   public setIsLoggedIn(v: boolean) {

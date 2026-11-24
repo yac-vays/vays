@@ -171,7 +171,8 @@ function lintLayout(uiSchema: any, findings: LintFinding[]) {
  * Report schema properties the UI-Schema never reaches (no `vays_category`,
  * or a nested object's `detail` layout that omits them): they never land in
  * the form. Properties YAC pinned as read-only `const` (no perms / not
- * editable) and `not: {}` placeholders are intentionally data-only.
+ * editable), `not: {}` placeholders and stored data YAC only echoes as a bare
+ * `enum` (unspecified keys of array items) are intentionally data-only.
  */
 function lintUnrendered(schema: any, path: string[], seen: Set<string>, findings: LintFinding[]) {
   const props = schema?.properties;
@@ -186,6 +187,7 @@ function lintUnrendered(schema: any, path: string[], seen: Set<string>, findings
       continue;
     }
     if (sub == null || typeof sub !== 'object' || 'const' in sub || 'not' in sub) continue;
+    if ('enum' in sub && !('type' in sub) && !('title' in sub)) continue;
     findings.push({
       priority: 4,
       title: 'Property is not shown in the form',

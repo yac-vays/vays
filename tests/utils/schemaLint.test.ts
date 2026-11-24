@@ -443,6 +443,8 @@ describe('schemaLint', () => {
           hidden: described({ type: 'string' }),
           pinned: described({ type: 'string', const: 'x' }),
           placeholder: { not: {} },
+          // stored data YAC echoes without a specification
+          echoed: { enum: ['stored'] },
         },
       };
       const ui = {

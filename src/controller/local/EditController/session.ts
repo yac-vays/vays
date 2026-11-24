@@ -151,20 +151,22 @@ export function endValidationDispatch() {
 }
 
 /**
- * Resolves once no validation dispatch is in flight (immediately if idle).
- * The timeout is a safety net so a hung request can never wedge the save
- * path — after it, the caller proceeds with the state it has.
+ * Resolves with true once no validation dispatch is in flight (immediately if
+ * idle). The timeout is a safety net so a hung request can never wedge the
+ * caller: after it the promise resolves with false, a validation is still
+ * pending and the save payload may be older than what the user sees — the
+ * save path must not commit then.
  */
-export function whenValidationIdle(timeoutMs: number = 15000): Promise<void> {
-  if (pendingValidations === 0) return Promise.resolve();
+export function whenValidationIdle(timeoutMs: number = 15000): Promise<boolean> {
+  if (pendingValidations === 0) return Promise.resolve(true);
   return new Promise((resolve) => {
     const timer = setTimeout(() => {
       idleWaiters = idleWaiters.filter((w) => w !== wrapped);
-      resolve();
+      resolve(false);
     }, timeoutMs);
     const wrapped = () => {
       clearTimeout(timer);
-      resolve();
+      resolve(true);
     };
     idleWaiters.push(wrapped);
   });

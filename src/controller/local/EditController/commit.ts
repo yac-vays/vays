@@ -40,6 +40,19 @@ function describeActivatedActions(acts: ActionDecl[]): string {
 }
 
 /**
+ * A validation is still pending after the wait: its response would update the
+ * save payload, so committing now could silently drop the user's last edit.
+ * Nothing is sent; the form keeps its state for another try.
+ */
+function showValidationPending(requestContext: RequestEditContext) {
+  showError(
+    entityToastTitle(requestContext.rc, getEntityName() ?? requestContext.entityName),
+    'Not committed: the validation of the document did not finish. ' +
+      'Wait for it to finish and commit again.',
+  );
+}
+
+/**
  * The Commit button: flush pending input, wait for its validation, ask for
  * confirmation, then create or edit the entity and return to the overview.
  */
@@ -53,7 +66,10 @@ export async function commitEntity(requestContext: RequestEditContext) {
   // dispatches. Give that tick room, then wait for every in-flight validation
   // to settle — otherwise what is saved is older than what the user sees.
   await new Promise((resolve) => setTimeout(resolve, 80));
-  await whenValidationIdle();
+  if (!(await whenValidationIdle())) {
+    showValidationPending(requestContext);
+    return;
+  }
   // Validity may have changed with the just-settled validations; the Commit
   // button state predates them. An unlocked admin override commits anyway
   // (the backend then skips schema enforcement via `force`).
@@ -91,7 +107,10 @@ export async function commitEntity(requestContext: RequestEditContext) {
     async () => {
       // A validation may have been dispatched while the modal was open (e.g.
       // the editor's debounce fired); its response updates the payload.
-      await whenValidationIdle();
+      if (!(await whenValidationIdle())) {
+        showValidationPending(requestContext);
+        return;
+      }
       if (isValidationFailed()) {
         showError(
           'Not committed: the document could not be validated',

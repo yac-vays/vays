@@ -8,6 +8,14 @@ describe('randomFromAlphabet', () => {
     expect(out).toMatch(/^[abc]+$/);
   });
 
+  it('generates strings beyond the size limit of one getRandomValues call', () => {
+    expect(randomFromAlphabet(40000, 'ab')).toHaveLength(40000);
+  });
+
+  it('throws for an empty alphabet', () => {
+    expect(() => randomFromAlphabet(8, '')).toThrow();
+  });
+
   it('works with a single-character alphabet', () => {
     expect(randomFromAlphabet(5, 'x')).toBe('xxxxx');
   });

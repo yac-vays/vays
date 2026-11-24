@@ -36,9 +36,13 @@ const CHARSETS: Record<Exclude<RandomStringFormat, 'uuid' | 'custom'>, string> =
  */
 export function randomFromAlphabet(length: number, alphabet: string): string {
   const chars = Array.from(new Set(alphabet.split('')));
+  if (chars.length < 1 || chars.length > 256) {
+    throw new Error('the alphabet must have 1 to 256 distinct characters');
+  }
   const max = Math.floor(256 / chars.length) * chars.length;
   let out = '';
-  const buf = new Uint8Array(Math.max(length * 2, 32));
+  // getRandomValues fills at most 65536 bytes per call.
+  const buf = new Uint8Array(Math.min(Math.max(length * 2, 32), 65536));
   while (out.length < length) {
     crypto.getRandomValues(buf);
     for (let i = 0; i < buf.length && out.length < length; i++) {

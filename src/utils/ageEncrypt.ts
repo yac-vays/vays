@@ -1,33 +1,11 @@
 import * as age from 'age-encryption';
+import { generateRandomString } from './randomString';
 
 export type SecretCharset = 'alphanumeric' | 'hex' | 'base64url' | 'ascii_printable';
 
-const CHARSETS: Record<SecretCharset, string> = {
-  alphanumeric: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
-  hex: '0123456789abcdef',
-  base64url: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_',
-  ascii_printable:
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789' +
-    '!#$%&()*+,-./:;<=>?@[]^_{|}~',
-};
-
-/**
- * Cryptographically uniform random string drawn from the given charset.
- * Rejection-samples bytes so the distribution is unbiased even for charsets
- * whose size does not divide 256.
- */
+/** Cryptographically uniform random string drawn from the given charset. */
 export function randomSecret(length: number, charset: SecretCharset): string {
-  const alphabet = CHARSETS[charset];
-  const max = Math.floor(256 / alphabet.length) * alphabet.length;
-  let out = '';
-  const buf = new Uint8Array(Math.max(length * 2, 32));
-  while (out.length < length) {
-    crypto.getRandomValues(buf);
-    for (let i = 0; i < buf.length && out.length < length; i++) {
-      if (buf[i] < max) out += alphabet[buf[i] % alphabet.length];
-    }
-  }
-  return out;
+  return generateRandomString(charset, length);
 }
 
 /**

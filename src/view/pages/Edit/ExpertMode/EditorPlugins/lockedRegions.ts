@@ -8,6 +8,7 @@ import {
 } from '../../../../../controller/local/EditController/shared';
 import { subscribeToEditStateChange } from '../../../../../controller/state/editStateEvents';
 import {
+  addsComment,
   blockingRegion,
   commentRegions,
   edgeRegion,
@@ -15,6 +16,7 @@ import {
   LOCK_MESSAGES,
   LockedRegion,
   startsComment,
+  violatedRegion,
 } from '../../../../../utils/schema/lockedRegions';
 import { RequestEditContext } from '../../../../../utils/types/internal/request';
 
@@ -25,7 +27,9 @@ import { RequestEditContext } from '../../../../../utils/types/internal/request'
  * greyed text and an explanation on hover; edits inside are refused with
  * Monaco's read-only message (the editor is read-only while a cursor or
  * selection is in a locked region), so the user learns it right away instead
- * of from the next validation. The form is not affected.
+ * of from the next validation. Whatever gets past that (paste, shortcuts,
+ * further cursors, ...) is taken back when the text changes. The form is not
+ * affected.
  */
 
 let subscriptions: (monaco.IDisposable | (() => void))[] = [];
@@ -106,6 +110,9 @@ export default async function editorLockedRegions(
     }
   };
 
+  // The text the regions were computed for (the document before a change).
+  let regionsText = '';
+
   const recompute = () => {
     const model = ed.getModel();
     if (model == null) {
@@ -113,6 +120,7 @@ export default async function editorLockedRegions(
       return;
     }
     const text = model.getValue();
+    regionsText = text;
     regions = currentRegions(text);
     const decorations: monaco.editor.IModelDeltaDecoration[] = [];
     for (const r of regions) {
@@ -170,12 +178,67 @@ export default async function editorLockedRegions(
     }
   };
 
+  // Every way of changing the text (typing, paste, shortcuts, multi-cursor,
+  // replace-all, undo) ends up here: a change that violates a lock is taken
+  // back — once the editor has finished the operation that made it, hence
+  // deferred. Programmatic writes of the whole document (`setValue`) are not
+  // checked.
+  let active = true;
+  let revertPending = false;
+  const onContentChange = (e: monaco.editor.IModelContentChangedEvent) => {
+    if (revertPending) return;
+    const model = ed.getModel();
+    if (model == null || e.isFlush) {
+      recompute();
+      return;
+    }
+    const violated = violatedRegion(
+      regionsText,
+      regions,
+      e.changes.map((c) => ({
+        start: c.rangeOffset,
+        end: c.rangeOffset + c.rangeLength,
+        text: c.text,
+      })),
+    );
+    const message = violated
+      ? LOCK_MESSAGES[violated.kind]
+      : !getEntityPerms().includes('cln') && addsComment(regionsText, model.getValue())
+        ? LOCK_MESSAGES.comment
+        : null;
+    if (message == null) {
+      recompute();
+      return;
+    }
+    const takeBack = e.isUndoing ? 'redo' : 'undo';
+    revertPending = true;
+    queueMicrotask(() => {
+      if (!active) return;
+      const refused = model.getValue();
+      try {
+        // Undo needs a writable editor (the cursor may sit in a region now).
+        if (lockedByUs) {
+          ed.updateOptions({ readOnly: false, renderValidationDecorations: 'editable' });
+          lockedByUs = false;
+        }
+        ed.trigger('vays.lockedRegions', takeBack, null);
+        // Nothing to undo (should not happen): restore the text itself.
+        if (model.getValue() === refused) model.setValue(regionsText);
+      } finally {
+        revertPending = false;
+      }
+      recompute();
+      showMessage(ed, message);
+    });
+  };
+
   subscriptions = [
-    ed.onDidChangeModelContent(recompute),
+    ed.onDidChangeModelContent(onContentChange),
     ed.onDidChangeCursorSelection(updateReadOnly),
     ed.onKeyDown(onKeyDown),
     subscribeToEditStateChange(recompute),
     () => {
+      active = false;
       if (lockedByUs)
         ed.updateOptions({ readOnly: false, renderValidationDecorations: 'editable' });
     },

@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  addsComment,
   blockingRegion,
   commentRegions,
   edgeRegion,
   fixedValueRegions,
   LockedRegion,
   startsComment,
+  violatedRegion,
 } from '../../src/utils/schema/lockedRegions';
 
 const text = (yaml: string, r: LockedRegion) => yaml.slice(r.start, r.end);
@@ -138,5 +140,69 @@ describe('edits', () => {
     expect(edgeRegion(regions, 12, 'Enter')).toBeNull(); // after the inline comment
     expect(edgeRegion(regions, 12, 'a')).toBe(inline);
     expect(edgeRegion(regions, 25, 'x')).toBe(optional); // appending to an optional fixed value
+  });
+
+  // The same rules for the text changes themselves (paste, shortcuts,
+  // multi-cursor edits never pass the key filter).
+  const change = (start: number, end: number, text: string) =>
+    violatedRegion(yaml, regions, [{ start, end, text }]);
+
+  it('refuses changes inside a region or joined to it', () => {
+    expect(change(4, 4, 'x')).toBe(fixed); // inside
+    expect(change(5, 10, '')).toBe(fixed); // overlapping
+    expect(change(7, 7, 'x')).toBe(fixed); // appended to the value (e.g. pasted)
+    expect(change(7, 9, 'x')).toBe(fixed); // selection starting at its end, replaced
+    expect(change(12, 13, '')).toBe(inline); // Delete at the end of the comment: joins the next line
+    expect(change(25, 26, '')).toBe(optional); // Backspace at the start of the next line
+    expect(change(0, 0, '  ')).toBe(fixed); // indented
+    expect(change(25, 26, ' ')).toBe(optional);
+  });
+
+  it('lets lines be added around a region and text change elsewhere', () => {
+    expect(change(7, 7, '\n')).toBeNull(); // Enter after the fixed value
+    expect(change(0, 0, 'new: 1\n')).toBeNull(); // a line pasted above
+    expect(change(12, 12, '\nnew: 1')).toBeNull(); // ... and below the inline comment
+    // the rest of the line removed (comment not locked: `cln`)
+    expect(violatedRegion(yaml, [fixed, optional], [{ start: 7, end: 12, text: '' }])).toBeNull();
+    expect(change(33, 33, 'more: 2\n')).toBeNull();
+  });
+
+  it('removes inline comments and optional fixed values only with their whole lines', () => {
+    expect(change(13, 26, '')).toBeNull(); // "owner: alice\n"
+    expect(change(13, 25, '')).toBeNull(); // without the line break
+    expect(change(15, 26, '')).toBe(optional);
+    expect(change(0, 13, '')).toBe(fixed); // the required fixed value stays
+    expect(change(26, 33, '')).toBe(standalone);
+    expect(
+      violatedRegion(
+        'a: 1 # c\nb: 2\n',
+        [{ ...inline, start: 5, end: 8 }],
+        [{ start: 0, end: 9, text: '' }],
+      ),
+    ).toBeNull();
+  });
+
+  it('checks every change of a multi-cursor edit', () => {
+    expect(
+      violatedRegion(yaml, regions, [
+        { start: 33, end: 33, text: 'x: 1\n' },
+        { start: 3, end: 3, text: 'y' },
+      ]),
+    ).toBe(fixed);
+    // an earlier insertion only shifts the regions behind it
+    expect(
+      violatedRegion(yaml, regions, [
+        { start: 0, end: 0, text: 'x: 1\n' },
+        { start: 33, end: 33, text: 'y: 2\n' },
+      ]),
+    ).toBeNull();
+  });
+
+  it('detects new or edited comments', () => {
+    expect(addsComment(yaml, yaml)).toBe(false);
+    expect(addsComment(yaml, 'ou: ISG  # x\n# keep\n')).toBe(false); // one went with its line
+    expect(addsComment(yaml, yaml.replace('owner: alice', '# owner: alice'))).toBe(true);
+    expect(addsComment(yaml, yaml + '# keep\n')).toBe(true); // a second copy
+    expect(addsComment('a: "x # y"\n', 'a: "x # yz"\n')).toBe(false); // no comment at all
   });
 });

@@ -210,6 +210,89 @@ export function edgeRegion(
   return null;
 }
 
+/** A replacement of `[start, end)` by `text`, in offsets of the text BEFORE the change. */
+export interface TextChange {
+  start: number;
+  end: number;
+  text: string;
+}
+
+function isLineBreak(ch: string): boolean {
+  return ch === '\n' || ch === '\r';
+}
+
+/**
+ * The region a set of simultaneous changes (typing, paste, shortcuts,
+ * multi-cursor, replace-all) to `oldText` would violate, or null. A locked
+ * region must keep its text and its direct neighbours, except that a line
+ * break may be put next to it (so lines can be added around it, but nothing
+ * joined to it). Like for selections (see `blockingRegion`), inline comments
+ * and optional fixed values may go with a change replacing their whole lines.
+ */
+export function violatedRegion(
+  oldText: string,
+  regions: LockedRegion[],
+  changes: TextChange[],
+): LockedRegion | null {
+  const sorted = [...changes].sort((a, b) => a.start - b.start || a.end - b.end);
+  let newText = '';
+  let pos = 0;
+  for (const c of sorted) {
+    newText += oldText.slice(pos, c.start) + c.text;
+    pos = c.end;
+  }
+  newText += oldText.slice(pos);
+
+  const wholeLines = (c: TextChange) =>
+    c.end > c.start &&
+    (c.start === 0 || oldText[c.start - 1] === '\n') &&
+    (c.end === oldText.length || oldText[c.end] === '\n' || oldText[c.end - 1] === '\n');
+
+  for (const r of regions) {
+    let shift = 0;
+    let gone = false;
+    for (const c of sorted) {
+      const touches =
+        c.start === c.end
+          ? c.start > r.start && c.start < r.end
+          : c.start < r.end && c.end > r.start;
+      if (touches) {
+        const removable = r.kind === 'fixed-optional' || (r.kind === 'comment' && !r.standalone);
+        if (removable && wholeLines(c) && c.start <= r.start && c.end >= r.end) {
+          gone = true;
+          break;
+        }
+        return r;
+      }
+      // An insertion right at the start of the region lands before it.
+      if (c.end <= r.start) shift += c.text.length - (c.end - c.start);
+    }
+    if (gone) continue;
+    const before = (text: string, at: number) => (at > 0 ? text[at - 1] : '');
+    const after = (text: string, at: number) => (at < text.length ? text[at] : '');
+    const prev = before(newText, r.start + shift);
+    const next = after(newText, r.end + shift);
+    if (prev !== '' && !isLineBreak(prev) && prev !== before(oldText, r.start)) return r;
+    if (next !== '' && !isLineBreak(next) && next !== after(oldText, r.end)) return r;
+  }
+  return null;
+}
+
+/**
+ * Whether `newText` has a comment that `oldText` does not have (new or
+ * edited): without `cln` comments may at most disappear with their lines.
+ */
+export function addsComment(oldText: string, newText: string): boolean {
+  const texts = (yaml: string) => commentRegions(yaml).map((r) => yaml.slice(r.start, r.end));
+  const old = texts(oldText);
+  for (const comment of texts(newText)) {
+    const i = old.indexOf(comment);
+    if (i < 0) return true;
+    old.splice(i, 1);
+  }
+  return false;
+}
+
 export const LOCK_MESSAGES: Record<LockedRegionKind, string> = {
   fixed: "This value is fixed and can't be changed or removed here.",
   'fixed-optional':

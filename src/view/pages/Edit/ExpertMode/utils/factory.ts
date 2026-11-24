@@ -20,8 +20,12 @@ export function getModel(update: EditorUpdateCallback): monaco.editor.ITextModel
       if (consumeYamlSuppression()) return;
       const value = model.getValue();
       // No semantic change versus what the backend already blessed: skip the
-      // round-trip (also guards initial setValue echoes).
-      if (value === getCanonicalYAML()) return;
+      // round-trip (also guards initial setValue echoes) — and drop a pending
+      // one for text that has been taken back meanwhile.
+      if (value === getCanonicalYAML()) {
+        update.cancel();
+        return;
+      }
       // Stamp the keystroke with its session so the debounced commit can drop
       // it if the user navigates away before the debounce fires.
       update(value, currentSession());

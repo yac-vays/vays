@@ -83,7 +83,7 @@ function isBlockedOnLink(opName: string): boolean {
 function getFavActions(
   favorites: FavOpObject[],
   actions: { [key: string]: ActionDecl },
-  yacURL: string | null | undefined,
+  yacURL: string | null,
   entity: EntityObject,
   requestContext: RequestContext,
 ): GUIActionButtonArg[] {
@@ -172,7 +172,7 @@ function isActionFavorite(
   return false;
 }
 
-function __alertBadAction(name: string, yacURL: string | null | undefined) {
+function __alertBadAction(name: string, yacURL: string | null) {
   logError(
     `${name} is not defined in the Entity Type Definition.
     This is a configuration errror on the side of the YAC backend.

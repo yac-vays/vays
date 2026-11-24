@@ -16,7 +16,7 @@ export interface QueryResult {
 }
 
 export interface QueryResponse {
-  entityName: string | null;
+  entityTypeName: string | null;
   partialResults: QueryResult[];
   totalNumberOfResults: number;
 }

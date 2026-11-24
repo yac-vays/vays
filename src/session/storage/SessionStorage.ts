@@ -11,8 +11,6 @@ export interface StoredListFilters {
 }
 
 class ISessionStorage {
-  public KEYS: readonly string[] = ['eMostRecentURL', 'entityListFilters.*'];
-
   /**
    * ephemeral information: Will vanish after a single read access.
    */

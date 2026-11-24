@@ -38,7 +38,7 @@ export async function editEntity(
     return { kind: 'failed' };
   }
   const url = requestEditContext.rc.yacURL;
-  if (url == null || url == undefined) {
+  if (url == null) {
     return { kind: 'failed' };
   }
   const resp = await sendRequest(

@@ -1,7 +1,7 @@
 import { TroubleShootMessageProps } from '../../view/components/SchemaWarningMessage';
 
 /**
- * The State for the Notification controller.
+ * The state of the troubleshoot controller (schema warnings).
  */
 class TroubleShootCtrlState {
   /**

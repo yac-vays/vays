@@ -7,17 +7,12 @@ import { showError } from '../controller/global/notification';
 import { AppConfig } from '../utils/types/config';
 import { Nullable } from '../utils/types/typeUtils';
 
-/**
- * Local cache for the configuration. The configuration is only fetched once
- * from the frontend server during the lifespan of the web application.
- */
+/** The configuration, once it was fetched successfully. */
 let config: Nullable<AppConfig> = null;
 
 /**
- * Fetch the application configuration. Will cache the result, As such, the config is
- * fetched from the frontend exactly once during the lifespan of the webapp.
- *
- * @returns The application configuration.
+ * The application configuration (`/config.json`). A successful fetch is cached
+ * for the lifespan of the app; a failed one shows a toast and returns null.
  */
 export async function getConfig(): Promise<Nullable<AppConfig>> {
   if (config == null) {

@@ -31,12 +31,7 @@ export function getDefaultRequestContext(): RequestContext {
  * @returns
  */
 export function getDefaultRequestOverviewContext(): RequestOverviewContext {
-  return {
-    searchQueries: {},
-    pageNumber: 0,
-    numPerPage: 10,
-    rc: getDefaultRequestContext(),
-  };
+  return { rc: getDefaultRequestContext() };
 }
 
 /**
@@ -51,35 +46,29 @@ export function getDefaultEditContext(): RequestEditContext {
   };
 }
 
+/** The request context of an entity type of the named backend (unverified names). */
+async function resolveRequestContext(
+  backendName: string,
+  entityTypeName: string,
+  backends: YACBackend[],
+): Promise<RequestContext> {
+  const be = backends.find((backend) => backend.name === backendName) ?? null;
+  const entityTypeList: EntityTypeDecl[] = await getEntityTypes(be);
+  return {
+    yacURL: be?.url ?? null,
+    entityTypeName: entityTypeName,
+    accessedEntityType: findEntityType(entityTypeName, entityTypeList),
+    backendObject: be,
+    entityTypeList: entityTypeList,
+  };
+}
+
 export async function getRequestContextOverview(
   backendName: string,
   entityTypeName: string,
   backends: YACBackend[],
 ): Promise<RequestOverviewContext> {
-  let be: YACBackend | null = null;
-  for (const backend of backends) {
-    if (backendName === backend.name) {
-      be = backend;
-    }
-  }
-  const entityTypeList: EntityTypeDecl[] = await getEntityTypes(be);
-
-  return {
-    searchQueries: {},
-    pageNumber: 0,
-    numPerPage: 10,
-    // isSearch : false,
-    // searchProperty : null, // TODO: Search.
-    // searchQuery: null,
-
-    rc: {
-      yacURL: be?.url,
-      entityTypeName: entityTypeName,
-      accessedEntityType: getEntityTypeFromEntityName(entityTypeName, entityTypeList),
-      backendObject: be,
-      entityTypeList: entityTypeList,
-    },
-  };
+  return { rc: await resolveRequestContext(backendName, entityTypeName, backends) };
 }
 
 export async function getRequestContextEdit(
@@ -89,48 +78,18 @@ export async function getRequestContextEdit(
   mode: EditViewMode,
   entityName: string | undefined,
 ): Promise<RequestEditContext> {
-  let be: YACBackend | null = null;
-  for (const backend of backends) {
-    if (backendName === backend.name) {
-      be = backend;
-    }
-  }
-  const entityTypeList: EntityTypeDecl[] = await getEntityTypes(be);
-
-  const accessedEntityType = getEntityTypeFromEntityName(entityTypeName, entityTypeList);
-
-  if (mode === 'create' && isNameGeneratedByYAC(accessedEntityType)) entityName = undefined;
-  return {
-    entityName: entityName,
-    mode: mode,
-    rc: {
-      yacURL: be?.url,
-      entityTypeName: entityTypeName,
-      accessedEntityType: accessedEntityType,
-      backendObject: be,
-      entityTypeList: entityTypeList,
-    },
-  };
+  const rc = await resolveRequestContext(backendName, entityTypeName, backends);
+  if (mode === 'create' && isNameGeneratedByYAC(rc.accessedEntityType)) entityName = undefined;
+  return { entityName, mode, rc };
 }
 
-/**
- * Given a list of entity types and a name, it returns the entity declaration object, if available. Otherwhise null.
- * @param entityName
- * @param entityTypeList
- * @returns
- */
-export function getEntityTypeFromEntityName(
-  entityName: Nullable<string>,
+/** The declaration of the entity type with the given name, if there is one. */
+export function findEntityType(
+  typeName: Nullable<string>,
   entityTypeList: EntityTypeDecl[],
 ): Nullable<EntityTypeDecl> {
-  if (entityName == null) return null;
-
-  for (const et of entityTypeList) {
-    if (et.name === entityName) {
-      return et;
-    }
-  }
-  return null;
+  if (typeName == null) return null;
+  return entityTypeList.find((et) => et.name === typeName) ?? null;
 }
 
 /**
@@ -147,28 +106,10 @@ export async function isValidQueryOverview(
     return false;
   }
 
-  // 1. Check if the YAC backend exists.
+  const be = backends.find((backend) => backend.name === backendName);
+  if (be == undefined) return false;
 
-  let found: boolean = false;
-  let be;
-  for (const backend of backends) {
-    if (backendName === backend.name) {
-      found = true;
-      be = backend;
-      break;
-    }
-  }
-
-  if (!found) return false;
-
-  // 2. Check if the type exists.
-  const etd: EntityTypeDecl[] = await getEntityTypes(be ?? null);
-  for (const typeDef of etd) {
-    if (entityTypeName === typeDef.name) {
-      return true;
-    }
-  }
-  return false;
+  return findEntityType(entityTypeName, await getEntityTypes(be)) != null;
 }
 
 export async function isValidQueryEdit(

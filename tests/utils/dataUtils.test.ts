@@ -8,9 +8,9 @@ import {
   removeOldData,
   setUndefinedAtPath,
 } from '../../src/utils/schema/dataUtils';
-import { isInjectedNameKey } from '../../src/utils/schema/injectName';
+import { isInjectedNameKey } from '../../src/utils/schema/legacyNameKey';
 
-describe('Check injectName', async () => {
+describe('Check the legacy name key', async () => {
   it('Check if injectedName key is not too trivial', async () => {
     const keys = ['schema', '', 'action', 'name', 'entityName', 'entity-name'];
     for (const key of keys) expect(isInjectedNameKey(key)).equals(false);

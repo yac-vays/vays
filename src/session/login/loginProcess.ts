@@ -64,7 +64,6 @@ async function performDiscovery(appconf: AppConfig): Promise<Nullable<URL>> {
   sessionStorage.setItem(
     LOGIN_STATE_KEY,
     JSON.stringify({
-      clientID: appconf.oidcConf.clientID,
       nonce: nonce,
       code_verifier: code_verifier,
     }),

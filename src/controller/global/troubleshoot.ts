@@ -1,6 +1,6 @@
 import { getCachedConfig } from '../../model/config';
 import { hashCode } from '../../utils/hashUtils';
-import { isInjectedNameKey } from '../../utils/schema/injectName';
+import { isInjectedNameKey } from '../../utils/schema/legacyNameKey';
 import { lintSchema } from '../../utils/schema/schemaLint';
 import { RequestEditContext } from '../../utils/types/internal/request';
 import { ValidateResponse } from '../../utils/types/internal/validation';

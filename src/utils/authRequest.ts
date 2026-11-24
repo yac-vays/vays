@@ -31,49 +31,32 @@ function getHeaders(url: string): HeadersInit {
 }
 
 /**
- * Gateway which takes all the parameters and performs the fetch. Does not modify headers, etc.
- * If you want to add the token to the header, you will need to do that ahead of time.
- *
- * @param url The URL in question.
- * @param method The http method.
- * @param headers The header for the request.
- * @param requestBody The requestbody, as a string. If not available, pass null
- * @param catchAccessError The error handling function.
- * @returns The response.
+ * Perform the fetch as given (the headers are sent unchanged).
+ * @returns The response, or null if the request could not be sent or answered
+ * (an error toast was shown).
  */
 async function accessResource(
   url: string,
   method: string,
   headers: HeadersInit,
   requestBody: Nullable<string>,
-  catchAccessError: (response: Response) => Response,
-) {
-  if (requestBody != null) {
-    return await fetch(url, { mode: 'cors', method, headers, body: requestBody })
-      .then((resp) => resp)
-      .catch(catchAccessError);
-  } else {
-    return await fetch(url, { mode: 'cors', method, headers })
-      .then((resp) => resp)
-      .catch(catchAccessError);
+): Promise<Nullable<Response>> {
+  try {
+    return await fetch(url, { mode: 'cors', method, headers, body: requestBody ?? undefined });
+  } catch {
+    showError('Network Error', `Cannot fetch data from backend ${url}.`);
+    return null;
   }
 }
 
 /**
- * Request some resource. WILL ATTACH THE TOKEN, so only use for YAC requests.
- * In the future, the token will noo longer be attached explicitly, but stored as secure cookie.
- * If cachecontext is supplied, then the cache will be checked for a previous answer
- * and returned if available. Else, the resource will be fetched and cached.
- * If caching is enabled and some other request for this resource is already
- * ongoing, then this request will be blocked until the other request has succeeded.
+ * Send a request to a YAC backend, with the user's token attached (never use
+ * it for other hosts).
  *
- * @param url The full URL to be accessed.
- * @param method The method to use.
- * @param requestBody the body as string
- * @param cacheContext null to not get from cache/save to cache. Else string, being the context.
- * @returns The body. May be an empty object in the event of an error.
+ * With a `cacheContext`, an earlier successful answer for the URL is returned
+ * if there is one, and concurrent requests for the URL share one fetch.
  *
- * @note ONLY USE FOR YAC REQUESTS.
+ * @returns The response, or null if there is none (an error toast was shown).
  **/
 export async function sendRequest(
   url: string,
@@ -118,22 +101,14 @@ export async function sendRequest(
   const generation = cacheContext ? VAYS_CACHE.generation(cacheContext, url) : 0;
   const headers = getHeaders(url);
 
-  let error: boolean = false;
-  const catchAccessError = (response: Response) => {
-    if (response.status == undefined)
-      showError('Network Error', `Cannot fetch data from backend ${url}.`);
-    error = true;
-    return response;
-  };
-
-  const resp: Response = await accessResource(url, method, headers, requestBody, catchAccessError);
+  const resp = await accessResource(url, method, headers, requestBody);
 
   // Invalidated while in flight: a newer fetch owns the entry now.
   const current = cacheContext != null && VAYS_CACHE.generation(cacheContext, url) === generation;
   if (cacheContext && current) {
     VAYS_CACHE.preCacheUnregister(cacheContext, url);
   }
-  if (error || resp.status === undefined) return null;
+  if (resp == null) return null;
 
   // Errors are not cached: the next call asks the backend again.
   if (cacheContext && current && resp.ok) {

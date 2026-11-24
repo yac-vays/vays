@@ -4,8 +4,8 @@
  * MetaInfoPanel (not in the form data), so nothing injects this anymore — but
  * `troubleshoot` still recognizes the key when inspecting older data.
  */
-const INJECTED_NAME_PROPETRY = 'name753984327583297515507489734124497987457185454894315';
+const LEGACY_NAME_KEY = 'name753984327583297515507489734124497987457185454894315';
 
 export function isInjectedNameKey(s: string) {
-  return s === INJECTED_NAME_PROPETRY;
+  return s === LEGACY_NAME_KEY;
 }

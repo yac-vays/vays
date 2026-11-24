@@ -12,8 +12,8 @@ export async function getEntityData(
   entityName: string,
   requestContext: RequestContext,
 ): Promise<EntityData | null> {
-  const url: string | null | undefined = requestContext.yacURL;
-  if (url == null || url == undefined) return null;
+  const url = requestContext.yacURL;
+  if (url == null) return null;
 
   const resp: Nullable<Response> = await sendRequest(
     joinUrl(url, entityPath(requestContext.entityTypeName, entityName)),
@@ -69,8 +69,8 @@ export async function getStoredEntity(
   entityName: string,
   requestContext: RequestContext,
 ): Promise<StoredEntityResult> {
-  const url: string | null | undefined = requestContext.yacURL;
-  if (url == null || url == undefined) return { kind: 'error' };
+  const url = requestContext.yacURL;
+  if (url == null) return { kind: 'error' };
 
   const resp: Nullable<Response> = await sendRequest(
     joinUrl(url, entityPath(requestContext.entityTypeName, entityName)),
@@ -128,8 +128,8 @@ export async function probeEntity(
   entityName: string,
   requestContext: RequestContext,
 ): Promise<EntityExistence> {
-  const url: string | null | undefined = requestContext.yacURL;
-  if (url == null || url == undefined) return 'error';
+  const url = requestContext.yacURL;
+  if (url == null) return 'error';
 
   const resp: Nullable<Response> = await sendRequest(
     joinUrl(url, entityPath(requestContext.entityTypeName, entityName)),

@@ -1,4 +1,4 @@
-import { actions2URLQuery } from '../utils/actionUtils';
+import { commitURLQuery } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
 import { entityToastTitle } from '../utils/toastUtils';
 import { ActionDecl, NameGeneratedCond } from '../utils/types/api';
@@ -27,9 +27,9 @@ export async function createDerivedEntity(
   actions: ActionDecl[],
   requestContext: RequestContext,
 ): Promise<{ success: Nullable<boolean>; name: Nullable<string> }> {
-  const url: string | null | undefined = requestContext.yacURL;
+  const url = requestContext.yacURL;
 
-  if (url == undefined || url == null) return { success: false, name: null };
+  if (url == null) return { success: false, name: null };
 
   // Decide what to send as the "name" depending on how YAC generates names.
   // In all cases the key must be present (sending null instead of omitting it),
@@ -48,7 +48,7 @@ export async function createDerivedEntity(
   }
 
   const resp: Nullable<Response> = await sendRequest(
-    joinUrl(url, `${entityPath(requestContext.entityTypeName)}${actions2URLQuery(actions)}`),
+    joinUrl(url, `${entityPath(requestContext.entityTypeName)}${commitURLQuery(actions)}`),
     'POST',
     JSON.stringify({ name, [kind]: sourceEntityName }),
   );

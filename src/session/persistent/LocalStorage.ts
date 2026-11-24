@@ -12,18 +12,6 @@ export interface UserIdentity {
 }
 
 class ILocalStorage {
-  public KEYS: readonly string[] = [
-    'isSidebarGroupExpanded.*',
-    'isLoggedIn',
-    'token',
-    'refreshToken',
-    'identity',
-    'isOverviewDescriptionShown',
-    'editorLayout',
-    'editorSplitRatio',
-    'numEntriesPerPage',
-  ];
-
   /**
    * UI preferences we deliberately keep across logout/login: they describe how
    * the user likes the app to look, not who is logged in. Everything else in

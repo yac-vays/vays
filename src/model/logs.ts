@@ -16,25 +16,13 @@ import { LOGS_CACHE_KEY } from './caching/cachekeys';
 import { invalidateEntityListCache } from './entityList';
 import { decodeErrorBody, handleYacResponse, yacErrorDetail } from './utils/handleYacResponse';
 
-function getLogID(
-  url: string | null | undefined,
-  entityTypeName: string | null,
-  entityName: string,
-) {
-  if (url == null || url == undefined) return url + entityPath(entityTypeName, entityName, 'logs');
+function getLogID(url: string | null, entityTypeName: string | null, entityName: string) {
+  if (url == null) return url + entityPath(entityTypeName, entityName, 'logs');
   return joinUrl(url, entityPath(entityTypeName, entityName, 'logs'));
 }
 
-export function isLogCached(entityName: string, requestContext: RequestContext) {
-  const url: string | null | undefined = requestContext.yacURL;
-  return VAYS_CACHE.isCached(
-    LOGS_CACHE_KEY,
-    getLogID(url, requestContext.entityTypeName, entityName),
-  );
-}
-
 export function invalidateLogCache(entityName: string, requestContext: RequestContext) {
-  const url: string | null | undefined = requestContext.yacURL;
+  const url = requestContext.yacURL;
   VAYS_CACHE.invalidate(LOGS_CACHE_KEY, getLogID(url, requestContext.entityTypeName, entityName));
 }
 
@@ -163,9 +151,9 @@ export async function getEntityLogs(
   requestContext: RequestContext,
   quiet: boolean = false,
 ): Promise<EntityLog[] | null> {
-  const url: string | null | undefined = requestContext.yacURL;
+  const url = requestContext.yacURL;
 
-  if (url == null || url == undefined) return null;
+  if (url == null) return null;
 
   const resp: Nullable<Response> = await sendRequest(
     joinUrl(url, entityPath(requestContext.entityTypeName, entityName, 'logs')),
@@ -251,7 +239,7 @@ export async function getEntityLogContent(
   logName: string,
   requestContext: RequestContext,
 ): Promise<LogContentResult> {
-  const url: string | null | undefined = requestContext.yacURL;
+  const url = requestContext.yacURL;
   if (url == null) return { kind: 'error', message: 'No backend selected.' };
 
   const resp: Nullable<Response> = await sendRequest(

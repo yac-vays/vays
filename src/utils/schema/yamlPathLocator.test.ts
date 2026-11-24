@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { locateDataPathExact, nestedObjectAnchors } from './yamlPathLocator';
+import {
+  locateDataPathExact,
+  locateInstancePathInYaml,
+  nestedObjectAnchors,
+} from './yamlPathLocator';
 
 const yamlText = 'owner: bob\ncpus: 4\ndisks:\n  data_gb: 100\n';
 
@@ -55,5 +59,41 @@ describe('nestedObjectAnchors', () => {
 
   it('ignores entries whose value is not an object', () => {
     expect(nestedObjectAnchors('a: 1\nb: [1]\nc:\n')).toStrictEqual([]);
+  });
+});
+
+const DOC = `owner: alice
+ssh_keys:
+  - name: laptop
+    key: abc123
+  - name: desktop
+    key: ssh-ed25519 AAAA
+firewall_enabled: true
+`;
+
+function slice(range: { start: number; end: number } | null): string | null {
+  if (range == null) return null;
+  return DOC.slice(range.start, range.end);
+}
+
+describe('locateInstancePathInYaml', () => {
+  it('locates a nested value inside a sequence item (the ssh_keys.0.key case)', () => {
+    expect(slice(locateInstancePathInYaml(DOC, '/ssh_keys/0/key'))).toBe('abc123');
+  });
+
+  it('locates top-level scalars and whole sequence items', () => {
+    expect(slice(locateInstancePathInYaml(DOC, '/owner'))).toBe('alice');
+    expect(slice(locateInstancePathInYaml(DOC, '/ssh_keys/1'))).toContain('name: desktop');
+  });
+
+  it('falls back to the closest existing ancestor for a missing leaf', () => {
+    const range = locateInstancePathInYaml(DOC, '/ssh_keys/0/nonexistent');
+    expect(slice(range)).toContain('name: laptop');
+  });
+
+  it('returns null for the document root, unresolvable paths and garbage input', () => {
+    expect(locateInstancePathInYaml(DOC, '')).toBeNull();
+    expect(locateInstancePathInYaml(DOC, '/no_such_key')).toBeNull();
+    expect(locateInstancePathInYaml('{{{ not yaml', '/a')).toBeNull();
   });
 });

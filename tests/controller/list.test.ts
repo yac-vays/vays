@@ -42,7 +42,7 @@ export const LIST_RESPONSE = {
 };
 
 const RESPONSE = {
-  entityName: 'testType',
+  entityTypeName: 'testType',
   partialResults: [
     {
       actionPair: {

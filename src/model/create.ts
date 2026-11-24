@@ -20,7 +20,7 @@ export async function createNewEntity(
   force: boolean = false,
 ): Promise<{ success: boolean; name: Nullable<string> }> {
   const url = requestContext.yacURL;
-  if (url == null || url == undefined) return { success: false, name: null };
+  if (url == null) return { success: false, name: null };
 
   const resp = await sendRequest(
     joinUrl(url, `${entityPath(requestContext.entityTypeName)}${commitURLQuery(acts, force)}`),

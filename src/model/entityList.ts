@@ -19,17 +19,14 @@ function getListURL(yacURL: string, entityTypeName: string) {
   return joinUrl(yacURL, `${entityPath(entityTypeName)}?limit=${ENTITY_LIST_LIMIT}`);
 }
 
-export function invalidateEntityListCache(
-  yacURL: string | null | undefined,
-  entityTypeName: string | null,
-) {
+export function invalidateEntityListCache(yacURL: string | null, entityTypeName: string | null) {
   if (!yacURL || !entityTypeName) return;
   const cacheKey: string = getListURL(yacURL, entityTypeName);
   VAYS_CACHE.invalidate(ENTITY_LIST_CACHE_KEY, cacheKey);
 }
 
 export function registerEntityListInvalidationHook(
-  yacURL: string | null | undefined,
+  yacURL: string | null,
   entityTypeName: string | null,
   hook: () => void,
 ) {
@@ -64,12 +61,11 @@ function typeCheckEntityList(list: unknown, yacName: string): EntityObject[] {
 export async function fetchEntityList(
   requestContext: RequestContext,
 ): Promise<{ ok: boolean; list: EntityObject[] }> {
-  if (requestContext.backendObject?.url === undefined || requestContext.entityTypeName == null) {
-    logError(`Backend Name ${requestContext.backendObject?.url} was undefined.`, 'getEntityTypes');
+  const url = requestContext.yacURL;
+  if (url == null || requestContext.entityTypeName == null) {
+    logError('The backend or the entity type of the list is unknown.', 'fetchEntityList');
     return { ok: false, list: [] };
   }
-
-  const url = requestContext.backendObject?.url;
 
   const resp: Nullable<Response> = await sendRequest(
     getListURL(url, requestContext.entityTypeName),
@@ -88,7 +84,7 @@ export async function fetchEntityList(
 
   const res = await result.resp.json();
   // TODO: Do not ignore the hash here
-  const list = typeCheckEntityList(res.list, requestContext.backendObject.title);
+  const list = typeCheckEntityList(res.list, requestContext.backendObject?.title ?? '');
   if (list.length >= ENTITY_LIST_LIMIT) {
     // The backend truncates at the requested limit, so the list is most likely
     // incomplete — tell the user instead of silently dropping the rest.

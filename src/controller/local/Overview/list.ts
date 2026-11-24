@@ -1,4 +1,3 @@
- 
 /**
  * Controller element for the EntityList in the Overview page.
  */
@@ -24,7 +23,7 @@ import { performSearch } from './search';
  * @param maxNumOfResults - The maximum number of results to return.
  * @param offset - The starting index for the results to return.
  * @param searchList - An optional list of search terms to filter the entities.
- * @returns A promise that resolves to a QueryResponse containing the entity name, partial results, and the total number of results.
+ * @returns A promise that resolves to a QueryResponse containing the entity type name, partial results, and the total number of results.
  *
  * @remarks
  * - If the accessed entity type or its options are undefined, the function returns an empty result set.
@@ -41,7 +40,7 @@ export async function fetchEntities(
     requestContext.accessedEntityType.options == null
   ) {
     return {
-      entityName: requestContext.entityTypeName,
+      entityTypeName: requestContext.entityTypeName,
       partialResults: [],
       totalNumberOfResults: 0,
     };
@@ -70,7 +69,7 @@ export async function fetchEntities(
     });
   }
   return {
-    entityName: requestContext.entityTypeName,
+    entityTypeName: requestContext.entityTypeName,
     partialResults: entityList,
     totalNumberOfResults: entities.length,
   };
@@ -186,7 +185,7 @@ export function getHeaderEntries(requestContext: RequestContext): string[] {
   return header;
 }
 
-export interface EntityListVariableHandlers {
+export interface EntityListSetters {
   setTableHeaderEntries: (v: string[]) => void;
   setTableEntries: (v: QueryResult[]) => void;
   setCurrPage: (v: number) => void;
@@ -215,17 +214,10 @@ export function isStaleListGeneration(gen: number): boolean {
   return gen !== listGeneration;
 }
 
-/**
- * @param requestContext
- * @param param1
- * @param numResultsPerPage
- * @param resetPage
- * @param pageNumber
- * @param resetTableBeforeLoading
- */
+/** Fetch a page of the list again and hand it to the list's state setters. */
 export async function reload(
   requestContext: RequestContext,
-  { setTableHeaderEntries, setTableEntries, setCurrPage, setLoading }: EntityListVariableHandlers,
+  { setTableHeaderEntries, setTableEntries, setCurrPage, setLoading }: EntityListSetters,
 
   numResultsPerPage: number,
   resetPage: boolean,

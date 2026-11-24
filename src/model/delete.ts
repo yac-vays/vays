@@ -1,4 +1,4 @@
-import { actions2URLQuery } from '../utils/actionUtils';
+import { commitURLQuery } from '../utils/actionUtils';
 import { sendRequest } from '../utils/authRequest';
 import { entityToastTitle } from '../utils/toastUtils';
 import { ActionDecl } from '../utils/types/api';
@@ -17,14 +17,14 @@ export async function deleteEntity(
   requestContext: RequestContext,
   actions: ActionDecl[] = [],
 ): Promise<Nullable<boolean>> {
-  const url: string | null | undefined = requestContext.yacURL;
+  const url = requestContext.yacURL;
 
-  if (url == undefined || url == null) return false;
+  if (url == null) return false;
 
   const resp: Nullable<Response> = await sendRequest(
     joinUrl(
       url,
-      `${entityPath(requestContext.entityTypeName, entityName)}${actions2URLQuery(actions)}`,
+      `${entityPath(requestContext.entityTypeName, entityName)}${commitURLQuery(actions)}`,
     ),
     'DELETE',
   );

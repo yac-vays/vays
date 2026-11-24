@@ -282,9 +282,9 @@ export async function sendAction(
   entityName: string,
   actionObj: ActionDecl,
 ): Promise<Nullable<boolean>> {
-  const url: string | null | undefined = requestContext.yacURL;
+  const url = requestContext.yacURL;
 
-  if (url == undefined || url == null) return false;
+  if (url == null) return false;
 
   const resp: Nullable<Response> = await sendRequest(
     joinUrl(url, entityPath(requestContext.entityTypeName, entityName, 'run', actionObj.name)),

@@ -27,11 +27,9 @@ export function handleAuthFailed(
   title: string | undefined = undefined,
   msg: undefined | string = undefined,
 ) {
+  // Path with query string (the `pathname` alone lacks it).
   const url = new URL(window.location.href);
-  // note that pathname of window.location does not include the query string or the index...
-  const localPath = window.location.href.startsWith('/')
-    ? window.location.href
-    : url.href.substring(url.origin.length, url.href.length);
+  const localPath = url.href.substring(url.origin.length);
   if (localPath.startsWith('/oauth2-redirect?code')) {
     // This must be either an authentication bug or misconfiguration on the oidc side.
     showError(
@@ -109,10 +107,10 @@ export function getUserName(): string {
   } else if (mail) {
     return mail;
   }
-  return name;
+  return name ?? '';
 }
 
-/** The user's email address from the token, or '' if none. */
+/** The user's email address, or '' if none. */
 export function getUserEmail(): string {
   if (!userIsLoggedIn()) return '';
   const identity = iLocalStorage.getIdentity();
@@ -122,7 +120,7 @@ export function getUserEmail(): string {
   return mail ?? email ?? '';
 }
 
-/** The user's login / short username from the token, or '' if none. */
+/** The user's login / short username, or '' if none. */
 export function getUserLogin(): string {
   if (!userIsLoggedIn()) return '';
   const identity = iLocalStorage.getIdentity();

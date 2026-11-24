@@ -9,7 +9,7 @@
  * that sends additional fields still works with this VAYS.
  */
 import { JsonSchema } from '@jsonforms/core';
-import { Nullable, SafeSource } from './typeUtils';
+import { Nullable } from './typeUtils';
 
 export type APIOperation = 'create' | 'edit' | 'delete';
 
@@ -149,7 +149,7 @@ export interface LogDecl {
   name: string;
   title: string;
   /** Markdown description shown in the log details below the title. */
-  description: SafeSource<string>;
+  description: string;
   /** The log renderer, see `view/components/EntityList/Logs/renderers`. */
   renderer: string;
   /** Renderer-specific options from the specs. */
@@ -183,7 +183,7 @@ export interface EntityTypeDecl {
   name_pattern: string; // TODO: RegExp
   name_example: string;
   name_generated: NameGeneratedCond;
-  description: SafeSource<string>;
+  description: string;
   create: boolean;
   edit: boolean;
   delete: boolean;
@@ -191,7 +191,7 @@ export interface EntityTypeDecl {
     title: string;
     name: string;
     default?: string;
-    aliases: { [key: string]: SafeSource<string> };
+    aliases: { [key: string]: string };
   }[];
   logs: LogDecl[];
   /** Missing on YAC versions before `links` were introduced. */
@@ -201,16 +201,7 @@ export interface EntityTypeDecl {
 }
 
 export type Permission =
-  | 'see'
-  | 'add'
-  | 'rnm'
-  | 'cpy'
-  | 'lnk'
-  | 'edt'
-  | 'cln'
-  | 'del'
-  | 'act'
-  | 'adm';
+  'see' | 'add' | 'rnm' | 'cpy' | 'lnk' | 'edt' | 'cln' | 'del' | 'act' | 'adm';
 
 export const TYPE_CHECK_ENTITY_OBJECT =
   '{name: String, link: String | Null, options: Object, links: Maybe Object, perms: [String], ...}';
@@ -278,5 +269,7 @@ export interface EntityData {
   links?: Record<string, string>;
   perms: string[];
   data: { [key: string]: any };
+  /** Null in the API for an entity without a file; read as ''. */
   yaml: string;
+  hash?: string;
 }

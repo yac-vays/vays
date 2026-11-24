@@ -55,8 +55,15 @@ export const MacAddressRenderer = (props: ControlProps) => {
   }, 500);
 
   const onChange = (ev: ChangeEvent<HTMLInputElement>) => {
-    const value = ev.target.value;
+    const input = ev.target;
+    const value = input.value;
     const formattedValue = formatMacAddress(value);
+    if (formattedValue !== value) {
+      // Show what is stored; the caret stays behind the character just typed.
+      const caret = (input.selectionStart ?? value.length) - (value.length - formattedValue.length);
+      input.value = formattedValue;
+      input.setSelectionRange(Math.max(caret, 0), Math.max(caret, 0));
+    }
     setMac(formattedValue);
     update(formattedValue);
   };
@@ -92,7 +99,8 @@ export const MacAddressRenderer = (props: ControlProps) => {
           defaultv={props.schema.default}
           placeholder={props.uischema.options?.initial}
           placeholderEditable={props.uischema.options?.initial_editable}
-          data={mac}
+          // Empty counts as unset, so `default` / `initial` show as in the text renderer.
+          data={mac === '' ? undefined : mac}
           onChange={onChange}
         />
       </ErrorRing>

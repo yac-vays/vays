@@ -14,7 +14,9 @@ import {
 } from '@jsonforms/react';
 import React, { useCallback, useState } from 'react';
 import { showModalMessage } from '../../../controller/global/modal';
+import { flushPendingDebouncedCommits } from '../../../controller/local/EditController/debounceRegistry';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
+import { useRowKeys } from '../../utils/useRowKeys';
 import CardRenderer from './CardRenderer';
 
 export const NestedObjectRenderer = ({
@@ -53,18 +55,21 @@ export const NestedObjectRenderer = ({
     [addItem],
   );
 
+  const rowKeys = useRowKeys(data);
+
   // After all hooks: rules of hooks forbid an early return before them.
   if (!visible) return <></>;
 
-  const openDeleteDialog = (p: string, rowIndex: number) => () => {
+  const openDeleteDialog = (_p: string, rowIndex: number) => () => {
     showModalMessage(
       translations.deleteDialogTitle ?? 'Delete this item?',
       translations.deleteDialogMessage ?? 'The item is removed from the list.',
       async () => {
         if (!removeItems) return;
-        const p2 = p.substring(0, p.lastIndexOf('.'));
-        // let idx = parseInt(p.substring(p.lastIndexOf('.') + 1, p.length)) ?? rowIndex;
-        removeItems(p2, [rowIndex])();
+        // A pending edit must land before the indices shift.
+        flushPendingDebouncedCommits();
+        rowKeys.remove(rowIndex);
+        removeItems(path, [rowIndex])();
       },
       async () => {},
       'Delete',
@@ -76,7 +81,7 @@ export const NestedObjectRenderer = ({
     .map((_, i) => {
       return (
         <CardRenderer
-          key={i}
+          key={rowKeys.keys[i]}
           index={i}
           schema={schema}
           uischema={uischema}

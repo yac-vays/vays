@@ -97,7 +97,8 @@ const TableRow = withCustomProps((props: ItemRendererProps) => {
 });
 
 export class Table extends React.Component<
-  ArrayLayoutProps & WithDeleteDialogSupport & { translations: ArrayTranslations },
+  ArrayLayoutProps &
+    WithDeleteDialogSupport & { translations: ArrayTranslations; rowKeys: number[] },
   unknown
 > {
   addItem = (path: string, value: string) => this.props.addItem(path, value);
@@ -124,7 +125,7 @@ export class Table extends React.Component<
             .map((_, i) => {
               return (
                 <TableRow
-                  key={i}
+                  key={this.props.rowKeys[i] ?? i}
                   index={i}
                   schema={this.props.schema}
                   uischema={this.props.uischema}

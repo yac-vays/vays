@@ -17,7 +17,9 @@ import {
   withTranslateProps,
 } from '@jsonforms/react';
 import { showModalMessage } from '../../../controller/global/modal';
+import { flushPendingDebouncedCommits } from '../../../controller/local/EditController/debounceRegistry';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
+import { useRowKeys } from '../../utils/useRowKeys';
 import Table from './Table';
 
 /**
@@ -35,16 +37,18 @@ export const ArrayControlRenderer = (
   props: ArrayLayoutProps & { translations: ArrayTranslations },
 ): JSX.Element => {
   const { removeItems, visible, translations } = props;
+  const rowKeys = useRowKeys(props.data);
 
-  const openDeleteDialog = (p: string, rowIndex: number) => () => {
+  const openDeleteDialog = (_p: string, rowIndex: number) => () => {
     showModalMessage(
       translations.deleteDialogTitle ?? 'Delete this item?',
       translations.deleteDialogMessage ?? 'The item is removed from the list.',
       async () => {
         if (!removeItems) return;
-        const p2 = p.substring(0, p.lastIndexOf('.'));
-        // let idx = parseInt(p.substring(p.lastIndexOf('.') + 1, p.length)) ?? rowIndex;
-        removeItems(p2, [rowIndex])();
+        // A pending edit must land before the indices shift.
+        flushPendingDebouncedCommits();
+        rowKeys.remove(rowIndex);
+        removeItems(props.path, [rowIndex])();
       },
       async () => {},
       'Delete',
@@ -73,7 +77,12 @@ export const ArrayControlRenderer = (
           />
         </div>
 
-        <Table {...props} openDeleteDialog={openDeleteDialog} translations={translations} />
+        <Table
+          {...props}
+          rowKeys={rowKeys.keys}
+          openDeleteDialog={openDeleteDialog}
+          translations={translations}
+        />
       </div>
     </>
   );

@@ -40,8 +40,6 @@ import {
  * @returns {Function} setJsonSchema - Setter for the JSON schema.
  * @returns {ValidateResponse['ui_schema']} uiSchema - The UI schema for the form.
  * @returns {Function} setUISchema - Setter for the UI schema.
- * @returns {boolean} isFirst - Indicates if this is the first render.
- * @returns {Function} setIsFirst - Setter for the isFirst state.
  * @returns {boolean} setupDone - Indicates if the setup is done.
  * @returns {Function} setSetupDone - Setter for the setupDone state.
  * @returns {React.MutableRefObject<HTMLDivElement | null>} formContainer - Ref for the form container element. Needs to be set on the container.
@@ -58,17 +56,14 @@ const useInitializeForm = (
     type: 'VerticalLayout',
     elements: [],
   }); // ui_schema
-  const [isFirst, setIsFirst] = useState<boolean>(true);
   const [setupDone, setSetupDone] = useState<boolean>(false);
   const [additionalErrors, setAdditionalErrors] = useState<ErrorObject[]>([]);
   const formContainer = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // The placeholder context of the first render: nothing to load yet.
+    if (requestEditContext.rc.yacURL == null) return;
     let isMounted = true;
-    if (isFirst) {
-      setIsFirst(false);
-      return;
-    }
 
     setCurrentTab(0);
 
@@ -164,8 +159,6 @@ const useInitializeForm = (
     setJsonSchema,
     uiSchema,
     setUISchema,
-    isFirst,
-    setIsFirst,
     setupDone,
     setSetupDone,
     additionalErrors,

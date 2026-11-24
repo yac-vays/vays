@@ -84,6 +84,10 @@ class ILocalStorage {
     return this.get('token');
   }
 
+  public clearToken() {
+    localStorage.removeItem('token');
+  }
+
   public setRefreshToken(v: string) {
     this.set('refreshToken', v);
   }

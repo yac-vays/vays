@@ -102,6 +102,12 @@ describe('loadIdentity', () => {
     expect(getUserName()).toBe('Not Logged In');
   });
 
+  it('shows no identity left over from an ended session', () => {
+    iLocalStorage.setIdentity({ name: 'old', full_name: 'Old User', email: 'old@example.com' });
+    expect(getUserLogin()).toBe('');
+    expect(getUserEmail()).toBe('');
+  });
+
   it('keeps the claim fallback when /me fails, and retries on the next call', async () => {
     signIn({ sub: 'opaque-sub', givenName: 'Manuel', surname: 'Claims', mail: 'm@claims' });
     fetchMock.mockResolvedValueOnce(meResponse(500, { detail: 'boom' }));

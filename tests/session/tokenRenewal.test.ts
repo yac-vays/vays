@@ -165,6 +165,16 @@ describe('renewal impossible => the session ends as before', () => {
     expect(iLocalStorage.getRefreshToken()).toBe('rt-1');
   });
 
+  it('does not end the session when the renewal failed for a transient reason', async () => {
+    signIn(-10);
+    refreshTokenGrant.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    const resp = await sendRequest(`${BACKEND}/entity`);
+    expect(resp).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(iLocalStorage.isLoggedIn()).toBe(true);
+    expect(iLocalStorage.getRefreshToken()).toBe('rt-1');
+  });
+
   it('drops an answer that arrives after logout', async () => {
     signIn(-10);
     let answer!: (v: object) => void;

@@ -131,6 +131,14 @@ export function renewToken(): Promise<boolean> {
   return pending;
 }
 
+/**
+ * Whether a failed renewal may still succeed later (the refresh token was
+ * kept): the session is then not over yet.
+ */
+export function canRetryRenewal(): boolean {
+  return !!userIsLoggedIn() && !!iLocalStorage.getRefreshToken();
+}
+
 function schedule(minDelayMs: number = 0) {
   clearTimeout(timer);
   if (!userIsLoggedIn() || !iLocalStorage.getRefreshToken()) return;

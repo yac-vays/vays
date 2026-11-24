@@ -58,6 +58,11 @@ export function handleAuthFailed(
     // other in-flight 401s land in the silent branch above afterwards, so a
     // burst of parallel requests cannot stack up toasts.
     setUserLoggedIn(false);
+    // Nothing of the ended session may linger (there is no logout button
+    // any more to remove it).
+    iLocalStorage.clearToken();
+    iLocalStorage.clearRefreshToken();
+    iLocalStorage.clearIdentity();
     window.dispatchEvent(new Event('sign-out'));
     showError('Please sign in again.', 'Your session has expired.');
     navigateToURL('/');
@@ -109,6 +114,7 @@ export function getUserName(): string {
 
 /** The user's email address from the token, or '' if none. */
 export function getUserEmail(): string {
+  if (!userIsLoggedIn()) return '';
   const identity = iLocalStorage.getIdentity();
   if (identity?.email) return identity.email;
 
@@ -118,6 +124,7 @@ export function getUserEmail(): string {
 
 /** The user's login / short username from the token, or '' if none. */
 export function getUserLogin(): string {
+  if (!userIsLoggedIn()) return '';
   const identity = iLocalStorage.getIdentity();
   if (identity?.name) return identity.name;
 

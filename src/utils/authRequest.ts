@@ -2,7 +2,7 @@ import { reportResponse } from '../controller/global/availability';
 import { showError } from '../controller/global/notification';
 import VAYS_CACHE from '../model/caching';
 import { getTokenFromStorage, isStoredTokenExpired } from '../session/login/tokenHandling';
-import { renewToken } from '../session/login/tokenRenewal';
+import { canRetryRenewal, renewToken } from '../session/login/tokenRenewal';
 import { Nullable } from './types/typeUtils';
 
 /**
@@ -85,6 +85,12 @@ export async function sendRequest(
     // Normally renewed in the background before it expires, but timers of
     // background tabs are throttled (or the machine slept): renew now.
     await renewToken();
+  }
+  if (getTokenFromStorage() && isStoredTokenExpired() && canRetryRenewal()) {
+    // The renewal failed for a transient reason (e.g. the OIDC provider is
+    // unreachable): the request cannot be sent, but the session is not over.
+    showError('Network Error', 'Cannot renew the session at the moment. Please try again.');
+    return null;
   }
   if (getTokenFromStorage() && isStoredTokenExpired()) {
     // The stored token is already past its expiry: the backend would answer

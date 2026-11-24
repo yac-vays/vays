@@ -75,6 +75,8 @@ describe('signed in, token expired', () => {
   it('shows ONE friendly toast for a burst of 401s, signs out and redirects', async () => {
     iLocalStorage.setIsLoggedIn(true);
     iLocalStorage.setToken(jwt(1)); // expired in 1970
+    iLocalStorage.setRefreshToken('rt');
+    iLocalStorage.setIdentity({ name: 'u', full_name: 'U', email: 'u@example.com' });
     const signOut = vi.fn();
     window.addEventListener('sign-out', signOut);
 
@@ -86,6 +88,9 @@ describe('signed in, token expired', () => {
     expect(showError).toHaveBeenCalledTimes(1);
     expect(showError).toHaveBeenCalledWith('Please sign in again.', 'Your session has expired.');
     expect(iLocalStorage.isLoggedIn()).toBe(false);
+    expect(iLocalStorage.getToken()).toBeUndefined();
+    expect(iLocalStorage.getRefreshToken()).toBeUndefined();
+    expect(iLocalStorage.getIdentity()).toBeUndefined();
     expect(signOut).toHaveBeenCalledTimes(1);
     expect(navigateToURL).toHaveBeenCalledWith('/');
     window.removeEventListener('sign-out', signOut);

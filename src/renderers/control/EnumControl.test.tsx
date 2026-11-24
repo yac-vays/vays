@@ -112,6 +112,21 @@ describe('EnumControl / OneOfEnumControl', () => {
     expect(empty.disabled).toBe(true);
   });
 
+  it('commits the preselected initial of a required field when the user confirms it', async () => {
+    const seen = mount(FLAVOR, { options: { initial: 'b' }, required: true });
+    const select = screen.getByRole('combobox');
+
+    // Merely tabbing through commits nothing.
+    fireEvent.blur(select);
+    await new Promise((r) => setTimeout(r, 50));
+    expect(seen.data ?? {}).toEqual({});
+
+    // Opening the list and leaving the shown option commits it.
+    fireEvent.mouseDown(select);
+    fireEvent.blur(select);
+    await waitFor(() => expect(seen.data).toEqual({ flavor: 'b' }));
+  });
+
   it('shows and writes integer enum values as numbers', async () => {
     const seen = mount(
       { type: 'integer', title: 'Flavor', enum: [1, 2, 3] },

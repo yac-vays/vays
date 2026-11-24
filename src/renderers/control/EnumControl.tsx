@@ -61,6 +61,7 @@ export const EnumControl = ({
         isPlaceholder:
           data === undefined && initial !== undefined && !uischema.options?.initial_editable,
       };
+  const uncommitted = data === undefined && resolvedData !== undefined;
   data = resolvedData;
 
   //// bad data check
@@ -90,6 +91,7 @@ export const EnumControl = ({
             canResetToUndefined={!required}
             defaultOption={required || initial == null ? undefined : String(initial)}
             placeholder={isPlaceholder}
+            uncommitted={uncommitted}
           />
         </ErrorRing>
       </div>

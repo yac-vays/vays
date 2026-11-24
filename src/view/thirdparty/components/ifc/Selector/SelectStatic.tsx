@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import InformationButton from '../../../../components/Buttons/InformationButton';
 
 // Option values are whatever the schema's enum holds (strings, numbers, null).
@@ -26,6 +26,8 @@ interface DropdownProps {
    * The caller drops the flag once the user has picked an option.
    */
   placeholder?: boolean;
+  /** `initValue` is only shown (`vays_options.initial`), not stored yet. */
+  uncommitted?: boolean;
 }
 
 function isValidOption(optValue: OptionValue | undefined, options: DropDownOptions) {
@@ -45,6 +47,7 @@ const SelectStatic: React.FC<DropdownProps> = ({
   canResetToUndefined,
   defaultOption,
   placeholder,
+  uncommitted,
 }: DropdownProps) => {
   if (!isValidOption(initValue, options)) {
     initValue = undefined;
@@ -71,6 +74,15 @@ const SelectStatic: React.FC<DropdownProps> = ({
   const selectedWithDescription = selectedOpt?.description ? selectedOpt : undefined;
   const [isOptionSelected, setIsOptionSelected] = useState<boolean>(initValue !== undefined);
 
+  // A <select> fires no change event when the shown option is picked again,
+  // so a shown initial the user opened and left as it is gets committed on blur.
+  const touched = useRef(false);
+  const commitShownInitial = () => {
+    const option = options.find((opt) => String(opt.value) === selectedOption);
+    if (uncommitted && touched.current && option) onChange(option.value);
+    touched.current = false;
+  };
+
   const changeTextColor = () => {
     setIsOptionSelected(true);
   };
@@ -84,7 +96,13 @@ const SelectStatic: React.FC<DropdownProps> = ({
       <select
         value={selectedOption}
         disabled={disabled}
+        onMouseDown={() => (touched.current = true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') touched.current = true;
+        }}
+        onBlur={commitShownInitial}
         onChange={(e) => {
+          touched.current = false;
           /*********************
            * String vs Number problem:
            *

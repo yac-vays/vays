@@ -152,6 +152,9 @@ export function getEntityLogID(entityName: string, requestContext: RequestContex
   return getLogID(requestContext.yacURL, requestContext.entityTypeName, entityName);
 }
 
+/** Log IDs whose 404 already triggered a list reload. */
+const reportedGone = new Set<string>();
+
 export async function getEntityLogs(
   entityName: string,
   requestContext: RequestContext,
@@ -175,11 +178,18 @@ export async function getEntityLogs(
     return null;
   }
 
+  const logID = getLogID(url, requestContext.entityTypeName, entityName);
   if (resp.status == 404) {
-    // The entity is gone — refresh the list so it disappears.
-    invalidateEntityListCache(url, requestContext.entityTypeName);
+    // The entity is gone — refresh the list so it disappears. Once only: if
+    // the reloaded list still has the entity, its next 404 must not reload
+    // the list again (and so on).
+    if (!reportedGone.has(logID)) {
+      reportedGone.add(logID);
+      invalidateEntityListCache(url, requestContext.entityTypeName);
+    }
     return null;
   }
+  reportedGone.delete(logID);
 
   const result = await handleYacResponse(resp, {
     title: entityToastTitle(requestContext, entityName),

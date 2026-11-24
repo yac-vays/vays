@@ -145,8 +145,8 @@ export async function handleYacResponse(
 
   if (status === 403) {
     if (!userIsLoggedIn()) {
-      // No credentials were attached (the user is not signed in), and
-      // FastAPI's security scheme rejects such requests with 403
+      // No credentials were attached (the user is not signed in); a YAC
+      // without its own answer for that rejects such requests with 403
       // "Not authenticated". That is not a permission problem — the user is
       // simply logged out and already on (or being routed to) the login
       // page, so this goes through the silent re-login flow instead of a

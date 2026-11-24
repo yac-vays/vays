@@ -35,6 +35,11 @@ export default async function editorFieldHelp(
     hoverProviderRegistered = true;
     monaco.languages.registerHoverProvider('yaml', {
       provideHover: (model, position) => {
+        // The provider serves every YAML model (e.g. a log document viewer),
+        // the schema and usages only describe the entity document.
+        if (model !== monaco.editor.getModel(monaco.Uri.parse('inmemory://schema.json'))) {
+          return null;
+        }
         const schema = getCurrentJsonSchema();
         if (schema == null) return null;
         const path = yamlPathAtOffset(model.getValue(), model.getOffsetAt(position));

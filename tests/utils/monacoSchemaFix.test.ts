@@ -93,4 +93,36 @@ describe('patchSchemaForMonaco', () => {
     patchSchemaForMonaco(schema);
     expect(schema).toStrictEqual(copy);
   });
+
+  it('leaves property names and data called `const` / `enum` alone', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        const: { type: 'boolean' },
+        enum: { type: 'array', default: [{ const: { a: 1 } }] },
+      },
+      examples: [{ const: { a: true }, enum: [{ b: 1 }] }],
+    };
+    expect(patchSchemaForMonaco(schema)).toStrictEqual(schema);
+  });
+
+  it('keeps an anyOf next to a non-scalar enum', () => {
+    expect(
+      patchSchemaForMonaco({ enum: [{ a: true }], anyOf: [{ type: 'object' }, { type: 'null' }] }),
+    ).toStrictEqual({
+      anyOf: [{ type: 'object' }, { type: 'null' }],
+      allOf: [
+        {
+          anyOf: [
+            {
+              type: 'object',
+              properties: { a: { const: true } },
+              required: ['a'],
+              additionalProperties: false,
+            },
+          ],
+        },
+      ],
+    });
+  });
 });

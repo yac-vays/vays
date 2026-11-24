@@ -49,33 +49,65 @@ function constToStructure(value: any): any {
   return { const: value };
 }
 
+// Where subschemas sit in a schema (Draft-7): only there the walk continues.
+// Everything else (`default`, `examples`, `enum`, annotations) is data, and
+// the keys of a `properties` map are property names — either may contain a
+// key called `const` or `enum` that is no keyword.
+const SCHEMA_KEYWORDS = new Set([
+  'additionalItems',
+  'additionalProperties',
+  'contains',
+  'else',
+  'if',
+  'items',
+  'not',
+  'propertyNames',
+  'then',
+]);
+const SCHEMA_LIST_KEYWORDS = new Set(['allOf', 'anyOf', 'items', 'oneOf']);
+const SCHEMA_MAP_KEYWORDS = new Set([
+  '$defs',
+  'definitions',
+  'dependencies',
+  'patternProperties',
+  'properties',
+]);
+
 /**
  * Deep-copies `schema` with every non-scalar `const` / `enum` member expanded
  * (see module doc). Apply to every schema handed to monaco-yaml; schemas for
  * AJV / JSON Forms must stay untouched.
  */
 export function patchSchemaForMonaco(schema: any): any {
-  if (Array.isArray(schema)) {
-    return schema.map(patchSchemaForMonaco);
-  }
-  if (!isNonScalar(schema)) {
+  if (!isNonScalar(schema) || Array.isArray(schema)) {
     return schema;
   }
 
   const out: { [key: string]: any } = {};
-  for (const [key, value] of Object.entries(schema)) {
+  // The expansions of a non-scalar enum; kept apart from the schema's own anyOf.
+  let enumChoices: any[] | null = null;
+  for (const [key, value] of Object.entries<any>(schema)) {
     if (key === 'const' && isNonScalar(value)) {
       // Merge the structural expansion in place of the const; annotations
       // (title, description, ...) on the same subschema survive untouched.
       Object.assign(out, constToStructure(value));
     } else if (key === 'enum' && Array.isArray(value) && value.some(isNonScalar)) {
-      out.anyOf = value.map(constToStructure);
-    } else if (key === 'const' || key === 'enum') {
-      // Scalar const / all-scalar enum: the working code path — keep as-is.
-      out[key] = value;
-    } else {
+      enumChoices = value.map(constToStructure);
+    } else if (Array.isArray(value) && SCHEMA_LIST_KEYWORDS.has(key)) {
+      out[key] = value.map(patchSchemaForMonaco);
+    } else if (isNonScalar(value) && !Array.isArray(value) && SCHEMA_MAP_KEYWORDS.has(key)) {
+      out[key] = Object.fromEntries(
+        Object.entries(value).map(([name, sub]) => [name, patchSchemaForMonaco(sub)]),
+      );
+    } else if (SCHEMA_KEYWORDS.has(key)) {
       out[key] = patchSchemaForMonaco(value);
+    } else {
+      out[key] = isNonScalar(value) ? structuredClone(value) : value;
     }
+  }
+  if (enumChoices != null) {
+    if ('anyOf' in out) out.allOf = [...(out.allOf ?? []), { anyOf: enumChoices }];
+    else out.anyOf = enumChoices;
   }
   return out;
 }

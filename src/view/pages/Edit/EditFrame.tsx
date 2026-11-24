@@ -6,9 +6,7 @@ import {
   FaLock,
   FaLockOpen,
 } from 'react-icons/fa';
-import { useBlocker } from 'react-router';
 import { showModalMessage } from '../../../controller/global/modal';
-import { leavesEditedDocument } from '../../../controller/global/url';
 import {
   getActivatedActions,
   setChangeListener,
@@ -23,8 +21,6 @@ import {
   setValidatingListener,
 } from '../../../controller/local/EditController/session';
 import {
-  clearEditDirty,
-  isEditDirty,
   isFormValid,
   isValidationFailedMessage,
   retryValidation,
@@ -35,21 +31,15 @@ import {
 } from '../../../controller/local/EditController/status';
 import { revalidateMeta } from '../../../controller/local/EditController/sync';
 import { getActionCallback } from '../../../model/action';
-import { getCachedConfig } from '../../../model/config';
 import { ActionDecl } from '../../../utils/types/api';
-import iLocalStorage from '../../../session/persistent/LocalStorage';
-import { EditorLayout } from '../../../utils/types/config';
 import { RequestEditContext } from '../../../utils/types/internal/request';
 import SubLoader from '../../thirdparty/components/SubLoader';
-import { useContainerDimensions } from '../../hooks/useContainerDimensions';
 import YamlPane from './YamlPane';
 import MetaInfoPanel from './MetaInfoPanel';
 import FormPane from './FormPane';
+import { useSplitLayout } from './useSplitLayout';
+import { useUnsavedChangesGuard } from './useUnsavedChangesGuard';
 
-/** Below this container width the split is unavailable: only one pane at a time. */
-const SIDE_BY_SIDE_MIN_WIDTH = 900;
-/** Dragging the divider within this fraction of an edge snaps to single-pane. */
-const SNAP = 0.12;
 /** Width of the divider column (must fit the chevron buttons without clipping). */
 const DIVIDER_W = '1.75rem';
 
@@ -76,9 +66,9 @@ const EditFrame = ({
   const [isValidating, setIsValidating] = useState<boolean>(false);
   const [yacErrorMsg, setYACErrorMsg] = useState<string>('');
   const [isDisplayingYACError, setIsDisplayingYACError] = useState<boolean>(false);
-  const [isReadOnly, setIsReadOnly] = useState<boolean>(requestEditContext.mode === 'read');
+  const isReadOnly = requestEditContext.mode === 'read';
   const [isValid, setIsValid] = useState<boolean>(isFormValid());
-  // Whether the save payload differs from the stored file (see access.ts's
+  // Whether the save payload differs from the stored file (see editState.ts's
   // hasUncommittedChanges); kept current via setChangeListener below.
   const [hasChanges, setHasChanges] = useState<boolean>(false);
   // The user's permissions for this entity (from the validation responses) and
@@ -110,83 +100,25 @@ const EditFrame = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const panesRef = useRef<HTMLDivElement>(null);
-  const { width } = useContainerDimensions(containerRef);
-  const isNarrow = (width ?? SIDE_BY_SIDE_MIN_WIDTH) < SIDE_BY_SIDE_MIN_WIDTH;
-
-  // Layout + split ratio. The initial layout is the user's persisted choice, or
-  // the `defaultEditorLayout` from config (default side-by-side) for first-time use.
-  const [layout, setLayoutState] = useState<EditorLayout>(() =>
-    iLocalStorage.getEditorLayout(getCachedConfig()?.defaultEditorLayout),
-  );
-  const [ratio, setRatio] = useState<number>(() => iLocalStorage.getEditorSplitRatio());
-  const [dragging, setDragging] = useState<boolean>(false);
-
-  const layoutRef = useRef(layout);
-  layoutRef.current = layout;
-  const ratioRef = useRef(ratio);
-  ratioRef.current = ratio;
-  const draggingRef = useRef(false);
-
-  const setLayout = (l: EditorLayout) => {
-    setLayoutState(l);
-    iLocalStorage.setEditorLayout(l);
-  };
-
-  // Narrow screens cannot show both panes; fall back to the form side.
-  const effLayout: EditorLayout = isNarrow && layout === 'both' ? 'form' : layout;
-  const formVisible = effLayout !== 'yaml';
-  const yamlVisible = effLayout !== 'form';
-  const bothVisible = formVisible && yamlVisible;
-  const formFrac = effLayout === 'form' ? 1 : effLayout === 'yaml' ? 0 : ratio;
+  const {
+    isNarrow,
+    formVisible,
+    yamlVisible,
+    bothVisible,
+    formFrac,
+    dragging,
+    startDrag,
+    goLeft,
+    goRight,
+    leftDisabled,
+    rightDisabled,
+  } = useSplitLayout(containerRef, panesRef);
   // Dim the inactive pane (only meaningful when both are shown). The overlay
   // whitens in light mode and darkens in dark mode; pointer-events stay off so a
   // click reaches the pane and focuses it (which removes the dim).
   const dimOverlay =
     'pointer-events-none absolute inset-0 z-10 bg-white/50 transition-opacity ' +
     'duration-200 dark:bg-black/40';
-
-  // Chevrons: on wide screens step form-only <-> both <-> yaml-only; on narrow
-  // screens switch directly between the two single-pane views.
-  const goLeft = () => setLayout(isNarrow ? 'yaml' : effLayout === 'form' ? 'both' : 'yaml');
-  const goRight = () => setLayout(isNarrow ? 'form' : effLayout === 'yaml' ? 'both' : 'form');
-  const leftDisabled = effLayout === 'yaml';
-  const rightDisabled = effLayout === 'form';
-
-  const startDrag = (e: React.MouseEvent) => {
-    if (isNarrow) return;
-    e.preventDefault();
-    draggingRef.current = true;
-    setDragging(true);
-  };
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      if (!draggingRef.current || !panesRef.current) return;
-      const rect = panesRef.current.getBoundingClientRect();
-      const r = (e.clientX - rect.left) / rect.width;
-      // Snap to single-pane near an edge; otherwise split at the cursor.
-      if (r < SNAP) {
-        if (layoutRef.current !== 'yaml') setLayoutState('yaml');
-      } else if (r > 1 - SNAP) {
-        if (layoutRef.current !== 'form') setLayoutState('form');
-      } else {
-        setRatio(r);
-        if (layoutRef.current !== 'both') setLayoutState('both');
-      }
-    };
-    const onUp = () => {
-      if (!draggingRef.current) return;
-      draggingRef.current = false;
-      setDragging(false);
-      iLocalStorage.setEditorSplitRatio(ratioRef.current);
-      iLocalStorage.setEditorLayout(layoutRef.current);
-    };
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
-    return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
-    };
-  }, []);
 
   useEffect(() => {
     setValidityListener(setIsValid);
@@ -206,51 +138,7 @@ const EditFrame = ({
     };
   }, []);
 
-  useEffect(() => {
-    setIsReadOnly(requestEditContext.mode === 'read');
-  }, [requestEditContext.mode]);
-
-  // Warn before leaving the edited document with unsaved changes (the URL
-  // gaining the new name while creating is not leaving).
-  const createBase = `/${requestEditContext.rc.backendObject?.name}/${requestEditContext.rc.entityTypeName}/create`;
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      isEditDirty() &&
-      leavesEditedDocument(
-        requestEditContext.mode,
-        createBase,
-        currentLocation.pathname,
-        nextLocation.pathname,
-      ),
-  );
-  useEffect(() => {
-    if (blocker.state !== 'blocked') return;
-    showModalMessage(
-      'Discard unsaved changes?',
-      'You have unsaved changes in this editor. If you leave now, they will be lost.',
-      async () => {
-        clearEditDirty();
-        blocker.proceed();
-      },
-      async () => {
-        blocker.reset();
-      },
-      'Leave',
-    );
-  }, [blocker]);
-
-  // Cover full-page navigations (refresh, tab close, external URL) with the
-  // browser's native prompt while there are unsaved changes.
-  useEffect(() => {
-    const handler = (e: BeforeUnloadEvent) => {
-      if (isEditDirty()) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
-  }, []);
+  useUnsavedChangesGuard(requestEditContext);
 
   // Reset the selected-action labels when switching to another entity.
   useEffect(() => {

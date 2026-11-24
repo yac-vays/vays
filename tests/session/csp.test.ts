@@ -25,11 +25,11 @@ afterEach(() => {
 });
 
 describe('buildCspPolicy', () => {
-  it('allows the backends and the OIDC provider, nothing else', () => {
+  it('allows the origins of the backends and the OIDC provider, nothing else', () => {
     expect(buildCspPolicy(CONFIG)).toBe(
       "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; " +
-        "img-src 'self' https://yac-a.example.com https://yac-b.example.com/api data:; " +
-        "connect-src 'self' https://yac-a.example.com https://yac-b.example.com/api https://idp.example.com:8443; " +
+        "img-src 'self' https://yac-a.example.com https://yac-b.example.com data:; " +
+        "connect-src 'self' https://yac-a.example.com https://yac-b.example.com https://idp.example.com:8443; " +
         "font-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none';",
     );
   });
@@ -41,7 +41,7 @@ describe('buildCspPolicy', () => {
       favicon: '/branding/favicon.png',
     });
     expect(policy).toContain(
-      "img-src 'self' https://yac-a.example.com https://yac-b.example.com/api https://cdn.example.org data:;",
+      "img-src 'self' https://yac-a.example.com https://yac-b.example.com https://cdn.example.org data:;",
     );
     expect(policy.match(/cdn\.example\.org/g)).toHaveLength(1);
   });

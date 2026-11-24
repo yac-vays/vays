@@ -20,7 +20,9 @@ function httpOrigin(url) {
  * @returns the policy as a single line
  */
 function buildCspPolicy(config) {
-  const backends = (config.backends || []).map((b) => b.url).filter((u) => typeof u == 'string');
+  // Origins only: a source with a path (and no trailing slash) matches that
+  // exact path, not the API routes below it.
+  const backends = (config.backends || []).map((b) => httpOrigin(b.url));
   const oidc = httpOrigin(config.oidcConf && config.oidcConf.server);
 
   // The logo and favicon are loaded as images; if either is an absolute URL,

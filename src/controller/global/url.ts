@@ -210,20 +210,34 @@ export async function getDefaultURL(backends: YACBackend[]): Promise<string> {
   return '/';
 }
 
-let navHook: Nullable<(link: string) => void> = null;
+type NavigationHook = (link: string, options?: { replace?: boolean }) => void;
+
+let navHook: Nullable<NavigationHook> = null;
 
 /**
  * The hook needs to be registered since a hook cannot be used outside a react element.
  * @param nav
  */
-export function registerNavigationHook(nav: (link: string) => void) {
+export function registerNavigationHook(nav: NavigationHook) {
   navHook = nav;
 }
 
-export function navigateToURL(link: string) {
-  if (navHook != null) {
-    navHook(link);
+/** @param replace Replace the current history entry instead of adding one. */
+export function navigateToURL(link: string, replace: boolean = false) {
+  if (navHook == null) return;
+  if (replace) navHook(link, { replace: true });
+  else navHook(link);
+}
+
+/** Whether the URL path (possibly percent-encoded) starts with `prefix` (unencoded). */
+export function pathStartsWith(pathname: string, prefix: string): boolean {
+  let decoded = pathname;
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    // malformed escape: compare as is
   }
+  return decoded.startsWith(prefix);
 }
 
 /**

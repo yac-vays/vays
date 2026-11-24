@@ -25,7 +25,7 @@ import { Nullable } from '../../../utils/types/typeUtils';
 import { notifyEditStateChange } from '../../state/editStateEvents';
 import { showError } from '../../global/notification';
 import { reportSchemaWarnings } from '../../global/troubleshoot';
-import { navigateToURL } from '../../global/url';
+import { navigateToURL, pathStartsWith } from '../../global/url';
 import editingState from '../../state/EditCtrlState';
 import { emitChangeState, seedCanonical, setErrorMessage } from './ExpertMode/access';
 import {
@@ -436,36 +436,22 @@ async function retreiveNewCreateSchema(
   // mount-time generation only reaches controls on the currently open tab).
   injectEagerRandomStrings(valResp);
 
-  return await updateSchema(valResp.data, requestEditContext, false, false);
+  return await updateSchema(valResp.data, requestEditContext, false);
 }
 
 /**
- * Update URL to include the new name.
- * Should only be called for the create mode. (will not do anything for editing.)
- * @param name
- * @param requestEditContext
+ * Keep the URL of the create view on the typed name, without a history entry
+ * per keystroke. Does nothing outside create mode.
  */
 export function editViewNavigateToNewName(
   name: Nullable<string>,
   requestEditContext: RequestEditContext,
 ) {
-  if (
-    requestEditContext.mode == 'create' &&
-    // This fixes the latent redirect when the user just navigated away
-    window.location.pathname.startsWith(
-      `/${requestEditContext.rc.backendObject?.name}/${requestEditContext.rc.entityTypeName}/${requestEditContext.mode}`,
-    )
-  ) {
-    if (name != null) {
-      navigateToURL(
-        `/${requestEditContext.rc.backendObject?.name}/${requestEditContext.rc.entityTypeName}/${requestEditContext.mode}/${name}`,
-      );
-    } else {
-      navigateToURL(
-        `/${requestEditContext.rc.backendObject?.name}/${requestEditContext.rc.entityTypeName}/${requestEditContext.mode}/`,
-      );
-    }
-  }
+  if (requestEditContext.mode !== 'create') return;
+  const base = `/${requestEditContext.rc.backendObject?.name}/${requestEditContext.rc.entityTypeName}/create`;
+  // Not when the user just navigated away.
+  if (!pathStartsWith(window.location.pathname, base)) return;
+  navigateToURL(`${base}/${name == null ? '' : encodeURIComponent(name)}`, true);
 }
 
 export function setYACValidateResponse(yacResponse: string) {

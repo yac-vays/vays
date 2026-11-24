@@ -199,7 +199,7 @@ const StandardEditMode = memo(({ requestEditContext, setEditErrorMsg, setLoading
     beginValidationDispatch();
     // Merge this form change into the YAML the user currently has in the editor
     // (preserving its comments/formatting) rather than regenerating from data.
-    updateSchema(data, requestEditContext, true, true, null, getEntityYAML(), seq)
+    updateSchema(data, requestEditContext, true, null, getEntityYAML(), seq)
       .then((resp) => {
         if (didBlur) {
           setPendingValidations((c) => Math.max(0, c - 1));

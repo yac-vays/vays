@@ -28,7 +28,6 @@ test('tests the validation of the standard mode', async () => {
     VALIDATE_02_DATA,
     getTestEditRequestContext(URL, 'test', null, 'testType', 'create'),
     true,
-    false,
     null,
   );
 

@@ -207,7 +207,6 @@ export async function revalidateMeta(requestEditContext: RequestEditContext) {
       getCanonicalData(),
       requestEditContext,
       true,
-      true,
       null,
       getEntityYAML(),
       seq,

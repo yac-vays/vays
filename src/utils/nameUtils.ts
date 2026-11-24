@@ -15,3 +15,17 @@ export function isNameOptionalByYAC(accessedEntityType: Nullable<EntityTypeDecl>
   if (!accessedEntityType) return false;
   return accessedEntityType?.name_generated === NameGeneratedCond.optional;
 }
+
+/**
+ * Whether `name` matches the WHOLE `pattern`, like YAC's check (fullmatch).
+ * A pattern JavaScript cannot compile (Python-only syntax) is left to the
+ * backend.
+ */
+export function matchesNamePattern(name: string, pattern: Nullable<string> | undefined): boolean {
+  if (!pattern) return true;
+  try {
+    return new RegExp(`^(?:${pattern})$`).test(name);
+  } catch {
+    return true;
+  }
+}

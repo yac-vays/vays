@@ -8,7 +8,11 @@ import {
   setEditDirty,
 } from '../../../../controller/local/EditController/shared';
 import { getTriggerableActions } from '../../../../utils/actionUtils';
-import { isNameGeneratedByYAC, isNameOptionalByYAC } from '../../../../utils/nameUtils';
+import {
+  isNameGeneratedByYAC,
+  isNameOptionalByYAC,
+  matchesNamePattern,
+} from '../../../../utils/nameUtils';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 import ErrorRing from '../../../components/Form/ErrorRing';
 import { MetaLimitChips } from '../../../components/LimitChips';
@@ -101,23 +105,14 @@ const MetaInfoPanel = ({
                   const name = value === '' ? null : value;
                   setEntityName(name);
                   setEditDirty();
-                  editViewNavigateToNewName(name, requestEditContext);
-                  try {
-                    if (
-                      value !== '' &&
-                      !RegExp(requestEditContext.rc.accessedEntityType?.name_pattern ?? '.*').test(
-                        value,
-                      )
-                    ) {
-                      setNameError(
-                        'Does not match pattern ' +
-                          requestEditContext.rc.accessedEntityType?.name_pattern,
-                      );
-                      return;
-                    } else setNameError('');
-                  } catch {
+                  const pattern = requestEditContext.rc.accessedEntityType?.name_pattern;
+                  if (value !== '' && !matchesNamePattern(value, pattern)) {
+                    setNameError('Does not match pattern ' + pattern);
                     return;
                   }
+                  setNameError('');
+                  // Only a valid name reaches the URL.
+                  editViewNavigateToNewName(name, requestEditContext);
                   updateCallback();
                 }}
               />

@@ -22,11 +22,13 @@ JSON-Forms wiring while the input components are pure UI primitives.
     `multi_checkbox` in `combined/`.
   - [`combined/`](./combined/) — renderers for arrays and arrays of
     objects (flat array, nested-object array, multi-checkbox).
+    Exceptions: the array renderers `multiple_choice` (in `control/`)
+    and `big_string_list` (in `control/special/`).
   - [`layout/`](./layout/) — top-level layout renderers
     (categorization tabs, groups and rows).
   - [`utils/`](./utils/) — helpers shared by the testers
-    (`isCustomRenderer`, `isUntypedStringInput`) and a few common HOC
-    wrappers.
+    (`isCustomRenderer`, `isUntypedStringInput`, `itemsAreChoices`) and
+    by the renderers (stored-value checks, row keys of arrays, ...).
 
 ## See Also
 

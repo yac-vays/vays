@@ -169,7 +169,10 @@ export async function probeEntity(
 
 function typeCheckEntityData(ed: unknown, entityName: string): Nullable<EntityData> {
   if (typeCheck(TYPE_CHECK_ENTITY_DATA, ed)) {
-    return ed as EntityData;
+    const entity = ed as EntityData;
+    // The API declares `yaml` as nullable.
+    entity.yaml ??= '';
+    return entity;
   }
   showError(
     'Received bad data from Backend',

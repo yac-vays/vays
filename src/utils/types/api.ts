@@ -4,6 +4,9 @@
  * these types (runtime checking). Please note that the type_check ones are
  * indeed necessary to be specified seperately. The reason is that the typescript types are
  * stripped away at compile time, thus they cannot be used for runtime typwe checking of the IO.
+ *
+ * Every object pattern ends with `...` (further keys allowed), so a newer YAC
+ * that sends additional fields still works with this VAYS.
  */
 import { JsonSchema } from '@jsonforms/core';
 import { Nullable, SafeSource } from './typeUtils';
@@ -16,7 +19,7 @@ export type APIOperation = 'create' | 'edit' | 'delete';
  * entity being created/changed (see the YAC `limits` docs).
  */
 export const TYPE_CHECK_LIMIT_USAGE =
-  '{title: String, used: Number, max: Number, ok: Boolean, path: Maybe String}';
+  '{title: String, used: Number, max: Number, ok: Boolean, path: Maybe String, ...}';
 
 export interface LimitUsage {
   title: string;
@@ -35,6 +38,7 @@ export const TYPE_CHECK_VALIDATE_RESP = `{
     ui_schema: {
         type: Maybe String,
         elements: Maybe *,
+      ...
     },
     data: Object,
     valid: Boolean,
@@ -43,13 +47,16 @@ export const TYPE_CHECK_VALIDATE_RESP = `{
     json_schema_loc: Maybe String,
     data_loc: Maybe String,
     yaml: Maybe String,
+    ...
   },
   request: {
     valid: Boolean,
-    message: Maybe String
+    message: Maybe String,
+    ...
   },
   usages: Maybe [${TYPE_CHECK_LIMIT_USAGE}],
-  perms: Maybe [String]
+  perms: Maybe [String],
+  ...
 }`;
 
 export interface APIValidateResponse {
@@ -98,7 +105,7 @@ export enum NameGeneratedCond {
 
 export const TYPE_CHECK_ACTION_DECL =
   '{name: String, title: String, description: String, dangerous: Boolean, icon: String, ' +
-  'perms: [String], force: Boolean, hooks: [String]}';
+  'perms: [String], force: Boolean, hooks: [String], ...}';
 
 export interface ActionDecl {
   name: string;
@@ -111,7 +118,7 @@ export interface ActionDecl {
   hooks: string[];
 }
 
-export const TYPE_CHECK_LINK_DECL = '{name: String, title: String, icon: String}';
+export const TYPE_CHECK_LINK_DECL = '{name: String, title: String, icon: String, ...}';
 
 /**
  * An external link of an entity type; the per-entity URL comes with the
@@ -124,7 +131,7 @@ export interface LinkDecl {
   icon: string;
 }
 
-export const TYPE_CHECK_FAVOP_OBJECT = '{name: String, action: Boolean}';
+export const TYPE_CHECK_FAVOP_OBJECT = '{name: String, action: Boolean, ...}';
 
 export interface FavOpObject {
   name: string;
@@ -132,7 +139,7 @@ export interface FavOpObject {
 }
 
 export const TYPE_CHECK_LOG_DECL =
-  '{name: String, title: String, description: String, renderer: String, options: Object}';
+  '{name: String, title: String, description: String, renderer: String, options: Object, ...}';
 
 /**
  * A log of an entity type, as declared in the YAC specs. Which UI renderer
@@ -163,7 +170,8 @@ export const TYPE_CHECK_ENTITY_TYPE_DECL = `{
   logs: [${TYPE_CHECK_LOG_DECL}],
   links: Maybe [${TYPE_CHECK_LINK_DECL}],
   actions: [${TYPE_CHECK_ACTION_DECL}],
-  favorites: [${TYPE_CHECK_FAVOP_OBJECT}]
+  favorites: [${TYPE_CHECK_FAVOP_OBJECT}],
+  ...
 }`;
 
 /**
@@ -205,7 +213,7 @@ export type Permission =
   | 'adm';
 
 export const TYPE_CHECK_ENTITY_OBJECT =
-  '{name: String, link: String | Null, options: Object, links: Maybe Object, perms: [String]}';
+  '{name: String, link: String | Null, options: Object, links: Maybe Object, perms: [String], ...}';
 
 export interface EntityObject {
   name: string;
@@ -226,7 +234,7 @@ export interface EntityObject {
 }
 
 export const TYPE_CHECK_ENTITY_LOG =
-  '{name: String, message: String, time: String, progress: Null | Number, problem: Null | Boolean, has_content: Boolean}';
+  '{name: String, message: String, time: String, progress: Null | Number, problem: Null | Boolean, has_content: Boolean, ...}';
 
 export type EntityLog = {
   name: string;
@@ -240,7 +248,7 @@ export type EntityLog = {
   has_content: boolean;
 };
 
-export const TYPE_CHECK_ENTITY_LOG_CONTENT = '{name: String, time: String, content: String}';
+export const TYPE_CHECK_ENTITY_LOG_CONTENT = '{name: String, time: String, content: String, ...}';
 
 /** The content document of a log, fetched on demand (it may be big). */
 export type EntityLogContent = {
@@ -257,8 +265,9 @@ export const TYPE_CHECK_ENTITY_DATA = `{
   links: Maybe Object,
   perms: [String],
   data: Object,
-  yaml: String,
-  hash: Maybe String
+  yaml: Maybe String,
+  hash: Maybe String,
+  ...
 }`;
 
 export interface EntityData {

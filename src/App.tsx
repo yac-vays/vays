@@ -16,6 +16,7 @@ import { setFavicon } from './session/favicon';
 import { AppConfig, YACBackend } from './utils/types/config';
 import DiffViewer from './view/components/DiffViewer';
 import { ModalContextProvider } from './view/components/Modal/ModalContext';
+import PageErrorBoundary from './view/components/PageErrorBoundary';
 import { ToastContextProvider } from './view/components/ToastNotification/ToastContext';
 import Help from './view/pages/Help';
 
@@ -64,7 +65,7 @@ function App(): JSX.Element {
     },
   ]);
 
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -109,78 +110,81 @@ function App(): JSX.Element {
             <DefaultLayout backendList={backendsList}>
               {/* The browser tab title is always the title configured in config.json. */}
               <PageTitle title={config.title} />
-              <Routes>
-                <Route
-                  index
-                  element={
-                    <>
-                      <HomeView config={config} />
-                    </>
-                  }
-                />
-                <Route
-                  path="/oauth2-redirect"
-                  element={
-                    <>
-                      <RedirectView appconf={config} />
-                    </>
-                  }
-                />
-                <Route
-                  path="/error-page"
-                  element={
-                    <>
-                      <Suspense fallback={<Loader bgTransparent />}>
-                        <ErrorPage />
-                      </Suspense>
-                    </>
-                  }
-                />
-                <Route
-                  // index
-                  path="/:backendName/:entityTypeName"
-                  element={
-                    <>
-                      <Overview backends={backendsList} />
-                    </>
-                  }
-                />
-                <Route
-                  // index
-                  path="/help"
-                  element={
-                    <>
-                      <Suspense fallback={<Loader bgTransparent />}>
-                        <Help />
-                      </Suspense>
-                    </>
-                  }
-                />
-                <Route
-                  path="/:backendName/:entityTypeName/create/:entityName?"
-                  element={
-                    <>
-                      <EditView backends={backendsList} mode={'create'} />
-                    </>
-                  }
-                />
-                <Route
-                  path="/:backendName/:entityTypeName/edit/:entityName?"
-                  element={
-                    <>
-                      <EditView backends={backendsList} mode={'edit'} />
-                    </>
-                  }
-                />
-                <Route
-                  path="/:backendName/:entityTypeName/read/:entityName?"
-                  element={
-                    <>
-                      <EditView backends={backendsList} mode={'read'} />
-                    </>
-                  }
-                />
-              </Routes>
+              {/* A render error in a page must not unmount the whole app. */}
+              <PageErrorBoundary resetKey={pathname + search}>
+                <Routes>
+                  <Route
+                    index
+                    element={
+                      <>
+                        <HomeView config={config} />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="/oauth2-redirect"
+                    element={
+                      <>
+                        <RedirectView appconf={config} />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="/error-page"
+                    element={
+                      <>
+                        <Suspense fallback={<Loader bgTransparent />}>
+                          <ErrorPage />
+                        </Suspense>
+                      </>
+                    }
+                  />
+                  <Route
+                    // index
+                    path="/:backendName/:entityTypeName"
+                    element={
+                      <>
+                        <Overview backends={backendsList} />
+                      </>
+                    }
+                  />
+                  <Route
+                    // index
+                    path="/help"
+                    element={
+                      <>
+                        <Suspense fallback={<Loader bgTransparent />}>
+                          <Help />
+                        </Suspense>
+                      </>
+                    }
+                  />
+                  <Route
+                    path="/:backendName/:entityTypeName/create/:entityName?"
+                    element={
+                      <>
+                        <EditView backends={backendsList} mode={'create'} />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="/:backendName/:entityTypeName/edit/:entityName?"
+                    element={
+                      <>
+                        <EditView backends={backendsList} mode={'edit'} />
+                      </>
+                    }
+                  />
+                  <Route
+                    path="/:backendName/:entityTypeName/read/:entityName?"
+                    element={
+                      <>
+                        <EditView backends={backendsList} mode={'read'} />
+                      </>
+                    }
+                  />
+                </Routes>
+              </PageErrorBoundary>
             </DefaultLayout>
           </ModalContextProvider>
         )}

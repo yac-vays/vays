@@ -75,6 +75,13 @@ describe('renderer registry', () => {
     expect(getLogRenderer(decl('fancy')).name).toBe('messages');
     expect(err).toHaveBeenCalledTimes(1);
   });
+
+  it('does not take members of Object.prototype for renderers', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    for (const name of ['constructor', 'toString', '__proto__']) {
+      expect(getLogRenderer(decl(name))).toBe(LOG_RENDERERS.messages);
+    }
+  });
 });
 
 describe('log slot', () => {
@@ -220,6 +227,11 @@ describe('document options', () => {
     expect(downloadFilename('node1', 'facts', { filename: '{name}.facts.yml' })).toBe(
       'node1.facts.yml',
     );
+  });
+
+  it('uses .txt for a language that is a member of Object.prototype', () => {
+    expect(downloadFilename('node1', 'facts', { language: 'constructor' })).toBe('node1-facts.txt');
+    expect(downloadFilename('node1', 'facts', { language: '__proto__' })).toBe('node1-facts.txt');
   });
 });
 

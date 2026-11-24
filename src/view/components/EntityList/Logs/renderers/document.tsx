@@ -34,7 +34,9 @@ export function downloadFilename(
 ): string {
   const { language, filename } = documentOptions(options);
   if (filename) return filename.replaceAll('{name}', entityName);
-  return `${entityName}-${logName}.${EXTENSIONS[language] ?? 'txt'}`;
+  // Own entries only: the language comes from the specs ("constructor", ...).
+  const extension = Object.hasOwn(EXTENSIONS, language) ? EXTENSIONS[language] : 'txt';
+  return `${entityName}-${logName}.${extension}`;
 }
 
 const DocumentView = ({ decl, entries, entityName, requestContext, onClose }: LogViewProps) => {

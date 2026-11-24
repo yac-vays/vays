@@ -3,8 +3,10 @@ import Ajv from 'ajv';
 import { describe, expect, it } from 'vitest';
 import {
   deepDelete,
+  extractPatch,
   getAllErrors,
   hasAtPath,
+  markRemovedKeys,
   removeOldData,
   setUndefinedAtPath,
 } from '../../src/utils/schema/dataUtils';
@@ -173,6 +175,32 @@ describe('path helpers never touch the prototype chain', () => {
       },
     ];
     expect(removeOldData(data, errors)).toEqual([['users', 'bad']]);
+  });
+});
+
+describe('patches treat keys named like Object.prototype members as data', () => {
+  it('extractPatch marks a removed `constructor` / `toString` key', () => {
+    expect(extractPatch({ constructor: 'x', toString: 1, a: 1 }, { a: 1 })).toStrictEqual({
+      constructor: '~undefined',
+      toString: '~undefined',
+    });
+    expect(extractPatch({ sub: { valueOf: 'x' } }, { sub: {} })).toStrictEqual({
+      sub: { valueOf: '~undefined' },
+    });
+  });
+
+  it('extractPatch sends an added `constructor` / `toString` key', () => {
+    expect(extractPatch({ a: 1 }, { a: 1, constructor: 'x', toString: 1 })).toStrictEqual({
+      constructor: 'x',
+      toString: 1,
+    });
+  });
+
+  it('markRemovedKeys marks a removed `constructor` key', () => {
+    expect(markRemovedKeys({ constructor: 'x', sub: { toString: 1 } }, { sub: {} })).toStrictEqual({
+      constructor: '~undefined',
+      sub: { toString: '~undefined' },
+    });
   });
 });
 

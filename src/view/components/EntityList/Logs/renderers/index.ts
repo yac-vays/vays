@@ -22,8 +22,8 @@ const warned = new Set<string>();
 
 /** The renderer of a log; unknown names fall back to `messages`. */
 export function getLogRenderer(decl: LogDecl): LogRenderer {
-  const renderer = LOG_RENDERERS[decl.renderer];
-  if (renderer) return renderer;
+  // Own entries only: the name comes from the specs ("constructor", ...).
+  if (Object.hasOwn(LOG_RENDERERS, decl.renderer)) return LOG_RENDERERS[decl.renderer];
   if (!warned.has(decl.renderer)) {
     warned.add(decl.renderer);
     logError(

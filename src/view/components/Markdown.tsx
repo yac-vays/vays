@@ -67,6 +67,9 @@ const svgSchema = {
  * somewhere less trusted (e.g. log content written by a host). It is sanitized
  * with the plain default schema: no inline SVG, and ids / names keep their
  * `user-content-` prefix so they cannot shadow properties of `document`.
+ *
+ * Anything but a non-empty string renders nothing (react-markdown throws on
+ * non-string children, and the text may come straight from a backend response).
  */
 const MarkdownRender = ({
   text,
@@ -75,7 +78,7 @@ const MarkdownRender = ({
   text: string | null | undefined;
   untrusted?: boolean;
 }) => {
-  if (!text) return <></>;
+  if (typeof text !== 'string' || !text) return <></>;
   return (
     <div className="markdown-body">
       <Markdown

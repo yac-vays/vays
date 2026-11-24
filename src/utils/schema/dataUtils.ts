@@ -162,7 +162,7 @@ export function deepDelete(data: any, instancePath: string[], key: Nullable<stri
 export function markRemovedKeys(oldData: any, newData: any) {
   const out: { [key: string]: any } = { ...newData };
   for (const key of Object.keys(oldData ?? {})) {
-    if (!(key in newData)) {
+    if (!hasOwn(newData, key)) {
       out[key] = '~undefined';
     } else if (_.isPlainObject(oldData[key]) && _.isPlainObject(newData[key])) {
       out[key] = markRemovedKeys(oldData[key], newData[key]);
@@ -181,7 +181,7 @@ export function extractPatch(oldData: any, newData: any) {
   const patch: { [key: string]: any } = {};
 
   for (const key of Object.keys(oldData)) {
-    if (!(key in newData)) {
+    if (!hasOwn(newData, key)) {
       patch[key] = '~undefined';
     } else if (Array.isArray(oldData[key]) || Array.isArray(newData[key])) {
       if (!_.isEqual(oldData[key], newData[key])) {
@@ -200,7 +200,7 @@ export function extractPatch(oldData: any, newData: any) {
   }
 
   for (const key of Object.keys(newData)) {
-    if (!(key in oldData)) {
+    if (!hasOwn(oldData, key)) {
       patch[key] = _.clone(newData[key]);
     }
   }

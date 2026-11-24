@@ -9,7 +9,7 @@ import {
   QueryResponse,
   QueryResult,
 } from '../../../utils/types/internal/entityList';
-import { hasLinksDefined } from '../../../utils/columnUtils';
+import { getAlias, hasLinksDefined } from '../../../utils/columnUtils';
 import { hasLogsDefined } from '../../../utils/logUtils';
 import { RequestContext } from '../../../utils/types/internal/request';
 import { Nullable } from '../../../utils/types/typeUtils';
@@ -129,8 +129,9 @@ function representEntity(
   for (const option of requestContext.accessedEntityType?.options ?? []) {
     const rawValue = entity.options[option.name];
     const value = rawValue == null ? null : String(rawValue);
-    if (value != null && value in option.aliases) {
-      values.push({ value: option.aliases[value], isMarkdown: true });
+    const alias = value == null ? null : getAlias(option.aliases, value);
+    if (alias != null) {
+      values.push({ value: alias, isMarkdown: true });
     } else if (value == null) {
       values.push({ value: '(None)', isMarkdown: false });
     } else {

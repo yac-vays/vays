@@ -1,3 +1,4 @@
+import { getAlias } from '../../../utils/columnUtils';
 import { EntityObject } from '../../../utils/types/api';
 import { RequestContext } from '../../../utils/types/internal/request';
 
@@ -34,8 +35,9 @@ export function performSearch(
       // the same); lowercase only for the actual comparison.
       const value: string = rawValue == null ? '' : String(rawValue);
       const lowerValue = value.toLowerCase();
-      if (value in option.aliases) {
-        const actualValue: string = option.aliases[value].toLowerCase();
+      const alias = getAlias(option.aliases, value);
+      if (alias != null) {
+        const actualValue: string = alias.toLowerCase();
         if (searchList[i] != null && !actualValue.includes(searchList[i] as string)) {
           passed = false;
           break;

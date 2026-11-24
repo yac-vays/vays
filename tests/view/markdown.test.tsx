@@ -76,3 +76,12 @@ describe('untrusted text (e.g. log content)', () => {
     expect(render('<h2 id="root">t</h2>')).toContain('id="root"');
   });
 });
+
+describe('input that is not text', () => {
+  test.each([[() => 'x'], [{}], [42], [['a']], [null], [undefined], ['']])(
+    '%o renders nothing instead of throwing',
+    (value) => {
+      expect(renderToStaticMarkup(<MarkdownRender text={value as unknown as string} />)).toBe('');
+    },
+  );
+});

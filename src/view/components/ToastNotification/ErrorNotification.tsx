@@ -1,4 +1,13 @@
-const ErrorNotification = ({ title, detail }: { title: string; detail: string }) => {
+/** An error toast, or with `warning` a notice about a partial failure (amber). */
+const ErrorNotification = ({
+  title,
+  detail,
+  warning = false,
+}: {
+  title: string;
+  detail: string;
+  warning?: boolean;
+}) => {
   return (
     <>
       <div className="flex grow items-center gap-5">
@@ -8,7 +17,9 @@ const ErrorNotification = ({ title, detail }: { title: string; detail: string })
             height="48px"
             viewBox="0 -960 960 960"
             width="48px"
-            fill="#dc3545"
+            fill={warning ? '#d97706' : '#dc3545'}
+            role="img"
+            aria-label={warning ? 'Warning' : 'Error'}
           >
             <path d="m40-120 440-760 440 760H40Zm138-80h604L480-720 178-200Zm302-40q17 0 28.5-11.5T520-280q0-17-11.5-28.5T480-320q-17 0-28.5 11.5T440-280q0 17 11.5 28.5T480-240Zm-40-120h80v-200h-80v200Zm40-100Z" />
           </svg>

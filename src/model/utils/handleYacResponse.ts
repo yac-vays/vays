@@ -9,9 +9,12 @@
  * flow on an expired session.
  */
 
-import { showError } from '../../controller/global/notification';
+import { showError, showWarning } from '../../controller/global/notification';
 import { handleAuthFailed, userIsLoggedIn } from '../../session/login/tokenHandling';
 import { Nullable } from '../../utils/types/typeUtils';
+
+/** Set by YAC on a successful write when one of its `*:after` actions failed. */
+export const YAC_WARNING_HEADER = 'YAC-Warning';
 
 /** The error envelope YAC returns for non-2xx responses. */
 export interface YacErrorBody {
@@ -105,7 +108,12 @@ export async function handleYacResponse(
   ctx: YacResponseContext,
 ): Promise<YacResponseResult> {
   if (resp == null) return { kind: 'network-error' };
-  if (resp.status === (ctx.successStatus ?? 200)) return { kind: 'success', resp };
+  if (resp.status === (ctx.successStatus ?? 200)) {
+    // A committed write whose after-action failed: still a success.
+    const warning = resp.headers?.get(YAC_WARNING_HEADER);
+    if (warning && !ctx.quiet) showWarning(ctx.title, warning);
+    return { kind: 'success', resp };
+  }
 
   const status = resp.status;
   const body = await decodeErrorBody(resp);

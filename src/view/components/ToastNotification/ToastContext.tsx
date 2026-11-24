@@ -9,6 +9,8 @@ export const enum ToastMode {
   ERROR,
   /** Neutral notice (e.g. something was done for the user that they may undo). */
   INFO,
+  /** The operation succeeded, but something alongside it failed. */
+  WARNING,
 }
 
 /** An optional action link rendered below a (success / info) toast's detail text. */
@@ -47,6 +49,15 @@ export const ToastContextProvider = ({ children }: { children: React.ReactNode }
       }
       case ToastMode.INFO: {
         toast(<SuccessNotification {...{ title, detail, link }} info />, {
+          icon: false,
+          className:
+            'sm:w-full max-w-[490px] bg-white border-solid border rounded-sm py-2 pl-2 pr-3 shadow-2 dark:bg-meta-4',
+          toastId: hashCode(title + detail),
+        });
+        break;
+      }
+      case ToastMode.WARNING: {
+        toast(<ErrorNotification {...{ title, detail }} warning />, {
           icon: false,
           className:
             'sm:w-full max-w-[490px] bg-white border-solid border rounded-sm py-2 pl-2 pr-3 shadow-2 dark:bg-meta-4',

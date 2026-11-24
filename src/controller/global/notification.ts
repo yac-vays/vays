@@ -32,6 +32,16 @@ export function showError(title: string, detail: string) {
 }
 
 /**
+ * Show a warning toast: the operation went through, but something alongside it
+ * failed (e.g. an action that runs after a committed write).
+ */
+export function showWarning(title: string, detail: string) {
+  if (notifyCtrlState.notifyCallback != null) {
+    notifyCtrlState.notifyCallback(ToastMode.WARNING, title, detail);
+  }
+}
+
+/**
  * Show an info toast: a neutral notice, e.g. about something that was done for
  * the user, with an optional link to undo it.
  * @param title the title to display.

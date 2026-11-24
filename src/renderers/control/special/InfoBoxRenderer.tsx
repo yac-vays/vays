@@ -10,7 +10,7 @@ export const InfoBoxControl = (props: ControlProps) => {
       {/* Displaying the description IS this renderer's purpose, so it stays
           inline as body text (as markdown, like everywhere else) instead of
           behind the title's info-button. */}
-      <FormComponentTitle label={props.schema.title} onClick={() => {}} hideAddButton />
+      <FormComponentTitle label={props.schema.title} />
       <div className="pl-1">
         <MarkdownRender text={props.description ?? ''} />
       </div>

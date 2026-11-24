@@ -9,7 +9,6 @@ import ListItem from '../MultiSelect/ListItem';
 
 interface LargeStringProps {
   handleChange: (path: string, value: string[]) => void;
-  id: string;
   path: string;
   data?: string[];
   disabled?: boolean;

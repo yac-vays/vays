@@ -30,9 +30,7 @@ export const ListAsStringRenderer = (props: ControlProps) => {
     <>
       <div className="p-1 pb-4">
         <FormComponentTitle
-          hideAddButton
           label={props.label}
-          onClick={() => {}}
           description={props.description}
           required={props.required}
           errors={errors}
@@ -50,7 +48,6 @@ export const ListAsStringRenderer = (props: ControlProps) => {
         <LargeStringList
           handleChange={handleChange}
           path={props.path}
-          id={props.id}
           data={list}
           disabled={!props.enabled}
           error={!!visibleFormErrors(errors, readonly)}

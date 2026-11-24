@@ -16,10 +16,8 @@ import {
   withJsonFormsArrayLayoutProps,
   withTranslateProps,
 } from '@jsonforms/react';
-import { showModalMessage } from '../../../controller/global/modal';
-import { flushPendingDebouncedInputs } from '../../../controller/local/EditController/debounceRegistry';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
-import { useRowKeys } from '../../utils/useRowKeys';
+import { useRemovableRows } from '../../utils/useRowKeys';
 import Table from './Table';
 
 /**
@@ -37,23 +35,7 @@ export const ArrayControlRenderer = (
   props: ArrayLayoutProps & { translations: ArrayTranslations },
 ): JSX.Element => {
   const { removeItems, visible, translations } = props;
-  const rowKeys = useRowKeys(props.data);
-
-  const openDeleteDialog = (_p: string, rowIndex: number) => () => {
-    showModalMessage(
-      translations.deleteDialogTitle ?? 'Delete this item?',
-      translations.deleteDialogMessage ?? 'The item is removed from the list.',
-      async () => {
-        if (!removeItems) return;
-        // A pending edit must land before the indices shift.
-        flushPendingDebouncedInputs();
-        rowKeys.remove(rowIndex);
-        removeItems(props.path, [rowIndex])();
-      },
-      async () => {},
-      'Delete',
-    );
-  };
+  const rows = useRemovableRows(props.data, props.path, removeItems, translations);
   if (!visible) {
     return <></>;
   }
@@ -66,21 +48,23 @@ export const ArrayControlRenderer = (
         <div className="px-1">
           <FormComponentTitle
             label={props.label}
-            onClick={() => {
-              props.addItem(props.path, createDefaultValue(props.schema, props.rootSchema))();
-            }}
+            onAdd={
+              props.enabled
+                ? () =>
+                    props.addItem(props.path, createDefaultValue(props.schema, props.rootSchema))()
+                : undefined
+            }
             description={props.description}
             required={props.required}
             errors={props.errors ? [...new Set(props.errors.split('\n'))].join('\n') : ''}
-            hideAddButton={!props.enabled}
             path={props.path}
           />
         </div>
 
         <Table
           {...props}
-          rowKeys={rowKeys.keys}
-          openDeleteDialog={openDeleteDialog}
+          rowKeys={rows.keys}
+          openDeleteDialog={rows.openDeleteDialog}
           translations={translations}
         />
       </div>

@@ -3,7 +3,6 @@ import InfoPanel from '../InfoPanel';
 
 interface ErrorProps {
   content?: string;
-  description?: string;
 }
 
 /**
@@ -13,9 +12,7 @@ interface ErrorProps {
  * except for "value the form cannot display" findings (see
  * {@link visibleFormErrors}).
  *
- * @param title the title of the input field
- * @param description the description to display
- * @returns
+ * @param content the error text, one finding per line
  */
 const ErrorButton = ({ content }: ErrorProps) => {
   const shown = visibleFormErrors(content, useFormReadonly());

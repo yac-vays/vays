@@ -9,11 +9,7 @@ import {
 import React, { ComponentType } from 'react';
 import ItemDeleteButton from '../NestedObjectRenderer/ItemDeleteButton';
 
-interface DispatchPropsOfItem {
-  onRemove(): () => void;
-}
-
-interface ItemRendererProps extends LayoutProps, DispatchPropsOfItem {
+interface ItemRendererProps extends LayoutProps {
   index: number;
   openDeleteDialog: (p: string, rowIndex: number) => () => void;
 }
@@ -43,8 +39,7 @@ const withCustomProps = (Component: ComponentType<ItemRendererProps>) => {
           Object.is(prevProps.uischema, props.uischema) &&
           Object.is(prevProps.renderers, props.renderers) &&
           Object.is(prevProps.cells, props.cells) &&
-          Object.is(prevProps.openDeleteDialog, props.openDeleteDialog) &&
-          Object.is(prevProps.onRemove, props.onRemove),
+          Object.is(prevProps.openDeleteDialog, props.openDeleteDialog),
       ),
     ),
   );
@@ -101,8 +96,6 @@ export class Table extends React.Component<
     WithDeleteDialogSupport & { translations: ArrayTranslations; rowKeys: number[] },
   unknown
 > {
-  addItem = (path: string, value: string) => this.props.addItem(path, value);
-
   render() {
     return (
       <>
@@ -121,7 +114,6 @@ export class Table extends React.Component<
                   path={Paths.compose(this.props.path, `${i}`)}
                   renderers={this.props.renderers}
                   cells={this.props.cells}
-                  onRemove={this.props.removeItems}
                   openDeleteDialog={this.props.openDeleteDialog}
                   enabled={this.props.enabled}
                 />

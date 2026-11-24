@@ -3,14 +3,11 @@ import {
   ControlProps,
   DispatchPropsOfMultiEnumControl,
   hasType,
-  JsonSchema,
   OwnPropsOfEnum,
   Paths,
   RankedTester,
   rankWith,
-  resolveSchema,
   schemaMatches,
-  schemaSubPathMatches,
   uiTypeIs,
 } from '@jsonforms/core';
 
@@ -19,7 +16,7 @@ import { ReactNode } from 'react';
 import ErrorRing from '../../view/components/Form/ErrorRing';
 import FormComponentTitle from '../../view/components/FormComponentTitle';
 import { BooleanControl } from '../control/BooleanControlRenderer';
-import { isCustomRenderer } from '../utils/customTesterUtils';
+import { isCustomRenderer, itemsAreChoices } from '../utils/customTesterUtils';
 import { matchesJsonType, reportBadData } from '../utils/dataSanitization';
 import { resolveInitial } from '../utils/initialHandling';
 
@@ -83,10 +80,8 @@ export const MultiCheckboxRenderer = ({
       <FormComponentTitle
         label={label}
         description={description}
-        onClick={() => {}}
         required={required}
         errors={errors}
-        hideAddButton
         path={path}
       />
 
@@ -123,17 +118,6 @@ export const MultiCheckboxRenderer = ({
   );
 };
 
-const hasEnumItems = (schema: JsonSchema): boolean =>
-  schema.enum !== undefined &&
-  schema.enum.length > 0 &&
-  (schema.type === 'string' ||
-    (schema.type === undefined && schema.enum.every((v: unknown) => typeof v === 'string')));
-const hasOneOfItems = (schema: JsonSchema): boolean =>
-  schema.oneOf !== undefined &&
-  schema.oneOf.length > 0 &&
-  (schema.oneOf as JsonSchema[]).every((entry: JsonSchema) => {
-    return entry.const !== undefined;
-  });
 export const MultiCheckboxTester: RankedTester = rankWith(
   31,
   and(
@@ -146,12 +130,7 @@ export const MultiCheckboxTester: RankedTester = rankWith(
             hasType(schema, 'array') && !Array.isArray(schema.items) && schema.uniqueItems === true,
         ),
       ),
-      schemaSubPathMatches('items', (schema, rootSchema) => {
-        const resolvedSchema = schema.$ref
-          ? resolveSchema(rootSchema, schema.$ref, rootSchema)
-          : schema;
-        return !!resolvedSchema && (hasOneOfItems(resolvedSchema) || hasEnumItems(resolvedSchema));
-      }),
+      itemsAreChoices,
     ),
   ),
 );

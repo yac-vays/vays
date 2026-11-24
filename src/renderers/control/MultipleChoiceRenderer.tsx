@@ -3,15 +3,13 @@ import {
   ControlProps,
   DispatchPropsOfMultiEnumControl,
   hasType,
-  JsonSchema,
   OwnPropsOfEnum,
   RankedTester,
   rankWith,
-  resolveSchema,
   schemaMatches,
-  schemaSubPathMatches,
   uiTypeIs,
 } from '@jsonforms/core';
+import { itemsAreChoices } from '../utils/customTesterUtils';
 
 import { withJsonFormsMultiEnumProps } from '@jsonforms/react';
 import ErrorRing from '../../view/components/Form/ErrorRing';
@@ -66,9 +64,7 @@ export const MultipleChoiceRenderer = ({
       <FormComponentTitle
         label={label}
         description={description}
-        onClick={() => {}}
         required={required}
-        hideAddButton
         errors={errors}
         path={path}
       />
@@ -90,29 +86,13 @@ export const MultipleChoiceRenderer = ({
   );
 };
 
-const hasEnumItems = (schema: JsonSchema): boolean =>
-  schema.enum !== undefined &&
-  schema.enum.length > 0 &&
-  (schema.type === 'string' ||
-    (schema.type === undefined && schema.enum.every((v: unknown) => typeof v === 'string')));
-const hasOneOfItems = (schema: JsonSchema): boolean =>
-  schema.oneOf !== undefined &&
-  schema.oneOf.length > 0 &&
-  (schema.oneOf as JsonSchema[]).every((entry: JsonSchema) => {
-    return entry.const !== undefined;
-  });
 export const MultipleChoiceTester: RankedTester = rankWith(
   30,
   and(
     uiTypeIs('Control'),
     and(
       schemaMatches((schema) => hasType(schema, 'array') && !Array.isArray(schema.items)),
-      schemaSubPathMatches('items', (schema, rootSchema) => {
-        const resolvedSchema = schema.$ref
-          ? resolveSchema(rootSchema, schema.$ref, rootSchema)
-          : schema;
-        return !!resolvedSchema && (hasOneOfItems(resolvedSchema) || hasEnumItems(resolvedSchema));
-      }),
+      itemsAreChoices,
     ),
   ),
 );

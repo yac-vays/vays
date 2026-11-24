@@ -5,13 +5,7 @@ import LargeStringList from '../../src/view/thirdparty/components/ifc/LargeStrin
 const mount = (disabled = false) => {
   const handleChange = vi.fn();
   render(
-    <LargeStringList
-      handleChange={handleChange}
-      id="l"
-      path="list"
-      data={['x']}
-      disabled={disabled}
-    />,
+    <LargeStringList handleChange={handleChange} path="list" data={['x']} disabled={disabled} />,
   );
   return handleChange;
 };

@@ -8,7 +8,6 @@ interface DatePickerProps {
   onChange: (v: string) => void;
   id: string;
   format?: string;
-  type?: string;
   enabled?: boolean;
   data?: string;
   enableRange?: DateRange;
@@ -35,7 +34,6 @@ interface DatePickerProps {
 const DatePicker = ({
   onChange,
   format,
-  //type,
   enabled,
   data,
   id,

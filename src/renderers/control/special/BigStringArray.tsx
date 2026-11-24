@@ -38,9 +38,7 @@ export const BigStringArray = (props: ControlProps) => {
     <>
       <div className="p-1 pb-4">
         <FormComponentTitle
-          hideAddButton
           label={props.label}
-          onClick={() => {}}
           description={props.description}
           required={props.required}
           errors={errors}
@@ -56,7 +54,6 @@ export const BigStringArray = (props: ControlProps) => {
         <LargeStringList
           handleChange={props.handleChange}
           path={props.path}
-          id={props.id}
           data={data}
           disabled={!props.enabled}
           error={!!visibleFormErrors(errors, readonly)}

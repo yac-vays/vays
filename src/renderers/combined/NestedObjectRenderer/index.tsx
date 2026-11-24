@@ -12,11 +12,9 @@ import {
   withJsonFormsArrayLayoutProps,
   withTranslateProps,
 } from '@jsonforms/react';
-import React, { useCallback, useState } from 'react';
-import { showModalMessage } from '../../../controller/global/modal';
-import { flushPendingDebouncedInputs } from '../../../controller/local/EditController/debounceRegistry';
+import React, { useState } from 'react';
 import FormComponentTitle from '../../../view/components/FormComponentTitle';
-import { useRowKeys } from '../../utils/useRowKeys';
+import { useRemovableRows } from '../../utils/useRowKeys';
 import CardRenderer from './CardRenderer';
 
 export const NestedObjectRenderer = ({
@@ -47,48 +45,24 @@ export const NestedObjectRenderer = ({
   // fill in) instead of requiring a manual click to open it.
   const [addedIndex, setAddedIndex] = useState<number | null>(null);
 
-  const addItemCb = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (p: string, value: any) => {
-      return addItem(p, value);
-    },
-    [addItem],
-  );
-
-  const rowKeys = useRowKeys(data);
+  const rows = useRemovableRows(data, path, removeItems, translations);
 
   // After all hooks: rules of hooks forbid an early return before them.
   if (!visible) return <></>;
-
-  const openDeleteDialog = (_p: string, rowIndex: number) => () => {
-    showModalMessage(
-      translations.deleteDialogTitle ?? 'Delete this item?',
-      translations.deleteDialogMessage ?? 'The item is removed from the list.',
-      async () => {
-        if (!removeItems) return;
-        // A pending edit must land before the indices shift.
-        flushPendingDebouncedInputs();
-        rowKeys.remove(rowIndex);
-        removeItems(path, [rowIndex])();
-      },
-      async () => {},
-      'Delete',
-    );
-  };
 
   const toRender = Array(data)
     .fill(0)
     .map((_, i) => {
       return (
         <CardRenderer
-          key={rowKeys.keys[i]}
+          key={rows.keys[i]}
           index={i}
           schema={schema}
           uischema={uischema}
           path={composePaths(path, `${i}`)}
           renderers={renderers}
           cells={cells}
-          onRemove={openDeleteDialog}
+          onRemove={rows.openDeleteDialog}
           enabled={enabled}
           expanded={i === addedIndex}
         />
@@ -98,15 +72,18 @@ export const NestedObjectRenderer = ({
     <>
       <FormComponentTitle
         label={label}
-        onClick={() => {
-          // `data` is the current array length, i.e. the new item's index.
-          setAddedIndex(data);
-          addItemCb(path, createDefaultValue(schema, rootSchema))();
-        }}
+        onAdd={
+          enabled
+            ? () => {
+                // `data` is the current array length, i.e. the new item's index.
+                setAddedIndex(data);
+                addItem(path, createDefaultValue(schema, rootSchema))();
+              }
+            : undefined
+        }
         description={description}
         required={required}
         errors={errors}
-        hideAddButton={!enabled}
         path={path}
       />
       {toRender}

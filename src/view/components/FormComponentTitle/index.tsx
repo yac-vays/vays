@@ -4,19 +4,16 @@ import { FormFieldLimitChips } from '../LimitChips';
 
 const FormComponentTitle = ({
   label,
-  large,
-  onClick,
+  onAdd,
   description,
-  hideAddButton,
   required,
   errors,
   path,
 }: {
   label?: string;
-  large?: boolean;
-  onClick: () => void;
+  /** Adds an item; without it there is no (+) button. */
+  onAdd?: () => void;
   description?: string;
-  hideAddButton?: boolean;
   required?: boolean;
   errors?: string;
   /** The control's data path; anchors matching `limits` usage chips here. */
@@ -27,7 +24,7 @@ const FormComponentTitle = ({
       {/* min-h-8 fits the 32px (+) button, so it is not clipped when the
           title is the first element of a scroll container. */}
       <div className="relative flex flex-row w-full items-center min-h-8">
-        <h4 className={`mb-0 ${large ? 'text-2xl' : 'text-xl'} text-plainfont`}>
+        <h4 className="mb-0 text-xl text-plainfont">
           {label} {required ? <span className="text-danger pr-2"> *</span> : <></>}
         </h4>
         {/* Description behind the markdown info-button, matching how the
@@ -54,11 +51,11 @@ const FormComponentTitle = ({
           <></>
         )}
 
-        {hideAddButton ? (
+        {onAdd == null ? (
           <></>
         ) : (
           <div className="absolute right-0 top-1/2 -translate-y-1/2 text-[#98A6AD] hover:text-plainfont">
-            <button onClick={onClick}>
+            <button onClick={onAdd}>
               <svg
                 className="fill-current mr-3"
                 xmlns="http://www.w3.org/2000/svg"

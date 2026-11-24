@@ -109,10 +109,12 @@ export const LimitBar = (props: ControlProps) => {
     [fieldUsages, measuredData, props.path, shown, initial, props.schema, step],
   );
 
-  const commit = useDebouncedCommit(
-    (v: number | undefined) => props.handleChange(props.path, v),
-    800,
-  );
+  const commit = useDebouncedCommit((v: number | undefined) => {
+    props.handleChange(props.path, v);
+    // Committing the stored value changes no data, so the effect below would
+    // never end the draft (which then hides later changes from outside).
+    if (v === data && !dragging.current) setDraft(null);
+  }, 800);
   // Once the committed value arrived in the data, the draft is obsolete.
   const dragging = useRef<{ model: LimitBarModel; range: { lo: number; hi: number } } | null>(null);
   useEffect(() => {

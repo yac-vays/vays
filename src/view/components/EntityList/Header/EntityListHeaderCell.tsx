@@ -39,18 +39,29 @@ const EntityListHeaderCell = ({
   const [openSearch, setOpenSearch] = useState(searchable && searchTerm !== '');
   const headerEntryRef = useRef<HTMLTableCellElement>(null);
   const inputBar = useRef<HTMLInputElement>(null);
+  // Width limit of the search input, taken from the column when the search
+  // opens, so the input does not reshape the table.
+  const [inputMaxWidth, setInputMaxWidth] = useState<number | undefined>(undefined);
+  const measure = () => {
+    const width = headerEntryRef.current?.clientWidth;
+    if (width) setInputMaxWidth(Math.max(width - 30 - (firstField ? 30 : 0), 0));
+  };
+  useEffect(measure, []);
 
   // Show a filter that was set elsewhere; while typing, the input already has it.
   useEffect(() => {
     const input = inputBar.current;
     if (!searchable || input == null) return;
     if (input.value !== searchTerm) input.value = searchTerm;
-    if (searchTerm !== '') setOpenSearch(true);
-    else if (document.activeElement !== input) setOpenSearch(false);
+    if (searchTerm !== '') {
+      if (!openSearch) measure();
+      setOpenSearch(true);
+    } else if (document.activeElement !== input) setOpenSearch(false);
   }, [searchable, searchTerm]);
 
   const toggleOpenSearch = () => {
     if (searchable) {
+      if (!openSearch) measure();
       setOpenSearch(true);
       setTimeout(() => {
         inputBar.current?.focus();
@@ -129,11 +140,7 @@ const EntityListHeaderCell = ({
             ref={inputBar}
             type="text"
             className=" rounded-md border border-stroke px-3 py-1 outline-hidden focus:border-primary "
-            style={{
-              //@ts-expect-error Ignore init
-              maxWidth: headerEntryRef.current?.clientWidth - 30 - (firstField ? 30 : 0),
-              left: 0,
-            }}
+            style={{ maxWidth: inputMaxWidth, left: 0 }}
           />
         </div>
       </th>

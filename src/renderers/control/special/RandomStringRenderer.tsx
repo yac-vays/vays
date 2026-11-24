@@ -39,6 +39,9 @@ export const RandomStringRenderer = (props: ControlProps) => {
   } else if (format === 'custom' && (!ropts.charset || typeof ropts.charset !== 'string')) {
     specError =
       "Spec error: renderer 'random_string' with format 'custom' requires `vays_options.renderer_options.charset`.";
+  } else if (format === 'custom' && new Set((ropts.charset ?? '').split('')).size > 256) {
+    specError =
+      "Spec error: renderer 'random_string' accepts at most 256 distinct characters in `vays_options.renderer_options.charset`.";
   }
 
   /// data check (derived locally — props/uischema are shared and must not be mutated)
@@ -62,8 +65,15 @@ export const RandomStringRenderer = (props: ControlProps) => {
   const autoGenStarted = useRef<boolean>(false);
   const { showModal } = useModalContext();
 
+  const update = useDebouncedCommit(
+    (value: string) => props.handleChange(props.path, value ? value : undefined),
+    1500,
+  );
+
   const doGenerate = useCallback(() => {
     hasYacValue.current = false;
+    // A typed value still waiting to be committed must not replace the new one.
+    update.cancel();
     props.handleChange(props.path, generateRandomString(format, length, ropts.charset));
   }, [format, length, ropts.charset, props.path]);
 
@@ -84,11 +94,6 @@ export const RandomStringRenderer = (props: ControlProps) => {
     }, 0);
     return () => clearTimeout(t);
   }, [props.visible, props.enabled, specError, hasData, props.schema.default, doGenerate]);
-
-  const update = useDebouncedCommit(
-    (value: string) => props.handleChange(props.path, value ? value : undefined),
-    1500,
-  );
 
   // After all hooks: rules of hooks forbid an early return before them.
   if (!props.visible) return <></>;

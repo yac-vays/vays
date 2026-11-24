@@ -1,8 +1,9 @@
 import { materialCells, materialRenderers } from '@jsonforms/material-renderers';
 import { JsonForms } from '@jsonforms/react';
-import { fireEvent, render, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { customRenderers } from '../..';
+import { flushPendingDebouncedCommits } from '../../../controller/local/EditController/debounceRegistry';
 import { injectEagerRandomStrings, resetEagerGenerated } from '../../../utils/schema/eagerValues';
 import { ValidateResponse } from '../../../utils/types/internal/validation';
 
@@ -178,5 +179,30 @@ describe('RandomStringRenderer', () => {
     // Give the (deferred) auto-generation a tick to prove it does NOT fire.
     await new Promise((r) => setTimeout(r, 20));
     expect(seen.data?.token ?? 'from-yac').toBe('from-yac');
+  });
+
+  it('lets Regenerate win over a typed value that is not committed yet', async () => {
+    const options = { renderer: 'random_string', renderer_options: { format: 'uuid' } };
+    const { seen, getByText, container } = mount({}, options);
+    await waitFor(() => expect(seen.data?.token).toMatch(UUID_RE));
+
+    fireEvent.change(container.querySelector('input') as HTMLInputElement, {
+      target: { value: 'typed' },
+    });
+    fireEvent.click(getByText('Regenerate'));
+    act(() => flushPendingDebouncedCommits());
+    await new Promise((r) => setTimeout(r, 50));
+    expect(seen.data?.token).toMatch(UUID_RE);
+  });
+
+  it('reports a charset with more than 256 distinct characters as a spec error', async () => {
+    const charset = Array.from({ length: 300 }, (_, i) => String.fromCharCode(0x4e00 + i)).join('');
+    const { seen, queryByText } = mount(
+      {},
+      { renderer: 'random_string', renderer_options: { format: 'custom', charset } },
+    );
+    await new Promise((r) => setTimeout(r, 20));
+    expect(seen.data?.token).toBeUndefined();
+    expect(queryByText('Regenerate')).toBeNull();
   });
 });

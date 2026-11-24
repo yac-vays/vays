@@ -241,6 +241,21 @@ export function pathStartsWith(pathname: string, prefix: string): boolean {
 }
 
 /**
+ * Whether a navigation leaves the document open in the edit view. While
+ * creating, the URL follows the typed name below `createBase`; otherwise any
+ * other path is another document.
+ */
+export function leavesEditedDocument(
+  mode: EditViewMode,
+  createBase: string,
+  currentPath: string,
+  nextPath: string,
+): boolean {
+  if (mode === 'create') return !pathStartsWith(nextPath, createBase);
+  return nextPath !== currentPath;
+}
+
+/**
  *
  * @param yacBackend The currently selected YAC Backend
  * @param entityTypeName The corresponding entity type name.

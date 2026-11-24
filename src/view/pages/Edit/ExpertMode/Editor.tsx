@@ -108,7 +108,7 @@ export const Editor = ({
       };
     }
   }, [
-    requestEditContext.mode === 'edit' ? requestEditContext.entityName : '',
+    requestEditContext.mode === 'create' ? '' : requestEditContext.entityName,
     requestEditContext.mode,
     requestEditContext.rc.entityTypeName,
     requestEditContext.rc.yacURL,

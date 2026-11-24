@@ -8,6 +8,7 @@ import {
 } from 'react-icons/fa';
 import { useBlocker } from 'react-router';
 import { showModalMessage } from '../../../controller/global/modal';
+import { leavesEditedDocument } from '../../../controller/global/url';
 import {
   getActivatedActions,
   setChangeListener,
@@ -209,12 +210,18 @@ const EditFrame = ({
     setIsReadOnly(requestEditContext.mode === 'read');
   }, [requestEditContext.mode]);
 
-  // Warn before leaving the editor with unsaved changes. The base path of the
-  // current edit session is allowed (e.g. the URL gaining the new name while
-  // creating); navigating anywhere else while dirty prompts a confirmation.
-  const editBase = `/${requestEditContext.rc.backendObject?.name}/${requestEditContext.rc.entityTypeName}/${requestEditContext.mode}`;
+  // Warn before leaving the edited document with unsaved changes (the URL
+  // gaining the new name while creating is not leaving).
+  const createBase = `/${requestEditContext.rc.backendObject?.name}/${requestEditContext.rc.entityTypeName}/create`;
   const blocker = useBlocker(
-    ({ nextLocation }) => isEditDirty() && !nextLocation.pathname.startsWith(editBase),
+    ({ currentLocation, nextLocation }) =>
+      isEditDirty() &&
+      leavesEditedDocument(
+        requestEditContext.mode,
+        createBase,
+        currentLocation.pathname,
+        nextLocation.pathname,
+      ),
   );
   useEffect(() => {
     if (blocker.state !== 'blocked') return;

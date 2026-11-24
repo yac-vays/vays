@@ -96,6 +96,17 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
     };
   }, [window.location.href]);
 
+  // Another editing target remounts the frame like "Reload" does: both panes,
+  // the name/actions panel and the session start over. While creating, the
+  // name is not part of the target (the URL follows the typed name).
+  const frameKey = [
+    reloadSeq,
+    requestContext.rc.backendObject?.name,
+    requestContext.rc.entityTypeName,
+    requestContext.mode,
+    requestContext.mode === 'create' ? '' : requestContext.entityName,
+  ].join('|');
+
   return (
     <>
       <PageHeaderTitle title={title}>
@@ -109,7 +120,7 @@ const EditView: React.FC<EditViewProps> = ({ backends, mode }: EditViewProps): J
         />
       </PageHeaderTitle>
 
-      <EditFrame key={reloadSeq} requestEditContext={requestContext} />
+      <EditFrame key={frameKey} requestEditContext={requestContext} />
     </>
   );
 };

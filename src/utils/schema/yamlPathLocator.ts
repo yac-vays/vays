@@ -1,5 +1,16 @@
 import { isMap, isNode, isScalar, isSeq, parseDocument, stringify, visit } from 'yaml';
 
+let lastParse: { text: string; doc: ReturnType<typeof parseDocument> } | null = null;
+
+/**
+ * `parseDocument`, remembering the last document: the editor helpers all parse
+ * the same text on every change. The result is shared, so never modify it.
+ */
+export function parseYamlCached(yamlText: string): ReturnType<typeof parseDocument> {
+  if (lastParse?.text !== yamlText) lastParse = { text: yamlText, doc: parseDocument(yamlText) };
+  return lastParse.doc;
+}
+
 /** Character-offset range in a YAML text. */
 export interface TextRange {
   start: number;
@@ -28,7 +39,7 @@ export function locateInstancePathInYaml(yamlText: string, instancePath: string)
 
   let doc;
   try {
-    doc = parseDocument(yamlText);
+    doc = parseYamlCached(yamlText);
   } catch {
     return null;
   }
@@ -54,7 +65,7 @@ export function locateDataPathExact(
 ): TextRange | null {
   if (segments.length === 0) return null;
   try {
-    const doc = parseDocument(yamlText);
+    const doc = parseYamlCached(yamlText);
     const node = doc.getIn(segments, true);
     return isNode(node) && node.range ? { start: node.range[0], end: node.range[1] } : null;
   } catch {
@@ -72,7 +83,7 @@ export function locateDataPathExact(
 export function yamlPathAtOffset(yamlText: string, offset: number): (string | number)[] | null {
   let doc;
   try {
-    doc = parseDocument(yamlText);
+    doc = parseYamlCached(yamlText);
   } catch {
     return null;
   }
@@ -141,7 +152,7 @@ export function valueEditInYaml(
   if (path.length === 0) return null;
   let doc;
   try {
-    doc = parseDocument(yamlText);
+    doc = parseYamlCached(yamlText);
   } catch {
     return null;
   }
@@ -218,7 +229,7 @@ export function valueEditInYaml(
  */
 export function yamlRootStartOffset(yamlText: string): number | null {
   try {
-    const doc = parseDocument(yamlText);
+    const doc = parseYamlCached(yamlText);
     const c = doc.contents;
     return isNode(c) && c.range ? c.range[0] : null;
   } catch {
@@ -247,7 +258,7 @@ export interface NestedObjectAnchor {
 export function nestedObjectAnchors(yamlText: string): NestedObjectAnchor[] {
   let doc;
   try {
-    doc = parseDocument(yamlText);
+    doc = parseYamlCached(yamlText);
   } catch {
     return [];
   }

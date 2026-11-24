@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { isMap, isNode, isPair, isScalar, isSeq, Node, parseDocument, Parser, Scalar } from 'yaml';
+import { isMap, isNode, isPair, isScalar, isSeq, Node, Parser, Scalar } from 'yaml';
+import { parseYamlCached } from './yamlPathLocator';
 
 /**
  * Parts of an entity's YAML the user cannot change in the YAML pane:
@@ -81,7 +82,7 @@ export function fixedValueRegions(yamlText: string, jsonSchema: any): LockedRegi
   if (jsonSchema == null || typeof jsonSchema !== 'object') return [];
   let doc;
   try {
-    doc = parseDocument(yamlText);
+    doc = parseYamlCached(yamlText);
   } catch {
     return [];
   }
@@ -134,7 +135,7 @@ export function startsComment(yamlText: string, offset: number): boolean {
   const before = offset === 0 ? '\n' : yamlText[offset - 1];
   if (!/\s/.test(before)) return false;
   try {
-    const doc = parseDocument(yamlText);
+    const doc = parseYamlCached(yamlText);
     let inText = false;
     const check = (node: unknown) => {
       if (inText || !isNode(node)) return;

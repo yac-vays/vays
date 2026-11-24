@@ -19,13 +19,8 @@ import {
   hasUncommittedChanges,
 } from './editState';
 import { whenValidationIdle } from './session';
-import {
-  clearEditDirty,
-  getInitialEntityYAML,
-  isAdminOverride,
-  isValidationFailed,
-  setAdminOverride,
-} from './shared';
+import { getInitialEntityYAML } from './editState';
+import { clearEditDirty, isAdminOverride, isValidationFailed, setAdminOverride } from './status';
 
 /**
  * The confirm dialogue's body: what committing will additionally trigger. The

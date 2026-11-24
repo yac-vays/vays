@@ -5,7 +5,7 @@ import { getCurrentJsonSchema } from '../../../../../controller/local/EditContro
 import {
   getEntityPerms,
   isAdminOverride,
-} from '../../../../../controller/local/EditController/shared';
+} from '../../../../../controller/local/EditController/status';
 import { subscribeToEditStateChange } from '../../../../../controller/state/editStateEvents';
 import {
   addsComment,

@@ -255,3 +255,18 @@ export function buildOverviewHighlightURL(
   const base = `/${backendName}/${entityTypeName}`;
   return entityName ? `${base}?name=${encodeURIComponent(entityName)}` : base;
 }
+
+/**
+ * Keep the URL of the create view on the typed name, without a history entry
+ * per keystroke. Does nothing outside create mode.
+ */
+export function editViewNavigateToNewName(
+  name: Nullable<string>,
+  requestEditContext: RequestEditContext,
+) {
+  if (requestEditContext.mode !== 'create') return;
+  const base = `/${requestEditContext.rc.backendObject?.name}/${requestEditContext.rc.entityTypeName}/create`;
+  // Not when the user just navigated away.
+  if (!pathStartsWith(window.location.pathname, base)) return;
+  navigateToURL(`${base}/${name == null ? '' : encodeURIComponent(name)}`, true);
+}

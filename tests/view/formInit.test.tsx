@@ -9,7 +9,7 @@ import { getDefaultEditContext } from '../../src/controller/global/url';
 import { getTestEditRequestContext } from '../testUtils';
 
 const loadEntitySchema = vi.fn(async () => null);
-vi.mock('../../src/controller/local/EditController/shared', async (importOriginal) => ({
+vi.mock('../../src/controller/local/EditController/load', async (importOriginal) => ({
   ...(await importOriginal<object>()),
   loadEntitySchema: (...args: unknown[]) => loadEntitySchema(...(args as [])),
 }));

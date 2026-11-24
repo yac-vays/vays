@@ -2,7 +2,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 import { getEntityModel } from '../utils/uris';
 import { getCurrentJsonSchema } from '../../../../../controller/local/EditController/editState';
-import { getYACUsages } from '../../../../../controller/local/EditController/shared';
+import { getYACUsages } from '../../../../../controller/local/EditController/status';
 import { formatLimitLong, limitMatchesYamlPath } from '../../../../../utils/limitUtils';
 import {
   exampleValueForSchema,

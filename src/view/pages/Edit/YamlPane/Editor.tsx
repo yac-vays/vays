@@ -16,7 +16,7 @@ import {
 import {
   getInitialEntityYAML,
   subscribeToBaseline,
-} from '../../../../controller/local/EditController/shared';
+} from '../../../../controller/local/EditController/editState';
 import {
   registerYamlInputPendingProbe,
   registerYamlWriter,

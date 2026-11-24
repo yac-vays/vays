@@ -32,7 +32,7 @@ import {
   setAdminOverrideListener,
   setEntityPermsListener,
   setValidityListener,
-} from '../../../controller/local/EditController/shared';
+} from '../../../controller/local/EditController/status';
 import { revalidateMeta } from '../../../controller/local/EditController/sync';
 import { getActionCallback } from '../../../model/action';
 import { getCachedConfig } from '../../../model/config';

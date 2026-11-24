@@ -3,7 +3,7 @@ import { JsonForms } from '@jsonforms/react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { customRenderers } from '../..';
-import { setYACUsages } from '../../../controller/local/EditController/shared';
+import { setYACUsages } from '../../../controller/local/EditController/status';
 import { LimitUsage } from '../../../utils/types/api';
 
 const renderers = [...materialRenderers, ...customRenderers];

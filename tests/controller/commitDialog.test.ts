@@ -17,7 +17,7 @@ import {
   setEntityYAML,
 } from '../../src/controller/local/EditController/editState';
 import { commitEntity } from '../../src/controller/local/EditController/commit';
-import { setInitialEntityYAML } from '../../src/controller/local/EditController/shared';
+import { setInitialEntityYAML } from '../../src/controller/local/EditController/editState';
 import editingState from '../../src/controller/state/EditCtrlState';
 import { ActionDecl } from '../../src/utils/types/api';
 import { getTestEditRequestContext } from '../testUtils';

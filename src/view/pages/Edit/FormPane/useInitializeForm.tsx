@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { getActivatedActions } from '../../../../controller/local/EditController/editState';
+import { getValidationAJV } from '../../../../controller/local/EditController/editState';
+import { loadEntitySchema } from '../../../../controller/local/EditController/load';
 import {
   beginPaneSession,
   emitValidity,
-  getValidationAJV,
-  loadEntitySchema,
   setLocalValidity,
-} from '../../../../controller/local/EditController/shared';
+} from '../../../../controller/local/EditController/status';
 import { revalidateMeta } from '../../../../controller/local/EditController/sync';
 import { setCurrentTab } from '../../../../controller/local/EditController/formPane/access';
 import {

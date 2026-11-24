@@ -3,7 +3,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import {
   getYACUsages,
   subscribeToUsages,
-} from '../../../../../controller/local/EditController/shared';
+} from '../../../../../controller/local/EditController/status';
 import { formatLimitLong, limitLevel, limitPathSegments } from '../../../../../utils/limitUtils';
 import { locateDataPathExact } from '../../../../../utils/schema/yamlPathLocator';
 import { LimitUsage } from '../../../../../utils/types/api';

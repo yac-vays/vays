@@ -19,14 +19,8 @@ import {
   nextValidationSeq,
   reloadEditingView,
 } from './session';
-import {
-  clearEditDirty,
-  getInitialEntityYAML,
-  isEditDirty,
-  setEntityPerms,
-  setInitialEntityYAML,
-  setYACStatus,
-} from './shared';
+import { getInitialEntityYAML, setInitialEntityYAML } from './editState';
+import { clearEditDirty, isEditDirty, setEntityPerms, setYACStatus } from './status';
 
 /**
  * Edit conflicts ("someone else committed this entity while I was editing").

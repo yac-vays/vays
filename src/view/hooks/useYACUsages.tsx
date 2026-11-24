@@ -3,12 +3,12 @@ import {
   getYACUsages,
   getYACUsagesData,
   subscribeToUsages,
-} from '../../controller/local/EditController/shared';
+} from '../../controller/local/EditController/status';
 import { LimitUsage } from '../../utils/types/api';
 
 /**
  * The current `limits` usages of the edit session, updated live on every
- * validation round (see the reactive bridge in `EditController/shared`).
+ * validation round (see the reactive bridge in `EditController/status`).
  */
 export function useYACUsages(): LimitUsage[] {
   const [usages, setUsages] = useState<LimitUsage[]>(getYACUsages());

@@ -11,10 +11,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getEntityYAML, seedCanonical } from '../../src/controller/local/EditController/editState';
 import { newEditingView } from '../../src/controller/local/EditController/session';
-import {
-  beginPaneSession,
-  loadEntitySchema,
-} from '../../src/controller/local/EditController/shared';
+import { loadEntitySchema } from '../../src/controller/local/EditController/load';
+import { beginPaneSession } from '../../src/controller/local/EditController/status';
 import { validateFormData } from '../../src/controller/local/EditController/formPane';
 import { applyCanonical } from '../../src/controller/local/EditController/sync';
 import { getTestEditRequestContext } from '../testUtils';

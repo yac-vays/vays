@@ -4,7 +4,7 @@ import { ErrorObject } from 'ajv';
 import { getAllErrors } from '../../../../utils/schema/dataUtils';
 import { controlOwnsPath, instancePathToDotted } from '../../../../utils/schema/locatedErrors';
 import editingState from '../../../state/EditCtrlState';
-import { getValidationAJV } from '../shared';
+import { getValidationAJV } from '../editState';
 
 export function registerOnUpdateCategoryErrors(f: (v: boolean[]) => void) {
   editingState.onUpdateCategoryErrors = f;

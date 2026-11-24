@@ -3,10 +3,8 @@ import {
   setActivatedActions,
   setEntityName,
 } from '../../../controller/local/EditController/editState';
-import {
-  editViewNavigateToNewName,
-  setEditDirty,
-} from '../../../controller/local/EditController/shared';
+import { editViewNavigateToNewName } from '../../../controller/global/url';
+import { setEditDirty } from '../../../controller/local/EditController/status';
 import { getTriggerableActions } from '../../../utils/actionUtils';
 import {
   isNameGeneratedByYAC,

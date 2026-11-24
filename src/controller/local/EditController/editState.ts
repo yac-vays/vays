@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import Ajv from 'ajv';
 import { ActionDecl } from '../../../utils/types/api';
 import { RequestEditContext } from '../../../utils/types/internal/request';
 import { Nullable } from '../../../utils/types/typeUtils';
@@ -129,4 +130,45 @@ export function setErrorMessageCallback(cb: (v: string) => void) {
 
 export function setErrorMessage(v: string) {
   return editingState._setErrorMessage(v);
+}
+
+export function getInitialEntityYAML() {
+  return editingState.initialYAML;
+}
+
+export function setInitialEntityYAML(yaml: string) {
+  editingState.initialYAML = yaml;
+  // The commit baseline moved: re-derive whether there is anything to commit.
+  emitChangeState();
+  for (const cb of baselineListeners) cb(yaml);
+}
+
+/**
+ * Subscribers to baseline changes (the YAML editor's diff highlighting). The
+ * baseline normally moves only at session start, but the edit-conflict flow
+ * re-baselines a running session onto the version stored meanwhile — the
+ * highlighting must then be recomputed although the document did not change.
+ */
+const baselineListeners = new Set<(yaml: string) => void>();
+
+export function subscribeToBaseline(cb: (yaml: string) => void): () => void {
+  baselineListeners.add(cb);
+  return () => baselineListeners.delete(cb);
+}
+
+export function getPreviousDefaultsObject() {
+  return editingState.previousDefaultsObject;
+}
+
+export function setPreviousDefaultsObject(data: unknown) {
+  editingState.previousDefaultsObject = data;
+}
+
+export function getAJV(): Ajv {
+  return editingState.ajv;
+}
+
+/** Display-validation Ajv (no `useDefaults`) — see EditCtrlState.ajvValidate. */
+export function getValidationAJV(): Ajv {
+  return editingState.ajvValidate;
 }

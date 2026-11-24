@@ -6,7 +6,8 @@ import { Nullable } from '../../../utils/types/typeUtils';
 import { reportSchemaWarnings } from '../../global/troubleshoot';
 import { setErrorMessageCallback } from './editState';
 import { isStaleValidation } from './session';
-import { beginPaneSession, getInitialEntityYAML, setEntityPerms, setYACStatus } from './shared';
+import { getInitialEntityYAML } from './editState';
+import { beginPaneSession, setEntityPerms, setYACStatus } from './status';
 
 /**
  * Validate the YAML pane's text against the backend.

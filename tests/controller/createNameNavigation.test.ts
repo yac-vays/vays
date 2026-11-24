@@ -4,7 +4,7 @@
  */
 import { beforeEach, expect, test, vi } from 'vitest';
 import { registerNavigationHook } from '../../src/controller/global/url';
-import { editViewNavigateToNewName } from '../../src/controller/local/EditController/shared';
+import { editViewNavigateToNewName } from '../../src/controller/global/url';
 import { getTestEditRequestContext } from '../testUtils';
 
 const nav = vi.fn();

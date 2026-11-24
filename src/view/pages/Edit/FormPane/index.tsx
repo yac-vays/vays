@@ -18,14 +18,14 @@ import {
 import { customRenderers } from '../../../../renderers';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 // import { Nullable } from '../../../../utils/typeUtils';
+import { getValidationAJV } from '../../../../controller/local/EditController/editState';
 import {
   emitValidity,
-  getValidationAJV,
   reportValidationFailed,
   setEditDirty,
   setLocalValidity,
   VALIDATION_FAILED_DETAIL,
-} from '../../../../controller/local/EditController/shared';
+} from '../../../../controller/local/EditController/status';
 import { updateTabsErrorNotification } from '../../../../controller/local/EditController/formPane/tabs';
 import {
   beginValidationDispatch,

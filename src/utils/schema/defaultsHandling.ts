@@ -9,7 +9,7 @@ import {
   getAJV,
   getPreviousDefaultsObject,
   setPreviousDefaultsObject,
-} from '../../controller/local/EditController/shared';
+} from '../../controller/local/EditController/editState';
 import { getCachedConfig } from '../../model/config';
 import { logError } from '../logger';
 import { ValidateResponse } from '../types/internal/validation';

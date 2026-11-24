@@ -23,10 +23,8 @@ import {
   nextValidationSeq,
   whenValidationIdle,
 } from '../../src/controller/local/EditController/session';
-import {
-  beginPaneSession,
-  loadEntitySchema,
-} from '../../src/controller/local/EditController/shared';
+import { loadEntitySchema } from '../../src/controller/local/EditController/load';
+import { beginPaneSession } from '../../src/controller/local/EditController/status';
 import { getTestEditRequestContext } from '../testUtils';
 
 global.fetch = vi.fn();

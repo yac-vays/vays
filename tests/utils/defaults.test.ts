@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { setPreviousDefaultsObject } from '../../src/controller/local/EditController/shared';
+import { setPreviousDefaultsObject } from '../../src/controller/local/EditController/editState';
 import { AppConfig } from '../../src/utils/types/config';
 import { ValidateResponse } from '../../src/utils/types/internal/validation';
 import {

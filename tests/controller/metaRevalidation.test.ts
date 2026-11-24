@@ -13,7 +13,7 @@ import {
   isStaleValidation,
   setValidatingListener,
 } from '../../src/controller/local/EditController/session';
-import { beginPaneSession } from '../../src/controller/local/EditController/shared';
+import { beginPaneSession } from '../../src/controller/local/EditController/status';
 import { revalidateMeta, seedCanonical } from '../../src/controller/local/EditController/sync';
 import { getTestEditRequestContext } from '../testUtils';
 

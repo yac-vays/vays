@@ -8,10 +8,8 @@ import {
   currentSession,
   isStaleSession,
 } from '../../../../../controller/local/EditController/session';
-import {
-  loadEntitySchema,
-  setInitialEntityYAML,
-} from '../../../../../controller/local/EditController/shared';
+import { setInitialEntityYAML } from '../../../../../controller/local/EditController/editState';
+import { loadEntitySchema } from '../../../../../controller/local/EditController/load';
 import {
   expectProgrammaticYamlWrite,
   seedCanonical,

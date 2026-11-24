@@ -13,7 +13,7 @@ import {
   nextValidationSeq,
   whenValidationIdle,
 } from './session';
-import { reportValidationFailed } from './shared';
+import { reportValidationFailed } from './status';
 import { validateFormData } from './formPane';
 
 /**
@@ -69,7 +69,7 @@ function formInputPending(): boolean {
   return hasPendingDebouncedInputs();
 }
 
-// Lives in editState.ts (leaf module) so the load path in shared.ts can seed
+// Lives in editState.ts (leaf module) so the load path (load.ts) can seed
 // without an import cycle; re-exported here for the panes.
 export { seedCanonical } from './editState';
 

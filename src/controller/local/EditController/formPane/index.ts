@@ -4,7 +4,7 @@ import { isNameGeneratedByYAC } from '../../../../utils/nameUtils';
 import { RequestEditContext } from '../../../../utils/types/internal/request';
 import { Nullable } from '../../../../utils/types/typeUtils';
 import { getActivatedActions, getEntityName } from '../editState';
-import { coreUpdate } from '../shared';
+import { coreUpdate } from '../stabilize';
 
 /**
  * Validate the form's entity data and return the (possibly re-generated) schema.

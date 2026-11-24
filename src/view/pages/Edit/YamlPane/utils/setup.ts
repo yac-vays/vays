@@ -23,7 +23,7 @@ import {
 import {
   reportValidationFailed,
   setEditDirty,
-} from '../../../../../controller/local/EditController/shared';
+} from '../../../../../controller/local/EditController/status';
 import { footerErrorMessage } from '../../../../../utils/schema/locatedErrors';
 import { setBackendValidationMarkers } from '../EditorPlugins/backendMarkers';
 import {

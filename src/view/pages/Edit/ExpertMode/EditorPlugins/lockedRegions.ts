@@ -48,7 +48,13 @@ function currentRegions(text: string): LockedRegion[] {
   return regions;
 }
 
-function showMessage(ed: monaco.editor.IStandaloneCodeEditor, text: string) {
+/** The lock message if replacing `[start, end)` of `text` would change a locked region. */
+export function lockMessageForEdit(text: string, start: number, end: number): string | null {
+  const region = currentRegions(text).find((r) => start < r.end && end > r.start);
+  return region ? LOCK_MESSAGES[region.kind] : null;
+}
+
+export function showMessage(ed: monaco.editor.IStandaloneCodeEditor, text: string) {
   const position = ed.getPosition();
   const controller: any = ed.getContribution('editor.contrib.messageController');
   if (controller != null && position != null) controller.showMessage(text, position);

@@ -1,4 +1,4 @@
-import { isMap, isNode, isScalar, isSeq, parseDocument, visit } from 'yaml';
+import { isMap, isNode, isScalar, isSeq, parseDocument, stringify, visit } from 'yaml';
 
 /** Character-offset range in a YAML text. */
 export interface TextRange {
@@ -82,19 +82,19 @@ export function yamlPathAtOffset(yamlText: string, offset: number): (string | nu
 
   for (;;) {
     if (isMap(node)) {
-      const pair = node.items.find((p) => {
+      // The last entry starting at or before the offset: an entry's range runs
+      // up to the start of the next one, so the first match would be the
+      // PREVIOUS entry when the offset is on the first character of a key.
+      let pair = null;
+      for (const p of node.items) {
         const start = isNode(p.key) && p.key.range ? p.key.range[0] : null;
-        // The pair spans from its key to the end of its value (or the key
-        // itself for empty values). range[2] includes trailing space/comments.
-        const end =
-          isNode(p.value) && p.value.range
-            ? p.value.range[2]
-            : isNode(p.key) && p.key.range
-              ? p.key.range[2]
-              : null;
-        return start != null && end != null && offset >= start && offset <= end;
-      });
-      if (pair == null || !isScalar(pair.key)) break;
+        if (start != null && start <= offset) pair = p;
+      }
+      if (pair == null || !isScalar(pair.key) || !pair.key.range) break;
+      // The pair spans from its key to the end of its value (or the key
+      // itself for empty values). range[2] includes trailing space/comments.
+      const end = isNode(pair.value) && pair.value.range ? pair.value.range[2] : pair.key.range[2];
+      if (offset > end) break;
       path.push(String(pair.key.value));
       // Descend only when the offset is inside the VALUE of the pair; on the
       // key itself this entry is the innermost result.
@@ -105,12 +105,14 @@ export function yamlPathAtOffset(yamlText: string, offset: number): (string | nu
       break;
     }
     if (isSeq(node)) {
-      const idx = node.items.findIndex(
-        (item) => isNode(item) && item.range && offset >= item.range[0] && offset <= item.range[2],
-      );
-      if (idx < 0) break;
+      let idx = -1;
+      node.items.forEach((item, i) => {
+        if (isNode(item) && item.range && item.range[0] <= offset) idx = i;
+      });
+      const item = idx < 0 ? null : node.items[idx];
+      if (!isNode(item) || !item.range || offset > item.range[2]) break;
       path.push(idx);
-      node = node.items[idx];
+      node = item;
       continue;
     }
     break;
@@ -119,23 +121,92 @@ export function yamlPathAtOffset(yamlText: string, offset: number): (string | nu
   return path.length > 0 ? path : null;
 }
 
+/** A replacement of the text range `[start, end)`. */
+export interface TextEdit extends TextRange {
+  text: string;
+}
+
 /**
- * Set the value at `path` in a YAML document, preserving comments, key order
- * and formatting of everything else (the `yaml` document round-trip). Returns
- * the updated text, or null when the document cannot be parsed.
+ * The edit that sets the existing entry at `path` to `value`, touching only
+ * that entry's value: everything else (comments, formatting, long lines)
+ * stays byte for byte. Returns null when the entry does not exist, the
+ * document cannot be parsed or the value cannot be placed that way (e.g. a
+ * comment sits between key and value).
  */
-export function setValueInYaml(
+export function valueEditInYaml(
   yamlText: string,
   path: (string | number)[],
   value: unknown,
-): string | null {
+): TextEdit | null {
+  if (path.length === 0) return null;
+  let doc;
   try {
-    const doc = parseDocument(yamlText);
-    doc.setIn(path, value);
-    return String(doc);
+    doc = parseDocument(yamlText);
   } catch {
     return null;
   }
+  if (doc.errors.length > 0) return null;
+  const node = doc.getIn(path, true);
+  const parent = path.length > 1 ? doc.getIn(path.slice(0, -1), true) : doc.contents;
+  if (!isNode(node) || !node.range) return null;
+  const range = node.range;
+
+  const column = (offset: number) => offset - (yamlText.lastIndexOf('\n', offset - 1) + 1);
+  const indentLines = (lines: string[], indent: number) =>
+    lines.map((l) => (l === '' ? l : ' '.repeat(indent) + l));
+  // A block value's range ends after its last line break.
+  const valueEnd = (from: number) => {
+    let end = Math.max(range[1], from);
+    while (end > from && /\s/.test(yamlText[end - 1])) end--;
+    return end;
+  };
+  const isCollection = value != null && typeof value === 'object';
+  const isEmpty = isCollection && Object.keys(value as object).length === 0;
+
+  let edit: TextEdit;
+  if ((isMap(parent) || isSeq(parent)) && parent.flow) {
+    // Inside a flow collection: JSON is valid flow YAML.
+    edit = { start: range[0], end: range[1], text: JSON.stringify(value) };
+  } else {
+    const lines = stringify(value).replace(/\n$/, '').split('\n');
+    if (isMap(parent)) {
+      const pair = parent.items.find((p) => p.value === node);
+      if (!pair || !isScalar(pair.key) || !pair.key.range) return null;
+      const colon = yamlText.indexOf(':', pair.key.range[1]);
+      if (colon < 0) return null;
+      const start = colon + 1;
+      const end = valueEnd(start);
+      if (yamlText.slice(start, range[0]).includes('#')) return null;
+      const indent = column(pair.key.range[0]) + 2;
+      const text =
+        isCollection && !isEmpty
+          ? '\n' + indentLines(lines, indent).join('\n')
+          : ' ' + [lines[0], ...indentLines(lines.slice(1), indent)].join('\n');
+      edit = { start, end, text };
+    } else if (isSeq(parent)) {
+      const indent = column(range[0]);
+      edit = {
+        start: range[0],
+        end: valueEnd(range[0]),
+        text: [lines[0], ...indentLines(lines.slice(1), indent)].join('\n'),
+      };
+    } else {
+      return null;
+    }
+  }
+
+  // Only an edit that provably yields the value is good enough.
+  try {
+    const updated = yamlText.slice(0, edit.start) + edit.text + yamlText.slice(edit.end);
+    const check = parseDocument(updated);
+    if (check.errors.length > 0) return null;
+    const got = check.getIn(path);
+    const js = isNode(got) ? got.toJSON() : got;
+    if (JSON.stringify(js) !== JSON.stringify(value)) return null;
+  } catch {
+    return null;
+  }
+  return edit;
 }
 
 /**

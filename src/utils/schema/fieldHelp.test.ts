@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { exampleValueForSchema, fieldHelpHoverMarkdown, subschemaAtPath } from './fieldHelp';
-import { setValueInYaml, yamlPathAtOffset } from './yamlPathLocator';
+import { valueEditInYaml, yamlPathAtOffset } from './yamlPathLocator';
 
 const schema = {
   type: 'object',
@@ -134,23 +134,55 @@ describe('exampleValueForSchema', () => {
   });
 });
 
-describe('setValueInYaml', () => {
-  it('replaces a value while preserving comments and order', () => {
-    const src = '# header\nowner: alice # keep me\nother: 1\n';
-    const out = setValueInYaml(src, ['owner'], 'bob');
-    expect(out).toContain('# header');
-    expect(out).toContain('owner: bob # keep me');
-    expect(out).toContain('other: 1');
+describe('yamlPathAtOffset', () => {
+  const src = 'a: 1\nb: 2\nc:\n  d: 3\n  e: 4\nf: 5\nl:\n  - x: 1\n  - x: 2\n';
+  const at = (needle: string) => yamlPathAtOffset(src, src.indexOf(needle));
+
+  it('resolves the first character of a key to that key', () => {
+    expect(at('a: 1')).toEqual(['a']);
+    expect(at('b: 2')).toEqual(['b']);
+    expect(at('d: 3')).toEqual(['c', 'd']);
+    expect(at('e: 4')).toEqual(['c', 'e']);
+    expect(at('f: 5')).toEqual(['f']);
+    expect(at('x: 2')).toEqual(['l', 1, 'x']);
   });
 
-  it('writes nested structures with block indentation', () => {
-    const out = setValueInYaml('name: x\n', ['networking'], { ip: '10.0.0.1', vlans: [1] });
-    expect(out).toContain('networking:');
-    expect(out).toContain('  ip: 10.0.0.1');
-    expect(out).toContain('  vlans:');
+  it('resolves a value to its entry', () => {
+    expect(yamlPathAtOffset(src, src.indexOf('4'))).toEqual(['c', 'e']);
+  });
+});
+
+describe('valueEditInYaml', () => {
+  const apply = (src: string, path: (string | number)[], value: unknown) => {
+    const edit = valueEditInYaml(src, path, value);
+    return edit == null ? null : src.slice(0, edit.start) + edit.text + src.slice(edit.end);
+  };
+
+  it('replaces only the value: comments, spacing and long lines stay as they are', () => {
+    const long = 'word '.repeat(40).trim();
+    const src = `# header\nowner:   alice   # keep me\nlist:\n- a\nnote: ${long}\n`;
+    expect(apply(src, ['owner'], 'bob')).toBe(
+      `# header\nowner: bob   # keep me\nlist:\n- a\nnote: ${long}\n`,
+    );
   });
 
-  it('returns null for unparseable documents', () => {
-    expect(setValueInYaml('a: [unclosed', ['a'], 1)).toBeNull();
+  it('writes nested structures as an indented block', () => {
+    expect(
+      apply('net:\n  cfg: x # c\nz: 1\n', ['net', 'cfg'], { ip: '10.0.0.1', vlans: [1] }),
+    ).toBe('net:\n  cfg:\n    ip: 10.0.0.1\n    vlans:\n      - 1 # c\nz: 1\n');
+    expect(apply('a:\n  b: 1\n  c: 2\nz: 1\n', ['a'], 'x')).toBe('a: x\nz: 1\n');
+  });
+
+  it('fills an empty value, a sequence item and a flow entry', () => {
+    expect(apply('a:\nb: 1\n', ['a'], 'x')).toBe('a: x\nb: 1\n');
+    expect(apply('l:\n  - one\n  - two\n', ['l', 1], { k: 'v', n: 2 })).toBe(
+      'l:\n  - one\n  - k: v\n    n: 2\n',
+    );
+    expect(apply('f: {a: 1, b: 2}\n', ['f', 'b'], 'x y')).toBe('f: {a: 1, b: "x y"}\n');
+  });
+
+  it('returns null for missing entries and unparseable documents', () => {
+    expect(valueEditInYaml('a: 1\n', ['b'], 1)).toBeNull();
+    expect(valueEditInYaml('a: [unclosed', ['a'], 1)).toBeNull();
   });
 });

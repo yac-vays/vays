@@ -8,7 +8,8 @@ import {
   fieldHelpHoverMarkdown,
   subschemaAtPath,
 } from '../../../../../utils/schema/fieldHelp';
-import { setValueInYaml, yamlPathAtOffset } from '../../../../../utils/schema/yamlPathLocator';
+import { valueEditInYaml, yamlPathAtOffset } from '../../../../../utils/schema/yamlPathLocator';
+import { lockMessageForEdit, showMessage } from './lockedRegions';
 import { RequestEditContext } from '../../../../../utils/types/internal/request';
 
 /**
@@ -88,13 +89,24 @@ export default async function editorFieldHelp(
       if (sub == null) return;
       const value = exampleValueForSchema(sub);
       if (value === undefined) return;
-      // The yaml document round-trip keeps comments/order and produces correct
-      // block indentation for nested structures; applied as ONE undoable edit.
-      const updated = setValueInYaml(text, path, value);
-      if (updated == null || updated === text) return;
+      // Replace just this entry's value (one undoable edit): the rest of the
+      // document keeps its formatting, which the user may not be allowed to
+      // change.
+      const edit = valueEditInYaml(text, path, value);
+      if (edit == null || text.slice(edit.start, edit.end) === edit.text) return;
+      const locked = lockMessageForEdit(text, edit.start, edit.end);
+      if (locked != null) {
+        showMessage(editor as monaco.editor.IStandaloneCodeEditor, locked);
+        return;
+      }
+      const from = model.getPositionAt(edit.start);
+      const to = model.getPositionAt(edit.end);
       editor.pushUndoStop();
       editor.executeEdits('vays.fillExampleValue', [
-        { range: model.getFullModelRange(), text: updated },
+        {
+          range: new monaco.Range(from.lineNumber, from.column, to.lineNumber, to.column),
+          text: edit.text,
+        },
       ]);
       editor.pushUndoStop();
       editor.setPosition(position);

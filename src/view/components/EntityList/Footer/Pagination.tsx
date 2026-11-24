@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { PAGE_GAP, pageButtons } from './pageButtons';
 import PagingButton, { PagingButtonType } from './PagingButton';
 
 export const EntityListPagination = ({
@@ -12,6 +12,7 @@ export const EntityListPagination = ({
   totalNumResults: number;
   numResultsPerPage: number;
 }) => {
+  const maxPages = Math.ceil(totalNumResults / numResultsPerPage);
   return (
     <div className="flex">
       <button
@@ -34,88 +35,27 @@ export const EntityListPagination = ({
           <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z" />
         </svg>
       </button>
-      {(function (): ReactNode[] {
-        const maxPages = Math.ceil(totalNumResults.valueOf() / numResultsPerPage.valueOf());
-        const page = currPage.valueOf();
-        const rangeElt: [string, number, () => void] = [
-          '...',
-          PagingButtonType.RANGEGAP,
-          () => {},
-        ];
-        let buttonLayout: [string, number, () => void][] = [];
-
-        // Edge 1
-        if (maxPages <= 7) {
-          for (let i: number = 1; i <= maxPages; i++) {
-            buttonLayout.push([
-              `${i}`,
-              i == page ? PagingButtonType.PRIMARY : PagingButtonType.SECONDARY,
-              pageSwitch(i),
-            ]);
-          }
-        } else if (page == 1) {
-          buttonLayout = [
-            ['1', PagingButtonType.PRIMARY, pageSwitch(1)],
-            ['2', PagingButtonType.SECONDARY, pageSwitch(2)],
-            rangeElt,
-            [`${maxPages}`, PagingButtonType.SECONDARY, pageSwitch(maxPages)],
-          ];
-        } else if (page == 2) {
-          buttonLayout = [
-            ['1', PagingButtonType.SECONDARY, pageSwitch(1)],
-            ['2', PagingButtonType.PRIMARY, pageSwitch(2)],
-            ['3', PagingButtonType.SECONDARY, pageSwitch(3)],
-            rangeElt,
-            [`${maxPages}`, PagingButtonType.SECONDARY, pageSwitch(maxPages)],
-          ];
-        } else if (page == maxPages) {
-          buttonLayout = [
-            ['1', PagingButtonType.SECONDARY, pageSwitch(1)],
-            rangeElt,
-            [`${maxPages - 1}`, PagingButtonType.SECONDARY, pageSwitch(maxPages - 1)],
-            [`${maxPages}`, PagingButtonType.PRIMARY, pageSwitch(maxPages)],
-          ];
-        } else if (page == maxPages - 1) {
-          buttonLayout = [
-            ['1', PagingButtonType.SECONDARY, pageSwitch(1)],
-            rangeElt,
-            [`${maxPages - 2}`, PagingButtonType.SECONDARY, pageSwitch(maxPages - 2)],
-            [`${maxPages - 1}`, PagingButtonType.PRIMARY, pageSwitch(maxPages - 1)],
-            [`${maxPages}`, PagingButtonType.SECONDARY, pageSwitch(maxPages)],
-          ];
-        } else {
-          buttonLayout = [['1', PagingButtonType.SECONDARY, pageSwitch(1)]];
-          if (Math.max(2, page - 1) != 2) {
-            buttonLayout.push(rangeElt);
-          }
-          for (let i: number = Math.max(2, page - 1); i < Math.min(page + 2, maxPages); i++) {
-            buttonLayout.push([
-              `${i}`,
-              i == page ? PagingButtonType.PRIMARY : PagingButtonType.SECONDARY,
-              pageSwitch(i),
-            ]);
-          }
-          if (Math.min(page + 2, maxPages) != maxPages) {
-            buttonLayout.push(rangeElt);
-          }
-          buttonLayout.push([`${maxPages}`, PagingButtonType.SECONDARY, pageSwitch(maxPages)]);
-        }
-
-        const jsx: ReactNode[] = [];
-        let i = 0;
-        for (const elt of buttonLayout) {
-          jsx.push(
-            <PagingButton key={i++} content={elt[0]} buttonType={elt[1]} callback={elt[2]} />,
-          );
-        }
-
-        return jsx;
-      })()}
-      {/* TODO: Make this button a bit more performant by avoiding redundant computation. */}
+      {pageButtons(currPage, maxPages).map((button, i) =>
+        button === PAGE_GAP ? (
+          <PagingButton
+            key={i}
+            content="..."
+            buttonType={PagingButtonType.RANGEGAP}
+            callback={() => {}}
+          />
+        ) : (
+          <PagingButton
+            key={i}
+            content={`${button}`}
+            buttonType={button === currPage ? PagingButtonType.PRIMARY : PagingButtonType.SECONDARY}
+            callback={pageSwitch(button)}
+          />
+        ),
+      )}
       <button
         className="duration-300 flex cursor-pointer items-center justify-center rounded-sm p-1 px-2 hover:scale-150"
         onClick={() => {
-          if (currPage < Math.ceil(totalNumResults.valueOf() / numResultsPerPage.valueOf())) {
+          if (currPage < maxPages) {
             pageSwitch(currPage + 1)();
           }
         }}

@@ -8,12 +8,13 @@
  * *without* the injected defaults (a "Missing property" marker in the
  * editor on roughly every other reload).
  *
- * These tests pin the single-flight behavior: concurrent duplicate loads
- * share one request chain and both callers receive the fully stabilized
- * result (as independent copies).
+ * These tests pin the single-flight behavior: the loads of one editing
+ * session share one request chain and every caller receives the fully
+ * stabilized result (as independent copies).
  */
 import { expect, test, vi } from 'vitest';
-import { retreiveSchema } from '../../src/controller/local/EditController/shared';
+import { newEditingView } from '../../src/controller/local/EditController/session';
+import { beginPaneSession, retreiveSchema } from '../../src/controller/local/EditController/shared';
 import { getTestEditRequestContext } from '../testUtils';
 
 global.fetch = vi.fn();
@@ -137,21 +138,54 @@ test('concurrent edit loads are single-flighted and both get the stabilized resu
   expect(global.fetch).toHaveBeenCalledTimes(3);
 });
 
-test('a later load is not served a stale finished result', async () => {
+test('a late pane of the same session shares the finished load, a new session loads again', async () => {
   const ctx = getTestEditRequestContext(URL, 'test', HOST, 'testType', 'edit');
+  newEditingView();
+  beginPaneSession(ctx);
 
   const first = retreiveSchema(ctx);
   await flushMicrotasks();
   await answerNext('get');
   await answerNext('validate');
   await answerNext('validate');
-  expect(await first).not.toBeNull();
+  const firstResp = await first;
+  expect(firstResp).not.toBeNull();
 
-  // the in-flight entry is gone once settled: a new load fetches again
+  // e.g. the lazily loaded editor: no second fetch, an independent copy
+  const late = await retreiveSchema(ctx);
+  expect(pending).toHaveLength(0);
+  expect(late).toStrictEqual(firstResp);
+  expect(late).not.toBe(firstResp);
+
+  // reopening the entity is a new session with its own load
+  newEditingView();
+  beginPaneSession(ctx);
   const second = retreiveSchema(ctx);
   await flushMicrotasks();
   await answerNext('get');
   await answerNext('validate');
   await answerNext('validate');
   expect((await second)?.yaml).toContain('firewall_enabled: true');
+});
+
+test('a new session does not join the abandoned load of the previous one', async () => {
+  const ctx = getTestEditRequestContext(URL, 'test', HOST, 'testType', 'edit');
+  newEditingView();
+  beginPaneSession(ctx);
+  const abandoned = retreiveSchema(ctx);
+  await flushMicrotasks();
+
+  // left and reopened before the first load settled
+  newEditingView();
+  beginPaneSession(ctx);
+  const current = retreiveSchema(ctx);
+  await flushMicrotasks();
+  expect(pending.filter((p) => p.kind === 'get')).toHaveLength(2);
+
+  while (pending.length > 0) {
+    pending.shift()?.answer();
+    await flushMicrotasks();
+  }
+  expect(await abandoned).toBeNull();
+  expect((await current)?.yaml).toContain('firewall_enabled: true');
 });

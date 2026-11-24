@@ -276,20 +276,18 @@ export function isAdminOverride(): boolean {
 }
 
 // The form pane and the (lazily loaded) Monaco editor both request the schema
-// when the edit view mounts, so the same load runs twice concurrently. The
-// stabilization loop works on module-global state (initialData,
-// previousDefaultsObject, strippedPaths); a second in-flight run for the same
-// context can therefore race the first one: its defaults patch is computed
-// against the baseline the finished run already replaced, so the injected
-// defaults never reach its YAML. Concurrent duplicates share one promise
-// instead; late callers get a copy so the panes never alias the same objects.
-const inflightSchemaLoads = new Map<string, Promise<ValidateResponse | null>>();
+// of the session. The load works on module-global state (baselines, defaults,
+// stripped paths, generated values) and must run exactly once per session:
+// both panes share its result, each getting its own copy.
+const sessionSchemaLoads = new Map<string, Promise<ValidateResponse | null>>();
 
 function schemaLoadKey(
   requestEditContext: RequestEditContext,
   startEditingSession: boolean,
+  epoch: number,
 ): string {
   return [
+    epoch,
     requestEditContext.rc.yacURL ?? '',
     requestEditContext.rc.entityTypeName,
     requestEditContext.mode,
@@ -318,25 +316,22 @@ export async function retreiveSchema(
   // rendered nor have touched the session baselines (checked again inside).
   const epoch = currentSession();
 
-  const key = schemaLoadKey(requestEditContext, startEditingSession);
-  const running = inflightSchemaLoads.get(key);
-  if (running !== undefined) {
-    const resp = await running;
-    if (resp == null || isStaleSession(epoch)) return null;
-    return structuredClone(resp);
+  const key = schemaLoadKey(requestEditContext, startEditingSession, epoch);
+  let load = sessionSchemaLoads.get(key);
+  if (load === undefined) {
+    load =
+      requestEditContext.mode === 'create'
+        ? retreiveNewCreateSchema(requestEditContext, epoch)
+        : retreiveEditSchema(requestEditContext, startEditingSession, epoch);
+    // Only the current session's loads are worth keeping.
+    for (const k of sessionSchemaLoads.keys()) {
+      if (!k.startsWith(`${epoch}|`)) sessionSchemaLoads.delete(k);
+    }
+    sessionSchemaLoads.set(key, load);
   }
-
-  const load =
-    requestEditContext.mode === 'create'
-      ? retreiveNewCreateSchema(requestEditContext, epoch)
-      : retreiveEditSchema(requestEditContext, startEditingSession, epoch);
-  inflightSchemaLoads.set(key, load);
-  try {
-    const resp = await load;
-    return isStaleSession(epoch) ? null : resp;
-  } finally {
-    inflightSchemaLoads.delete(key);
-  }
+  const resp = await load;
+  if (resp == null || isStaleSession(epoch)) return null;
+  return structuredClone(resp);
 }
 
 /**

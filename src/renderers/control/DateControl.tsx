@@ -64,9 +64,8 @@ export const DateControl = ({
         <div className={isPlaceholder ? 'text-reducedfont opacity-60' : ''}>
           <DatePicker
             id={hashCode(path).toString()}
-            onChange={(v: string) => {
-              handleChange(path, v);
-            }}
+            // Clearing the picker removes the value.
+            onChange={(v: string) => handleChange(path, v === '' ? undefined : v)}
             format={format}
             data={data}
             type={schema.format ?? 'date'}

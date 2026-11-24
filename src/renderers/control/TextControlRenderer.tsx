@@ -1,4 +1,11 @@
-import { ControlProps, isStringControl, or, RankedTester, rankWith } from '@jsonforms/core';
+import {
+  ControlElement,
+  ControlProps,
+  isStringControl,
+  or,
+  RankedTester,
+  rankWith,
+} from '@jsonforms/core';
 import { withJsonFormsControlProps } from '@jsonforms/react';
 import { useDebouncedCommit } from '../../view/hooks/useDebouncedCommit';
 import ErrorButton from '../../view/components/Buttons/ErrorButton';
@@ -19,7 +26,11 @@ const strictEventToValue = (ev: React.ChangeEvent<HTMLInputElement>) =>
   ev.target.value ? ev.target.value : undefined;
 
 export const TextControl = (props: ControlProps) => {
-  const sendTrivial = props.uischema.options?.renderer_options?.send_trivial ?? false;
+  // An item of a string array (scope `#`) cannot be removed by its own input:
+  // unsetting an index would leave a null element, so it is emptied instead.
+  const isArrayItem = (props.uischema as ControlElement).scope === '#';
+  const sendTrivial =
+    isArrayItem || (props.uischema.options?.renderer_options?.send_trivial ?? false);
 
   const onChange = useDebouncedCommit(
     (e: React.ChangeEvent<HTMLInputElement>) =>

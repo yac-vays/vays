@@ -4,7 +4,7 @@ import { entityToastTitle } from '../utils/toastUtils';
 import { ActionDecl } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
-import { joinUrl } from '../utils/urlUtils';
+import { entityPath, joinUrl } from '../utils/urlUtils';
 import { handleYacResponse } from './utils/handleYacResponse';
 
 /**
@@ -24,7 +24,7 @@ export async function deleteEntity(
   const resp: Nullable<Response> = await sendRequest(
     joinUrl(
       url,
-      `/entity/${requestContext.entityTypeName}/${entityName}${actions2URLQuery(actions)}`,
+      `${entityPath(requestContext.entityTypeName, entityName)}${actions2URLQuery(actions)}`,
     ),
     'DELETE',
   );

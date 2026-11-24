@@ -13,7 +13,7 @@ import { ActionDecl } from '../utils/types/api';
 import { OperationsMetaInfo } from '../utils/types/internal/actions';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
-import { joinUrl } from '../utils/urlUtils';
+import { entityPath, joinUrl } from '../utils/urlUtils';
 import { copyEntity } from './copy';
 import { deleteEntity } from './delete';
 import { invalidateEntityListCache } from './entityList';
@@ -373,7 +373,7 @@ export async function sendAction(
   if (url == undefined || url == null) return false;
 
   const resp: Nullable<Response> = await sendRequest(
-    joinUrl(url, `/entity/${requestContext.entityTypeName}/${entityName}/run/${actionObj.name}`),
+    joinUrl(url, entityPath(requestContext.entityTypeName, entityName, 'run', actionObj.name)),
     'POST',
   );
 

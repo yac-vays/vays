@@ -5,7 +5,7 @@ import { entityToastTitle } from '../utils/toastUtils';
 import { EntityData, TYPE_CHECK_ENTITY_DATA } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
-import { joinUrl } from '../utils/urlUtils';
+import { entityPath, joinUrl } from '../utils/urlUtils';
 import { handleYacResponse, yacErrorDetail } from './utils/handleYacResponse';
 
 export async function getEntityData(
@@ -16,7 +16,7 @@ export async function getEntityData(
   if (url == null || url == undefined) return null;
 
   const resp: Nullable<Response> = await sendRequest(
-    joinUrl(url, `/entity/${requestContext.entityTypeName}/${entityName}`),
+    joinUrl(url, entityPath(requestContext.entityTypeName, entityName)),
     'GET',
   );
 
@@ -73,7 +73,7 @@ export async function getStoredEntity(
   if (url == null || url == undefined) return { kind: 'error' };
 
   const resp: Nullable<Response> = await sendRequest(
-    joinUrl(url, `/entity/${requestContext.entityTypeName}/${entityName}`),
+    joinUrl(url, entityPath(requestContext.entityTypeName, entityName)),
     'GET',
   );
   const result = await handleYacResponse(resp, {
@@ -132,7 +132,7 @@ export async function probeEntity(
   if (url == null || url == undefined) return 'error';
 
   const resp: Nullable<Response> = await sendRequest(
-    joinUrl(url, `/entity/${requestContext.entityTypeName}/${encodeURIComponent(entityName)}`),
+    joinUrl(url, entityPath(requestContext.entityTypeName, entityName)),
     'GET',
   );
   const errorText = `Read of ${entityName} failed`;

@@ -5,7 +5,7 @@ import { entityToastTitle } from '../utils/toastUtils';
 import { EntityObject, TYPE_CHECK_ENTITY_OBJECT } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
-import { joinUrl } from '../utils/urlUtils';
+import { entityPath, joinUrl } from '../utils/urlUtils';
 import VAYS_CACHE from './caching';
 import { ENTITY_LIST_CACHE_KEY } from './caching/cachekeys';
 import { handleYacResponse } from './utils/handleYacResponse';
@@ -16,7 +16,7 @@ import { typeCheck } from 'type-check';
 const ENTITY_LIST_LIMIT = 10000;
 
 function getListURL(yacURL: string, entityTypeName: string) {
-  return joinUrl(yacURL, `/entity/${entityTypeName}?limit=${ENTITY_LIST_LIMIT}`);
+  return joinUrl(yacURL, `${entityPath(entityTypeName)}?limit=${ENTITY_LIST_LIMIT}`);
 }
 
 export function invalidateEntityListCache(

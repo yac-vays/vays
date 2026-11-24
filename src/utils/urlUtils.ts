@@ -5,3 +5,12 @@ export function joinUrl(baseUrl: string, path: string): string {
 
   return `${cleanBaseUrl}/${cleanPath}`;
 }
+
+/**
+ * The API path `/entity/<segment>/...` with every segment percent-encoded, so a
+ * name can never add path segments, a query or a fragment to the request
+ * (entity names come from the page URL).
+ */
+export function entityPath(...segments: (string | null | undefined)[]): string {
+  return '/entity/' + segments.map((s) => encodeURIComponent(String(s))).join('/');
+}

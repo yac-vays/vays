@@ -1,5 +1,6 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
+import { escapeMarkdown } from '../../../../../utils/escapeMarkdown';
 import { RequestEditContext } from '../../../../../utils/types/internal/request';
 
 // The markers listener is global (monaco-level, not editor-level); keep the
@@ -44,15 +45,10 @@ export default async function editorErrorDecoration(
           isWholeLine: false,
           className: 'error-line',
           glyphMarginClassName: 'error-glyph',
+          // Plain Markdown (no `isTrusted` / `supportHtml`): the message can
+          // quote keys and values of the document, which must stay text.
           glyphMarginHoverMessage: {
-            isTrusted: true,
-            supportHtml: true,
-            supportThemeIcons: true,
-            uris: undefined,
-            value:
-              marker.message +
-              ` <span style="color:#aaaaaa;">[${marker.startColumn}, ${marker.endColumn}]</span>`,
-            // https://stackoverflow.com/questions/70539772/monaco-editor-how-to-properly-use-hovers-imarkdownstring-with-html
+            value: `${escapeMarkdown(marker.message)} *[${marker.startColumn}, ${marker.endColumn}]*`,
           },
         },
       });

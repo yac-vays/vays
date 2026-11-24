@@ -5,6 +5,22 @@ import _ from 'lodash';
 import { Nullable } from '../types/typeUtils';
 
 /**
+ * Path segments that reach an object's prototype instead of its data. Paths
+ * are derived from the keys of entity data (via Ajv errors), so walking or
+ * writing along one of these would read or pollute `Object.prototype` for the
+ * whole page. The path helpers below refuse them and only follow own keys.
+ */
+const UNSAFE_SEGMENTS = new Set(['__proto__', 'constructor', 'prototype']);
+
+function isUnsafePath(path: readonly (string | null)[]): boolean {
+  return path.some((seg) => seg != null && UNSAFE_SEGMENTS.has(seg));
+}
+
+function hasOwn(obj: any, key: string | number): boolean {
+  return Object.prototype.hasOwnProperty.call(obj, key);
+}
+
+/**
  * Delete every property the schema rejected as `additionalProperties` from
  * `data` (in place) and return the path of each removed key (segment arrays,
  * e.g. `['networking', 'extra']`). The caller uses these to re-emit the
@@ -19,7 +35,8 @@ export function removeOldData(
   for (const error of errors) {
     if (error.keyword === 'additionalProperties') {
       const key: string = error.params.additionalProperty;
-      if (error.instancePath === '' && key in data) {
+      if (isUnsafePath([key])) continue;
+      if (error.instancePath === '' && hasOwn(data, key)) {
         // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
         delete data[key];
         removed.push([key]);
@@ -47,11 +64,12 @@ export function removeOldData(
  */
 export function setUndefinedAtPath(payload: any, path: string[]): void {
   if (path.length === 0 || payload == null || typeof payload !== 'object') return;
+  if (isUnsafePath(path)) return;
   let cur = payload;
   for (let i = 0; i < path.length - 1; i++) {
     if (Array.isArray(cur)) return;
     const seg = path[i];
-    if (cur[seg] == null || typeof cur[seg] !== 'object') {
+    if (!hasOwn(cur, seg) || cur[seg] == null || typeof cur[seg] !== 'object') {
       // Would need to step through an array index next — leave it to extractPatch.
       // @ts-expect-error isNaN accepts non-number arguments
       if (!isNaN(path[i + 1])) return;
@@ -67,11 +85,12 @@ export function setUndefinedAtPath(payload: any, path: string[]): void {
  * Whether `path` (segment array) resolves to an existing key in `data`.
  */
 export function hasAtPath(data: any, path: string[]): boolean {
+  if (isUnsafePath(path)) return false;
   let cur = data;
   for (const seg of path) {
     if (cur == null || typeof cur !== 'object') return false;
     const key: any = Array.isArray(cur) ? Number.parseInt(seg) : seg;
-    if (!(key in cur)) return false;
+    if (!hasOwn(cur, key)) return false;
     cur = cur[key];
   }
   return true;
@@ -90,6 +109,7 @@ export function deepDelete(data: any, instancePath: string[], key: Nullable<stri
     if (instancePath.length > 0) key = instancePath.pop() as string;
     else return false;
   }
+  if (isUnsafePath([...instancePath, key])) return false;
   let subdata = data;
   let elt: string | number;
 
@@ -98,7 +118,7 @@ export function deepDelete(data: any, instancePath: string[], key: Nullable<stri
     //@ts-expect-error isNaN can indeed be used with nonnumber arguments
     if (!isNaN(pth) && Array.isArray(subdata)) {
       elt = Number.parseInt(elt);
-    } else if (subdata == null || typeof subdata !== 'object' || !(elt in subdata)) {
+    } else if (subdata == null || typeof subdata !== 'object' || !hasOwn(subdata, elt)) {
       return false;
     }
 
@@ -111,7 +131,7 @@ export function deepDelete(data: any, instancePath: string[], key: Nullable<stri
       subdata.splice(idx, 1);
       return true;
     }
-  } else if (subdata != null && typeof subdata === 'object' && key in subdata) {
+  } else if (subdata != null && typeof subdata === 'object' && hasOwn(subdata, key)) {
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete subdata[key];
     return true;

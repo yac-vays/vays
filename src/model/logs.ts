@@ -10,7 +10,7 @@ import {
 } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
-import { joinUrl } from '../utils/urlUtils';
+import { entityPath, joinUrl } from '../utils/urlUtils';
 import VAYS_CACHE from './caching';
 import { LOGS_CACHE_KEY } from './caching/cachekeys';
 import { invalidateEntityListCache } from './entityList';
@@ -21,8 +21,8 @@ function getLogID(
   entityTypeName: string | null,
   entityName: string,
 ) {
-  if (url == null || url == undefined) return url + `/entity/${entityTypeName}/${entityName}/logs`;
-  return joinUrl(url, `/entity/${entityTypeName}/${entityName}/logs`);
+  if (url == null || url == undefined) return url + entityPath(entityTypeName, entityName, 'logs');
+  return joinUrl(url, entityPath(entityTypeName, entityName, 'logs'));
 }
 
 export function isLogCached(entityName: string, requestContext: RequestContext) {
@@ -161,7 +161,7 @@ export async function getEntityLogs(
   if (url == null || url == undefined) return null;
 
   const resp: Nullable<Response> = await sendRequest(
-    joinUrl(url, `/entity/${requestContext.entityTypeName}/${entityName}/logs`),
+    joinUrl(url, entityPath(requestContext.entityTypeName, entityName, 'logs')),
     'GET',
     null,
     LOGS_CACHE_KEY,
@@ -236,10 +236,7 @@ export async function getEntityLogContent(
   if (url == null) return { kind: 'error', message: 'No backend selected.' };
 
   const resp: Nullable<Response> = await sendRequest(
-    joinUrl(
-      url,
-      `/entity/${requestContext.entityTypeName}/${entityName}/logs/${encodeURIComponent(logName)}/content`,
-    ),
+    joinUrl(url, entityPath(requestContext.entityTypeName, entityName, 'logs', logName, 'content')),
     'GET',
   );
   if (resp == null) {

@@ -7,7 +7,7 @@ import { ActionDecl } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
 import { getInitialCreateYAML } from '../utils/schema/defaultsHandling';
-import { joinUrl } from '../utils/urlUtils';
+import { entityPath, joinUrl } from '../utils/urlUtils';
 import { handleYacResponse, yacErrorDetail } from './utils/handleYacResponse';
 
 export async function createNewEntity(
@@ -23,7 +23,7 @@ export async function createNewEntity(
   if (url == null || url == undefined) return { success: false, name: null };
 
   const resp = await sendRequest(
-    joinUrl(url, `/entity/${requestContext.entityTypeName}${commitURLQuery(acts, force)}`),
+    joinUrl(url, `${entityPath(requestContext.entityTypeName)}${commitURLQuery(acts, force)}`),
     'POST',
     JSON.stringify({
       // The key must be present (null instead of omitted), otherwise YAC

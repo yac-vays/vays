@@ -5,7 +5,7 @@ import { sendRequest } from '../utils/authRequest';
 import { entityToastTitle, operationSuccessText } from '../utils/toastUtils';
 import { ActionDecl } from '../utils/types/api';
 import { RequestEditContext } from '../utils/types/internal/request';
-import { joinUrl } from '../utils/urlUtils';
+import { entityPath, joinUrl } from '../utils/urlUtils';
 import { handleYacResponse, yacErrorDetail } from './utils/handleYacResponse';
 
 export type PutResult =
@@ -47,7 +47,7 @@ export async function putYAMLEntity(
   const resp = await sendRequest(
     joinUrl(
       url,
-      `/entity/${requestEditContext.rc.entityTypeName}/${requestEditContext.entityName}${commitURLQuery(acts, force)}`,
+      `${entityPath(requestEditContext.rc.entityTypeName, requestEditContext.entityName)}${commitURLQuery(acts, force)}`,
     ),
     'PUT',
     JSON.stringify({ name: name, yaml_old: yaml_old, yaml_new: yaml }),

@@ -4,7 +4,7 @@ import { entityToastTitle } from '../utils/toastUtils';
 import { ActionDecl, NameGeneratedCond } from '../utils/types/api';
 import { RequestContext } from '../utils/types/internal/request';
 import { Nullable } from '../utils/types/typeUtils';
-import { joinUrl } from '../utils/urlUtils';
+import { entityPath, joinUrl } from '../utils/urlUtils';
 import { handleYacResponse } from './utils/handleYacResponse';
 
 /**
@@ -48,7 +48,7 @@ export async function createDerivedEntity(
   }
 
   const resp: Nullable<Response> = await sendRequest(
-    joinUrl(url, `/entity/${requestContext.entityTypeName}${actions2URLQuery(actions)}`),
+    joinUrl(url, `${entityPath(requestContext.entityTypeName)}${actions2URLQuery(actions)}`),
     'POST',
     JSON.stringify({ name, [kind]: sourceEntityName }),
   );

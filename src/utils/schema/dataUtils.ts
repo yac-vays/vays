@@ -12,8 +12,23 @@ import { Nullable } from '../types/typeUtils';
  */
 const UNSAFE_SEGMENTS = new Set(['__proto__', 'constructor', 'prototype']);
 
-function isUnsafePath(path: readonly (string | null)[]): boolean {
-  return path.some((seg) => seg != null && UNSAFE_SEGMENTS.has(seg));
+function isUnsafePath(path: readonly (string | number | null)[]): boolean {
+  return path.some((seg) => typeof seg === 'string' && UNSAFE_SEGMENTS.has(seg));
+}
+
+/** A data path: object keys as strings, array indices as numbers. */
+export type DataPath = (string | number)[];
+
+/** `segments` with the indices of arrays in `data` as numbers. */
+function toDataPath(data: any, segments: string[]): DataPath {
+  const path: DataPath = [];
+  let cur = data;
+  for (const seg of segments) {
+    const key = Array.isArray(cur) ? Number.parseInt(seg) : seg;
+    path.push(key);
+    cur = cur == null ? cur : cur[key];
+  }
+  return path;
 }
 
 function hasOwn(obj: any, key: string | number): boolean {
@@ -22,16 +37,17 @@ function hasOwn(obj: any, key: string | number): boolean {
 
 /**
  * Delete every property the schema rejected as `additionalProperties` from
- * `data` (in place) and return the path of each removed key (segment arrays,
- * e.g. `['networking', 'extra']`). The caller uses these to re-emit the
- * removals as `~undefined` in the outgoing patch (see `editingState.strippedPaths`).
+ * `data` (in place) and return the path of each removed key (e.g.
+ * `['networking', 'extra']`, `['disks', 0, 'extra']`). The caller uses these to
+ * re-emit the removals as `~undefined` in the outgoing patch (see
+ * `editingState.strippedPaths`).
  */
 export function removeOldData(
   data: any,
   errors: ErrorObject<string, Record<string, any>, unknown>[] | null,
-): string[][] {
+): DataPath[] {
   if (errors == null) return [];
-  const removed: string[][] = [];
+  const removed: DataPath[] = [];
   for (const error of errors) {
     if (error.keyword === 'additionalProperties') {
       const key: string = error.params.additionalProperty;
@@ -45,7 +61,7 @@ export function removeOldData(
         l.shift();
         // Only report paths that were actually deleted; otherwise the caller
         // would keep re-validating data that never changes.
-        if (deepDelete(data, l, key)) removed.push([...l, key]);
+        if (deepDelete(data, l, key)) removed.push([...toDataPath(data, l), key]);
       }
     }
   }
@@ -59,20 +75,18 @@ export function removeOldData(
  * act on.
  *
  * Array contents are sent wholesale by `extractPatch`, so removals nested inside
- * an array are already covered by that replacement; we bail rather than
- * materialise a (sparse) array here, which would corrupt the merge.
+ * an array (a number in `path`) are already covered by that replacement; we
+ * bail rather than materialise a (sparse) array here, which would corrupt the
+ * merge. Numeric-looking object keys (`'100'`) are ordinary keys.
  */
-export function setUndefinedAtPath(payload: any, path: string[]): void {
+export function setUndefinedAtPath(payload: any, path: DataPath): void {
   if (path.length === 0 || payload == null || typeof payload !== 'object') return;
-  if (isUnsafePath(path)) return;
+  if (isUnsafePath(path) || path.some((seg) => typeof seg === 'number')) return;
   let cur = payload;
   for (let i = 0; i < path.length - 1; i++) {
     if (Array.isArray(cur)) return;
     const seg = path[i];
     if (!hasOwn(cur, seg) || cur[seg] == null || typeof cur[seg] !== 'object') {
-      // Would need to step through an array index next — leave it to extractPatch.
-      // @ts-expect-error isNaN accepts non-number arguments
-      if (!isNaN(path[i + 1])) return;
       cur[seg] = {};
     }
     cur = cur[seg];
@@ -84,12 +98,12 @@ export function setUndefinedAtPath(payload: any, path: string[]): void {
 /**
  * Whether `path` (segment array) resolves to an existing key in `data`.
  */
-export function hasAtPath(data: any, path: string[]): boolean {
+export function hasAtPath(data: any, path: DataPath): boolean {
   if (isUnsafePath(path)) return false;
   let cur = data;
   for (const seg of path) {
     if (cur == null || typeof cur !== 'object') return false;
-    const key: any = Array.isArray(cur) ? Number.parseInt(seg) : seg;
+    const key: any = Array.isArray(cur) ? Number.parseInt(String(seg)) : seg;
     if (!hasOwn(cur, key)) return false;
     cur = cur[key];
   }

@@ -3,6 +3,7 @@ import Ajv from 'ajv';
 import { getEntityData } from '../../../model/entityData';
 import { getSchema, validate } from '../../../model/validate';
 import {
+  DataPath,
   extractPatch,
   markRemovedKeys,
   getAllErrors,
@@ -690,7 +691,7 @@ function cleanData(valResp: ValidateResponse): boolean {
  */
 function applyStrippedPaths(patch: { [key: string]: unknown }, data: any) {
   for (const encoded of [...editingState.strippedPaths]) {
-    const path: string[] = JSON.parse(encoded);
+    const path: DataPath = JSON.parse(encoded);
     if (hasAtPath(data, path)) {
       editingState.strippedPaths.delete(encoded);
     } else {

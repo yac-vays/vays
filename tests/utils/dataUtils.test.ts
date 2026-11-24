@@ -48,6 +48,24 @@ describe('removeOldData reports stripped paths', () => {
     expect(removed).toContainEqual(['networking', 'gateway']);
   });
 
+  it('tells array indices (numbers) from numeric-looking keys (strings)', () => {
+    const nested = {
+      type: 'object',
+      properties: {
+        disks: { type: 'array', items: { type: 'object', additionalProperties: false } },
+        vlans: {
+          type: 'object',
+          additionalProperties: { type: 'object', additionalProperties: false },
+        },
+      },
+    };
+    const data: any = { disks: [{ extra: 1 }], vlans: { '100': { legacy: true } } };
+    const removed = removeOldData(data, getAllErrors(data, nested, ajv));
+    expect(data).toEqual({ disks: [{}], vlans: { '100': {} } });
+    expect(removed).toContainEqual(['disks', 0, 'extra']);
+    expect(removed).toContainEqual(['vlans', '100', 'legacy']);
+  });
+
   it('returns no paths when the data already conforms', () => {
     const data: any = { enabled: true };
     expect(removeOldData(data, getAllErrors(data, schema, ajv))).toHaveLength(0);
@@ -75,8 +93,14 @@ describe('setUndefinedAtPath / hasAtPath', () => {
 
   it('bails on array-nested paths (covered by wholesale list replacement)', () => {
     const patch: any = {};
-    setUndefinedAtPath(patch, ['items', '0', 'extra']);
+    setUndefinedAtPath(patch, ['items', 0, 'extra']);
     expect(patch).toEqual({});
+  });
+
+  it('treats numeric-looking object keys as keys (e.g. VLAN ids)', () => {
+    const patch: any = {};
+    setUndefinedAtPath(patch, ['vlans', '100', 'legacy']);
+    expect(patch).toEqual({ vlans: { '100': { legacy: '~undefined' } } });
   });
 
   it('hasAtPath detects present and absent keys', () => {

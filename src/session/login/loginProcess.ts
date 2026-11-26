@@ -9,7 +9,7 @@ import { AuthDiscConfig } from '../../utils/types/internal/request';
 import { Nullable } from '../../utils/types/typeUtils';
 import { joinUrl } from '../../utils/urlUtils';
 import iLocalStorage from '../persistent/LocalStorage';
-import { discoverClient } from './oidcClient';
+import { discoverClient, grantedScope, oidcScope } from './oidcClient';
 import { setUserLoggedIn } from './tokenHandling';
 
 /**
@@ -48,7 +48,7 @@ async function performDiscovery(appconf: AppConfig): Promise<Nullable<URL>> {
      * Authorization Server.
      */
     redirect_uri: joinUrl(`https://${window.location.host}`, 'oauth2-redirect'),
-    scope: appconf.oidcConf.scope ?? 'openid email',
+    scope: oidcScope(appconf),
     code_challenge,
     code_challenge_method,
   };
@@ -99,6 +99,7 @@ export async function finalizeAuthentication(appconf: AppConfig): Promise<boolea
     // without one the session simply ends when the id-token expires.
     if (tokens.refresh_token) {
       iLocalStorage.setRefreshToken(tokens.refresh_token);
+      iLocalStorage.setGrantedScope(grantedScope(tokens, oidcScope(appconf)));
     } else {
       iLocalStorage.clearRefreshToken();
     }

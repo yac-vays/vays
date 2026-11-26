@@ -16,3 +16,13 @@ export function discoverClient(appconf: AppConfig): Promise<client.Configuration
     client.None(),
   );
 }
+
+/** The scopes requested at the login. */
+export function oidcScope(appconf: AppConfig): string {
+  return appconf.oidcConf.scope ?? 'openid email';
+}
+
+/** The scopes a token response granted: absent means as requested (RFC 6749 5.1). */
+export function grantedScope(tokens: { scope?: string }, requested: string): string {
+  return tokens.scope || requested;
+}

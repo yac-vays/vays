@@ -38,7 +38,11 @@ vi.mock('../../src/controller/global/notification', () => ({
 }));
 vi.mock('../../src/model/config', () => {
   const conf = {
-    oidcConf: { server: 'https://idp.example.com/.well-known/openid-configuration', clientID: 'c' },
+    oidcConf: {
+      server: 'https://idp.example.com/.well-known/openid-configuration',
+      clientID: 'c',
+      scope: 'openid profile email groups',
+    },
     backends: [{ name: 'a', title: 'A', icon: '', url: BACKEND }],
   };
   return { getConfig: async () => conf, getCachedConfig: () => conf };
@@ -81,6 +85,23 @@ function sentAuthorization(): string | null {
   return new Headers(fetchMock.mock.calls[0][1].headers).get('Authorization');
 }
 
+describe('scopes sent with a renewal', () => {
+  it('are those the login granted, and then those the renewal granted', async () => {
+    signIn(-10);
+    iLocalStorage.setGrantedScope('openid email');
+    refreshTokenGrant.mockResolvedValueOnce({ id_token: idToken(-10), refresh_token: 'rt-2' });
+    await renewToken();
+    expect(refreshTokenGrant.mock.calls[0][2]).toEqual({ scope: 'openid email' });
+    // a renewal without `scope` in the answer granted what it asked for
+    expect(iLocalStorage.getGrantedScope()).toBe('openid email');
+
+    refreshTokenGrant.mockResolvedValueOnce({ id_token: idToken(300), scope: 'openid' });
+    await renewToken();
+    expect(refreshTokenGrant.mock.calls[1][2]).toEqual({ scope: 'openid email' });
+    expect(iLocalStorage.getGrantedScope()).toBe('openid');
+  });
+});
+
 describe('renewal before a request', () => {
   it('renews an expired token and sends the request with the new one', async () => {
     signIn(-10);
@@ -91,6 +112,9 @@ describe('renewal before a request', () => {
 
     expect(refreshTokenGrant).toHaveBeenCalledTimes(1);
     expect(refreshTokenGrant.mock.calls[0][1]).toBe('rt-1');
+    // the configured scopes for a session without granted ones (access.ethz.ch
+    // refuses a refresh without any)
+    expect(refreshTokenGrant.mock.calls[0][2]).toEqual({ scope: 'openid profile email groups' });
     expect(resp?.status).toBe(200);
     expect(sentAuthorization()).toBe(`Bearer ${fresh}`);
     expect(iLocalStorage.getRefreshToken()).toBe('rt-2');

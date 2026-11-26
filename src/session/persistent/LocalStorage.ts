@@ -93,6 +93,15 @@ class ILocalStorage {
     localStorage.removeItem('refreshToken');
   }
 
+  /** The scopes the provider granted at the login, sent with each renewal. */
+  public setGrantedScope(v: string) {
+    this.set('grantedScope', v);
+  }
+
+  public getGrantedScope(): string | undefined {
+    return this.get('grantedScope');
+  }
+
   public setIdentity(v: UserIdentity) {
     this.set('identity', v);
   }

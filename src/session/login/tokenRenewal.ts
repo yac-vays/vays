@@ -19,7 +19,7 @@ import { getConfig } from '../../model/config';
 import { logError } from '../../utils/logger';
 import { Nullable } from '../../utils/types/typeUtils';
 import iLocalStorage from '../persistent/LocalStorage';
-import { discoverClient } from './oidcClient';
+import { discoverClient, grantedScope, oidcScope } from './oidcClient';
 import { getTokenFromStorage, userIsLoggedIn } from './tokenHandling';
 
 /** Renew this many seconds before expiry (at most a quarter of the lifetime). */
@@ -37,7 +37,7 @@ const TRANSIENT_OAUTH_ERRORS = ['server_error', 'temporarily_unavailable'];
 /** setTimeout fires immediately for delays beyond a signed 32-bit int. */
 const MAX_DELAY_MS = 2 ** 31 - 1;
 
-let discovery: Nullable<Promise<client.Configuration>> = null;
+let renewalClient: Nullable<Promise<{ config: client.Configuration; scope: string }>> = null;
 let pending: Nullable<Promise<boolean>> = null;
 let timer: ReturnType<typeof setTimeout> | undefined;
 let started = false;
@@ -56,16 +56,16 @@ function secondsUntilRenewal(token: string | undefined): number {
   }
 }
 
-function getDiscovery(): Promise<client.Configuration> {
-  if (discovery == null) {
-    discovery = getConfig().then((conf) => {
+function getRenewalClient(): Promise<{ config: client.Configuration; scope: string }> {
+  if (renewalClient == null) {
+    renewalClient = getConfig().then(async (conf) => {
       if (conf == null) throw new Error('No app config');
-      return discoverClient(conf);
+      return { config: await discoverClient(conf), scope: oidcScope(conf) };
     });
     // Do not cache a failed discovery (e.g. offline): retry next time.
-    discovery.catch(() => (discovery = null));
+    renewalClient.catch(() => (renewalClient = null));
   }
-  return discovery;
+  return renewalClient;
 }
 
 async function withLock<T>(fn: () => Promise<T>): Promise<T> {
@@ -84,8 +84,15 @@ async function doRenew(): Promise<boolean> {
   if (!refreshToken) return false;
 
   let tokens: client.TokenEndpointResponse;
+  let scope: string;
   try {
-    tokens = await client.refreshTokenGrant(await getDiscovery(), refreshToken);
+    const renewal = await getRenewalClient();
+    // The scopes the login granted (sessions from before: the configured
+    // ones). Optional in a refresh (RFC 6749 6: omitted = as granted
+    // before), but some providers refuse a refresh without them
+    // (access.ethz.ch: invalid_scope "Unknown request scope detected.").
+    scope = iLocalStorage.getGrantedScope() ?? renewal.scope;
+    tokens = await client.refreshTokenGrant(renewal.config, refreshToken, { scope });
   } catch (e) {
     if (e instanceof client.ResponseBodyError) {
       logError(
@@ -108,6 +115,7 @@ async function doRenew(): Promise<boolean> {
   if (!userIsLoggedIn() || iLocalStorage.getRefreshToken() !== refreshToken) return false;
 
   if (tokens.refresh_token) iLocalStorage.setRefreshToken(tokens.refresh_token);
+  iLocalStorage.setGrantedScope(grantedScope(tokens, scope));
   if (!tokens.id_token) {
     logError(
       'Token renewal returned no id_token: renewal is not possible with this OIDC client.',

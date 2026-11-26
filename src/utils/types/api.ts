@@ -177,6 +177,17 @@ export const TYPE_CHECK_ENTITY_TYPE_DECL = `{
 /**
  * Entity Type definition, as it is returned by the YAC backend.
  */
+/**
+ * An alias for all values matching `match` (a regular expression that must
+ * match the whole value). `tooltip` is plain text: `{0}` is the value, `{1}`,
+ * `{2}`, ... its capture groups.
+ */
+export interface AliasPatternDecl {
+  match: string;
+  alias: string;
+  tooltip?: string;
+}
+
 export interface EntityTypeDecl {
   name: string;
   title: string;
@@ -192,6 +203,8 @@ export interface EntityTypeDecl {
     name: string;
     default?: string;
     aliases: { [key: string]: string };
+    /** Missing on YAC versions before `alias_patterns` were introduced. */
+    alias_patterns?: AliasPatternDecl[];
   }[];
   logs: LogDecl[];
   /** Missing on YAC versions before `links` were introduced. */

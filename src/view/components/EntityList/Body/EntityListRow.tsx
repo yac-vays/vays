@@ -68,6 +68,17 @@ const EntityListRow = ({
       );
     }
     if (entry.value === '(None)') return <em className="opacity-50">None</em>;
+    if (entry.isMarkdown && entry.tooltip != null) {
+      // The tooltip is plain text (it may contain entity data): React escapes
+      // it, it never reaches the Markdown renderer. Screen readers get it as
+      // text, as the alias is usually just an image.
+      return (
+        <div title={entry.tooltip}>
+          <MarkdownRender text={entry.value} />
+          <span className="sr-only">{entry.tooltip}</span>
+        </div>
+      );
+    }
     if (entry.isMarkdown) return <MarkdownRender text={entry.value} />;
     return entry.value;
   };
@@ -174,7 +185,11 @@ const EntityListRow = ({
             );
           }
           jsx.push(
-            <td key="actions" className="border-stroke" style={{ width: '1px', whiteSpace: 'nowrap' }}>
+            <td
+              key="actions"
+              className="border-stroke"
+              style={{ width: '1px', whiteSpace: 'nowrap' }}
+            >
               {/* overflow:"hidden" */}
               {/* The buttons stacking up version...*/}
               {/* <div className="flex flex-col items-center" style={{width:"100%"}}>

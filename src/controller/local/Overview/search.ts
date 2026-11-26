@@ -1,4 +1,4 @@
-import { getAlias } from '../../../utils/columnUtils';
+import { resolveAlias } from '../../../utils/columnUtils';
 import { EntityObject } from '../../../utils/types/api';
 import { RequestContext } from '../../../utils/types/internal/request';
 
@@ -30,26 +30,20 @@ export function performSearch(
       }
     }
     for (const option of requestContext.accessedEntityType?.options ?? []) {
+      const query = searchList[i++];
+      if (query == null || query === '') continue;
       const rawValue = entity.options[option.name];
-      // The raw value keys the alias table (the display path in list.ts does
-      // the same); lowercase only for the actual comparison.
+      // The raw value keys the aliases (the display path in list.ts does the
+      // same); lowercase only for the actual comparison. The value, its alias
+      // and the alias' tooltip all count, so "24.04" finds a host whose
+      // `ubuntu-24.04` is shown as a plain Ubuntu logo.
       const value: string = rawValue == null ? '' : String(rawValue);
-      const lowerValue = value.toLowerCase();
-      const alias = getAlias(option.aliases, value);
-      if (alias != null) {
-        const actualValue: string = alias.toLowerCase();
-        if (searchList[i] != null && !actualValue.includes(searchList[i] as string)) {
-          passed = false;
-          break;
-        }
-      } else if (searchList[i] != null && !lowerValue.includes(searchList[i] as string)) {
-        passed = false;
-        break;
-      } else if (searchList[i] != null && searchList[i] != '' && lowerValue === '') {
+      const resolved = resolveAlias(option, value);
+      const texts = [value, resolved?.alias, resolved?.tooltip];
+      if (!texts.some((text) => text != null && text.toLowerCase().includes(query))) {
         passed = false;
         break;
       }
-      i++;
     }
     if (passed) filteredEntities.push(entity);
   }

@@ -4,6 +4,8 @@ import { ActionsColumnResults } from './actions';
 export interface OverviewListCellEntry {
   value: string;
   isMarkdown: boolean;
+  /** Plain-text tooltip of an alias (only set when there is one). */
+  tooltip?: string;
 }
 
 export interface QueryResult {

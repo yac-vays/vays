@@ -9,7 +9,7 @@ import {
   QueryResponse,
   QueryResult,
 } from '../../../utils/types/internal/entityList';
-import { getAlias, hasLinksDefined } from '../../../utils/columnUtils';
+import { hasLinksDefined, resolveAlias } from '../../../utils/columnUtils';
 import { hasLogsDefined } from '../../../utils/logUtils';
 import { RequestContext } from '../../../utils/types/internal/request';
 import { Nullable } from '../../../utils/types/typeUtils';
@@ -115,7 +115,8 @@ export async function getEntityPage(
  *
  * @remarks
  * - The function iterates over the options of the accessed entity type from the request context.
- * - If the value is found in the option's aliases, the alias is used.
+ * - If the value has an alias (exact or by pattern, see `resolveAlias`), the alias
+ *   is used, with its tooltip if there is one.
  * - If the value is null, it adds '(None)' to the values array.
  * - The function ensures that commas in the values are properly spaced.
  * - Additional values such as 'Status' (logs), 'Links' and 'Actions' are added to the end
@@ -125,13 +126,17 @@ function representEntity(
   entity: EntityObject,
   requestContext: RequestContext,
 ): OverviewListCellEntry[] {
-  const values = [{ value: entity.name, isMarkdown: false }];
+  const values: OverviewListCellEntry[] = [{ value: entity.name, isMarkdown: false }];
   for (const option of requestContext.accessedEntityType?.options ?? []) {
     const rawValue = entity.options[option.name];
     const value = rawValue == null ? null : String(rawValue);
-    const alias = value == null ? null : getAlias(option.aliases, value);
-    if (alias != null) {
-      values.push({ value: alias, isMarkdown: true });
+    const resolved = value == null ? null : resolveAlias(option, value);
+    if (resolved != null) {
+      values.push(
+        resolved.tooltip == null
+          ? { value: resolved.alias, isMarkdown: true }
+          : { value: resolved.alias, isMarkdown: true, tooltip: resolved.tooltip },
+      );
     } else if (value == null) {
       values.push({ value: '(None)', isMarkdown: false });
     } else {
